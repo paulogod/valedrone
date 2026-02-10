@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vale Drone | Filmagem aérea e tours 360° — valedrone.com.br</title>
+  <meta name="description" content="Filmagem com drones, tours panorâmicos 360° e cobertura aérea. Vale Drone — imagens que impressionam.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="#" class="logo">Vale<span>Drone</span></a>
+      <nav class="nav">
+        <a href="#servicos">Serviços</a>
+        <a href="#tour">Tour 360°</a>
+        <a href="#galeria">Galeria</a>
+        <a href="#contato">Contato</a>
+      </nav>
+      <button class="menu-btn" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="container hero-content">
+        <p class="hero-tag">Filmagem aérea & tours panorâmicos</p>
+        <h1>Vista do alto.<br>Experiência em 360°.</h1>
+        <p class="hero-desc">Drones e imagens que valorizam seu imóvel, evento ou projeto. Qualidade cinematográfica e tours virtuais imersivos.</p>
+        <div class="hero-cta">
+          <a href="#contato" class="btn btn-primary">Solicitar orçamento</a>
+          <a href="#tour" class="btn btn-outline">Ver tour 360°</a>
+        </div>
+      </div>
+      <div class="hero-scroll" aria-hidden="true">
+        <span>Role para explorar</span>
+        <div class="scroll-icon"></div>
+      </div>
+    </section>
+
+    <section id="servicos" class="section services">
+      <div class="container">
+        <h2 class="section-title">O que fazemos</h2>
+        <div class="services-grid">
+          <article class="service-card">
+            <div class="service-icon">✈</div>
+            <h3>Filmagem aérea</h3>
+            <p>Vídeos e fotos com drones para imóveis, eventos, obras e divulgação.</p>
+          </article>
+          <article class="service-card">
+            <div class="service-icon">⊙</div>
+            <h3>Tour panorâmico 360°</h3>
+            <p>Experiência imersiva para visitas virtuais a ambientes e imóveis.</p>
+          </article>
+          <article class="service-card">
+            <div class="service-icon">◐</div>
+            <h3>Mapeamento e inspeção</h3>
+            <p>Ortofotos, modelos 3D e inspeção aérea para engenharia e agricultura.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="tour" class="section tour-section">
+      <div class="container">
+        <h2 class="section-title">Tour 360°</h2>
+        <p class="section-desc">Clique e arraste para explorar. Use o scroll para zoom.</p>
+        <div id="panorama" class="panorama-container"></div>
+        <p class="tour-note">Adicione suas imagens panorâmicas na pasta <code>panoramas/</code> e configure em <code>js/tour.js</code>. Veja <code>panoramas/README.md</code>.</p>
+      </div>
+    </section>
+
+    <section id="galeria" class="section gallery">
+      <div class="container">
+        <h2 class="section-title">Galeria</h2>
+        <p class="section-desc">Substitua os placeholders por suas fotos e vídeos. Use YouTube/Vimeo para vídeos.</p>
+        <div class="gallery-grid">
+          <div class="gallery-item"><div class="placeholder">Foto 1</div></div>
+          <div class="gallery-item"><div class="placeholder">Foto 2</div></div>
+          <div class="gallery-item"><div class="placeholder">Foto 3</div></div>
+          <div class="gallery-item"><div class="placeholder">Foto 4</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contato" class="section contact">
+      <div class="container">
+        <h2 class="section-title">Contato</h2>
+        <p class="section-desc">Orçamento sem compromisso. Respondemos por e-mail.</p>
+        <div class="contact-box">
+          <a href="mailto:contato@valedrone.com.br" class="contact-email">contato@valedrone.com.br</a>
+          <p class="contact-tip">Configure o e-mail no domínio com ImprovMX ou Zoho (veja o README do projeto).</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© Vale Drone — valedrone.com.br</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+  <script src="js/tour.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
