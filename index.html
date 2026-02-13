@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+  <!-- Estilos do player de vídeo 360° (Video.js) -->
+  <link href="https://vjs.zencdn.net/7.1.0/video-js.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -75,7 +77,17 @@
       <div class="container">
         <h2 class="section-title">Tour 360°</h2>
         <p class="section-desc">Clique e arraste para explorar. Use o scroll para zoom.</p>
-        <div id="panorama" class="panorama-container"></div>
+        <div class="panorama-container">
+          <video id="panorama" class="video-js vjs-default-skin vjs-big-play-centered"
+            controls preload="none" style="width:100%;height:100%;"
+            poster="https://pannellum.org/images/video/jfk-poster.jpg" crossorigin="anonymous">
+            <source src="https://pannellum.org/images/video/jfk.webm" type="video/webm" />
+            <source src="https://pannellum.org/images/video/jfk.mp4" type="video/mp4" />
+            <p class="vjs-no-js">
+              Para ver este vídeo, habilite o JavaScript e use um navegador que suporte vídeo HTML5.
+            </p>
+          </video>
+        </div>
       </div>
     </section>
 
@@ -85,11 +97,63 @@
       <div class="container">
         <h2 class="section-title">Galeria</h2>
         <div class="gallery-grid">
-          <div class="gallery-item"><div class="placeholder"><blockquote class="tiktok-embed" cite="https://www.tiktok.com/@valedrone/video/7596418298208685332" data-video-id="7596418298208685332" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@valedrone" href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a>
-          <div class="gallery-item"><div class="placeholder"><blockquote class="tiktok-embed" cite="https://www.tiktok.com/@valedrone/video/7601196039344852245" data-video-id="7601196039344852245" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@valedrone" href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a> 
-          <div class="gallery-item"><div class="placeholder"><blockquote class="tiktok-embed" cite="https://www.tiktok.com/@valedrone/video/7604935591574179093" data-video-id="7604935591574179093" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@valedrone" href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a> 
-          <div class="gallery-item"><div class="placeholder"><blockquote class="tiktok-embed" cite="https://www.tiktok.com/@valedrone/video/7599714645628161300" data-video-id="7599714645628161300" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@valedrone" href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a>
+          <div class="gallery-item">
+            <div class="placeholder">
+              <blockquote class="tiktok-embed"
+                cite="https://www.tiktok.com/@valedrone/video/7596418298208685332"
+                data-video-id="7596418298208685332"
+                style="max-width: 605px; min-width: 325px;">
+                <section>
+                  <a target="_blank" title="@valedrone"
+                    href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a>
+                </section>
+              </blockquote>
+            </div>
+          </div>
+
+          <div class="gallery-item">
+            <div class="placeholder">
+              <blockquote class="tiktok-embed"
+                cite="https://www.tiktok.com/@valedrone/video/7601196039344852245"
+                data-video-id="7601196039344852245"
+                style="max-width: 605px; min-width: 325px;">
+                <section>
+                  <a target="_blank" title="@valedrone"
+                    href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a>
+                </section>
+              </blockquote>
+            </div>
+          </div>
+
+          <div class="gallery-item">
+            <div class="placeholder">
+              <blockquote class="tiktok-embed"
+                cite="https://www.tiktok.com/@valedrone/video/7604935591574179093"
+                data-video-id="7604935591574179093"
+                style="max-width: 605px; min-width: 325px;">
+                <section>
+                  <a target="_blank" title="@valedrone"
+                    href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a>
+                </section>
+              </blockquote>
+            </div>
+          </div>
+
+          <div class="gallery-item">
+            <div class="placeholder">
+              <blockquote class="tiktok-embed"
+                cite="https://www.tiktok.com/@valedrone/video/7599714645628161300"
+                data-video-id="7599714645628161300"
+                style="max-width: 605px; min-width: 325px;">
+                <section>
+                  <a target="_blank" title="@valedrone"
+                    href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a>
+                </section>
+              </blockquote>
+            </div>
+          </div>
         </div>
+        <script async src="https://www.tiktok.com/embed.js"></script>
       </div>
     </section>
 
@@ -119,6 +183,9 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+  <!-- Scripts do player de vídeo 360° (Video.js + plugin Pannellum) -->
+  <script src="https://vjs.zencdn.net/7.1.0/video.js"></script>
+  <script src="https://pannellum.org/js/videojs-pannellum-plugin.js"></script>
   <script src="js/tour.js"></script>
   <script src="js/main.js"></script>
 </body>
