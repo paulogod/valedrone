@@ -6,11 +6,15 @@
   var container = document.getElementById('panorama');
   if (!container) return;
 
-  // Imagem 360° de fazenda (equirectangular). Baixe o arquivo escolhido
-  // e salve em panoramas/fazenda-360.jpg para usá-lo aqui.
-  // Exemplo de fonte gratuita: 
-  // https://www.vecteezy.com/photo/17619873-full-seamless-hdri-360-panorama-among-farming-field-with-cut-grass-and-clouds-in-overcast-sky-in-equirectangular-spherical-projection-ready-for-use-as-sky-replacement-in-drone-panoramas-or-vr-content
-  var demoPanorama = 'panoramas/fazenda-360.jpg';
+  // Imagem 360° de fazenda (equirectangular) via link externo
+  // Exemplo de fonte gratuita (CC0): Poly Haven — Farm Field
+  // https://polyhaven.com/a/farm_field
+  //
+  // Recomenda-se baixar e hospedar a imagem no seu próprio servidor para produção,
+  // mas para testes você pode usar um link direto/otimizado aqui.
+  //
+  // Substitua abaixo pela URL direta da imagem JPG 360° que você escolher:
+  var demoPanorama = 'https://pannellum.org/images/cerro-toco-0.jpg'; // TODO: trocar por link 360° de fazenda
 
   try {
     pannellum.viewer('panorama', {
