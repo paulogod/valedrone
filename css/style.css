@@ -393,7 +393,12 @@ body {
   font-size: 0.9rem;
 }
 
-.gallery-item iframe,
+.gallery-item iframe {
+  width: 100% !important;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+}
+
 .gallery-item .tiktok-embed {
   width: 100% !important;
   height: auto;
@@ -404,7 +409,6 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
-  loading: lazy;
 }
 
 /* Contact */
