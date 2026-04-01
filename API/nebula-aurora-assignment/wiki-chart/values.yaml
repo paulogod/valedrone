@@ -1,0 +1,76 @@
+# FastAPI Service Configuration
+fastapi:
+  image_name: wiki-service
+  image_tag: latest
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  env:
+    DATABASE_URL: ""
+
+# PostgreSQL Configuration
+postgresql:
+  enabled: true
+  image: postgres:15-alpine
+  database: wiki_db
+  username: postgres
+  password: postgres
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  persistence:
+    enabled: true
+    size: 2Gi
+
+# Prometheus Configuration
+prometheus:
+  enabled: true
+  image: prom/prometheus:latest
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+  retention: 15d
+  scrape_interval: 15s
+
+# Grafana Configuration
+grafana:
+  enabled: true
+  image: grafana/grafana:latest
+  adminUser: admin
+  adminPassword: admin
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+  persistence:
+    enabled: true
+    size: 1Gi
+
+# Ingress Configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /

@@ -1,0 +1,140 @@
+{
+  "entities": [
+    {
+      "id": 6,
+      "name": "Tuk",
+      "type": "PC",
+      "maxHp": 249,
+      "hp": 249,
+      "initiative": 29,
+      "armor": 32,
+      "conditions": [],
+      "abilities": []
+    },
+    {
+      "id": 9,
+      "name": "Sigrid",
+      "type": "PC",
+      "maxHp": 130,
+      "hp": 130,
+      "initiative": 28,
+      "armor": 34,
+      "conditions": [],
+      "abilities": []
+    },
+    {
+      "id": 3,
+      "name": "Donavam",
+      "type": "PC",
+      "maxHp": 151,
+      "hp": 151,
+      "initiative": 27,
+      "armor": 32,
+      "conditions": [],
+      "abilities": []
+    },
+    {
+      "id": 4,
+      "name": "Thalathel",
+      "type": "PC",
+      "maxHp": 188,
+      "hp": 188,
+      "initiative": 25,
+      "armor": 34,
+      "conditions": [],
+      "abilities": []
+    },
+    {
+      "id": 7,
+      "name": "Kall",
+      "type": "PC",
+      "maxHp": 125,
+      "hp": 125,
+      "initiative": 24,
+      "armor": 31,
+      "conditions": [],
+      "abilities": []
+    },
+    {
+      "id": 5,
+      "name": "Snag",
+      "type": "PC",
+      "maxHp": 138,
+      "hp": 138,
+      "initiative": 23,
+      "armor": 33,
+      "conditions": [],
+      "abilities": []
+    },
+    {
+      "id": 2,
+      "name": "Cotoco",
+      "type": "PC",
+      "maxHp": 136,
+      "hp": 136,
+      "initiative": 22,
+      "armor": 33,
+      "conditions": [],
+      "abilities": []
+    }
+  ],
+  "ship": {
+    "name": "Cruzador de Tempestades",
+    "hp": 88,
+    "maxHp": 100,
+    "hardness": 2,
+    "speed": 30,
+    "abilities": [
+      "asd aSDJHN"
+    ],
+    "crew": [
+      {
+        "id": 0,
+        "name": "Snag",
+        "role": "Ficar sentado",
+        "maxHp": 171,
+        "hp": 171,
+        "info": "Sim",
+        "actions": "N\u00e3o"
+      },
+      {
+        "id": 1,
+        "name": "Khall",
+        "role": "Reclamar",
+        "maxHp": 10,
+        "hp": 10,
+        "info": "N\u00e3o",
+        "actions": "Mandar nos outros"
+      }
+    ],
+    "goods": ""
+  },
+  "enemyShips": [
+    {
+      "id": 0,
+      "name": "teste3",
+      "maxHp": 2,
+      "hp": 0,
+      "hardness": 1,
+      "speed": 12
+    },
+    {
+      "id": 1,
+      "name": "qwe",
+      "maxHp": 1,
+      "hp": 1,
+      "hardness": 0,
+      "speed": 0
+    },
+    {
+      "id": 2,
+      "name": "ee",
+      "maxHp": 100,
+      "hp": 100,
+      "hardness": 0,
+      "speed": 30
+    }
+  ],
+  "notes": "",
+  "currentTurn": 1
+}

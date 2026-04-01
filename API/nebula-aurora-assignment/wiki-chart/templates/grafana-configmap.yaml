@@ -1,0 +1,89 @@
+{{- if .Values.grafana.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "wiki-chart.fullname" . }}-grafana-datasource
+  labels:
+    {{- include "wiki-chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  datasource.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://{{ include "wiki-chart.fullname" . }}-prometheus:9090
+        isDefault: true
+        editable: true
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "wiki-chart.fullname" . }}-grafana-dashboard
+  labels:
+    {{- include "wiki-chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  creation-dashboard.json: |
+    {
+      "id": null,
+      "uid": "creation-dashboard-678",
+      "title": "Creation Dashboard",
+      "tags": [],
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "version": 0,
+      "refresh": "10s",
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "type": "graph",
+          "title": "Users and Posts Creation Rate",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(users_created_total[5m])",
+              "legendFormat": "Users Creation Rate",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(posts_created_total[5m])",
+              "legendFormat": "Posts Creation Rate",
+              "refId": "B"
+            }
+          ],
+          "xaxis": {
+            "mode": "time"
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": "Rate (per second)"
+            },
+            {
+              "format": "short"
+            }
+          ],
+          "legend": {
+            "show": true,
+            "values": true,
+            "current": true
+          }
+        }
+      ],
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "templating": {
+        "list": []
+      },
+      "annotations": {
+        "list": []
+      }
+    }
+{{- end }}

@@ -1,0 +1,49 @@
+{
+  "entities": [
+    {
+      "id": 0,
+      "name": "asd",
+      "type": "PC",
+      "maxHp": 11,
+      "hp": 11,
+      "initiative": 11,
+      "armor": 11,
+      "conditions": [],
+      "abilities": []
+    }
+  ],
+  "ship": {
+    "name": "Default Ship",
+    "hp": 100,
+    "maxHp": 100,
+    "hardness": 2,
+    "speed": 30,
+    "abilities": [
+      "besmara",
+      "asd"
+    ],
+    "crew": [
+      {
+        "id": 0,
+        "name": "cotoco",
+        "role": "navegador",
+        "maxHp": 1,
+        "hp": 0,
+        "info": "",
+        "actions": ""
+      }
+    ]
+  },
+  "enemyShips": [
+    {
+      "id": 0,
+      "name": "teste3",
+      "maxHp": 2,
+      "hp": 0,
+      "hardness": 1,
+      "speed": 12
+    }
+  ],
+  "notes": "",
+  "currentTurn": 0
+}
