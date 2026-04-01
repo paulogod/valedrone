@@ -203,3 +203,15 @@ select.table-input {
   appearance: none;
   cursor: pointer;
 }
+
+.col-clickable {
+  cursor: pointer;
+  color: #c084fc;
+  transition: color 0.2s;
+  font-weight: 500;
+}
+
+.col-clickable:hover {
+  color: #fbbf24;
+  text-decoration: underline;
+}

@@ -25,7 +25,8 @@ const state = {
   ship: saved?.ship || { name:'Default Ship', hp:100, maxHp:100, hardness:0, speed:30, abilities:[], crew:[], goods:'' },
   combatShips: saved?.combatShips || [],
   notes: saved?.notes || '',
-  currentTurn: saved?.currentTurn || 0
+  currentTurn: saved?.currentTurn || 0,
+  editingIndex: -1 // New: tracking which character is being edited
 };
 
 // ==================== TABS ====================
@@ -76,33 +77,70 @@ function renderEntities() {
     const tr = document.createElement('tr');
     if (i === state.currentTurn) tr.classList.add('current-turn');
     const cls = hpClass(ent.hp, ent.maxHp);
-    tr.innerHTML = `
-      <td><input type="text" class="table-input" value="${esc(ent.name)}" onchange="updateEnt(${i}, 'name', this.value)"></td>
-      <td>
-        <select class="table-input" onchange="updateEnt(${i}, 'type', this.value)">
-          <option ${ent.type==='PC'?'selected':''}>PC</option>
-          <option ${ent.type==='NPC'?'selected':''}>NPC</option>
-          <option ${ent.type==='Monster'?'selected':''}>Monster</option>
-        </select>
-      </td>
-      <td class="hp-display ${cls}">
-        <input type="number" class="table-input hp-in" value="${ent.hp}" onchange="updateEnt(${i}, 'hp', +this.value)"> / 
-        <input type="number" class="table-input hp-in" value="${ent.maxHp}" onchange="updateEnt(${i}, 'maxHp', +this.value)">
-      </td>
-      <td><input type="number" class="table-input" value="${ent.initiative}" onchange="updateEnt(${i}, 'initiative', +this.value)"></td>
-      <td><input type="number" class="table-input" value="${ent.armor}" onchange="updateEnt(${i}, 'armor', +this.value)"></td>
-      <td><input type="text" class="table-input" value="${esc((ent.conditions||[]).join(', '))}" onchange="updateEnt(${i}, 'conditions', this.value)"></td>
-      <td><input type="text" class="table-input" value="${esc((ent.abilities||[]).join(', '))}" onchange="updateEnt(${i}, 'abilities', this.value)"></td>
-      <td><div class="action-cell">
-        <input type="number" min="0" max="9999" value="0" id="entDmg${i}">
-        <button class="btn btn-dmg" onclick="entityDamage(${i})">Dano</button>
-        <input type="number" min="0" max="9999" value="0" id="entHeal${i}">
-        <button class="btn btn-heal" onclick="entityHeal(${i})">Curar</button>
-        <button class="btn btn-danger" onclick="entityRemove(${i})">Remover</button>
-      </div></td>`;
+    const isEditing = state.editingIndex === i;
+
+    if (isEditing) {
+      tr.innerHTML = `
+        <td><input type="text" class="table-input" value="${esc(ent.name)}" id="editName${i}"></td>
+        <td>
+          <select class="table-input" id="editType${i}">
+            <option ${ent.type==='PC'?'selected':''}>PC</option>
+            <option ${ent.type==='NPC'?'selected':''}>NPC</option>
+            <option ${ent.type==='Monster'?'selected':''}>Monster</option>
+          </select>
+        </td>
+        <td class="hp-display ${cls}">
+          <input type="number" class="table-input hp-in" value="${ent.hp}" id="editHp${i}"> / 
+          <input type="number" class="table-input hp-in" value="${ent.maxHp}" id="editMaxHp${i}">
+        </td>
+        <td><input type="number" class="table-input" value="${ent.initiative}" id="editInit${i}"></td>
+        <td><input type="number" class="table-input" value="${ent.armor}" id="editArmor${i}"></td>
+        <td><input type="text" class="table-input" value="${esc((ent.conditions||[]).join(', '))}" id="editCond${i}"></td>
+        <td><input type="text" class="table-input" value="${esc((ent.abilities||[]).join(', '))}" id="editAbil${i}"></td>
+        <td><div class="action-cell">
+          <button class="btn btn-repair" onclick="saveEdit(${i})">✅ Salvar</button>
+          <button class="btn btn-secondary" onclick="toggleEdit(-1)">❌ Cancelar</button>
+        </div></td>`;
+    } else {
+      tr.innerHTML = `
+        <td class="col-clickable" onclick="toggleEdit(${i})">✏️ ${esc(ent.name)}</td>
+        <td>${esc(ent.type)}</td>
+        <td class="hp-display ${cls}">${ent.hp}/${ent.maxHp}</td>
+        <td>${ent.initiative}</td>
+        <td>${ent.armor}</td>
+        <td>${esc((ent.conditions||[]).join(', '))}</td>
+        <td>${esc((ent.abilities||[]).join(', '))}</td>
+        <td><div class="action-cell">
+          <input type="number" min="0" max="9999" value="0" id="entDmg${i}">
+          <button class="btn btn-dmg" onclick="entityDamage(${i})">Dano</button>
+          <input type="number" min="0" max="9999" value="0" id="entHeal${i}">
+          <button class="btn btn-heal" onclick="entityHeal(${i})">Curar</button>
+          <button class="btn btn-danger" onclick="entityRemove(${i})">Remover</button>
+        </div></td>`;
+    }
     tb.appendChild(tr);
   });
   updateTurnCounter();
+}
+
+function toggleEdit(index) {
+  state.editingIndex = index;
+  renderEntities();
+}
+
+function saveEdit(i) {
+  state.entities[i].name = document.getElementById(`editName${i}`).value;
+  state.entities[i].type = document.getElementById(`editType${i}`).value;
+  state.entities[i].hp = +document.getElementById(`editHp${i}`).value;
+  state.entities[i].maxHp = +document.getElementById(`editMaxHp${i}`).value;
+  state.entities[i].initiative = +document.getElementById(`editInit${i}`).value;
+  state.entities[i].armor = +document.getElementById(`editArmor${i}`).value;
+  state.entities[i].conditions = document.getElementById(`editCond${i}`).value.split(',').map(s=>s.trim()).filter(Boolean);
+  state.entities[i].abilities = document.getElementById(`editAbil${i}`).value.split(',').map(s=>s.trim()).filter(Boolean);
+  
+  state.entities.sort((a,b) => b.initiative - a.initiative);
+  state.editingIndex = -1;
+  renderEntities(); saveData();
 }
 
 function updateEnt(i, key, val) {
@@ -111,7 +149,6 @@ function updateEnt(i, key, val) {
   } else {
     state.entities[i][key] = val;
   }
-  // Re-sort if initiative changed
   if (key === 'initiative') state.entities.sort((a,b) => b.initiative - a.initiative);
   renderEntities(); saveData();
 }
