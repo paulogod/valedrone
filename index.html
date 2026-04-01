@@ -1,274 +1,192 @@
-<script type="text/babel">
-  // ...seu código React...
-
-  // Renderização do App
-  ReactDOM.render(<App />, document.getElementById('root'));
-</script><script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {        <script type="text/babel">
-          function App() {
-            return (
-              <div className="container mx-auto p-4">
-                <h1 className="text-3xl font-bold mb-4">RPG Master App (Pathfinder 2e)</h1>
-                <p>Seu app está funcionando! Complete os componentes para ver todas as funcionalidades.</p>
-              </div>
-            );            <body>
-              <div id="root"></div>
-              <script type="text/babel">
-                function App() {
-                  return (
-                    <div className="container mx-auto p-4">
-                      <h1 className="text-3xl font-bold mb-4">RPG Master App (Pathfinder 2e)</h1>
-                      <p>Seu app está funcionando! Complete os componentes para ver todas as funcionalidades.</p>
-                    </div>
-                  );
-                }
-                ReactDOM.render(<App />, document.getElementById('root'));
-              </script>
-              <!-- Outros scripts JS normais, como o do XLSX, devem estar em <script type="text/javascript"> separados -->
-            </body>
-          }
-          ReactDOM.render(<App />, document.getElementById('root'));
-        </script>        ReactDOM.render(<App />, document.getElementById('root'));
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RPG Master App (Pathfinder 2e)</title>
-  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/babel-standalone@7.22.9/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Vale Drone | Filmagem aérea e tours 360° — valedrone.com.br</title>
+  <meta name="description" content="Filmagem com drones, tours panorâmicos 360° e cobertura aérea. Vale Drone — imagens que impressionam.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+  <!-- Estilos do player de vídeo 360° (Video.js) -->
+  <link href="https://vjs.zencdn.net/7.1.0/video-js.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-gray-100">
-  <div id="root"></div>
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="#topo" class="logo">
+        <img src="img/logo-valedrone.png" alt="Vale Drone - Filmagem Aérea">
+        <span>ValeDrone</span>
+      </a>
+      <nav class="nav">
+        <a href="#servicos">Serviços</a>
+        <a href="#tour">Tour 360°</a>
+        <a href="#galeria">Galeria</a>
+        <a href="#contato">Contato</a>
+      </nav>
+      <button class="menu-btn" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
 
-    // Pathfinder 2e conditions with rules (sourced from Pathfinder 2e Core Rulebook)
-    const conditions = [
-      { name: "Clumsy 1", description: "Take a -1 status penalty to Dexterity-based checks and DCs, including AC, Reflex saves, and attack rolls." },
-      { name: "Drained 1", description: "Take a -1 status penalty to Constitution-based checks and DCs. Lose HP equal to level; max HP reduced by same amount." },
-      { name: "Frightened 1", description: "Take a -1 status penalty to all checks and DCs. Reduces by 1 at the end of your turn." },
-      { name: "Sickened 1", description: "Take a -1 status penalty to all checks and DCs. Cannot willingly ingest anything. Attempt a Fortitude save to recover." },
-      { name: "Stunned 1", description: "Lose actions on your next turn equal to the value. Cannot act if all actions are lost." }
-    ];
+  <main>
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="container hero-content">
+        <p class="hero-tag">Filmagem aérea & tours panorâmicos</p>
+        <h1>Vista do alto.<br>Experiência em 360°.</h1>
+        <p class="hero-desc">Drones e imagens que valorizam seu imóvel, evento ou projeto. Qualidade cinematográfica e tours virtuais imersivos.</p>
+        <div class="hero-cta">
+          <a href="#contato" class="btn btn-primary">Solicitar orçamento</a>
+          <a href="#tour" class="btn btn-outline">Ver tour 360°</a>
+        </div>
+      </div>
+      <div class="hero-scroll" aria-hidden="true">
+        <span>Role para explorar</span>
+        <div class="scroll-icon"></div>
+      </div>
+    </section>
 
-    // Main App Component
-    function App() {
-      const [entities, setEntities] = useState(() => JSON.parse(localStorage.getItem('entities')) || []);
-      const [ship, setShip] = useState(() => JSON.parse(localStorage.getItem('ship')) || {
-        name: "Default Ship",
-        hp: 100,
-        maxHp: 100,
-        hardness: 0,
-        speed: 30,
-        abilities: [],
-        crew: []
-      });
-      const [enemyShips, setEnemyShips] = useState(() => JSON.parse(localStorage.getItem('enemyShips')) || []);
-      const [notes, setNotes] = useState(() => localStorage.getItem('notes') || '');
-      const [currentTurn, setCurrentTurn] = useState(0);
+    <section id="servicos" class="section services">
+      <div class="container">
+        <h2 class="section-title">O que fazemos</h2>
+        <div class="services-grid">
+          <article class="service-card">
+            <div class="service-icon">✈</div>
+            <h3>Filmagem aérea</h3>
+            <p>Vídeos e fotos com drones para imóveis, eventos, obras e divulgação.</p>
+          </article>
+          <article class="service-card">
+            <div class="service-icon">⊙</div>
+            <h3>Tour panorâmico 360°</h3>
+            <p>Experiência imersiva para visitas virtuais a ambientes e imóveis.</p>
+          </article>
+          <article class="service-card">
+            <div class="service-icon">◐</div>
+            <h3>Ambientes fechados</h3>
+            <p>Filmagem em todo tipo de ambiente para eventos, lojas, escritórios, e imóveis.</p>
+          </article>
+        </div>
+      </div>
+    </section>
 
-      // Save to localStorage
-      useEffect(() => {
-        localStorage.setItem('entities', JSON.stringify(entities));
-        localStorage.setItem('ship', JSON.stringify(ship));
-        localStorage.setItem('enemyShips', JSON.stringify(enemyShips));
-        localStorage.setItem('notes', notes);
-      }, [entities, ship, enemyShips, notes]);
+    <section id="tour" class="section tour-section">
+      <div class="container">
+        <h2 class="section-title">Tour 360°</h2>
+        <p class="section-desc">Clique e arraste para explorar. Use o scroll para zoom.</p>
+        <div class="panorama-container">
+          <video id="panorama" class="video-js vjs-default-skin vjs-big-play-centered"
+            controls preload="none" style="width:100%;height:100%;"
+            poster="https://pannellum.org/images/video/jfk-poster.jpg" crossorigin="anonymous">
+            <source src="https://pannellum.org/images/video/jfk.webm" type="video/webm" />
+            <source src="https://pannellum.org/images/video/jfk.mp4" type="video/mp4" />
+            <p class="vjs-no-js">
+              Para ver este vídeo, habilite o JavaScript e use um navegador que suporte vídeo HTML5.
+            </p>
+          </video>
+        </div>
+      </div>
+    </section>
 
-      // Add new entity
-      const addEntity = (entity) => {
-        setEntities([...entities, {
-          ...entity,
-          id: Date.now(),
-          hp: entity.maxHp,
-          statusEffects: [],
-          spellSlots: entity.spellSlots || Array(10).fill(0).map((_, i) => ({ level: i, used: 0, total: 0 })),
-          focusPoints: { used: 0, total: entity.focusPoints || 0 }
-        }]);
-      };
 
-      // Update entity
-      const updateEntity = (id, updates) => {
-        setEntities(entities.map(entity => entity.id === id ? { ...entity, ...updates } : entity));
-      };
-
-      // Remove entity
-      const removeEntity = (id) => {
-        setEntities(entities.filter(entity => entity.id !== id));
-      };
-
-      // Advance turn
-      const nextTurn = () => {
-        setCurrentTurn((currentTurn + 1) % entities.length);
-        // Auto-reduce Frightened condition at end of turn
-        setEntities(entities.map(entity => {
-          const frightened = entity.statusEffects.find(e => e.startsWith("Frightened"));
-          if (frightened) {
-            const value = parseInt(frightened.split(" ")[1]) - 1;
-            const newEffects = entity.statusEffects.filter(e => !e.startsWith("Frightened"));
-            if (value > 0) newEffects.push(`Frightened ${value}`);
-            return { ...entity, statusEffects: newEffects };
-          }
-          return entity;
-        }));
-      };
-
-      // Add ship ability
-      const addShipAbility = (ability) => {
-        setShip({ ...ship, abilities: [...ship.abilities, ability] });
-      };
-
-      // Add crew member
-      const addCrewMember = (member) => {
-        setShip({ ...ship, crew: [...ship.crew, { ...member, id: Date.now(), hp: member.maxHp }] });
-      };
-
-      // Update crew member
-      const updateCrewMember = (id, updates) => {
-        setShip({
-          ...ship,
-          crew: ship.crew.map(member => member.id === id ? { ...member, ...updates } : member)
-        });
-      };
-
-      // Add enemy ship
-      const addEnemyShip = (enemyShip) => {
-        setEnemyShips([...enemyShips, { ...enemyShip, id: Date.now(), hp: enemyShip.maxHp }]);
-      };
-
-      // Update enemy ship
-      const updateEnemyShip = (id, updates) => {
-        setEnemyShips(enemyShips.map(ship => ship.id === id ? { ...ship, ...updates } : ship));
-      };
-
-      // Export data
-      const exportData = () => {
-        const data = { entities, ship, enemyShips, notes };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'rpg_master_data.json';
-        a.click();
-        URL.revokeObjectURL(url);
-      };
-
-      // Import data
-      const importData = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const data = JSON.parse(event.target.result);
-            setEntities(data.entities || []);
-            setShip(data.ship || ship);
-            setEnemyShips(data.enemyShips || []);
-            setNotes(data.notes || '');
-          };
-          reader.readAsText(file);
-        }
-      };
-
-      return (
-        <div className="container mx-auto p-4">
-          <h1 className="text-3xl font-bold mb-4">RPG Master App (Pathfinder 2e)</h1>
-
-          {/* Export/Import Buttons */}
-          <div className="mb-4">
-            <button
-              onClick={exportData}
-              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 mr-2"
-            >
-              Export Data
-            </button>
-            <input
-              type="file"
-              accept=".json"
-              onChange={importData}
-              className="p-2 border rounded"
-            />
+    
+    <section id="galeria" class="section gallery">
+      <div class="container">
+        <h2 class="section-title">Galeria</h2>
+        <div class="gallery-grid">
+          <div class="gallery-item">
+            <div class="placeholder">
+              <blockquote class="tiktok-embed"
+                cite="https://www.tiktok.com/@valedrone/video/7596418298208685332"
+                data-video-id="7596418298208685332"
+                style="max-width: 605px; min-width: 325px;">
+                <section>
+                  <a target="_blank" title="@valedrone"
+                    href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a>
+                </section>
+              </blockquote>
+            </div>
           </div>
 
-          {/* Entity Management */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-2">Characters/NPCs/Monsters</h2>
-            <EntityForm onSubmit={addEntity} />
-            <TurnOrder
-              entities={entities}
-              currentTurn={currentTurn}
-              onNextTurn={nextTurn}
-              onUpdate={updateEntity}
-              onRemove={removeEntity}
-            />
+          <div class="gallery-item">
+            <div class="placeholder">
+              <blockquote class="tiktok-embed"
+                cite="https://www.tiktok.com/@valedrone/video/7601196039344852245"
+                data-video-id="7601196039344852245"
+                style="max-width: 605px; min-width: 325px;">
+                <section>
+                  <a target="_blank" title="@valedrone"
+                    href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a>
+                </section>
+              </blockquote>
+            </div>
           </div>
 
-          {/* Ship Management */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-2">Ship Management</h2>
-            <ShipForm ship={ship} setShip={setShip} addAbility={addShipAbility} addCrew={addCrewMember} updateCrew={updateCrewMember} />
+          <div class="gallery-item">
+            <div class="placeholder">
+              <blockquote class="tiktok-embed"
+                cite="https://www.tiktok.com/@valedrone/video/7604935591574179093"
+                data-video-id="7604935591574179093"
+                style="max-width: 605px; min-width: 325px;">
+                <section>
+                  <a target="_blank" title="@valedrone"
+                    href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a>
+                </section>
+              </blockquote>
+            </div>
           </div>
 
-          {/* Ship Combat */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-2">Ship Combat</h2>
-            <EnemyShipForm addEnemyShip={addEnemyShip} />
-            <EnemyShipList enemyShips={enemyShips} updateEnemyShip={updateEnemyShip} />
-          </div>
-
-          {/* Notes */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-2">Campaign Notes</h2>
-            <textarea
-              className="w-full p-2 border rounded"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add campaign notes here..."
-              rows="5"
-            />
+          <div class="gallery-item">
+            <div class="placeholder">
+              <blockquote class="tiktok-embed"
+                cite="https://www.tiktok.com/@valedrone/video/7599714645628161300"
+                data-video-id="7599714645628161300"
+                style="max-width: 605px; min-width: 325px;">
+                <section>
+                  <a target="_blank" title="@valedrone"
+                    href="https://www.tiktok.com/@valedrone?refer=embed">@valedrone</a>
+                </section>
+              </blockquote>
+            </div>
           </div>
         </div>
-      );
-    }
+        <script async src="https://www.tiktok.com/embed.js"></script>
+      </div>
+    </section>
 
-    // Entity Form Component
-    function EntityForm({ on
+    <section id="contato" class="section contact">
+      <div class="container">
+        <h2 class="section-title">Contato</h2>
+        <p class="section-desc">Orçamento sem compromisso. Respondemos por e-mail.</p>
+        <div class="contact-box">
+          <a href="mailto:contato@valedrone.com.br" class="contact-email">contato@valedrone.com.br</a>
+          <a href="https://wa.me/5512996192233" target="_blank" rel="noopener">Fale conosco no WhatsApp (12) 99619-2233</a>
+          <div class="contact-social">
+            <p class="contact-social-label">Siga nossas redes:</p>
+            <div class="contact-social-links">
+              <a href="https://www.instagram.com/vale.drone" target="_blank" rel="noopener">Instagram: @vale.drone</a>
+              <a href="https://www.tiktok.com/@valedrone" target="_blank" rel="noopener">TikTok: @valedrone</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© Vale Drone — valedrone.com.br</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+  <!-- Scripts do player de vídeo 360° (Video.js + plugin Pannellum) -->
+  <script src="https://vjs.zencdn.net/7.1.0/video.js"></script>
+  <script src="https://pannellum.org/js/videojs-pannellum-plugin.js"></script>
+  <script src="js/tour.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
