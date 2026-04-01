@@ -168,3 +168,39 @@ td[contenteditable="true"]:focus { background: rgba(139,92,246,.1); box-shadow: 
 ::-webkit-scrollbar-track { background: rgba(15,23,42,.5); }
 ::-webkit-scrollbar-thumb { background: rgba(139,92,246,.3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,.5); }
+
+/* ========== EDITABLE TABLE INPUTS ========== */
+.table-input {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid transparent;
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  width: 100%;
+  transition: all 0.2s;
+  min-width: 40px;
+}
+
+.table-input:hover, .table-input:focus {
+  background: rgba(139,92,246,0.1);
+  border-color: rgba(139,92,246,0.4);
+  outline: none;
+}
+
+.hp-in {
+  width: 45px !important;
+  display: inline-block;
+  text-align: center;
+  padding: 2px !important;
+}
+
+.hp-display {
+  white-space: nowrap;
+}
+
+select.table-input {
+  appearance: none;
+  cursor: pointer;
+}
