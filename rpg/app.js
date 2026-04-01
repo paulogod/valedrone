@@ -77,13 +77,22 @@ function renderEntities() {
     if (i === state.currentTurn) tr.classList.add('current-turn');
     const cls = hpClass(ent.hp, ent.maxHp);
     tr.innerHTML = `
-      <td>${esc(ent.name)}</td>
-      <td>${esc(ent.type)}</td>
-      <td class="hp-display ${cls}">${ent.hp}/${ent.maxHp}</td>
-      <td>${ent.initiative}</td>
-      <td>${ent.armor}</td>
-      <td>${esc((ent.conditions||[]).join(', '))}</td>
-      <td>${esc((ent.abilities||[]).join(', '))}</td>
+      <td><input type="text" class="table-input" value="${esc(ent.name)}" onchange="updateEnt(${i}, 'name', this.value)"></td>
+      <td>
+        <select class="table-input" onchange="updateEnt(${i}, 'type', this.value)">
+          <option ${ent.type==='PC'?'selected':''}>PC</option>
+          <option ${ent.type==='NPC'?'selected':''}>NPC</option>
+          <option ${ent.type==='Monster'?'selected':''}>Monster</option>
+        </select>
+      </td>
+      <td class="hp-display ${cls}">
+        <input type="number" class="table-input hp-in" value="${ent.hp}" onchange="updateEnt(${i}, 'hp', +this.value)"> / 
+        <input type="number" class="table-input hp-in" value="${ent.maxHp}" onchange="updateEnt(${i}, 'maxHp', +this.value)">
+      </td>
+      <td><input type="number" class="table-input" value="${ent.initiative}" onchange="updateEnt(${i}, 'initiative', +this.value)"></td>
+      <td><input type="number" class="table-input" value="${ent.armor}" onchange="updateEnt(${i}, 'armor', +this.value)"></td>
+      <td><input type="text" class="table-input" value="${esc((ent.conditions||[]).join(', '))}" onchange="updateEnt(${i}, 'conditions', this.value)"></td>
+      <td><input type="text" class="table-input" value="${esc((ent.abilities||[]).join(', '))}" onchange="updateEnt(${i}, 'abilities', this.value)"></td>
       <td><div class="action-cell">
         <input type="number" min="0" max="9999" value="0" id="entDmg${i}">
         <button class="btn btn-dmg" onclick="entityDamage(${i})">Dano</button>
@@ -94,10 +103,17 @@ function renderEntities() {
     tb.appendChild(tr);
   });
   updateTurnCounter();
-  // Update turn info
-  if (state.entities.length && state.currentTurn < state.entities.length) {
-    document.getElementById('turnMarker').value = state.entities[state.currentTurn].turn_info || '';
+}
+
+function updateEnt(i, key, val) {
+  if (key === 'conditions' || key === 'abilities') {
+    state.entities[i][key] = val.split(',').map(s=>s.trim()).filter(Boolean);
+  } else {
+    state.entities[i][key] = val;
   }
+  // Re-sort if initiative changed
+  if (key === 'initiative') state.entities.sort((a,b) => b.initiative - a.initiative);
+  renderEntities(); saveData();
 }
 
 function entityDamage(i) {
@@ -165,12 +181,14 @@ function renderShip() {
   const s = state.ship;
   const cls = hpClass(s.hp, s.maxHp);
   tb.innerHTML = `<tr>
-    <td>${esc(s.name)}</td>
-    <td class="hp-display ${cls}">${s.hp}</td>
-    <td>${s.maxHp}</td>
-    <td>${s.hardness}</td>
-    <td>${s.speed}</td>
-    <td>${esc(s.goods||'')}</td>
+    <td><input type="text" class="table-input" value="${esc(s.name)}" onchange="state.ship.name=this.value; renderShip(); saveData();"></td>
+    <td class="hp-display ${cls}">
+      <input type="number" class="table-input hp-in" value="${s.hp}" onchange="state.ship.hp=+this.value; renderShip(); saveData();">
+    </td>
+    <td><input type="number" class="table-input" value="${s.maxHp}" onchange="state.ship.maxHp=+this.value; renderShip(); saveData();"></td>
+    <td><input type="number" class="table-input" value="${s.hardness}" onchange="state.ship.hardness=+this.value; renderShip(); saveData();"></td>
+    <td><input type="number" class="table-input" value="${s.speed}" onchange="state.ship.speed=+this.value; renderShip(); saveData();"></td>
+    <td><input type="text" class="table-input" value="${esc(s.goods||'')}" onchange="state.ship.goods=this.value; renderShip(); saveData();"></td>
     <td><div class="action-cell">
       <input type="number" min="0" max="9999" value="0" id="shipDmgVal">
       <button class="btn btn-dmg" onclick="shipDamage()">Dano</button>
@@ -215,11 +233,14 @@ function renderCrew() {
     const cls = hpClass(c.hp, c.maxHp);
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${esc(c.name)}</td>
-      <td>${esc(c.role||'')}</td>
-      <td class="hp-display ${cls}">${c.hp}/${c.maxHp}</td>
-      <td>${esc(c.info||'')}</td>
-      <td>${esc(c.actions||'')}</td>
+      <td><input type="text" class="table-input" value="${esc(c.name)}" onchange="updateCrew(${i}, 'name', this.value)"></td>
+      <td><input type="text" class="table-input" value="${esc(c.role||'')}" onchange="updateCrew(${i}, 'role', this.value)"></td>
+      <td class="hp-display ${cls}">
+        <input type="number" class="table-input hp-in" value="${c.hp}" onchange="updateCrew(${i}, 'hp', +this.value)"> / 
+        <input type="number" class="table-input hp-in" value="${c.maxHp}" onchange="updateCrew(${i}, 'maxHp', +this.value)">
+      </td>
+      <td><input type="text" class="table-input" value="${esc(c.info||'')}" onchange="updateCrew(${i}, 'info', this.value)"></td>
+      <td><input type="text" class="table-input" value="${esc(c.actions||'')}" onchange="updateCrew(${i}, 'actions', this.value)"></td>
       <td><div class="action-cell">
         <input type="number" min="0" max="9999" value="0" id="crDmg${i}">
         <button class="btn btn-dmg" onclick="crewDamage(${i})">Dano</button>
@@ -229,6 +250,11 @@ function renderCrew() {
       </div></td>`;
     tb.appendChild(tr);
   });
+}
+
+function updateCrew(i, key, val) {
+  state.ship.crew[i][key] = val;
+  renderCrew(); saveData();
 }
 
 function crewDamage(i) {
@@ -272,13 +298,15 @@ function renderCombat() {
     const cls = hpClass(s.hp, s.maxHp);
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${esc(s.name)}</td>
-      <td>${s.initiative}</td>
-      <td class="hp-display ${cls}">${s.hp}</td>
-      <td>${s.maxHp}</td>
-      <td>${s.hardness}</td>
-      <td>${s.speed}</td>
-      <td>${esc((s.abilities||[]).join(', '))}</td>
+      <td><input type="text" class="table-input" value="${esc(s.name)}" onchange="updateCombat(${i}, 'name', this.value)"></td>
+      <td><input type="number" class="table-input" value="${s.initiative}" onchange="updateCombat(${i}, 'initiative', +this.value)"></td>
+      <td class="hp-display ${cls}">
+        <input type="number" class="table-input hp-in" value="${s.hp}" onchange="updateCombat(${i}, 'hp', +this.value)"> / 
+        <input type="number" class="table-input hp-in" value="${s.maxHp}" onchange="updateCombat(${i}, 'maxHp', +this.value)">
+      </td>
+      <td><input type="number" class="table-input" value="${s.hardness}" onchange="updateCombat(${i}, 'hardness', +this.value)"></td>
+      <td><input type="number" class="table-input" value="${s.speed}" onchange="updateCombat(${i}, 'speed', +this.value)"></td>
+      <td><input type="text" class="table-input" value="${esc((s.abilities||[]).join(', '))}" onchange="updateCombat(${i}, 'abilities', this.value)"></td>
       <td><div class="action-cell">
         <input type="number" min="0" max="9999" value="0" id="cbDmg${i}">
         <button class="btn btn-dmg" onclick="combatDamage(${i})">Dano</button>
@@ -288,6 +316,15 @@ function renderCombat() {
       </div></td>`;
     tb.appendChild(tr);
   });
+}
+
+function updateCombat(i, key, val) {
+  if (key === 'abilities') {
+    state.combatShips[i][key] = val.split(',').map(s=>s.trim()).filter(Boolean);
+  } else {
+    state.combatShips[i][key] = val;
+  }
+  renderCombat(); saveData();
 }
 
 function combatDamage(i) {
