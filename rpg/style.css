@@ -142,6 +142,25 @@ tbody tr.current-turn { background: rgba(245,158,11,.12) !important; border-left
 }
 .turn-info-input { flex: 1; min-width: 180px; }
 
+#notesArea {
+  width: 100%;
+  min-height: 70vh;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(139,92,246,0.15);
+  color: #e2e8f0;
+  padding: 1.5rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  border-radius: 12px;
+  resize: vertical;
+}
+
+#notesArea:focus {
+  outline: none;
+  border-color: rgba(139,92,246,0.4);
+  background: rgba(255,255,255,0.05);
+}
+
 /* ========== FOOTER ========== */
 .footer-actions { display: flex; gap: .75rem; margin: 1.5rem 0 1rem; flex-wrap: wrap; }
 .file-label { display: inline-flex; align-items: center; }
