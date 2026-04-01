@@ -3,14 +3,14 @@ const STORAGE_KEY = 'rpg_master_data';
 
 function loadData() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = sessionStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch(e) { console.error('Load error:', e); }
   return null;
 }
 
 function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
     entities: state.entities,
     ship: state.ship,
     combatShips: state.combatShips,
