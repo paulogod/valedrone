@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="RPG Master App - Gerenciador de sessões Pathfinder 2e com controle de personagens, embarcações, tripulação e combate naval.">
+  <title>RPG Master App - Pathfinder 2e</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-glow"></div>
+      <h1 class="app-title">⚔️ RPG Master App</h1>
+      <p class="app-subtitle">Pathfinder 2e — Gerenciador de Sessão</p>
+    </header>
+
+    <nav class="tab-nav" id="tabNav">
+      <button class="tab-btn active" data-tab="personagens" id="tab-personagens">🎭 Personagens</button>
+      <button class="tab-btn" data-tab="embarcacao" id="tab-embarcacao">⛵ Embarcação</button>
+      <button class="tab-btn" data-tab="tripulacao" id="tab-tripulacao">👥 Tripulação</button>
+      <button class="tab-btn" data-tab="combate" id="tab-combate">⚔️ Combate Naval</button>
+      <button class="tab-btn" data-tab="notas" id="tab-notas">📝 Notas</button>
+    </nav>
+
+    <!-- PERSONAGENS TAB -->
+    <section class="tab-content active" id="content-personagens">
+      <div class="card form-card">
+        <h2 class="card-title">Adicionar Personagem</h2>
+        <form id="entityForm" class="form-grid">
+          <div class="form-group"><label>Nome</label><input type="text" id="entityName" required></div>
+          <div class="form-group"><label>Tipo</label>
+            <select id="entityType"><option>PC</option><option>NPC</option><option>Monster</option></select>
+          </div>
+          <div class="form-group"><label>HP Máximo</label><input type="number" id="entityMaxHp" min="1" max="9999" value="10"></div>
+          <div class="form-group"><label>Iniciativa</label><input type="number" id="entityInitiative" min="0" max="9999" value="0"></div>
+          <div class="form-group"><label>Armadura</label><input type="number" id="entityArmor" min="0" max="9999" value="0"></div>
+          <div class="form-group"><label>Condições</label><input type="text" id="entityConditions" placeholder="separadas por vírgula"></div>
+          <div class="form-group"><label>Habilidades</label><input type="text" id="entityAbilities" placeholder="separadas por vírgula"></div>
+          <button type="submit" class="btn btn-primary" id="addEntityBtn">Adicionar Personagem</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="turn-bar">
+          <button class="btn btn-accent" id="nextTurnBtn">⏭ Próximo Turno</button>
+          <span class="turn-counter" id="turnCounter">0/0</span>
+          <input type="text" class="turn-info-input" id="turnMarker" placeholder="Informações do turno atual">
+        </div>
+        <div class="table-wrap">
+          <table id="entityTable">
+            <thead><tr>
+              <th>Nome</th><th>Tipo</th><th>PV</th><th>Iniciativa</th><th>Armadura</th><th>Condições</th><th>Habilidades</th><th>Ações</th>
+            </tr></thead>
+            <tbody id="entityTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- EMBARCAÇÃO TAB -->
+    <section class="tab-content" id="content-embarcacao">
+      <div class="card form-card">
+        <h2 class="card-title">Dados da Embarcação</h2>
+        <form id="shipForm" class="form-grid">
+          <div class="form-group"><label>Nome</label><input type="text" id="shipName"></div>
+          <div class="form-group"><label>PV Máximo</label><input type="number" id="shipMaxHp" min="1" max="9999" value="100"></div>
+          <div class="form-group"><label>PV Atual</label><input type="number" id="shipHp" min="0" max="9999" value="100"></div>
+          <div class="form-group"><label>Resistência</label><input type="number" id="shipHardness" min="0" max="100" value="0"></div>
+          <div class="form-group"><label>Velocidade</label><input type="number" id="shipSpeed" min="0" max="999" value="30"></div>
+          <div class="form-group full-width"><label>Habilidades</label><textarea id="shipAbilities" rows="3" placeholder="Uma por linha"></textarea></div>
+          <div class="form-group"><label>Mercadorias</label><input type="text" id="shipGoods"></div>
+          <button type="submit" class="btn btn-primary" id="saveShipBtn">Salvar Embarcação</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2 class="card-title">Embarcação Atual</h2>
+        <div class="table-wrap">
+          <table id="shipTable">
+            <thead><tr><th>Nome</th><th>PV</th><th>PV Máx</th><th>Resistência</th><th>Velocidade</th><th>Mercadorias</th><th>Ações</th></tr></thead>
+            <tbody id="shipTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRIPULAÇÃO TAB -->
+    <section class="tab-content" id="content-tripulacao">
+      <div class="card form-card">
+        <h2 class="card-title">Adicionar Tripulante</h2>
+        <form id="crewForm" class="form-grid">
+          <div class="form-group"><label>Nome</label><input type="text" id="crewName" required></div>
+          <div class="form-group"><label>Função</label><input type="text" id="crewRole"></div>
+          <div class="form-group"><label>PV Máximo</label><input type="number" id="crewMaxHp" min="1" max="9999" value="10"></div>
+          <div class="form-group"><label>Info Extras</label><input type="text" id="crewInfo"></div>
+          <div class="form-group"><label>Ações Extras</label><input type="text" id="crewActions"></div>
+          <button type="submit" class="btn btn-primary" id="addCrewBtn">Adicionar Tripulante</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="crewTable">
+            <thead><tr><th>Tripulante</th><th>Função</th><th>PV</th><th>Info Extras</th><th>Ações Extras</th><th>Ações</th></tr></thead>
+            <tbody id="crewTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMBATE NAVAL TAB -->
+    <section class="tab-content" id="content-combate">
+      <div class="card form-card">
+        <h2 class="card-title">Adicionar Embarcação ao Combate</h2>
+        <form id="combatForm" class="form-grid">
+          <div class="form-group"><label>Nome</label><input type="text" id="combatShipName" required></div>
+          <div class="form-group"><label>Iniciativa</label><input type="number" id="combatShipInitiative" min="0" max="9999" value="0"></div>
+          <div class="form-group"><label>PV Máximo</label><input type="number" id="combatShipMaxHp" min="1" max="9999" value="100"></div>
+          <div class="form-group"><label>PV Atual</label><input type="number" id="combatShipHp" min="0" max="9999" value="100"></div>
+          <div class="form-group"><label>Resistência</label><input type="number" id="combatShipHardness" min="0" max="100" value="0"></div>
+          <div class="form-group"><label>Velocidade</label><input type="number" id="combatShipSpeed" min="0" max="100" value="30"></div>
+          <div class="form-group"><label>Habilidades</label><input type="text" id="combatShipAbilities" placeholder="separadas por vírgula"></div>
+          <button type="submit" class="btn btn-primary" id="addCombatShipBtn">Adicionar ao Combate</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="combatTable">
+            <thead><tr><th>Nome</th><th>Iniciativa</th><th>PV</th><th>PV Máx</th><th>Resistência</th><th>Velocidade</th><th>Habilidades</th><th>Ações</th></tr></thead>
+            <tbody id="combatTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOTAS TAB -->
+    <section class="tab-content" id="content-notas">
+      <div class="card">
+        <h2 class="card-title">Notas da Campanha</h2>
+        <textarea id="notesArea" rows="15" placeholder="Escreva suas anotações aqui..."></textarea>
+      </div>
+    </section>
+
+    <!-- FOOTER ACTIONS -->
+    <div class="footer-actions">
+      <button class="btn btn-secondary" id="exportBtn">📥 Exportar Dados</button>
+      <label class="btn btn-secondary file-label">📤 Importar Dados<input type="file" accept=".json" id="importBtn" hidden></label>
+    </div>
+    <footer class="app-footer">Feito pelo Mestre Paulo Godoy</footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
