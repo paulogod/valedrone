@@ -9,7 +9,7 @@ body {
 }
 
 /* ========== APP CONTAINER ========== */
-.app-container { max-width: 1200px; margin: 0 auto; padding: 1rem 1.25rem 2rem; }
+.app-container { max-width: 1540px; margin: 0 auto; padding: 1rem 1.25rem 2rem; }
 
 /* ========== HEADER ========== */
 .app-header {
@@ -128,7 +128,7 @@ tbody tr.current-turn { background: rgba(245,158,11,.12) !important; border-left
 .hp-dead { color: #6b7280; text-decoration: line-through; }
 
 /* ========== ACTION CELLS ========== */
-.action-cell { display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; }
+.action-cell { display: flex; gap: .35rem; align-items: center; flex-wrap: nowrap; min-width: 280px; }
 .action-cell input[type="number"] {
   width: 55px; padding: .25rem .35rem; font-size: .8rem;
   text-align: center; border-radius: 6px;
@@ -160,7 +160,6 @@ td[contenteditable="true"]:focus { background: rgba(139,92,246,.1); box-shadow: 
   .form-grid { grid-template-columns: 1fr; }
   .tab-nav { gap: .25rem; }
   .tab-btn { font-size: .75rem; padding: .5rem .7rem; }
-  .action-cell { flex-direction: column; align-items: stretch; }
 }
 
 /* ========== SCROLLBAR ========== */
