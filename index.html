@@ -1,0 +1,274 @@
+<script type="text/babel">
+  // ...seu código React...
+
+  // Renderização do App
+  ReactDOM.render(<App />, document.getElementById('root'));
+</script><script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {        <script type="text/babel">
+          function App() {
+            return (
+              <div className="container mx-auto p-4">
+                <h1 className="text-3xl font-bold mb-4">RPG Master App (Pathfinder 2e)</h1>
+                <p>Seu app está funcionando! Complete os componentes para ver todas as funcionalidades.</p>
+              </div>
+            );            <body>
+              <div id="root"></div>
+              <script type="text/babel">
+                function App() {
+                  return (
+                    <div className="container mx-auto p-4">
+                      <h1 className="text-3xl font-bold mb-4">RPG Master App (Pathfinder 2e)</h1>
+                      <p>Seu app está funcionando! Complete os componentes para ver todas as funcionalidades.</p>
+                    </div>
+                  );
+                }
+                ReactDOM.render(<App />, document.getElementById('root'));
+              </script>
+              <!-- Outros scripts JS normais, como o do XLSX, devem estar em <script type="text/javascript"> separados -->
+            </body>
+          }
+          ReactDOM.render(<App />, document.getElementById('root'));
+        </script>        ReactDOM.render(<App />, document.getElementById('root'));
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPG Master App (Pathfinder 2e)</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/babel-standalone@7.22.9/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Pathfinder 2e conditions with rules (sourced from Pathfinder 2e Core Rulebook)
+    const conditions = [
+      { name: "Clumsy 1", description: "Take a -1 status penalty to Dexterity-based checks and DCs, including AC, Reflex saves, and attack rolls." },
+      { name: "Drained 1", description: "Take a -1 status penalty to Constitution-based checks and DCs. Lose HP equal to level; max HP reduced by same amount." },
+      { name: "Frightened 1", description: "Take a -1 status penalty to all checks and DCs. Reduces by 1 at the end of your turn." },
+      { name: "Sickened 1", description: "Take a -1 status penalty to all checks and DCs. Cannot willingly ingest anything. Attempt a Fortitude save to recover." },
+      { name: "Stunned 1", description: "Lose actions on your next turn equal to the value. Cannot act if all actions are lost." }
+    ];
+
+    // Main App Component
+    function App() {
+      const [entities, setEntities] = useState(() => JSON.parse(localStorage.getItem('entities')) || []);
+      const [ship, setShip] = useState(() => JSON.parse(localStorage.getItem('ship')) || {
+        name: "Default Ship",
+        hp: 100,
+        maxHp: 100,
+        hardness: 0,
+        speed: 30,
+        abilities: [],
+        crew: []
+      });
+      const [enemyShips, setEnemyShips] = useState(() => JSON.parse(localStorage.getItem('enemyShips')) || []);
+      const [notes, setNotes] = useState(() => localStorage.getItem('notes') || '');
+      const [currentTurn, setCurrentTurn] = useState(0);
+
+      // Save to localStorage
+      useEffect(() => {
+        localStorage.setItem('entities', JSON.stringify(entities));
+        localStorage.setItem('ship', JSON.stringify(ship));
+        localStorage.setItem('enemyShips', JSON.stringify(enemyShips));
+        localStorage.setItem('notes', notes);
+      }, [entities, ship, enemyShips, notes]);
+
+      // Add new entity
+      const addEntity = (entity) => {
+        setEntities([...entities, {
+          ...entity,
+          id: Date.now(),
+          hp: entity.maxHp,
+          statusEffects: [],
+          spellSlots: entity.spellSlots || Array(10).fill(0).map((_, i) => ({ level: i, used: 0, total: 0 })),
+          focusPoints: { used: 0, total: entity.focusPoints || 0 }
+        }]);
+      };
+
+      // Update entity
+      const updateEntity = (id, updates) => {
+        setEntities(entities.map(entity => entity.id === id ? { ...entity, ...updates } : entity));
+      };
+
+      // Remove entity
+      const removeEntity = (id) => {
+        setEntities(entities.filter(entity => entity.id !== id));
+      };
+
+      // Advance turn
+      const nextTurn = () => {
+        setCurrentTurn((currentTurn + 1) % entities.length);
+        // Auto-reduce Frightened condition at end of turn
+        setEntities(entities.map(entity => {
+          const frightened = entity.statusEffects.find(e => e.startsWith("Frightened"));
+          if (frightened) {
+            const value = parseInt(frightened.split(" ")[1]) - 1;
+            const newEffects = entity.statusEffects.filter(e => !e.startsWith("Frightened"));
+            if (value > 0) newEffects.push(`Frightened ${value}`);
+            return { ...entity, statusEffects: newEffects };
+          }
+          return entity;
+        }));
+      };
+
+      // Add ship ability
+      const addShipAbility = (ability) => {
+        setShip({ ...ship, abilities: [...ship.abilities, ability] });
+      };
+
+      // Add crew member
+      const addCrewMember = (member) => {
+        setShip({ ...ship, crew: [...ship.crew, { ...member, id: Date.now(), hp: member.maxHp }] });
+      };
+
+      // Update crew member
+      const updateCrewMember = (id, updates) => {
+        setShip({
+          ...ship,
+          crew: ship.crew.map(member => member.id === id ? { ...member, ...updates } : member)
+        });
+      };
+
+      // Add enemy ship
+      const addEnemyShip = (enemyShip) => {
+        setEnemyShips([...enemyShips, { ...enemyShip, id: Date.now(), hp: enemyShip.maxHp }]);
+      };
+
+      // Update enemy ship
+      const updateEnemyShip = (id, updates) => {
+        setEnemyShips(enemyShips.map(ship => ship.id === id ? { ...ship, ...updates } : ship));
+      };
+
+      // Export data
+      const exportData = () => {
+        const data = { entities, ship, enemyShips, notes };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'rpg_master_data.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      // Import data
+      const importData = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const data = JSON.parse(event.target.result);
+            setEntities(data.entities || []);
+            setShip(data.ship || ship);
+            setEnemyShips(data.enemyShips || []);
+            setNotes(data.notes || '');
+          };
+          reader.readAsText(file);
+        }
+      };
+
+      return (
+        <div className="container mx-auto p-4">
+          <h1 className="text-3xl font-bold mb-4">RPG Master App (Pathfinder 2e)</h1>
+
+          {/* Export/Import Buttons */}
+          <div className="mb-4">
+            <button
+              onClick={exportData}
+              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 mr-2"
+            >
+              Export Data
+            </button>
+            <input
+              type="file"
+              accept=".json"
+              onChange={importData}
+              className="p-2 border rounded"
+            />
+          </div>
+
+          {/* Entity Management */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-2">Characters/NPCs/Monsters</h2>
+            <EntityForm onSubmit={addEntity} />
+            <TurnOrder
+              entities={entities}
+              currentTurn={currentTurn}
+              onNextTurn={nextTurn}
+              onUpdate={updateEntity}
+              onRemove={removeEntity}
+            />
+          </div>
+
+          {/* Ship Management */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-2">Ship Management</h2>
+            <ShipForm ship={ship} setShip={setShip} addAbility={addShipAbility} addCrew={addCrewMember} updateCrew={updateCrewMember} />
+          </div>
+
+          {/* Ship Combat */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-2">Ship Combat</h2>
+            <EnemyShipForm addEnemyShip={addEnemyShip} />
+            <EnemyShipList enemyShips={enemyShips} updateEnemyShip={updateEnemyShip} />
+          </div>
+
+          {/* Notes */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-2">Campaign Notes</h2>
+            <textarea
+              className="w-full p-2 border rounded"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add campaign notes here..."
+              rows="5"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Entity Form Component
+    function EntityForm({ on
