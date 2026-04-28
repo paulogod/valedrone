@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vale Drone | Filmagem aérea e tours 360° — valedrone.com.br</title>
-  <meta name="description" content="Filmagem com drones, tours panorâmicos 360° e cobertura aérea. Vale Drone — imagens que impressionam.">
+  <meta name="description"
+    content="Filmagem com drones, tours panorâmicos 360° e cobertura aérea. Vale Drone — imagens que impressionam.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
   <!-- Estilos do player de vídeo 360° (Video.js) -->
   <link href="https://vjs.zencdn.net/7.1.0/video-js.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/chat.css">
 </head>
+
 <body>
   <header class="header">
     <div class="container header-inner">
@@ -33,12 +39,18 @@
   </header>
 
   <main>
-    <section class="hero">
+    <section class="hero hud-corners">
       <div class="hero-bg"></div>
+      <div class="crosshair-center"></div>
+      <div class="telemetry-overlay t-top-left"><span class="recording-dot"></span>REC<br>UAV-01</div>
+      <div class="telemetry-overlay t-top-right">ALT: 120m<br>SPD: 15m/s</div>
+      <div class="telemetry-overlay t-bottom-left">GPS: 45°N 73°W<br>BAT: 84%</div>
+      <div class="telemetry-overlay t-bottom-right">FOV: 120°<br>F/2.8 ISO 100</div>
       <div class="container hero-content">
         <p class="hero-tag">Filmagem aérea & tours panorâmicos</p>
         <h1>Vista do alto.<br>Experiência em 360°.</h1>
-        <p class="hero-desc">Drones e imagens que valorizam seu imóvel, evento ou projeto. Qualidade cinematográfica e tours virtuais imersivos.</p>
+        <p class="hero-desc">Drones e imagens que valorizam seu imóvel, evento ou projeto. Qualidade cinematográfica e
+          tours virtuais imersivos.</p>
         <div class="hero-cta">
           <a href="#contato" class="btn btn-primary">Solicitar orçamento</a>
           <a href="#tour" class="btn btn-outline">Ver tour 360°</a>
@@ -77,10 +89,10 @@
       <div class="container">
         <h2 class="section-title">Tour 360°</h2>
         <p class="section-desc">Clique e arraste para explorar. Use o scroll para zoom.</p>
-        <div class="panorama-container">
-          <video id="panorama" class="video-js vjs-default-skin vjs-big-play-centered"
-            controls preload="none" style="width:100%;height:100%;"
-            poster="https://pannellum.org/images/video/jfk-poster.jpg" crossorigin="anonymous">
+        <div class="panorama-container hud-corners">
+          <video id="panorama" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="none"
+            style="width:100%;height:100%;" poster="https://pannellum.org/images/video/jfk-poster.jpg"
+            crossorigin="anonymous">
             <source src="https://pannellum.org/images/video/jfk.webm" type="video/webm" />
             <source src="https://pannellum.org/images/video/jfk.mp4" type="video/mp4" />
             <p class="vjs-no-js">
@@ -92,33 +104,33 @@
     </section>
 
 
-    
+
     <section id="galeria" class="section gallery">
       <div class="container">
         <h2 class="section-title">Galeria</h2>
         <div class="gallery-grid">
-          <div class="gallery-item">
+          <div class="gallery-item hud-corners">
             <div class="placeholder">
-              <iframe src="https://www.youtube.com/embed/9wH1Gz4EQ7g?si=H5wLXsx-Z7aI63II"
-                title="YouTube video player" frameborder="0"
+              <iframe src="https://www.youtube.com/embed/9wH1Gz4EQ7g?si=H5wLXsx-Z7aI63II" title="YouTube video player"
+                frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
           </div>
 
-          <div class="gallery-item">
+          <div class="gallery-item hud-corners">
             <div class="placeholder">
-              <iframe src="https://www.youtube.com/embed/Z8-n-XSN6Wo?si=NFEnMAm7sGQHikLc"
-                title="YouTube video player" frameborder="0"
+              <iframe src="https://www.youtube.com/embed/Z8-n-XSN6Wo?si=NFEnMAm7sGQHikLc" title="YouTube video player"
+                frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
           </div>
 
-          <div class="gallery-item">
+          <div class="gallery-item hud-corners">
             <div class="placeholder">
-              <iframe src="https://www.youtube.com/embed/YHm4X7PZkwY?si=4Myuoo1_ucDaqAJx"
-                title="YouTube video player" frameborder="0"
+              <iframe src="https://www.youtube.com/embed/YHm4X7PZkwY?si=4Myuoo1_ucDaqAJx" title="YouTube video player"
+                frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
@@ -132,8 +144,10 @@
         <h2 class="section-title">Contato</h2>
         <p class="section-desc">Orçamento sem compromisso. Respondemos por e-mail.</p>
         <div class="contact-box">
-          <a href="mailto:contato@valedrone.com.br" class="contact-email">contato@valedrone.com.br</a>
-          <a href="https://wa.me/5512996192233" target="_blank" rel="noopener">Fale conosco no WhatsApp (12) 99619-2233</a>
+          <div class="contact-links-group">
+            <a href="mailto:contato@valedrone.com.br" class="contact-link">contato@valedrone.com.br</a>
+            <a href="https://wa.me/5512996192233" class="contact-link whatsapp-link" target="_blank" rel="noopener">WhatsApp (12) 99619-2233</a>
+          </div>
           <div class="contact-social">
             <p class="contact-social-label">Siga nossas redes:</p>
             <div class="contact-social-links">
@@ -152,11 +166,54 @@
     </div>
   </footer>
 
+  <!-- Chatbot Widget -->
+  <div id="chat-widget" class="chat-widget">
+    <button id="chat-toggle" class="chat-toggle" aria-label="Abrir chat">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </button>
+
+    <div id="chat-window" class="chat-window hidden">
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <h3>Assistente ValeDrone</h3>
+          <span class="status">Online (Local)</span>
+        </div>
+        <button id="chat-close" class="chat-close" aria-label="Fechar chat">&times;</button>
+      </div>
+      <div id="chat-login-screen" class="chat-login-screen">
+        <p>Preencha seus dados para iniciar o atendimento:</p>
+        <input type="text" id="login-name" placeholder="Seu Nome" required>
+        <input type="email" id="login-email" placeholder="Seu E-mail" required>
+        <input type="tel" id="login-phone" placeholder="Seu WhatsApp (com DDD)" required>
+        <button id="login-start-btn" class="btn btn-primary">Iniciar Conversa</button>
+      </div>
+
+      <div id="chat-messages" class="chat-messages hidden">
+        <!-- As mensagens aparecerão aqui -->
+      </div>
+      <div class="chat-input-area hidden" id="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Digite sua mensagem..." autocomplete="off">
+        <button id="chat-send" aria-label="Enviar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
   <!-- Scripts do player de vídeo 360° (Video.js + plugin Pannellum) -->
   <script src="https://vjs.zencdn.net/7.1.0/video.js"></script>
   <script src="https://pannellum.org/js/videojs-pannellum-plugin.js"></script>
   <script src="js/tour.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/chat.js"></script>
 </body>
+
 </html>
