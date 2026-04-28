@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chatWindow.classList.add('hidden');
 
     // Se o usuário interagiu, envia silenciosamente para o WhatsApp via CallMeBot
-    if (userData && chatHistory.length > 10) { 
+    if (userData && chatHistory.length > 10) {
       let waText = `*Novo Contato via Site*\n`;
       waText += `Nome: ${userData.name}\n`;
       waText += `E-mail: ${userData.email}\n`;
@@ -77,11 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // Codifica o texto para URL
       const encodedText = encodeURIComponent(waText);
       const callMeBotUrl = `https://api.callmebot.com/whatsapp.php?phone=5512996192233&text=${encodedText}&apikey=${CALLMEBOT_API_KEY}`;
-      
+
       // Faz o envio invisível no fundo
       fetch(callMeBotUrl)
         .then(response => {
-          if(!response.ok) {
+          if (!response.ok) {
             console.error('Falha ao enviar notificação WhatsApp.');
           }
         })
