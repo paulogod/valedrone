@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Conta — Gerenciador de Finanças Pessoais com cartões de crédito, orçamento doméstico e parcelamentos.">
+  <title>Conta — Finanças Pessoais</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-glow"></div>
+      <h1 class="app-title">💳 Conta</h1>
+      <p class="app-subtitle">Gerenciador de Finanças Pessoais</p>
+    </header>
+
+    <nav class="tab-nav" id="tabNav">
+      <button class="tab-btn active" data-tab="cartoes" id="tab-cartoes">💳 Cartões Geral</button>
+      <button class="tab-btn" data-tab="orcamento" id="tab-orcamento">🏠 Orçamento Doméstico</button>
+      <button class="tab-btn" data-tab="parcelamentos" id="tab-parcelamentos">📊 Parcelamentos</button>
+    </nav>
+
+    <!-- ==================== CARTÕES GERAL ==================== -->
+    <section class="tab-content active" id="content-cartoes">
+      <div class="card">
+        <div class="card-header-bar">
+          <h2 class="card-title">Cartões de Crédito — Geral</h2>
+          <div class="month-selector">
+            <button class="btn btn-sm btn-accent" id="prevMonthCartoes" title="Mês anterior">◀</button>
+            <span class="month-label" id="monthLabelCartoes">Janeiro</span>
+            <button class="btn btn-sm btn-accent" id="nextMonthCartoes" title="Próximo mês">▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulário para adicionar lançamento -->
+      <div class="card form-card">
+        <h3 class="card-subtitle">Novo Lançamento</h3>
+        <form id="cartoesForm" class="form-grid">
+          <div class="form-group"><label>Cartão</label>
+            <select id="cartoesCartao">
+              <option>Santander</option>
+              <option>C6 Bank</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Data</label><input type="date" id="cartoesData" required></div>
+          <div class="form-group"><label>Nome</label><input type="text" id="cartoesNome" required placeholder="Descrição"></div>
+          <div class="form-group"><label>Valor (R$)</label><input type="number" id="cartoesValor" step="0.01" min="0" required></div>
+          <div class="form-group"><label>Tipo</label>
+            <select id="cartoesTipo">
+              <option>Alimentação</option>
+              <option>Transporte</option>
+              <option>Lazer</option>
+              <option>Saúde</option>
+              <option>Educação</option>
+              <option>Moradia</option>
+              <option>Assinaturas</option>
+              <option>Outros</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" id="addCartoesBtn">+ Adicionar</button>
+        </form>
+      </div>
+
+      <!-- Tabela de lançamentos -->
+      <div class="card">
+        <div class="summary-bar" id="cartoesSummary"></div>
+        <div class="table-wrap">
+          <table id="cartoesTable">
+            <thead><tr>
+              <th>Cartão</th><th>Data</th><th>Nome</th><th>Valor</th><th>Tipo</th><th>Ações</th>
+            </tr></thead>
+            <tbody id="cartoesTableBody"></tbody>
+            <tfoot id="cartoesFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ORÇAMENTO DOMÉSTICO ==================== -->
+    <section class="tab-content" id="content-orcamento">
+      <div class="card">
+        <h2 class="card-title">Orçamento Doméstico — 2026</h2>
+      </div>
+
+      <!-- Receitas -->
+      <div class="card form-card">
+        <h3 class="card-subtitle">Adicionar Receita</h3>
+        <form id="receitaForm" class="form-grid">
+          <div class="form-group"><label>Descrição</label><input type="text" id="receitaDesc" required placeholder="Ex: Salário"></div>
+          <div class="form-group"><label>Mês</label>
+            <select id="receitaMes">
+              <option value="0">Janeiro</option><option value="1">Fevereiro</option>
+              <option value="2">Março</option><option value="3">Abril</option>
+              <option value="4">Maio</option><option value="5">Junho</option>
+              <option value="6">Julho</option><option value="7">Agosto</option>
+              <option value="8">Setembro</option><option value="9">Outubro</option>
+              <option value="10">Novembro</option><option value="11">Dezembro</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Valor (R$)</label><input type="number" id="receitaValor" step="0.01" min="0" required></div>
+          <button type="submit" class="btn btn-primary">+ Adicionar Receita</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3 class="card-subtitle">📈 Receitas</h3>
+        <div class="table-wrap">
+          <table id="receitaTable">
+            <thead><tr>
+              <th>Descrição</th>
+              <th>Jan</th><th>Fev</th><th>Mar</th><th>Abr</th><th>Mai</th><th>Jun</th>
+              <th>Jul</th><th>Ago</th><th>Set</th><th>Out</th><th>Nov</th><th>Dez</th>
+              <th>Ações</th>
+            </tr></thead>
+            <tbody id="receitaTableBody"></tbody>
+            <tfoot id="receitaFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Despesas -->
+      <div class="card form-card">
+        <h3 class="card-subtitle">Adicionar Despesa</h3>
+        <form id="despesaForm" class="form-grid">
+          <div class="form-group"><label>Descrição</label><input type="text" id="despesaDesc" required placeholder="Ex: Aluguel"></div>
+          <div class="form-group"><label>Categoria</label>
+            <select id="despesaCat">
+              <option>Essencial (D1)</option>
+              <option>Variável (D2)</option>
+              <option>Extra (D3)</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Mês</label>
+            <select id="despesaMes">
+              <option value="0">Janeiro</option><option value="1">Fevereiro</option>
+              <option value="2">Março</option><option value="3">Abril</option>
+              <option value="4">Maio</option><option value="5">Junho</option>
+              <option value="6">Julho</option><option value="7">Agosto</option>
+              <option value="8">Setembro</option><option value="9">Outubro</option>
+              <option value="10">Novembro</option><option value="11">Dezembro</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Valor (R$)</label><input type="number" id="despesaValor" step="0.01" min="0" required></div>
+          <button type="submit" class="btn btn-primary">+ Adicionar Despesa</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3 class="card-subtitle">📉 Despesas</h3>
+        <div class="table-wrap">
+          <table id="despesaTable">
+            <thead><tr>
+              <th>Descrição</th><th>Categoria</th>
+              <th>Jan</th><th>Fev</th><th>Mar</th><th>Abr</th><th>Mai</th><th>Jun</th>
+              <th>Jul</th><th>Ago</th><th>Set</th><th>Out</th><th>Nov</th><th>Dez</th>
+              <th>Ações</th>
+            </tr></thead>
+            <tbody id="despesaTableBody"></tbody>
+            <tfoot id="despesaFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Resumo -->
+      <div class="card">
+        <h3 class="card-subtitle">📊 Resumo Anual</h3>
+        <div class="summary-grid" id="orcamentoResumo"></div>
+      </div>
+    </section>
+
+    <!-- ==================== PARCELAMENTOS ==================== -->
+    <section class="tab-content" id="content-parcelamentos">
+      <div class="card">
+        <h2 class="card-title">Parcelamentos Cartões</h2>
+      </div>
+
+      <div class="card form-card">
+        <h3 class="card-subtitle">Novo Parcelamento</h3>
+        <form id="parcelForm" class="form-grid">
+          <div class="form-group"><label>Cartão</label>
+            <select id="parcelCartao">
+              <option>Santander - Unique</option>
+              <option>C6 Bank</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Descrição</label><input type="text" id="parcelDesc" required placeholder="Ex: Compra Amazon"></div>
+          <div class="form-group"><label>Valor da Parcela (R$)</label><input type="number" id="parcelValor" step="0.01" min="0" required></div>
+          <div class="form-group"><label>Mês Início</label>
+            <select id="parcelMesInicio">
+              <option value="0">Janeiro</option><option value="1">Fevereiro</option>
+              <option value="2">Março</option><option value="3">Abril</option>
+              <option value="4">Maio</option><option value="5">Junho</option>
+              <option value="6">Julho</option><option value="7">Agosto</option>
+              <option value="8">Setembro</option><option value="9">Outubro</option>
+              <option value="10">Novembro</option><option value="11">Dezembro</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Nº de Parcelas</label><input type="number" id="parcelQtd" min="1" max="48" value="2" required></div>
+          <button type="submit" class="btn btn-primary">+ Adicionar Parcelamento</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table id="parcelTable">
+            <thead><tr>
+              <th>Cartão</th><th>Descrição</th>
+              <th>Jan</th><th>Fev</th><th>Mar</th><th>Abr</th><th>Mai</th><th>Jun</th>
+              <th>Jul</th><th>Ago</th><th>Set</th><th>Out</th><th>Nov</th><th>Dez</th>
+              <th>Ações</th>
+            </tr></thead>
+            <tbody id="parcelTableBody"></tbody>
+            <tfoot id="parcelFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER ACTIONS -->
+    <div class="footer-actions">
+      <button class="btn btn-secondary" id="exportXlsx">📥 Exportar XLSX</button>
+      <label class="btn btn-secondary file-label">📤 Importar XLSX<input type="file" accept=".xlsx,.xls" id="importXlsx" hidden></label>
+      <button class="btn btn-secondary" id="exportJson">💾 Backup JSON</button>
+      <label class="btn btn-secondary file-label">📂 Restaurar JSON<input type="file" accept=".json" id="importJson" hidden></label>
+    </div>
+    <footer class="app-footer">Gerenciador de Finanças — Paulo Godoy</footer>
+  </div>
+
+  <!-- SheetJS for XLSX support -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
