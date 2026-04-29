@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Configurações da API do CallMeBot
   // Insira aqui a sua chave da API gerada no WhatsApp do CallMeBot
-  const CALLMEBOT_API_KEY = '';
+  const CALLMEBOT_API_KEY = '4816782';
 
   chatClose.addEventListener('click', () => {
     // Esconde o chat visualmente
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Configurações da API do Google (Gemini)
   // ATENÇÃO: Nunca exponha sua API Key em sites públicos na internet. 
   // Para produção, faça essa requisição através de um backend (Node, Python, etc).
-  const GEMINI_API_KEY = 'AIzaSyBQdgS1qC5zdn-JXAB_iqzDHV5rp4ZGqk0';
+  const GEMINI_API_KEY = 'AIzaSyDXI6F9Yh1a1V2DkF56zyLUXP55Hu9FkfE';
   const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   // O contexto que dá personalidade à IA

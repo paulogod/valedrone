@@ -39,12 +39,8 @@
       <div class="card form-card">
         <h3 class="card-subtitle">Novo Lançamento</h3>
         <form id="cartoesForm" class="form-grid">
-          <div class="form-group"><label>Cartão</label>
-            <select id="cartoesCartao">
-              <option>Santander</option>
-              <option>C6 Bank</option>
-              <option>Outro</option>
-            </select>
+          <div class="form-group"><label>Nome do Banco</label>
+            <input type="text" id="cartoesCartao" required placeholder="Ex: Nome do Banco">
           </div>
           <div class="form-group"><label>Data</label><input type="date" id="cartoesData" required></div>
           <div class="form-group"><label>Nome</label><input type="text" id="cartoesNome" required placeholder="Descrição"></div>
@@ -181,12 +177,8 @@
       <div class="card form-card">
         <h3 class="card-subtitle">Novo Parcelamento</h3>
         <form id="parcelForm" class="form-grid">
-          <div class="form-group"><label>Cartão</label>
-            <select id="parcelCartao">
-              <option>Santander - Unique</option>
-              <option>C6 Bank</option>
-              <option>Outro</option>
-            </select>
+          <div class="form-group"><label>Nome do Banco</label>
+            <input type="text" id="parcelCartao" required placeholder="Ex: Nome do Banco">
           </div>
           <div class="form-group"><label>Descrição</label><input type="text" id="parcelDesc" required placeholder="Ex: Compra Amazon"></div>
           <div class="form-group"><label>Valor da Parcela (R$)</label><input type="number" id="parcelValor" step="0.01" min="0" required></div>
