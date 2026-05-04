@@ -1,10 +1,10 @@
 // Configurações do site ValeDrone
-// Cole suas chaves de API aqui
+// Os valores são injetados automaticamente pelo GitHub Actions durante o deploy.
+// NÃO coloque chaves reais aqui — elas vêm dos Secrets do repositório.
 const CONFIG = {
-  GEMINI_API_KEY: 'AIzaSyDXI6F9Yh1a1V2DkF56zyLUXP55Hu9FkfE',
-  CALLMEBOT_API_KEY: '4816782',
-  WHATSAPP_PHONE: '5512996192233'
+  GEMINI_API_KEY: '__GEMINI_API_KEY__',
+  CALLMEBOT_API_KEY: '__CALLMEBOT_API_KEY__',
+  WHATSAPP_PHONE: '__WHATSAPP_PHONE__'
 };
 
-// Disponibiliza globalmente
 window.CONFIG = CONFIG;

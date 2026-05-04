@@ -71,7 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const encodedText = encodeURIComponent(waText);
-      const callMeBotUrl = `https://api.callmebot.com/whatsapp.php?phone=${window.CONFIG?.WHATSAPP_PHONE || '5512996192233'}&text=${encodedText}&apikey=${CALLMEBOT_API_KEY}`;
+      const whatsappPhone = window.CONFIG?.WHATSAPP_PHONE || '';
+      if (!whatsappPhone) {
+        console.warn('WhatsApp: Telefone não configurado.');
+        return;
+      }
+      const callMeBotUrl = `https://api.callmebot.com/whatsapp.php?phone=${whatsappPhone}&text=${encodedText}&apikey=${CALLMEBOT_API_KEY}`;
 
       // Faz o envio para o CallMeBot
       fetch(callMeBotUrl)
