@@ -1,9 +1,10 @@
-// Configuration file - values are injected by GitHub Actions during build
+// Configurações do site ValeDrone
+// Cole suas chaves de API aqui
 const CONFIG = {
-  CALLMEBOT_API_KEY: process.env.CALLMEBOT_API_KEY || '',
-  GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
-  WHATSAPP_PHONE: process.env.WHATSAPP_PHONE || ''
+  GEMINI_API_KEY: 'AIzaSyDXI6F9Yh1a1V2DkF56zyLUXP55Hu9FkfE',
+  CALLMEBOT_API_KEY: '4816782',
+  WHATSAPP_PHONE: '5512996192233'
 };
 
-// Make CONFIG available globally
+// Disponibiliza globalmente
 window.CONFIG = CONFIG;
