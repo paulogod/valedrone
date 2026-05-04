@@ -64,20 +64,23 @@ document.addEventListener('DOMContentLoaded', () => {
       waText += `*Histórico da Conversa:*\n`;
       waText += chatHistory;
 
-      // Faz o envio para o nosso backend
-      fetch('/api/send-sms', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message: waText })
-      })
+      const CALLMEBOT_API_KEY = window.CONFIG?.CALLMEBOT_API_KEY || '';
+      if (!CALLMEBOT_API_KEY) {
+        console.warn('WhatsApp: Não foi possível enviar a mensagem pois a CALLMEBOT_API_KEY não foi configurada.');
+        return;
+      }
+
+      const encodedText = encodeURIComponent(waText);
+      const callMeBotUrl = `https://api.callmebot.com/whatsapp.php?phone=${window.CONFIG?.WHATSAPP_PHONE || '5512996192233'}&text=${encodedText}&apikey=${CALLMEBOT_API_KEY}`;
+
+      // Faz o envio para o CallMeBot
+      fetch(callMeBotUrl)
       .then(response => {
         if (!response.ok) {
-          console.error('Falha ao enviar notificação WhatsApp pelo backend.');
+          console.error('Falha ao enviar notificação WhatsApp pelo CallMeBot.');
         }
       })
-      .catch(err => console.error('Erro na requisição para o backend:', err));
+      .catch(err => console.error('Erro na requisição para o CallMeBot:', err));
     }
   });
 
@@ -100,27 +103,40 @@ Responda de forma curta, prestativa e objetiva.`;
     // Mostra indicador de carregamento
     const loadingId = addMessage('...', 'bot', true);
 
+    const GEMINI_API_KEY = window.CONFIG?.GEMINI_API_KEY || '';
+    if (!GEMINI_API_KEY) {
+      removeMessage(loadingId);
+      addMessage('Erro: Chave da API do Google não configurada.', 'bot error');
+      return;
+    }
+
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
     try {
       // Monta o prompt incluindo o contexto
       const promptText = `${systemContext}\n\nHistórico:\n${chatHistory}\nUsuário: ${text}\nAssistente:`;
 
-      const response = await fetch('/api/chat', {
+      const response = await fetch(GEMINI_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: promptText }),
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: promptText }]
+          }]
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Erro na comunicação com o backend');
+        throw new Error('Erro na comunicação com o Gemini');
       }
 
       const data = await response.json();
       removeMessage(loadingId);
 
-      // O backend retorna a resposta como 'response'
-      const botResponse = data.response;
+      // O Gemini retorna a resposta
+      const botResponse = data.candidates[0].content.parts[0].text;
       addMessage(botResponse, 'bot');
 
       // Atualiza histórico
