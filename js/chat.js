@@ -51,15 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Configurações da API do CallMeBot
-  // Insira aqui a sua chave da API gerada no WhatsApp do CallMeBot
-  const CALLMEBOT_API_KEY = '4816782';
-
   chatClose.addEventListener('click', () => {
     // Esconde o chat visualmente
     chatWindow.classList.add('hidden');
 
-    // Se o usuário interagiu, envia silenciosamente para o WhatsApp via CallMeBot
+    // Se o usuário interagiu, envia silenciosamente para o WhatsApp via backend
     if (userData && chatHistory.length > 10) {
       let waText = `*Novo Contato via Site*\n`;
       waText += `Nome: ${userData.name}\n`;
@@ -68,32 +64,22 @@ document.addEventListener('DOMContentLoaded', () => {
       waText += `*Histórico da Conversa:*\n`;
       waText += chatHistory;
 
-      // Se a chave não foi configurada, apenas avisa no console (não atrapalha a navegação do usuário)
-      if (!CALLMEBOT_API_KEY) {
-        console.warn('WhatsApp: Não foi possível enviar a mensagem pois a CALLMEBOT_API_KEY não foi configurada.');
-        return;
-      }
-
-      // Codifica o texto para URL
-      const encodedText = encodeURIComponent(waText);
-      const callMeBotUrl = `https://api.callmebot.com/whatsapp.php?phone=5512996192233&text=${encodedText}&apikey=${CALLMEBOT_API_KEY}`;
-
-      // Faz o envio invisível no fundo
-      fetch(callMeBotUrl)
-        .then(response => {
-          if (!response.ok) {
-            console.error('Falha ao enviar notificação WhatsApp.');
-          }
-        })
-        .catch(err => console.error('Erro na requisição para o CallMeBot:', err));
+      // Faz o envio para o nosso backend
+      fetch('/api/send-sms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: waText })
+      })
+      .then(response => {
+        if (!response.ok) {
+          console.error('Falha ao enviar notificação WhatsApp pelo backend.');
+        }
+      })
+      .catch(err => console.error('Erro na requisição para o backend:', err));
     }
   });
-
-  // Configurações da API do Google (Gemini)
-  // ATENÇÃO: Nunca exponha sua API Key em sites públicos na internet. 
-  // Para produção, faça essa requisição através de um backend (Node, Python, etc).
-  const GEMINI_API_KEY = 'AIzaSyDXI6F9Yh1a1V2DkF56zyLUXP55Hu9FkfE';
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   // O contexto que dá personalidade à IA
   const systemContext = `Você é um assistente virtual útil e amigável da empresa ValeDrone.
@@ -114,37 +100,27 @@ Responda de forma curta, prestativa e objetiva.`;
     // Mostra indicador de carregamento
     const loadingId = addMessage('...', 'bot', true);
 
-    if (GEMINI_API_KEY === 'COLOQUE_SUA_CHAVE_AQUI') {
-      removeMessage(loadingId);
-      addMessage('Erro: Chave da API do Google não configurada. Edite o arquivo js/chat.js e coloque sua chave.', 'bot error');
-      return;
-    }
-
     try {
       // Monta o prompt incluindo o contexto
       const promptText = `${systemContext}\n\nHistórico:\n${chatHistory}\nUsuário: ${text}\nAssistente:`;
 
-      const response = await fetch(GEMINI_URL, {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: promptText }]
-          }]
-        }),
+        body: JSON.stringify({ prompt: promptText }),
       });
 
       if (!response.ok) {
-        throw new Error('Erro na comunicação com a API do Google');
+        throw new Error('Erro na comunicação com o backend');
       }
 
       const data = await response.json();
       removeMessage(loadingId);
 
-      // O Gemini retorna a resposta em uma estrutura específica
-      const botResponse = data.candidates[0].content.parts[0].text;
+      // O backend retorna a resposta como 'response'
+      const botResponse = data.response;
       addMessage(botResponse, 'bot');
 
       // Atualiza histórico
@@ -153,7 +129,7 @@ Responda de forma curta, prestativa e objetiva.`;
     } catch (error) {
       console.error(error);
       removeMessage(loadingId);
-      addMessage('Erro: Não foi possível conectar à API do Google. Verifique sua conexão e sua API Key.', 'bot error');
+      addMessage('Erro: Não foi possível comunicar com o servidor. Tente novamente mais tarde.', 'bot error');
     }
   }
 
