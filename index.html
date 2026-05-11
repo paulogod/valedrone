@@ -31,8 +31,8 @@
         <a href="#tour">Tour 360°</a>
         <a href="#galeria">Galeria</a>
         <a href="#contato">Contato</a>
-        <a href="rpg/" target="_blank">RPG</a>
-        <a href="conta/" target="_blank">Conta</a>
+        <a href="rpg/" target="_blank" rel="noopener">RPG</a>
+        <a href="conta/" target="_blank" rel="noopener">Conta</a>
       </nav>
       <button class="menu-btn" aria-label="Abrir menu">
         <span></span><span></span><span></span>
@@ -190,6 +190,10 @@
         <input type="text" id="login-name" placeholder="Seu Nome" required>
         <input type="email" id="login-email" placeholder="Seu E-mail" required>
         <input type="tel" id="login-phone" placeholder="Seu WhatsApp (com DDD)" required>
+        <label class="chat-consent">
+          <input type="checkbox" id="login-consent" required>
+          <span>Autorizo o uso dos meus dados para retorno do atendimento.</span>
+        </label>
         <button id="login-start-btn" class="btn btn-primary">Iniciar Conversa</button>
       </div>
 

@@ -1,0 +1,7 @@
+name = "valedrone-chat-proxy"
+main = "chat-proxy.js"
+compatibility_date = "2026-05-11"
+
+[vars]
+# Defina a origem exata do site em producao antes do deploy.
+ALLOWED_ORIGIN = "https://valedrone.com.br"

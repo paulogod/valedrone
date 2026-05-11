@@ -87,6 +87,23 @@
   border-color: var(--accent, #facc15);
 }
 
+.chat-consent {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 0.6rem;
+  align-items: start;
+  color: var(--text-muted, #9ca3af);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.chat-consent input {
+  width: 16px;
+  height: 16px;
+  margin: 0.1rem 0 0;
+  accent-color: var(--accent, #facc15);
+}
+
 .chat-login-screen .btn {
   margin-top: 0.5rem;
   padding: 1rem;
