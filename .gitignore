@@ -2,6 +2,7 @@
 *.key
 *.pem
 *.json
+*.xlsx
 dist/
 __pycache__/
 *.pyc

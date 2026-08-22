@@ -173,6 +173,9 @@ tfoot td {
 .val-cell.has-value { color: #fbbf24; font-weight: 500; }
 .val-cell.empty { color: #475569; }
 
+.editable { cursor: pointer; border-radius: 6px; }
+.editable:hover { background: rgba(16,185,129,.1); }
+
 .action-cell { display: flex; gap: .35rem; align-items: center; flex-wrap: nowrap; }
 
 /* Editable inputs in tables */
@@ -217,6 +220,36 @@ tfoot td {
 .badge-essencial { background: rgba(239,68,68,.12); color: #fca5a5; }
 .badge-variavel { background: rgba(251,191,36,.12); color: #fde68a; }
 .badge-extra { background: rgba(99,102,241,.12); color: #c4b5fd; }
+
+/* ========== CHARTS ========== */
+.card-hint { color: #94a3b8; font-size: .78rem; margin: -.4rem 0 1rem; }
+.chart-wrap { overflow-x: auto; }
+.chart-svg { width: 100%; height: auto; display: block; font-family: inherit; }
+.chart-svg text { fill: #94a3b8; font-size: 11px; }
+.chart-svg .chart-value { fill: #e2e8f0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.chart-svg .chart-axis-line { stroke: rgba(148,163,184,.18); stroke-width: 1; }
+.chart-mark { cursor: pointer; transition: opacity .15s ease; }
+.chart-mark:hover, .chart-mark:focus { opacity: .82; outline: none; }
+.chart-mark:focus-visible { opacity: .82; outline: 2px solid #e2e8f0; outline-offset: 2px; }
+
+.chart-legend { display: flex; gap: 1.25rem; flex-wrap: wrap; margin: .75rem 0 0; padding-left: .25rem; }
+.chart-legend-item { display: flex; align-items: center; gap: .4rem; font-size: .78rem; color: #cbd5e1; }
+.chart-legend-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+
+.chart-tooltip {
+  position: fixed; z-index: 1100; pointer-events: none;
+  background: #111827; border: 1px solid rgba(16,185,129,.25);
+  border-radius: 8px; padding: .5rem .65rem; font-size: .8rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  transform: translate(-50%, calc(-100% - 10px));
+  white-space: nowrap;
+}
+.chart-tooltip[hidden] { display: none; }
+.chart-tooltip .tt-title { color: #94a3b8; font-size: .7rem; text-transform: uppercase; letter-spacing: .4px; margin-bottom: .2rem; }
+.chart-tooltip .tt-row { display: flex; align-items: center; gap: .4rem; }
+.chart-tooltip .tt-row + .tt-row { margin-top: .15rem; }
+.chart-tooltip .tt-dot { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.chart-tooltip .tt-value { color: #e2e8f0; font-weight: 700; font-variant-numeric: tabular-nums; margin-left: auto; }
 
 /* ========== TOAST ========== */
 .toast {

@@ -20,6 +20,7 @@
       <button class="tab-btn active" data-tab="cartoes" id="tab-cartoes">💳 Cartões Geral</button>
       <button class="tab-btn" data-tab="orcamento" id="tab-orcamento">🏠 Orçamento Doméstico</button>
       <button class="tab-btn" data-tab="parcelamentos" id="tab-parcelamentos">📊 Parcelamentos</button>
+      <button class="tab-btn" data-tab="graficos" id="tab-graficos">📈 Gráficos</button>
     </nav>
 
     <!-- ==================== CARTÕES GERAL ==================== -->
@@ -193,7 +194,7 @@
             </select>
           </div>
           <div class="form-group"><label>Nº de Parcelas</label><input type="number" id="parcelQtd" min="1" max="48" value="2" required></div>
-          <button type="submit" class="btn btn-primary">+ Adicionar Parcelamento</button>
+          <button type="submit" class="btn btn-primary" id="addParcelBtn">+ Adicionar Parcelamento</button>
         </form>
       </div>
 
@@ -201,7 +202,7 @@
         <div class="table-wrap">
           <table id="parcelTable">
             <thead><tr>
-              <th>Cartão</th><th>Descrição</th>
+              <th>Cartão</th><th>Descrição</th><th>Valor Parcela</th><th>Início</th><th>Qtd</th>
               <th>Jan</th><th>Fev</th><th>Mar</th><th>Abr</th><th>Mai</th><th>Jun</th>
               <th>Jul</th><th>Ago</th><th>Set</th><th>Out</th><th>Nov</th><th>Dez</th>
               <th>Ações</th>
@@ -210,6 +211,25 @@
             <tfoot id="parcelFoot"></tfoot>
           </table>
         </div>
+      </div>
+    </section>
+
+    <!-- ==================== GRÁFICOS ==================== -->
+    <section class="tab-content" id="content-graficos">
+      <div class="card">
+        <h2 class="card-title">Despesas por Categoria</h2>
+        <p class="card-hint">Soma de todos os lançamentos de cartão do ano, por tipo</p>
+        <div class="chart-wrap" id="chartCategorias"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Receitas × Despesas por Mês</h2>
+        <div class="chart-wrap" id="chartReceitaDespesa"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Saldo Mensal</h2>
+        <div class="chart-wrap" id="chartSaldo"></div>
       </div>
     </section>
 
@@ -222,6 +242,8 @@
     </div>
     <footer class="app-footer">Gerenciador de Finanças — Paulo Godoy</footer>
   </div>
+
+  <div class="chart-tooltip" id="chartTooltip" role="tooltip" hidden></div>
 
   <!-- SheetJS for XLSX support -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
