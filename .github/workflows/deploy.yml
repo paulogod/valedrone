@@ -37,7 +37,8 @@ jobs:
             --exclude 'dist/' \
             --exclude 'security_best_practices_report.md' \
             --exclude '__pycache__/' \
-            --exclude '*.pyc'
+            --exclude '*.pyc' \
+            --exclude '*.xlsx'
 
       - name: Inject public runtime config
         env:
