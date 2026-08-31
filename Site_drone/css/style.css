@@ -353,7 +353,7 @@ body {
   background: var(--bg-card);
 }
 
-.panorama-container .video-js {
+#panorama {
   width: 100% !important;
   height: 100% !important;
 }
@@ -386,26 +386,9 @@ body {
   display: none !important;
 }
 
-.panorama-container .pnlm-preview-img {
-  background-size: cover !important;
-  background-position: center !important;
-}
-
-.panorama-container .vjs-text-track-display,
-.panorama-container .vjs-modal-dialog,
-.panorama-container .vjs-poster {
-  pointer-events: none !important;
-}
-
-.panorama-container .vjs-control-bar,
-.panorama-container .vjs-big-play-button {
-  z-index: 10 !important;
-  pointer-events: auto !important;
-}
-
 @media (max-width: 768px) {
   .panorama-container {
-    height: 360px;
+    height: 380px;
   }
 }
 
