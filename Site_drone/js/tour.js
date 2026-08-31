@@ -14,10 +14,14 @@
         pannellum: {
           autoLoad: true,
           loop: true,
+<<<<<<< HEAD
           showControls: true,
           hfov: 100,
           minHfov: 50,
           maxHfov: 120
+=======
+          showControls: true
+>>>>>>> b8dd9ac5d8f282dce11b1f8cc58c518df89a6977
         }
       }
     });
