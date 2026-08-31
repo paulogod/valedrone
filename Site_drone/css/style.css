@@ -380,7 +380,9 @@ body {
 .panorama-container .pnlm-load-box,
 .panorama-container .pnlm-lbox,
 .panorama-container .pnlm-loading-msg,
-.panorama-container .pnlm-load-button {
+.panorama-container .pnlm-load-button,
+.panorama-container .pnlm-error-msg,
+.panorama-container .pnlm-info-box {
   display: none !important;
 }
 
