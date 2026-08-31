@@ -353,9 +353,10 @@ body {
   background: var(--bg-card);
 }
 
-#panorama {
+.panorama-container .video-js {
   width: 100% !important;
   height: 100% !important;
+  position: relative;
 }
 
 .panorama-container .pnlm-container {
@@ -375,6 +376,39 @@ body {
 
 .panorama-container .pnlm-render-container:active {
   cursor: grabbing !important;
+}
+
+.panorama-container .vjs-control-bar {
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  background: rgba(2, 6, 23, 0.85) !important;
+  backdrop-filter: blur(8px);
+}
+
+.panorama-container .vjs-big-play-button {
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  background-color: rgba(250, 204, 21, 0.9) !important;
+  border-color: var(--accent) !important;
+  color: #020617 !important;
+  border-radius: 50% !important;
+  width: 2.4em !important;
+  height: 2.4em !important;
+  line-height: 2.4em !important;
+  margin-top: -1.2em !important;
+  margin-left: -1.2em !important;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.panorama-container .vjs-big-play-button:hover {
+  transform: scale(1.1);
+  background-color: #facc15 !important;
+}
+
+.panorama-container .vjs-text-track-display,
+.panorama-container .vjs-modal-dialog,
+.panorama-container .vjs-poster {
+  pointer-events: none !important;
 }
 
 .panorama-container .pnlm-load-box,

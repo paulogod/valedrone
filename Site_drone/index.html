@@ -86,7 +86,13 @@
         <h2 class="section-title">Tour 360°</h2>
         <p class="section-desc">Clique e arraste para explorar. Use o scroll para zoom.</p>
         <div class="panorama-container">
-          <div id="panorama" style="width:100%;height:100%;"></div>
+          <video id="panorama" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" loop
+            playsinline webkit-playsinline poster="panoramas/poster.jpg" style="width:100%;height:100%;" crossorigin="anonymous">
+            <source src="panoramas/tour360.mp4" type="video/mp4" />
+            <p class="vjs-no-js">
+              Para ver este vídeo 360°, habilite o JavaScript e use um navegador compatível com HTML5.
+            </p>
+          </video>
         </div>
       </div>
     </section>
