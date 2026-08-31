@@ -377,6 +377,18 @@ body {
   cursor: grabbing !important;
 }
 
+.panorama-container .pnlm-load-box,
+.panorama-container .pnlm-lbox,
+.panorama-container .pnlm-loading-msg,
+.panorama-container .pnlm-load-button {
+  display: none !important;
+}
+
+.panorama-container .pnlm-preview-img {
+  background-size: cover !important;
+  background-position: center !important;
+}
+
 .panorama-container .vjs-text-track-display,
 .panorama-container .vjs-modal-dialog,
 .panorama-container .vjs-poster {

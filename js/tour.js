@@ -16,6 +16,7 @@
           autoLoad: true,
           loop: true,
           showControls: false,
+          preview: 'panoramas/poster.jpg',
           hfov: 100,
           minHfov: 60,
           maxHfov: 120,
