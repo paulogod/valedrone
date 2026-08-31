@@ -161,9 +161,14 @@ body {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, var(--accent-dim) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(250, 204, 21, 0.08) 0%, transparent 50%);
+  background-image:
+    linear-gradient(to right, rgba(2, 6, 23, 0.94) 0%, rgba(2, 6, 23, 0.78) 45%, rgba(2, 6, 23, 0.35) 100%),
+    linear-gradient(to top, #020617 0%, transparent 25%),
+    linear-gradient(to bottom, rgba(2, 6, 23, 0.8) 0%, transparent 20%),
+    url('../img/hero-drone.jpg');
+  background-size: cover;
+  background-position: center 30%;
+  background-repeat: no-repeat;
   pointer-events: none;
 }
 
