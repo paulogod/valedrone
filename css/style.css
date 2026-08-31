@@ -345,15 +345,54 @@ body {
 /* Tour 360 */
 .panorama-container {
   width: 100%;
-  height: 420px;
+  height: 500px;
+  position: relative;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg-card);
 }
 
+.panorama-container .video-js {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .panorama-container .pnlm-container {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute;
+  top: 0;
+  left: 0;
   border-radius: 12px;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+.panorama-container .pnlm-render-container {
+  cursor: grab !important;
+}
+
+.panorama-container .pnlm-render-container:active {
+  cursor: grabbing !important;
+}
+
+.panorama-container .vjs-text-track-display,
+.panorama-container .vjs-modal-dialog,
+.panorama-container .vjs-poster {
+  pointer-events: none !important;
+}
+
+.panorama-container .vjs-control-bar,
+.panorama-container .vjs-big-play-button {
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}
+
+@media (max-width: 768px) {
+  .panorama-container {
+    height: 360px;
+  }
 }
 
 .tour-note {

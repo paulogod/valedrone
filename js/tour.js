@@ -9,19 +9,18 @@
     var player = videojs('panorama', {
       loop: true,
       autoplay: false,
-      preload: 'metadata',
+      preload: 'auto',
+      controls: true,
       plugins: {
         pannellum: {
           autoLoad: true,
           loop: true,
-<<<<<<< HEAD
-          showControls: true,
+          showControls: false,
           hfov: 100,
-          minHfov: 50,
-          maxHfov: 120
-=======
-          showControls: true
->>>>>>> b8dd9ac5d8f282dce11b1f8cc58c518df89a6977
+          minHfov: 60,
+          maxHfov: 120,
+          yaw: 0,
+          pitch: 0
         }
       }
     });
@@ -33,4 +32,5 @@
     console.error('Erro ao inicializar o vídeo 360° com Pannellum:', e);
   }
 })();
+
 
