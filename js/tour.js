@@ -1,20 +1,32 @@
 /**
- * Tour 360° com Pannellum
- * Troque a URL do panorama pela sua imagem equirectangular (ex.: da pasta panoramas/).
+ * Tour 360° com Pannellum + Video.js
  */
 (function () {
   var videoEl = document.getElementById('panorama');
   if (!videoEl || typeof videojs === 'undefined') return;
 
-  // Inicializa o vídeo 360° usando Video.js + plugin Pannellum,
-  // conforme exemplo oficial: https://pannellum.org/documentation/examples/video/
   try {
-    videojs('panorama', {
+    var player = videojs('panorama', {
+      loop: true,
+      autoplay: false,
+      preload: 'metadata',
       plugins: {
-        pannellum: {},
-      },
+        pannellum: {
+          autoLoad: true,
+          loop: true,
+          showControls: true,
+          hfov: 100,
+          minHfov: 50,
+          maxHfov: 120
+        }
+      }
+    });
+
+    player.on('ended', function () {
+      player.play();
     });
   } catch (e) {
     console.error('Erro ao inicializar o vídeo 360° com Pannellum:', e);
   }
 })();
+
