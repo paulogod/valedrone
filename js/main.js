@@ -19,50 +19,55 @@
     });
   }
 
-  // Galeria de Vídeos TikTok com Carregamento sob Demanda e Tela Cheia
-  var tiktokCards = document.querySelectorAll('.gallery-item[data-video-id]');
-  tiktokCards.forEach(function (card) {
-    var cardInner = card.querySelector('.tiktok-card-inner');
-    if (!cardInner) return;
+  // Galeria de Vídeos Nativos com Controle de Play/Pause, Loop e Tela Cheia
+  var nativeWrappers = document.querySelectorAll('.native-video-wrapper');
+  nativeWrappers.forEach(function (wrapper) {
+    var video = wrapper.querySelector('video');
+    var fsBtn = wrapper.querySelector('.btn-native-fs');
+    if (!video) return;
 
-    cardInner.addEventListener('click', function () {
-      var videoId = card.getAttribute('data-video-id');
-      var title = card.getAttribute('data-title') || 'Vídeo Vale Drone';
-      if (!videoId || card.classList.contains('is-loaded')) return;
-
-      card.classList.add('is-loaded');
-
-      var fullscreenBar = document.createElement('div');
-      fullscreenBar.className = 'gallery-fullscreen-bar';
-
-      var fsBtn = document.createElement('button');
-      fsBtn.className = 'btn-fullscreen-toggle';
-      fsBtn.innerHTML = '⛶ Tela Cheia';
-      fsBtn.setAttribute('aria-label', 'Ver em tela cheia');
-
-      var iframe = document.createElement('iframe');
-      iframe.src = 'https://www.tiktok.com/embed/v2/' + videoId;
-      iframe.title = title;
-      iframe.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen');
-      iframe.setAttribute('allowfullscreen', 'true');
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      iframe.style.border = 'none';
-
-      fsBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (iframe.requestFullscreen) {
-          iframe.requestFullscreen();
-        } else if (iframe.webkitRequestFullscreen) {
-          iframe.webkitRequestFullscreen();
-        } else if (iframe.msRequestFullscreen) {
-          iframe.msRequestFullscreen();
+    // Pausa outros vídeos quando um iniciar a reprodução
+    video.addEventListener('play', function () {
+      nativeWrappers.forEach(function (otherWrapper) {
+        var otherVideo = otherWrapper.querySelector('video');
+        if (otherVideo && otherVideo !== video && !otherVideo.paused) {
+          otherVideo.pause();
+          otherWrapper.classList.remove('is-playing');
         }
       });
-
-      fullscreenBar.appendChild(fsBtn);
-      card.appendChild(fullscreenBar);
-      card.appendChild(iframe);
+      wrapper.classList.add('is-playing');
     });
+
+    video.addEventListener('pause', function () {
+      wrapper.classList.remove('is-playing');
+    });
+
+    // Clique no card para alternar Play / Pause
+    wrapper.addEventListener('click', function (e) {
+      if (e.target.closest('.btn-native-fs') || e.target.closest('.video-tiktok-btn')) {
+        return;
+      }
+      if (video.paused) {
+        video.play().catch(function () {});
+      } else {
+        video.pause();
+      }
+    });
+
+    // Botão de Tela Cheia Real
+    if (fsBtn) {
+      fsBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (video.requestFullscreen) {
+          video.requestFullscreen();
+        } else if (video.webkitRequestFullscreen) {
+          video.webkitRequestFullscreen();
+        } else if (video.webkitEnterFullscreen) { // iOS Safari
+          video.webkitEnterFullscreen();
+        } else if (video.msRequestFullscreen) {
+          video.msRequestFullscreen();
+        }
+      });
+    }
   });
 })();
