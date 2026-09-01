@@ -16,6 +16,7 @@
   <!-- Estilos do player de vídeo 360° (Video.js) -->
   <link href="https://vjs.zencdn.net/7.1.0/video-js.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/chat.css">
 </head>
 
 <body>
@@ -27,11 +28,11 @@
       </a>
       <nav class="nav">
         <a href="#servicos">Serviços</a>
+        <a href="#equipamentos">Equipamentos</a>
         <a href="#tour">Tour 360°</a>
         <a href="#galeria">Galeria</a>
         <a href="#contato">Contato</a>
-        <a href="https://drone-pilot-clima-612980702084.us-west1.run.app/" target="_blank"
-          rel="noopener noreferrer">Previsão de Voo</a>
+        <a href="https://drone-pilot-clima-612980702084.us-west1.run.app/" target="_blank" rel="noopener noreferrer">Previsão de Voo</a>
       </nav>
       <button class="menu-btn" aria-label="Abrir menu">
         <span></span><span></span><span></span>
@@ -40,8 +41,13 @@
   </header>
 
   <main>
-    <section class="hero">
+    <section class="hero hud-corners">
       <div class="hero-bg"></div>
+      <div class="crosshair-center"></div>
+      <div class="telemetry-overlay t-top-left"><span class="recording-dot"></span>REC<br>UAV-01</div>
+      <div class="telemetry-overlay t-top-right">ALT: 120m<br>SPD: 15m/s</div>
+      <div class="telemetry-overlay t-bottom-left">GPS: 45°N 73°W<br>BAT: 84%</div>
+      <div class="telemetry-overlay t-bottom-right">FOV: 120°<br>F/2.8 ISO 100</div>
       <div class="container hero-content">
         <p class="hero-tag">🚁 Filmagem Aérea & Tours 360°</p>
         <h1 class="hero-title">O céu <span class="highlight-negation">NÃO</span> é o limite!<span class="highlight-sub">Imagens aéreas em 4K e experiências em 360° que impressionam e vendem.</span></h1>
@@ -117,11 +123,109 @@
       </div>
     </section>
 
+    <!-- Frota e Equipamentos Homologados -->
+    <section id="equipamentos" class="section fleet">
+      <div class="container">
+        <div class="section-header-center">
+          <p class="section-tag">🛡️ Tecnologia de Ponta & Segurança</p>
+          <h2 class="section-title">Frota e Equipamentos Homologados</h2>
+          <p class="section-desc">Operação 100% regularizada nos órgãos aeronáuticos nacionais com drones profissionais de última geração.</p>
+        </div>
+
+        <div class="fleet-grid">
+          <!-- Card 1: DJI Neo 2 -->
+          <div class="fleet-card hud-corners">
+            <div class="fleet-card-media">
+              <img src="img/dji-neo.jpg" alt="Drone DJI Neo 2 - Filmagem com Drone" loading="lazy">
+              <div class="fleet-badge-floating">Ultra Compacto • 135g</div>
+            </div>
+            <div class="fleet-card-body">
+              <div class="fleet-card-header">
+                <h3 class="fleet-name">DJI Neo 2</h3>
+                <span class="fleet-model">Mini Drone FPV com Proteção Total</span>
+              </div>
+
+              <div class="fleet-focus-box">
+                <span class="focus-label">Foco:</span>
+                <p class="focus-text">Filmagens internas seguras (indoor), close-ups protegidos de pessoas, restaurantes, eventos sociais e imóveis de alto padrão.</p>
+              </div>
+
+              <ul class="fleet-specs">
+                <li><span class="spec-icon">📷</span> <div><strong>Vídeo 4K HDR:</strong> Imagens ultra-nítidas com estabilização mecânica</div></li>
+                <li><span class="spec-icon">🛡️</span> <div><strong>Proteção 360°:</strong> Grades protetoras nas hélices para voo seguro em ambientes fechados</div></li>
+                <li><span class="spec-icon">⚡</span> <div><strong>Agilidade & Silêncio:</strong> Voo suave sem ruído excessivo ou risco a pessoas</div></li>
+              </ul>
+
+              <div class="fleet-compliance">
+                <span class="compliance-badge"><span class="badge-dot"></span> ANAC SISANT Registrado</span>
+                <span class="compliance-badge"><span class="badge-dot"></span> DECEA Aprovado</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: DJI Avata 360 -->
+          <div class="fleet-card hud-corners">
+            <div class="fleet-card-media">
+              <img src="img/dji-avata-360.jpg" alt="Drone DJI Avata 360 - Tour 360 com Drone" loading="lazy">
+              <div class="fleet-badge-floating">Panorâmico Imersivo 360°</div>
+            </div>
+            <div class="fleet-card-body">
+              <div class="fleet-card-header">
+                <h3 class="fleet-name">DJI Avata 360</h3>
+                <span class="fleet-model">Cinewhoop FPV com Câmera Esférica 360°</span>
+              </div>
+
+              <div class="fleet-focus-box">
+                <span class="focus-label">Foco:</span>
+                <p class="focus-text">Tours virtuais 360° em alta velocidade, passagens aéreas contínuas, realidade virtual e cinematografia imersiva completa.</p>
+              </div>
+
+              <ul class="fleet-specs">
+                <li><span class="spec-icon">🌐</span> <div><strong>Vídeo Esférico 360°:</strong> Experiência interativa onde o cliente olha para qualquer direção</div></li>
+                <li><span class="spec-icon">🚀</span> <div><strong>Voo Cinewhoop FPV:</strong> Entradas dinâmicas em portas, janelas e trajetos complexos</div></li>
+                <li><span class="spec-icon">🎯</span> <div><strong>Estabilização HorizonSteady:</strong> Horizonte sempre 100% nivelado mesmo em manobras</div></li>
+              </ul>
+
+              <div class="fleet-compliance">
+                <span class="compliance-badge"><span class="badge-dot"></span> ANAC SISANT Registrado</span>
+                <span class="compliance-badge"><span class="badge-dot"></span> DECEA Aprovado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de Pilares Regulatórios -->
+        <div class="regulation-bar">
+          <div class="regulation-item">
+            <span class="reg-icon">📄</span>
+            <div>
+              <strong>Registro ANAC / SISANT</strong>
+              <p>Drones cadastrados oficialmente no Sistema de Aeronaves Não Tripuladas</p>
+            </div>
+          </div>
+          <div class="regulation-item">
+            <span class="reg-icon">📡</span>
+            <div>
+              <strong>Autorização DECEA / SARPAS</strong>
+              <p>Planos de voo solicitados e autorizados no controle do espaço aéreo brasileiro</p>
+            </div>
+          </div>
+          <div class="regulation-item">
+            <span class="reg-icon">🛡️</span>
+            <div>
+              <strong>Seguro Obrigatório RETA</strong>
+              <p>Proteção e responsabilidade civil em todas as operações aéreas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="tour" class="section tour-section">
       <div class="container">
         <h2 class="section-title">Tour 360°</h2>
         <p class="section-desc">Clique e arraste para explorar. Use o scroll para zoom.</p>
-        <div class="panorama-container">
+        <div class="panorama-container hud-corners">
           <video id="panorama" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" loop
             playsinline webkit-playsinline poster="panoramas/poster.jpg" style="width:100%;height:100%;" crossorigin="anonymous">
             <source src="panoramas/tour360.mp4" type="video/mp4" />
@@ -131,7 +235,7 @@
           </video>
         </div>
 
-        <div class="tour-youtube-badge">
+        <div class="tour-youtube-badge hud-corners">
           <div class="tour-youtube-info">
             <span class="youtube-badge-icon">▶</span>
             <div>
@@ -154,7 +258,7 @@
         <p class="section-desc">Confira nossos voos recentes. Clique para dar play com som e use o botão de tela cheia.</p>
         <div class="gallery-grid">
           <!-- Vídeo 1 -->
-          <div class="gallery-item">
+          <div class="gallery-item hud-corners">
             <div class="native-video-wrapper">
               <video class="native-drone-video" preload="metadata" loop playsinline poster="videos/memorial_cover.jpg">
                 <source src="videos/memorial.mp4" type="video/mp4">
@@ -179,7 +283,7 @@
           </div>
 
           <!-- Vídeo 2 -->
-          <div class="gallery-item">
+          <div class="gallery-item hud-corners">
             <div class="native-video-wrapper">
               <video class="native-drone-video" preload="metadata" loop playsinline poster="videos/paratiana_cover.jpg">
                 <source src="videos/paratiana.mp4" type="video/mp4">
@@ -204,7 +308,7 @@
           </div>
 
           <!-- Vídeo 3 -->
-          <div class="gallery-item landscape-desktop">
+          <div class="gallery-item hud-corners landscape-desktop">
             <div class="native-video-wrapper">
               <video class="native-drone-video responsive-landscape-video" preload="metadata" loop playsinline
                 poster="videos/drone_4k_landscape_cover.jpg"
@@ -234,7 +338,7 @@
           </div>
 
           <!-- Vídeo 4 -->
-          <div class="gallery-item landscape-desktop">
+          <div class="gallery-item hud-corners landscape-desktop">
             <div class="native-video-wrapper">
               <video class="native-drone-video responsive-landscape-video" preload="metadata" loop playsinline
                 poster="videos/por_do_sol_landscape_cover.jpg"
@@ -266,20 +370,98 @@
       </div>
     </section>
 
+    <!-- Seção de Contato e Orçamento Rápido -->
     <section id="contato" class="section contact">
       <div class="container">
-        <h2 class="section-title">Pronto para elevar seu projeto ao próximo nível?</h2>
-        <p class="section-desc">Orçamento via WhatsApp e e-mail sem compromisso. Resposta rápida e atendimento personalizado.</p>
-        <div class="contact-box">
-          <div class="contact-links-group">
-            <a href="https://wa.me/5512996192233?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20um%20or%C3%A7amento%20de%20filmagem%20com%20drone." class="contact-link whatsapp-link" target="_blank" rel="noopener">📱 WhatsApp: (12) 99619-2233</a>
-            <a href="mailto:contato@valedrone.com.br" class="contact-link">✉️ contato@valedrone.com.br</a>
+        <div class="section-header-center">
+          <p class="section-tag">💬 Atendimento Rápido & Sem Compromisso</p>
+          <h2 class="section-title">Pronto para elevar seu projeto ao próximo nível?</h2>
+          <p class="section-desc">Solicite seu orçamento em poucos minutos. Atendemos todo o Vale do Paraíba, Litoral Norte e Serra da Mantiqueira com resposta ágil.</p>
+        </div>
+
+        <div class="contact-card-main hud-corners">
+          <!-- 1. Seletor Rápido de Orçamento no WhatsApp -->
+          <div class="quote-selector-section">
+            <h3 class="quote-selector-title">Selecione o serviço para orçamento direto no WhatsApp:</h3>
+            <div class="quote-chips-grid">
+              <a href="https://wa.me/5512996192233?text=Ol%C3%A1%20Vale%20Drone!%20Gostaria%20de%20um%20or%C3%A7amento%20para%20Filmagem%20de%20Im%C3%B3vel%20%2F%20Loteamento." target="_blank" rel="noopener" class="quote-chip">
+                <span class="chip-icon">🏢</span>
+                <div class="chip-info">
+                  <span class="chip-name">Imóveis & Loteamentos</span>
+                  <span class="chip-sub">Vídeo 4K para aceleração de vendas</span>
+                </div>
+                <span class="chip-arrow">→</span>
+              </a>
+
+              <a href="https://wa.me/5512996192233?text=Ol%C3%A1%20Vale%20Drone!%20Gostaria%20de%20um%20or%C3%A7amento%20para%20Tour%20Virtual%20360%C2%B0." target="_blank" rel="noopener" class="quote-chip">
+                <span class="chip-icon">🌐</span>
+                <div class="chip-info">
+                  <span class="chip-name">Tour Virtual 360°</span>
+                  <span class="chip-sub">Experiência imersiva interativa</span>
+                </div>
+                <span class="chip-arrow">→</span>
+              </a>
+
+              <a href="https://wa.me/5512996192233?text=Ol%C3%A1%20Vale%20Drone!%20Gostaria%20de%20um%20or%C3%A7amento%20para%20Acompanhamento%20de%20Obras%20%2F%20Inspe%C3%A7%C3%A3o." target="_blank" rel="noopener" class="quote-chip">
+                <span class="chip-icon">🏗️</span>
+                <div class="chip-info">
+                  <span class="chip-name">Obras & Inspeções</span>
+                  <span class="chip-sub">Relatórios e vistorias técnicas</span>
+                </div>
+                <span class="chip-arrow">→</span>
+              </a>
+
+              <a href="https://wa.me/5512996192233?text=Ol%C3%A1%20Vale%20Drone!%20Gostaria%20de%20um%20or%C3%A7amento%20para%20Filmagem%20de%20Eventos%20%2F%20Institucional." target="_blank" rel="noopener" class="quote-chip">
+                <span class="chip-icon">🎉</span>
+                <div class="chip-info">
+                  <span class="chip-name">Eventos & Institucional</span>
+                  <span class="chip-sub">Festas, turismo e coberturas</span>
+                </div>
+                <span class="chip-arrow">→</span>
+              </a>
+            </div>
           </div>
-          <div class="contact-social">
-            <p class="contact-social-label">Siga nossas produções aéreas nas redes:</p>
-            <div class="contact-social-links">
-              <a href="https://www.instagram.com/vale.drone" target="_blank" rel="noopener">Instagram: @vale.drone</a>
-              <a href="https://www.tiktok.com/@valedrone" target="_blank" rel="noopener">TikTok: @valedrone</a>
+
+          <div class="contact-divider"></div>
+
+          <!-- 2. Canais Diretos de Contato -->
+          <div class="direct-channels-grid">
+            <a href="https://wa.me/5512996192233?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20um%20or%C3%A7amento." class="channel-card whatsapp-channel" target="_blank" rel="noopener">
+              <div class="channel-icon-box whatsapp-bg">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+              </div>
+              <div class="channel-details">
+                <span class="channel-tag">Conversa Direta • Resposta em até 15 min</span>
+                <span class="channel-main">(12) 99619-2233</span>
+                <span class="channel-action">Abrir no WhatsApp →</span>
+              </div>
+            </a>
+
+            <a href="mailto:contato@valedrone.com.br" class="channel-card email-channel">
+              <div class="channel-icon-box email-bg">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </div>
+              <div class="channel-details">
+                <span class="channel-tag">E-mail Corporativo</span>
+                <span class="channel-main">contato@valedrone.com.br</span>
+                <span class="channel-action">Enviar mensagem →</span>
+              </div>
+            </a>
+          </div>
+
+          <!-- 3. Redes Sociais e Cobertura Geográfica -->
+          <div class="contact-footer-info">
+            <div class="social-pills">
+              <span class="social-pills-label">Siga nosso trabalho:</span>
+              <a href="https://www.instagram.com/vale.drone" target="_blank" rel="noopener" class="social-pill">
+                <span>📸 Instagram:</span> <strong>@vale.drone</strong>
+              </a>
+              <a href="https://www.tiktok.com/@valedrone" target="_blank" rel="noopener" class="social-pill">
+                <span>🎵 TikTok:</span> <strong>@valedrone</strong>
+              </a>
+            </div>
+            <div class="coverage-note">
+              📍 <strong>Região de Atendimento:</strong> São José dos Campos, Taubaté, Jacareí, Caçapava, Pindamonhangaba, Litoral Norte (Ubatuba, Caraguá, São Sebastião, Ilhabela) e Serra da Mantiqueira.
             </div>
           </div>
         </div>
@@ -293,12 +475,69 @@
     </div>
   </footer>
 
+  <!-- Botão Flutuante de WhatsApp para Celular e Desktop -->
+  <a href="https://wa.me/5512996192233?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20um%20or%C3%A7amento%20de%20filmagem%20com%20drone."
+    class="whatsapp-float-btn" target="_blank" rel="noopener" aria-label="Solicitar orçamento no WhatsApp">
+    <div class="whatsapp-float-pulse"></div>
+    <div class="whatsapp-float-icon">
+      <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+    </div>
+    <span class="whatsapp-float-tooltip">Orçamento via WhatsApp</span>
+  </a>
+
+  <!-- Chatbot Widget -->
+  <div id="chat-widget" class="chat-widget">
+    <button id="chat-toggle" class="chat-toggle" aria-label="Abrir chat">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </button>
+
+    <div id="chat-window" class="chat-window hidden">
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <h3>Assistente ValeDrone</h3>
+          <span class="status">Online (Local)</span>
+        </div>
+        <button id="chat-close" class="chat-close" aria-label="Fechar chat">&times;</button>
+      </div>
+      <div id="chat-login-screen" class="chat-login-screen">
+        <p>Preencha seus dados para iniciar o atendimento:</p>
+        <input type="text" id="login-name" placeholder="Seu Nome" required>
+        <input type="email" id="login-email" placeholder="Seu E-mail" required>
+        <input type="tel" id="login-phone" placeholder="Seu WhatsApp (com DDD)" required>
+        <label class="chat-consent">
+          <input type="checkbox" id="login-consent" required>
+          <span>Autorizo o uso dos meus dados para retorno do atendimento.</span>
+        </label>
+        <button id="login-start-btn" class="btn btn-primary">Iniciar Conversa</button>
+      </div>
+
+      <div id="chat-messages" class="chat-messages hidden">
+        <!-- As mensagens aparecerão aqui -->
+      </div>
+      <div class="chat-input-area hidden" id="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Digite sua mensagem..." autocomplete="off">
+        <button id="chat-send" aria-label="Enviar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
   <!-- Scripts do player de vídeo 360° (Video.js + plugin Pannellum) -->
   <script src="https://vjs.zencdn.net/7.1.0/video.js"></script>
   <script src="https://pannellum.org/js/videojs-pannellum-plugin.js"></script>
   <script src="js/tour.js"></script>
   <script src="js/main.js"></script>
+  <script src="config.js"></script>
+  <script src="js/chat.js"></script>
 </body>
 
 </html>

@@ -795,75 +795,581 @@ body {
   color: #fff;
   text-decoration: underline;
 }
-
-/* Contact */
-.contact-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 2rem;
-  text-align: center;
+/* ==========================================================================
+   Frota & Equipamentos Homologados (ANAC / DECEA)
+   ========================================================================== */
+.fleet {
+  background: radial-gradient(circle at top right, rgba(250, 204, 21, 0.04) 0%, transparent 60%),
+              radial-gradient(circle at bottom left, rgba(6, 182, 212, 0.04) 0%, transparent 60%),
+              var(--bg-card);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
-.contact-links-group {
+.section-header-center {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 3rem;
+}
+
+.section-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+.fleet-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  margin-bottom: 3.5rem;
+}
+
+@media (min-width: 900px) {
+  .fleet-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.fleet-card {
+  background: #020617;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.contact-link {
-  font-size: 1.25rem;
-  font-weight: 500;
+.fleet-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(250, 204, 21, 0.4);
+  box-shadow: 0 16px 40px rgba(250, 204, 21, 0.15);
+}
+
+.fleet-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #000;
+}
+
+.fleet-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.fleet-card:hover .fleet-card-media img {
+  transform: scale(1.04);
+}
+
+.fleet-badge-floating {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--accent);
   color: var(--accent);
-  text-decoration: none;
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border: 1px solid rgba(250, 204, 21, 0.2);
-  border-radius: 4px;
-  transition: all 0.2s;
-  width: fit-content;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-.contact-link:hover {
-  background: rgba(250, 204, 21, 0.1);
-  box-shadow: 0 0 10px var(--accent-dim);
-  text-decoration: none;
+.fleet-card-body {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
-.contact-tip {
+.fleet-card-header {
+  margin-bottom: 1.25rem;
+}
+
+.fleet-name {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.35rem;
+}
+
+.fleet-model {
   font-size: 0.9rem;
-  color: var(--text-muted);
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.fleet-focus-box {
+  background: rgba(250, 204, 21, 0.05);
+  border-left: 3px solid var(--accent);
+  padding: 0.85rem 1.15rem;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 1.5rem;
+}
+
+.focus-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.focus-text {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.5;
   margin: 0;
 }
 
-.contact-social {
-  margin-top: 1.5rem;
+.fleet-specs {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.contact-social-label {
+.fleet-specs li {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  line-height: 1.4;
+}
+
+.fleet-specs strong {
+  color: #fff;
+}
+
+.fleet-compliance {
+  margin-top: auto;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.compliance-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #a7f3d0;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+/* Barra Regulamentar */
+.regulation-bar {
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .regulation-bar {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.regulation-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.reg-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.regulation-item strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.regulation-item p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Contato Reformulado & Otimização de Espaçamento
+   ========================================================================== */
+.contact {
+  padding: 6rem 0;
+  position: relative;
+}
+
+.contact-card-main {
+  background: #020617;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+}
+
+@media (min-width: 768px) {
+  .contact-card-main {
+    padding: 3.5rem;
+  }
+}
+
+/* Seletor Rápido de Orçamento */
+.quote-selector-section {
+  margin-bottom: 2.5rem;
+}
+
+.quote-selector-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  margin: 0 0 1.75rem;
+}
+
+.quote-chips-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .quote-chips-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.quote-chip {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.quote-chip:hover {
+  background: rgba(250, 204, 21, 0.06);
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(250, 204, 21, 0.12);
+  text-decoration: none;
+}
+
+.chip-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.chip-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chip-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.15rem;
+}
+
+.chip-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.chip-arrow {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: transform 0.2s ease;
+}
+
+.quote-chip:hover .chip-arrow {
+  transform: translateX(4px);
+}
+
+.contact-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
+  margin: 2.5rem 0;
+}
+
+/* Canais Diretos de Contato */
+.direct-channels-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .direct-channels-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.channel-card {
+  background: rgba(2, 6, 23, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.channel-card:hover {
+  transform: translateY(-4px);
+  text-decoration: none;
+}
+
+.whatsapp-channel {
+  border-color: rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-channel:hover {
+  border-color: #25d366;
+  box-shadow: 0 8px 25px rgba(37, 211, 102, 0.2);
+}
+
+.email-channel:hover {
+  border-color: var(--accent);
+  box-shadow: 0 8px 25px rgba(250, 204, 21, 0.15);
+}
+
+.channel-icon-box {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.whatsapp-bg {
+  background: rgba(37, 211, 102, 0.15);
+  color: #25d366;
+}
+
+.email-bg {
+  background: rgba(250, 204, 21, 0.15);
+  color: var(--accent);
+}
+
+.channel-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.channel-tag {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.channel-main {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.channel-action {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.whatsapp-channel .channel-action {
+  color: #25d366;
+}
+
+/* Informações de Rodapé do Contato */
+.contact-footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.social-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.social-pills-label {
   font-size: 0.9rem;
   color: var(--text-muted);
 }
 
-.contact-social-links {
-  margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  align-items: center;
-}
-
-.contact-social a {
+.social-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
   color: var(--text);
+  padding: 0.45rem 1rem;
+  border-radius: 30px;
+  font-size: 0.85rem;
   text-decoration: none;
-  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
 }
 
-.contact-social a:hover {
+.social-pill strong {
   color: var(--accent);
-  text-decoration: underline;
+}
+
+.social-pill:hover {
+  background: rgba(250, 204, 21, 0.1);
+  border-color: var(--accent);
+  color: #fff;
+  text-decoration: none;
+}
+
+.coverage-note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.85rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.coverage-note strong {
+  color: #fff;
+}
+
+/* ==========================================================================
+   Botão Flutuante de WhatsApp (Mobile & Desktop)
+   ========================================================================== */
+.whatsapp-float-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.whatsapp-float-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 25px rgba(37, 211, 102, 0.45);
+  position: relative;
+  z-index: 2;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.whatsapp-float-btn:hover .whatsapp-float-icon {
+  transform: scale(1.1);
+  box-shadow: 0 8px 30px rgba(37, 211, 102, 0.7);
+}
+
+.whatsapp-float-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #25d366;
+  opacity: 0.6;
+  z-index: 1;
+  animation: waPulse 2s infinite ease-out;
+}
+
+@keyframes waPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.whatsapp-float-tooltip {
+  display: none;
+  background: #020617;
+  color: #fff;
+  border: 1px solid rgba(37, 211, 102, 0.4);
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .whatsapp-float-btn:hover .whatsapp-float-tooltip {
+    display: block;
+  }
 }
 
 /* Footer */
