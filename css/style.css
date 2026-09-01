@@ -631,21 +631,26 @@ body {
 
 .gallery-item {
   width: 100%;
-  max-width: 480px;
+  max-width: 380px;
+  min-height: 560px;
   display: flex;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg-card);
-  padding: 0.5rem;
+  padding: 0;
   box-sizing: border-box;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-.gallery-item .tiktok-embed {
-  margin: 0 auto !important;
+.gallery-item iframe {
   width: 100% !important;
-  min-width: 100% !important;
+  height: 560px !important;
+  border: none !important;
+  border-radius: 12px;
+  display: block;
+  background: #020617;
 }
 
 .gallery-item img {
