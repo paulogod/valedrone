@@ -16,7 +16,6 @@
   <!-- Estilos do player de vídeo 360° (Video.js) -->
   <link href="https://vjs.zencdn.net/7.1.0/video-js.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/chat.css">
 </head>
 
 <body>
@@ -485,59 +484,12 @@
     <span class="whatsapp-float-tooltip">Orçamento via WhatsApp</span>
   </a>
 
-  <!-- Chatbot Widget -->
-  <div id="chat-widget" class="chat-widget">
-    <button id="chat-toggle" class="chat-toggle" aria-label="Abrir chat">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      </svg>
-    </button>
-
-    <div id="chat-window" class="chat-window hidden">
-      <div class="chat-header">
-        <div class="chat-header-info">
-          <h3>Assistente ValeDrone</h3>
-          <span class="status">Online (Local)</span>
-        </div>
-        <button id="chat-close" class="chat-close" aria-label="Fechar chat">&times;</button>
-      </div>
-      <div id="chat-login-screen" class="chat-login-screen">
-        <p>Preencha seus dados para iniciar o atendimento:</p>
-        <input type="text" id="login-name" placeholder="Seu Nome" required>
-        <input type="email" id="login-email" placeholder="Seu E-mail" required>
-        <input type="tel" id="login-phone" placeholder="Seu WhatsApp (com DDD)" required>
-        <label class="chat-consent">
-          <input type="checkbox" id="login-consent" required>
-          <span>Autorizo o uso dos meus dados para retorno do atendimento.</span>
-        </label>
-        <button id="login-start-btn" class="btn btn-primary">Iniciar Conversa</button>
-      </div>
-
-      <div id="chat-messages" class="chat-messages hidden">
-        <!-- As mensagens aparecerão aqui -->
-      </div>
-      <div class="chat-input-area hidden" id="chat-input-area">
-        <input type="text" id="chat-input" placeholder="Digite sua mensagem..." autocomplete="off">
-        <button id="chat-send" aria-label="Enviar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
   <!-- Scripts do player de vídeo 360° (Video.js + plugin Pannellum) -->
   <script src="https://vjs.zencdn.net/7.1.0/video.js"></script>
   <script src="https://pannellum.org/js/videojs-pannellum-plugin.js"></script>
   <script src="js/tour.js"></script>
   <script src="js/main.js"></script>
-  <script src="config.js"></script>
-  <script src="js/chat.js"></script>
 </body>
 
 </html>
