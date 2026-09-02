@@ -13,8 +13,6 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
-  <!-- Estilos do player de vídeo 360° (Video.js) -->
-  <link href="https://vjs.zencdn.net/7.1.0/video-js.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -225,13 +223,7 @@
         <h2 class="section-title">Tour 360°</h2>
         <p class="section-desc">Clique e arraste para explorar. Use o scroll para zoom.</p>
         <div class="panorama-container hud-corners">
-          <video id="panorama" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" loop
-            playsinline webkit-playsinline poster="panoramas/poster.jpg" style="width:100%;height:100%;" crossorigin="anonymous">
-            <source src="panoramas/tour360.mp4" type="video/mp4" />
-            <p class="vjs-no-js">
-              Para ver este vídeo 360°, habilite o JavaScript e use um navegador compatível com HTML5.
-            </p>
-          </video>
+          <div id="panorama" style="width: 100%; height: 100%;"></div>
         </div>
 
         <div class="tour-youtube-badge hud-corners">
@@ -485,9 +477,6 @@
   </a>
 
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
-  <!-- Scripts do player de vídeo 360° (Video.js + plugin Pannellum) -->
-  <script src="https://vjs.zencdn.net/7.1.0/video.js"></script>
-  <script src="https://pannellum.org/js/videojs-pannellum-plugin.js"></script>
   <script src="js/tour.js"></script>
   <script src="js/main.js"></script>
 </body>

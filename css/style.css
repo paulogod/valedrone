@@ -516,82 +516,33 @@ body {
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: #020617 url('../panoramas/poster.jpg') center center / cover no-repeat !important;
+  background: #020617;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
-.panorama-container .video-js {
+.panorama-container #panorama {
   width: 100% !important;
   height: 100% !important;
   position: relative;
-  background-color: transparent !important;
 }
 
 .panorama-container .pnlm-container {
   width: 100% !important;
   height: 100% !important;
-  position: absolute;
-  top: 0;
-  left: 0;
   border-radius: 12px;
-  z-index: 1 !important;
-  pointer-events: auto !important;
-  background-color: transparent !important;
 }
 
 .panorama-container .pnlm-render-container {
   cursor: grab !important;
-  background-color: transparent !important;
 }
 
 .panorama-container .pnlm-render-container:active {
   cursor: grabbing !important;
 }
 
-.panorama-container .vjs-control-bar {
-  z-index: 10 !important;
-  pointer-events: auto !important;
-  background: rgba(2, 6, 23, 0.85) !important;
-  backdrop-filter: blur(8px);
-}
-
-.panorama-container .vjs-big-play-button {
-  z-index: 10 !important;
-  pointer-events: auto !important;
-  background-color: rgba(250, 204, 21, 0.9) !important;
-  border-color: var(--accent) !important;
-  color: #020617 !important;
-  border-radius: 50% !important;
-  width: 2.4em !important;
-  height: 2.4em !important;
-  line-height: 2.4em !important;
-  margin-top: -1.2em !important;
-  margin-left: -1.2em !important;
-  transition: transform 0.2s, background-color 0.2s;
-}
-
-.panorama-container .vjs-big-play-button:hover {
-  transform: scale(1.1);
-  background-color: #facc15 !important;
-}
-
-.panorama-container .vjs-text-track-display,
-.panorama-container .vjs-modal-dialog,
-.panorama-container .vjs-poster {
-  pointer-events: none !important;
-}
-
-.panorama-container .pnlm-load-box,
-.panorama-container .pnlm-lbox,
-.panorama-container .pnlm-loading-msg,
-.panorama-container .pnlm-load-button,
-.panorama-container .pnlm-error-msg,
-.panorama-container .pnlm-info-box {
-  display: none !important;
-}
-
 @media (max-width: 768px) {
   .panorama-container {
-    height: 380px;
+    height: 360px;
   }
 }
 
@@ -1106,6 +1057,7 @@ body {
 .contact {
   padding: 6rem 0;
   position: relative;
+  overflow: hidden;
 }
 
 .contact-card-main {
@@ -1114,7 +1066,10 @@ body {
   border-radius: 20px;
   padding: 2.5rem;
   max-width: 960px;
+  width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
+  overflow: hidden;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
 }
 
@@ -1127,6 +1082,8 @@ body {
 /* Seletor Rápido de Orçamento */
 .quote-selector-section {
   margin-bottom: 2.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .quote-selector-title {
@@ -1141,6 +1098,8 @@ body {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
@@ -1158,6 +1117,8 @@ body {
   align-items: center;
   gap: 1rem;
   text-decoration: none;
+  box-sizing: border-box;
+  min-width: 0;
   transition: all 0.25s ease;
 }
 
@@ -1172,12 +1133,15 @@ body {
 .chip-icon {
   font-size: 1.75rem;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .chip-info {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .chip-name {
@@ -1185,17 +1149,20 @@ body {
   font-weight: 600;
   color: #fff;
   margin-bottom: 0.15rem;
+  white-space: normal;
 }
 
 .chip-sub {
   font-size: 0.8rem;
   color: var(--text-muted);
+  white-space: normal;
 }
 
 .chip-arrow {
   color: var(--accent);
   font-weight: 700;
   font-size: 1.1rem;
+  flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 
@@ -1207,6 +1174,7 @@ body {
   height: 1px;
   background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
   margin: 2.5rem 0;
+  width: 100%;
 }
 
 /* Canais Diretos de Contato */
@@ -1215,6 +1183,8 @@ body {
   grid-template-columns: 1fr;
   gap: 1.5rem;
   margin-bottom: 2.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
@@ -1232,6 +1202,9 @@ body {
   align-items: center;
   gap: 1.25rem;
   text-decoration: none;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
   transition: all 0.25s ease;
 }
 
@@ -1277,6 +1250,9 @@ body {
 .channel-details {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 .channel-tag {
@@ -1284,13 +1260,16 @@ body {
   font-family: var(--font-mono);
   color: var(--text-muted);
   margin-bottom: 0.2rem;
+  white-space: normal;
 }
 
 .channel-main {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #fff;
   margin-bottom: 0.25rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .channel-action {
@@ -1310,6 +1289,8 @@ body {
   gap: 1.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .social-pills {
@@ -1337,6 +1318,8 @@ body {
   align-items: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .social-pill strong {
@@ -1359,10 +1342,65 @@ body {
   padding: 0.85rem 1.25rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.04);
+  width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
 }
 
 .coverage-note strong {
   color: #fff;
+}
+
+/* Ajustes Específicos para Mobile (< 768px) */
+@media (max-width: 767px) {
+  .contact {
+    padding: 3.5rem 0;
+  }
+  .contact-card-main {
+    padding: 1.5rem 0.85rem;
+    border-radius: 14px;
+  }
+  .quote-selector-title {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .quote-chip {
+    padding: 0.85rem 0.85rem;
+    gap: 0.65rem;
+  }
+  .chip-icon {
+    font-size: 1.4rem;
+  }
+  .chip-name {
+    font-size: 0.92rem;
+  }
+  .chip-sub {
+    font-size: 0.75rem;
+  }
+  .channel-card {
+    padding: 1.1rem 0.85rem;
+    gap: 0.75rem;
+  }
+  .channel-icon-box {
+    width: 44px;
+    height: 44px;
+  }
+  .channel-main {
+    font-size: 0.95rem;
+  }
+  .social-pills {
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+  }
+  .social-pill {
+    width: 100%;
+    justify-content: center;
+  }
+  .coverage-note {
+    padding: 0.85rem;
+    font-size: 0.78rem;
+  }
 }
 
 /* ==========================================================================

@@ -1,41 +1,38 @@
 /**
- * Tour 360° com Video.js + Plugin Pannellum Oficial
+ * Tour 360° Interativo com Pannellum Oficial
  */
 (function () {
-  var videoEl = document.getElementById('panorama');
-  if (!videoEl || typeof videojs === 'undefined') return;
+  function initPannellum() {
+    var panoramaEl = document.getElementById('panorama');
+    if (!panoramaEl || typeof pannellum === 'undefined') return;
 
-  try {
-    var player = videojs('panorama', {
-      loop: true,
-      autoplay: false,
-      preload: 'auto',
-      controls: true,
-      playsinline: true,
-      poster: 'panoramas/poster.jpg',
-      plugins: {
-        pannellum: {
-          showControls: false,
-          autoRotate: -1.5,
-          autoRotateInactivityDelay: 3000,
-          hfov: 100,
-          minHfov: 50,
-          maxHfov: 120,
-          yaw: 0,
-          pitch: -5
-        }
-      }
-    });
+    try {
+      pannellum.viewer('panorama', {
+        type: 'equirectangular',
+        panorama: 'panoramas/poster.jpg',
+        autoLoad: true,
+        autoRotate: -1.5,
+        autoRotateInactivityDelay: 3000,
+        compass: false,
+        showControls: true,
+        showFullscreenCtrl: true,
+        showZoomCtrl: true,
+        mouseZoom: true,
+        hfov: 100,
+        minHfov: 50,
+        maxHfov: 120,
+        yaw: 0,
+        pitch: -5
+      });
+    } catch (e) {
+      console.warn('Erro ao inicializar o tour 360:', e);
+    }
+  }
 
-    player.ready(function () {
-      player.poster('panoramas/poster.jpg');
-    });
-
-    player.on('ended', function () {
-      player.play();
-    });
-  } catch (e) {
-    console.warn('Erro ao inicializar o player 360:', e);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPannellum);
+  } else {
+    initPannellum();
   }
 })();
 
