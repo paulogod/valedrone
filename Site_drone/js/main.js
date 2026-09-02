@@ -106,5 +106,28 @@
     window.addEventListener('resize', checkOrientation);
   }
 
+  // Alternador de Abas do Tour 360° (Vídeo 360 YouTube vs Foto Panorâmica HD)
+  function setupTourTabs() {
+    var tabBtns = document.querySelectorAll('.tour-tab-btn');
+    if (!tabBtns.length) return;
+
+    tabBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var targetTab = btn.getAttribute('data-tab');
+        tabBtns.forEach(function (b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tour-tab-content').forEach(function (content) {
+          content.classList.remove('active');
+        });
+
+        btn.classList.add('active');
+        var targetContent = document.getElementById('tab-' + targetTab);
+        if (targetContent) {
+          targetContent.classList.add('active');
+        }
+      });
+    });
+  }
+
+  setupTourTabs();
   setupResponsiveLandscapeVideos();
 })();
