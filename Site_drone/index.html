@@ -228,7 +228,7 @@
 
         <div class="tour-tabs-nav">
           <button type="button" class="tour-tab-btn active" data-tab="photo-360">📸 Foto Panorâmica 360° HD (Interativa)</button>
-          <button type="button" class="tour-tab-btn" data-tab="video-360">🎥 Vídeo 360° (YouTube)</button>
+          <button type="button" class="tour-tab-btn" data-tab="video-360">🎥 Vídeo 360° (Interativo)</button>
         </div>
 
         <!-- 1. Foto Panorâmica 360° HD (Navegação com os dedos) -->
@@ -238,16 +238,11 @@
           </div>
         </div>
 
-        <!-- 2. Player de Vídeo 360° no YouTube -->
+        <!-- 2. Video 360 interativo, servido pelo player proprio.
+             O embed do YouTube em <iframe> nao repassa o arraste do dedo. -->
         <div id="tab-video-360" class="tour-tab-content">
-          <div class="tour-video-frame-box hud-corners">
-            <iframe
-              id="youtube-360-iframe"
-              src="https://www.youtube-nocookie.com/embed/DlHx9jSH0Io?rel=0&enablejsapi=1"
-              title="Tour 360 Vale Drone"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; xr-spatial-tracking"
-              allowfullscreen>
-            </iframe>
+          <div class="panorama-container hud-corners">
+            <div id="panorama-video" style="width: 100%; height: 100%;"></div>
           </div>
         </div>
 
