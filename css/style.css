@@ -534,13 +534,20 @@ body {
 
 .panorama-container {
   width: 100%;
-  height: 500px;
+  /* Altura fluida: acompanha o aparelho sem salto entre desktop e celular. */
+  height: clamp(320px, 56vw, 540px);
   position: relative;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: #020617;
+  background: #020617 center / cover no-repeat;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  /* Sem isto o arraste no panorama rola/dá zoom na página no iOS e Android. */
+  touch-action: none;
+  overscroll-behavior: contain;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .panorama-container #panorama {
@@ -549,24 +556,264 @@ body {
   position: relative;
 }
 
+/* O Pannellum pinta um quadriculado cinza claro enquanto carrega e quando
+   falha. Trocamos pelo fundo escuro do site. */
 .panorama-container .pnlm-container {
   width: 100% !important;
   height: 100% !important;
-  border-radius: 12px;
+  border-radius: inherit;
+  background: transparent none !important;
+}
+
+.panorama-container .pnlm-render-container,
+.panorama-container .pnlm-dragfix,
+.panorama-container canvas {
+  touch-action: none;
 }
 
 .panorama-container .pnlm-render-container {
-  cursor: grab !important;
+  cursor: grab;
 }
 
 .panorama-container .pnlm-render-container:active {
-  cursor: grabbing !important;
+  cursor: grabbing;
 }
 
+/* Mensagens de erro nativas do Pannellum: usamos a nossa camada. */
+.panorama-container .pnlm-info-box {
+  display: none !important;
+}
+
+/* No Android o Pannellum cria o proprio botao de giroscopio; o nosso ja
+   cobre iOS e Android, entao escondemos o dele para nao duplicar. */
+.panorama-container .pnlm-orientation-button {
+  display: none !important;
+}
+
+/* Controles de zoom do Pannellum no visual escuro do site. */
+.panorama-container .pnlm-controls-container {
+  top: 10px;
+  left: 10px;
+}
+
+.panorama-container .pnlm-controls {
+  background-color: rgba(2, 6, 23, 0.72);
+  border-color: rgba(250, 204, 21, 0.35);
+  border-radius: 10px;
+  overflow: hidden;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.panorama-container .pnlm-control:hover {
+  background-color: rgba(250, 204, 21, 0.18);
+}
+
+.panorama-container .pnlm-zoom-out {
+  border-top-color: rgba(250, 204, 21, 0.25);
+}
+
+.panorama-container .pnlm-sprite {
+  filter: invert(1);
+}
+
+/* Tela cheia nativa (desktop e Android). */
+.panorama-container:fullscreen {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.panorama-container:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.panorama-container:-ms-fullscreen {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+/* iPhone/iPad: o Safari não deixa um <div> entrar em tela cheia nativa,
+   então cobrimos a viewport na mão. Nenhum ancestral usa transform/filter,
+   por isso o position:fixed se ancora na viewport. */
+.panorama-container.is-pseudo-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  z-index: 9999;
+}
+
+body.pano-fs-lock {
+  overflow: hidden;
+}
+
+/* No celular vale mais altura do que largura: a barra do navegador entra na
+   conta com dvh, e o vh fica como reserva para os aparelhos antigos. */
 @media (max-width: 768px) {
   .panorama-container {
-    height: 360px;
+    height: min(62vh, 460px);
+    height: min(62dvh, 460px);
   }
+}
+
+/* Controles próprios do tour (tela cheia e giroscópio) */
+.pano-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+}
+
+.pano-ctrl {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+  color: #fff;
+  background: rgba(2, 6, 23, 0.72);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  border-radius: 10px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.pano-ctrl:hover,
+.pano-ctrl:focus-visible {
+  background: rgba(2, 6, 23, 0.92);
+  border-color: var(--accent);
+}
+
+.pano-ctrl.is-active {
+  background: var(--accent);
+  color: #020617;
+  border-color: var(--accent);
+}
+
+/* Camada de carregamento / erro */
+.pano-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: rgba(2, 6, 23, 0.86);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.pano-overlay-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.pano-overlay-msg {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.pano-overlay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.pano-btn-primary,
+.pano-btn-ghost {
+  font-family: var(--font);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.6rem 1.1rem;
+  border-radius: 30px;
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.pano-btn-primary {
+  background: var(--accent);
+  color: #020617;
+}
+
+.pano-btn-ghost {
+  background: transparent;
+  color: var(--accent);
+}
+
+.pano-spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid rgba(250, 204, 21, 0.25);
+  border-top-color: var(--accent);
+  animation: pano-spin 0.9s linear infinite;
+}
+
+@keyframes pano-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pano-spinner { animation-duration: 3s; }
+}
+
+.pano-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  z-index: 7;
+  max-width: calc(100% - 24px);
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.92);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  color: #fff;
+  font-size: 0.82rem;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.pano-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Tour YouTube Badge */
