@@ -12,6 +12,7 @@
       preload: 'auto',
       controls: true,
       playsinline: true,
+      poster: 'panoramas/poster.jpg',
       plugins: {
         pannellum: {
           showControls: false,
@@ -24,6 +25,10 @@
           pitch: -5
         }
       }
+    });
+
+    player.ready(function () {
+      player.poster('panoramas/poster.jpg');
     });
 
     player.on('ended', function () {
