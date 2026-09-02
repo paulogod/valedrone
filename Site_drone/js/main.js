@@ -124,6 +124,10 @@
         if (targetContent) {
           targetContent.classList.add('active');
         }
+
+        if (targetTab === 'photo-360' && typeof initOrResizePannellum === 'function') {
+          setTimeout(initOrResizePannellum, 60);
+        }
       });
     });
   }

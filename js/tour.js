@@ -1,13 +1,20 @@
 /**
  * Tour 360° Interativo com Pannellum Oficial
  */
-(function () {
-  function initPannellum() {
-    var panoramaEl = document.getElementById('panorama');
-    if (!panoramaEl || typeof pannellum === 'undefined') return;
+window.valedronePannellumViewer = null;
 
+function initOrResizePannellum() {
+  var panoramaEl = document.getElementById('panorama');
+  if (!panoramaEl || typeof pannellum === 'undefined') return;
+
+  // Se o container estiver oculto (clientWidth == 0), não inicializa com 0x0
+  if (panoramaEl.clientWidth === 0 || panoramaEl.clientHeight === 0) {
+    return;
+  }
+
+  if (!window.valedronePannellumViewer) {
     try {
-      pannellum.viewer('panorama', {
+      window.valedronePannellumViewer = pannellum.viewer('panorama', {
         type: 'equirectangular',
         panorama: 'panoramas/poster.jpg',
         autoLoad: true,
@@ -18,6 +25,9 @@
         showFullscreenCtrl: true,
         showZoomCtrl: true,
         mouseZoom: true,
+        draggable: true,
+        friction: 0.15,
+        touchPanSpeedCoeffFactor: 1,
         hfov: 100,
         minHfov: 50,
         maxHfov: 120,
@@ -27,14 +37,20 @@
     } catch (e) {
       console.warn('Erro ao inicializar o tour 360:', e);
     }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPannellum);
   } else {
-    initPannellum();
+    try {
+      if (typeof window.valedronePannellumViewer.resize === 'function') {
+        window.valedronePannellumViewer.resize();
+      }
+    } catch (e) {}
   }
-})();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initOrResizePannellum);
+} else {
+  initOrResizePannellum();
+}
 
 
 
