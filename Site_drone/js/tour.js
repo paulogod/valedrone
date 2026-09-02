@@ -1,43 +1,65 @@
 /**
  * Tour 360° — Vale Drone
- * Dois visualizadores equirretangulares sobre o mesmo motor (Pannellum),
- * preparados para desktop, Android e iOS/iPadOS:
+ * Player de vídeo 360° equirretangular sobre o Pannellum, preparado para
+ * desktop, Android e iOS/iPadOS.
  *
- *   1. foto panorâmica (panoramas/poster.jpg)
- *   2. vídeo 360° interativo (panoramas/tour360.mp4), em modo `dynamic`,
- *      com o <video> entregue direto como textura WebGL
+ * O <iframe> do YouTube não repassa o arraste do dedo para a página, por
+ * isso o vídeo é servido pelo player próprio; o link para o YouTube segue
+ * disponível para quem preferir o app.
  *
- * O embed do YouTube em <iframe> não repassa o arraste do dedo para a
- * página, por isso o vídeo é servido pelo player próprio; o link para o
- * YouTube segue disponível para quem preferir o app.
+ * Escolha da fonte (ver escolheFontes): o arquivo 4K é o padrão, porque a
+ * conta de nitidez dá ~1:1 num painel de desktop e de celular moderno.
+ * A versão leve entra quando a GPU não segura a textura de 3840px, quando
+ * o usuário pediu economia de dados, ou quando a tela não tem pixels para
+ * mostrar mais que isso. Se o arquivo escolhido não existir, o outro
+ * assume — então o site continua funcionando enquanto a versão leve não
+ * for gerada.
  *
  * Pontos tratados aqui:
- *  - inicialização preguiçosa: cada painel só monta quando entra na tela,
- *    e tenta de novo sempre que o container ganha tamanho;
- *  - limite de textura do aparelho verificado antes de montar (o Pannellum
- *    aceita até 2x o MAX_TEXTURE_SIZE na foto, dividindo-a em metades;
- *    o vídeo, por vir sem width/height, precisa caber inteiro);
- *  - falhas (sem WebGL, arquivo fora do ar, codec recusado) caem num painel
- *    de fallback em vez do fundo quadriculado do Pannellum;
+ *  - inicialização preguiçosa e nova tentativa quando o painel ganha tamanho;
+ *  - `dynamic` sozinho não inicia o render: o Pannellum só prossegue quando
+ *    `dynamicUpdate` também vem true;
+ *  - no modo dinâmico o evento 'load' nunca dispara, então a prontidão é
+ *    detectada por sondagem de isLoaded();
+ *  - playsinline obrigatório, senão o iOS abre o player nativo e o vídeo
+ *    deixa de alimentar a textura WebGL;
+ *  - os megabytes só são baixados depois do toque do usuário;
  *  - tela cheia nativa no desktop e Android, pseudo-tela-cheia no iPhone;
  *  - giroscópio com o requestPermission exigido pelo iOS 13+;
- *  - vídeo com playsinline (senão o iOS abre no player nativo e perde o 360),
- *    carregado só a partir do toque do usuário, já que são 79 MB;
- *  - render e reprodução pausados fora da tela e com a aba em segundo plano.
+ *  - reprodução e render desligados fora da tela e com a aba em segundo plano.
  */
 (function () {
   'use strict';
 
-  var PANO_SOURCES = ['panoramas/poster.jpg', '/panoramas/poster.jpg'];
-  var VIDEO_SOURCES = ['panoramas/tour360.mp4', '/panoramas/tour360.mp4'];
+  var POSTER_SOURCES = ['panoramas/poster.jpg', '/panoramas/poster.jpg'];
   var YOUTUBE_URL = 'https://www.youtube.com/watch?v=DlHx9jSH0Io';
-  var AUTOROTATE_SPEED = -1.5;
-  var VIDEO_WIDTH = 3840;
-  var HARD_CAP = 4096;
+
+  var FONTE_4K = { largura: 3840, arquivos: ['panoramas/tour360.mp4', '/panoramas/tour360.mp4'] };
+  var FONTE_LEVE = { largura: 1920, arquivos: ['panoramas/tour360-leve.mp4', '/panoramas/tour360-leve.mp4'] };
+
+  var HFOV_INICIAL = 100;
+
+  var box = null;
+  var viewer = null;
+  var videoEl = null;
+  var fontes = [];
+  var fonteAtual = 0;
+  var posterUrl = POSTER_SOURCES[0];
+
+  var pedido = false;
+  var booting = false;
+  var loaded = false;
+  var dead = false;
+  var visible = false;
+  var resizeTimer = null;
 
   /* ------------------------------------------------------------------ */
-  /* Utilidades compartilhadas                                           */
+  /* Utilidades                                                          */
   /* ------------------------------------------------------------------ */
+
+  function host() {
+    return document.getElementById('panorama-video');
+  }
 
   function isTouch() {
     return ('ontouchstart' in window) ||
@@ -45,11 +67,6 @@
       !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
   }
 
-  function prefersReducedMotion() {
-    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  }
-
-  /* Sonda de WebGL: devolve os limites do aparelho ou null se não houver. */
   function webglLimits() {
     try {
       var canvas = document.createElement('canvas');
@@ -64,16 +81,74 @@
     }
   }
 
-  function openTab(name) {
-    var btn = document.querySelector('.tour-tab-btn[data-tab="' + name + '"]');
-    if (btn) btn.click();
+  function querEconomia() {
+    var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (!c) return false;
+    if (c.saveData === true) return true;
+    return /^(slow-2g|2g|3g)$/.test(c.effectiveType || '');
+  }
+
+  /**
+   * Quantos pixels de largura o panorama precisa ter para chegar a 1:1 na
+   * tela. Só o trecho `hfov/360` da imagem entra em cena, então a conta é
+   * (pixels reais da tela) x 360 / hfov. Usa a tela inteira, e não só o
+   * painel, porque o usuário pode abrir em tela cheia.
+   */
+  function larguraNecessaria() {
+    var lado = Math.max(
+      screen.width || window.innerWidth,
+      screen.height || window.innerHeight
+    );
+    return lado * (window.devicePixelRatio || 1) * 360 / HFOV_INICIAL;
+  }
+
+  function escolheFontes(maxTextureSize) {
+    // O <video> chega ao Pannellum sem width/height, então não dá para
+    // dividi-lo em metades como ele faz com a imagem: a textura precisa
+    // caber inteira na GPU.
+    var cabe4K = maxTextureSize >= FONTE_4K.largura;
+    var precisa = larguraNecessaria();
+    var economia = querEconomia();
+    var prefereLeve = !cabe4K || economia || precisa <= FONTE_LEVE.largura;
+
+    var motivo;
+    if (!cabe4K) motivo = 'GPU limitada a ' + maxTextureSize + 'px';
+    else if (economia) motivo = 'modo de economia de dados';
+    else if (precisa <= FONTE_LEVE.largura) motivo = 'tela nao aproveita mais que ' + FONTE_LEVE.largura + 'px';
+    else motivo = 'tela pede ' + Math.round(precisa) + 'px';
+
+    var lista;
+    if (prefereLeve) {
+      lista = FONTE_LEVE.arquivos.slice();
+      // Se o arquivo leve ainda não existir, o 4K assume — mas só quando
+      // a GPU aguenta.
+      if (cabe4K) lista = lista.concat(FONTE_4K.arquivos);
+    } else {
+      lista = FONTE_4K.arquivos.concat(FONTE_LEVE.arquivos);
+    }
+
+    window.valedroneTourFonte = { escolha: prefereLeve ? 'leve' : '4K', motivo: motivo, candidatos: lista };
+    return lista;
+  }
+
+  /* Confirma qual candidato existe antes de comprometer o <video>. */
+  function primeiroQueExiste(lista, indice, done) {
+    if (indice >= lista.length) { done(null); return; }
+    var xhr = new XMLHttpRequest();
+    xhr.open('HEAD', lista[indice], true);
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) done(indice);
+      else primeiroQueExiste(lista, indice + 1, done);
+    };
+    xhr.onerror = function () { primeiroQueExiste(lista, indice + 1, done); };
+    try { xhr.send(); } catch (e) { primeiroQueExiste(lista, indice + 1, done); }
   }
 
   /* ------------------------------------------------------------------ */
-  /* Camada de mensagens (por painel)                                    */
+  /* Camada de mensagens                                                 */
   /* ------------------------------------------------------------------ */
 
-  function overlayOf(box) {
+  function overlay() {
     if (!box) return null;
     var el = box.querySelector('.pano-overlay');
     if (!el) {
@@ -84,38 +159,44 @@
     return el;
   }
 
-  function hideOverlay(box) {
+  function hideOverlay() {
     var el = box && box.querySelector('.pano-overlay');
     if (el && el.parentNode) el.parentNode.removeChild(el);
   }
 
-  function showLoading(box, msg) {
-    var el = overlayOf(box);
+  function showLoading(msg) {
+    var el = overlay();
     if (!el) return;
     el.className = 'pano-overlay is-loading';
-    el.innerHTML = '<span class="pano-spinner" aria-hidden="true"></span>' +
-      '<p class="pano-overlay-msg"></p>';
+    el.innerHTML = '<span class="pano-spinner" aria-hidden="true"></span><p class="pano-overlay-msg"></p>';
     el.querySelector('.pano-overlay-msg').textContent = msg;
   }
 
-  function showFallback(box, msg, alternativa) {
-    if (!box) return;
-    var el = overlayOf(box);
+  function showFallback(msg) {
+    dead = true;
+    booting = false;
+    var el = overlay();
+    if (!el) return;
     el.className = 'pano-overlay is-error';
     el.innerHTML =
-      '<p class="pano-overlay-title">Não foi possível abrir o tour interativo</p>' +
+      '<p class="pano-overlay-title">Não foi possível abrir o tour 360° interativo</p>' +
       '<p class="pano-overlay-msg"></p>' +
       '<div class="pano-overlay-actions">' +
-        '<button type="button" class="pano-btn-primary"></button>' +
+        '<button type="button" class="pano-btn-primary">Tentar de novo</button>' +
         '<a class="pano-btn-ghost" href="' + YOUTUBE_URL + '" target="_blank" rel="noopener">Abrir no YouTube ↗</a>' +
       '</div>';
     el.querySelector('.pano-overlay-msg').textContent = msg;
-    var btn = el.querySelector('.pano-btn-primary');
-    btn.textContent = alternativa.rotulo;
-    btn.addEventListener('click', alternativa.acao);
+    el.querySelector('.pano-btn-primary').addEventListener('click', function () {
+      dead = false;
+      loaded = false;
+      pedido = true;
+      if (videoEl && videoEl.parentNode) videoEl.parentNode.removeChild(videoEl);
+      videoEl = null;
+      boot();
+    });
   }
 
-  function toast(box, msg) {
+  function toast(msg) {
     if (!box) return;
     var el = box.querySelector('.pano-toast');
     if (!el) {
@@ -130,21 +211,27 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Controles (por painel)                                              */
+  /* Controles                                                           */
   /* ------------------------------------------------------------------ */
 
-  function controlBar(box) {
+  function ctrl(action) {
+    return box ? box.querySelector('[data-pano-action="' + action + '"]') : null;
+  }
+
+  function setGlyph(btn, glyph, label) {
+    if (!btn) return;
+    btn.innerHTML = '<span aria-hidden="true">' + glyph + '</span>';
+    btn.setAttribute('aria-label', label);
+    btn.title = label;
+  }
+
+  function addControl(action, label, glyph, handler) {
     var bar = box.querySelector('.pano-controls');
     if (!bar) {
       bar = document.createElement('div');
       bar.className = 'pano-controls';
       box.appendChild(bar);
     }
-    return bar;
-  }
-
-  function addControl(box, action, label, glyph, handler) {
-    var bar = controlBar(box);
     if (bar.querySelector('[data-pano-action="' + action + '"]')) return null;
     var btn = document.createElement('button');
     btn.type = 'button';
@@ -157,21 +244,6 @@
     bar.appendChild(btn);
     return btn;
   }
-
-  function ctrl(box, action) {
-    return box ? box.querySelector('[data-pano-action="' + action + '"]') : null;
-  }
-
-  function setGlyph(btn, glyph, label) {
-    if (!btn) return;
-    btn.innerHTML = '<span aria-hidden="true">' + glyph + '</span>';
-    btn.setAttribute('aria-label', label);
-    btn.title = label;
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* Tela cheia                                                          */
-  /* ------------------------------------------------------------------ */
 
   function fsElement() {
     return document.fullscreenElement || document.webkitFullscreenElement ||
@@ -187,14 +259,15 @@
     return true;
   }
 
-  function syncFullscreenButton(box) {
-    var btn = ctrl(box, 'fullscreen');
-    if (!btn) return;
+  function syncFullscreenButton() {
+    var btn = ctrl('fullscreen');
+    if (!btn || !box) return;
     var on = fsElement() === box || box.classList.contains('is-pseudo-fullscreen');
     setGlyph(btn, on ? '✕' : '⛶', on ? 'Sair da tela cheia' : 'Tela cheia');
   }
 
-  function setPseudoFullscreen(box, on) {
+  function setPseudoFullscreen(on) {
+    if (!box) return;
     if (on) {
       box.classList.add('is-pseudo-fullscreen');
       document.body.classList.add('pano-fs-lock');
@@ -202,44 +275,34 @@
       box.classList.remove('is-pseudo-fullscreen');
       document.body.classList.remove('pano-fs-lock');
     }
-    syncFullscreenButton(box);
-    resizeAll();
+    syncFullscreenButton();
+    scheduleResize();
   }
 
-  function toggleFullscreen(box) {
+  function toggleFullscreen() {
+    if (!box) return;
     if (fsElement()) {
       var exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
       if (exit) { try { exit.call(document); } catch (e) {} }
       return;
     }
-    if (box.classList.contains('is-pseudo-fullscreen')) {
-      setPseudoFullscreen(box, false);
-      return;
-    }
+    if (box.classList.contains('is-pseudo-fullscreen')) { setPseudoFullscreen(false); return; }
     if (canNativeFullscreen(box)) {
       var req = box.requestFullscreen || box.webkitRequestFullscreen || box.msRequestFullscreen;
       try {
         var r = req.call(box);
-        if (r && typeof r['catch'] === 'function') {
-          r['catch'](function () { setPseudoFullscreen(box, true); });
-        }
+        if (r && typeof r['catch'] === 'function') r['catch'](function () { setPseudoFullscreen(true); });
       } catch (e) {
-        setPseudoFullscreen(box, true);
+        setPseudoFullscreen(true);
       }
     } else {
-      setPseudoFullscreen(box, true);
+      setPseudoFullscreen(true);
     }
   }
 
-  /* ------------------------------------------------------------------ */
-  /* Giroscópio                                                          */
-  /* ------------------------------------------------------------------ */
-
-  function toggleOrientation(painel) {
-    var viewer = painel.viewer;
+  function toggleOrientation() {
     if (!viewer) return;
-    var btn = ctrl(painel.box, 'orientation');
-
+    var btn = ctrl('orientation');
     var ativo = false;
     try { ativo = viewer.isOrientationActive(); } catch (e) {}
     if (ativo) {
@@ -247,282 +310,143 @@
       if (btn) { btn.classList.remove('is-active'); btn.setAttribute('aria-pressed', 'false'); }
       return;
     }
-
     function liga() {
       try { viewer.startOrientation(); } catch (e) { return; }
       if (btn) { btn.classList.add('is-active'); btn.setAttribute('aria-pressed', 'true'); }
     }
-
     var DOE = window.DeviceOrientationEvent;
     // iOS 13+ exige permissão explícita, sempre a partir de um toque.
     if (DOE && typeof DOE.requestPermission === 'function') {
       DOE.requestPermission().then(function (estado) {
         if (estado === 'granted') liga();
-        else toast(painel.box, 'Permissão de movimento negada. Libere em Ajustes › Apps › Safari › Movimento e orientação.');
+        else toast('Permissão de movimento negada. Libere em Ajustes › Apps › Safari › Movimento e orientação.');
       })['catch'](function () {
-        toast(painel.box, 'Não foi possível ativar o giroscópio neste aparelho.');
+        toast('Não foi possível ativar o giroscópio neste aparelho.');
       });
       return;
     }
     liga();
   }
 
-  function addSharedControls(painel) {
-    addControl(painel.box, 'fullscreen', 'Tela cheia', '⛶', function () {
-      toggleFullscreen(painel.box);
+  function sincronizaBotoes() {
+    if (!videoEl) return;
+    setGlyph(ctrl('play'), videoEl.paused ? '▶' : '❚❚', videoEl.paused ? 'Reproduzir' : 'Pausar');
+    setGlyph(ctrl('mute'), videoEl.muted ? '🔇' : '🔊', videoEl.muted ? 'Ativar o som' : 'Silenciar');
+  }
+
+  function montaControles() {
+    addControl('play', 'Pausar', '❚❚', function () {
+      if (!videoEl) return;
+      if (videoEl.paused) toca(); else videoEl.pause();
+      sincronizaBotoes();
+      aplicaVisibilidade();
     });
+    addControl('mute', 'Silenciar', '🔊', function () {
+      if (!videoEl) return;
+      videoEl.muted = !videoEl.muted;
+      if (!videoEl.muted && videoEl.paused) toca();
+      sincronizaBotoes();
+    });
+    addControl('fullscreen', 'Tela cheia', '⛶', toggleFullscreen);
     if (window.DeviceOrientationEvent && isTouch()) {
-      var g = addControl(painel.box, 'orientation', 'Usar o giroscópio', '🧭', function () {
-        toggleOrientation(painel);
-      });
+      var g = addControl('orientation', 'Usar o giroscópio', '🧭', toggleOrientation);
       if (g) g.setAttribute('aria-pressed', 'false');
     }
-    syncFullscreenButton(painel.box);
+    syncFullscreenButton();
+    sincronizaBotoes();
+    videoEl.addEventListener('play', sincronizaBotoes);
+    videoEl.addEventListener('pause', sincronizaBotoes);
+    videoEl.addEventListener('volumechange', sincronizaBotoes);
   }
 
   /* ------------------------------------------------------------------ */
-  /* Download e preparo da foto                                          */
+  /* Capa                                                                */
   /* ------------------------------------------------------------------ */
 
-  function fetchFirst(sources, index, done, fail) {
-    if (index >= sources.length) { fail(); return; }
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', sources[index], true);
-    xhr.responseType = 'blob';
-    xhr.onload = function () {
-      if (xhr.status >= 200 && xhr.status < 300 && xhr.response) done(xhr.response, sources[index]);
-      else fetchFirst(sources, index + 1, done, fail);
-    };
-    xhr.onerror = function () { fetchFirst(sources, index + 1, done, fail); };
-    try { xhr.send(); } catch (e) { fetchFirst(sources, index + 1, done, fail); }
-  }
-
-  /* Reduz pela metade em etapas: uma passada só gera muito serrilhado. */
-  function downscale(img, maxSize) {
-    var src = img, cw = img.width, ch = img.height;
-    var targetW = maxSize;
-    var targetH = Math.round(img.height * (maxSize / img.width));
-    var ctx;
-    while (cw / 2 > targetW) {
-      cw = Math.round(cw / 2); ch = Math.round(ch / 2);
-      var step = document.createElement('canvas');
-      step.width = cw; step.height = ch;
-      ctx = step.getContext('2d');
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(src, 0, 0, cw, ch);
-      src = step;
+  function resolvePoster() {
+    var i = 0;
+    function tenta() {
+      if (i >= POSTER_SOURCES.length) return;
+      var img = new Image();
+      img.onload = function () {
+        posterUrl = POSTER_SOURCES[i];
+        if (box && !loaded) box.style.backgroundImage = 'url("' + posterUrl + '")';
+      };
+      img.onerror = function () { i += 1; tenta(); };
+      img.src = POSTER_SOURCES[i];
     }
-    var canvas = document.createElement('canvas');
-    canvas.width = targetW; canvas.height = targetH;
-    ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(src, 0, 0, targetW, targetH);
-    return canvas;
+    tenta();
   }
 
-  function canvasToUrl(canvas, done) {
-    if (canvas.toBlob) {
-      canvas.toBlob(function (blob) {
-        done(blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/jpeg', 0.86));
-      }, 'image/jpeg', 0.86);
-    } else {
-      done(canvas.toDataURL('image/jpeg', 0.86));
-    }
-  }
-
-  function toTexture(blob, maxSize, done) {
-    var srcUrl = URL.createObjectURL(blob);
-    var img = new Image();
-    img.onload = function () {
-      if (img.width <= maxSize) { done(srcUrl); return; }
-      try {
-        var canvas = downscale(img, maxSize);
-        URL.revokeObjectURL(srcUrl);
-        canvasToUrl(canvas, done);
-      } catch (e) {
-        done(srcUrl);
-      }
-    };
-    img.onerror = function () { URL.revokeObjectURL(srcUrl); done(null); };
-    img.src = srcUrl;
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* Painel 1 — foto panorâmica                                          */
-  /* ------------------------------------------------------------------ */
-
-  var foto = {
-    nome: 'foto',
-    box: null,
-    hostId: 'panorama',
-    viewer: null,
-    booting: false,
-    loaded: false,
-    dead: false,
-    visible: false,
-    posterUrl: PANO_SOURCES[0]
-  };
-
-  function bootFoto() {
-    if (foto.booting || foto.loaded || foto.dead) return;
-    var host = document.getElementById(foto.hostId);
-    if (!host) return;
-
-    if (typeof pannellum === 'undefined') {
-      showFallback(foto.box, 'A biblioteca do visualizador 360° não pôde ser carregada.', alternativaVideo());
-      foto.dead = true;
-      return;
-    }
-    if (!host.clientWidth || !host.clientHeight) return;
-
-    var limites = webglLimits();
-    if (!limites) {
-      showFallback(foto.box, 'Seu navegador está sem aceleração WebGL, necessária para o panorama interativo.', alternativaVideo());
-      foto.dead = true;
-      return;
-    }
-
-    foto.booting = true;
-    showLoading(foto.box, 'Carregando o panorama 360°…');
-
-    // O Pannellum divide a imagem em duas metades quando ela passa do
-    // limite de textura, então aguenta até 2x o MAX_TEXTURE_SIZE.
-    var permitido = Math.min(2 * limites.maxTextureSize, HARD_CAP);
-
-    fetchFirst(PANO_SOURCES, 0, function (blob, url) {
-      foto.posterUrl = url;
-      toTexture(blob, permitido, function (textureUrl) {
-        if (!textureUrl) {
-          foto.booting = false; foto.dead = true;
-          showFallback(foto.box, 'A imagem do panorama não pôde ser decodificada.', alternativaVideo());
-          return;
-        }
-        criaFoto(textureUrl);
-      });
-    }, function () {
-      foto.booting = false; foto.dead = true;
-      showFallback(foto.box, 'A imagem do panorama não pôde ser baixada. Verifique sua conexão.', alternativaVideo());
-    });
-  }
-
-  function criaFoto(textureUrl) {
-    try {
-      foto.viewer = pannellum.viewer(foto.hostId, {
-        type: 'equirectangular',
-        panorama: textureUrl,
-        autoLoad: true,
-        autoRotate: prefersReducedMotion() ? 0 : AUTOROTATE_SPEED,
-        autoRotateInactivityDelay: 3000,
-        compass: false,
-        showControls: true,
-        showZoomCtrl: true,
-        showFullscreenCtrl: false,
-        keyboardZoom: true,
-        mouseZoom: true,
-        draggable: true,
-        friction: 0.15,
-        touchPanSpeedCoeffFactor: 1,
-        hfov: 100, minHfov: 50, maxHfov: 120,
-        yaw: 0, pitch: -5,
-        orientationOnByDefault: false
-      });
-    } catch (e) {
-      foto.booting = false; foto.dead = true;
-      showFallback(foto.box, 'Falha ao iniciar o visualizador 360° neste navegador.', alternativaVideo());
-      return;
-    }
-
-    window.valedronePannellumViewer = foto.viewer;
-
-    foto.viewer.on('load', function () {
-      foto.booting = false;
-      foto.loaded = true;
-      hideOverlay(foto.box);
-      addSharedControls(foto);
-      aplicaVisibilidade();
-      resizeAll();
-    });
-
-    foto.viewer.on('error', function (msg) {
-      try { foto.viewer.destroy(); } catch (e) {}
-      foto.viewer = null;
-      window.valedronePannellumViewer = null;
-      foto.booting = false; foto.dead = true;
-      showFallback(foto.box, msg || 'O panorama não pôde ser exibido neste aparelho.', alternativaVideo());
-    });
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* Painel 2 — vídeo 360° interativo                                    */
-  /* ------------------------------------------------------------------ */
-
-  var video = {
-    nome: 'video',
-    box: null,
-    hostId: 'panorama-video',
-    viewer: null,
-    el: null,
-    booting: false,
-    loaded: false,
-    dead: false,
-    visible: false,
-    pedido: false
-  };
-
-  function alternativaFoto() {
-    return { rotulo: 'Ver a foto panorâmica 360°', acao: function () { openTab('photo-360'); } };
-  }
-
-  function alternativaVideo() {
-    return { rotulo: 'Ver o tour em vídeo 360°', acao: function () { openTab('video-360'); } };
-  }
-
-  function mostraCapaVideo() {
-    if (!video.box) return;
-    video.box.style.backgroundImage = 'url("' + foto.posterUrl + '")';
-    var el = overlayOf(video.box);
+  function mostraCapa() {
+    if (!box) return;
+    var el = overlay();
     el.className = 'pano-overlay is-poster';
     el.innerHTML =
       '<button type="button" class="pano-play" aria-label="Reproduzir o tour em vídeo 360°">' +
         '<span aria-hidden="true">▶</span>' +
       '</button>' +
-      '<p class="pano-overlay-msg">Tour em vídeo 360° · 1min57 · arraste para olhar em volta</p>';
+      '<p class="pano-overlay-msg">Tour em vídeo 360° · 1min57 · arraste para olhar em volta durante o voo</p>';
     el.querySelector('.pano-play').addEventListener('click', function () {
-      video.pedido = true;
-      bootVideo();
+      pedido = true;
+      boot();
     });
   }
 
-  function bootVideo() {
-    if (video.booting || video.loaded || video.dead || !video.pedido) return;
-    var host = document.getElementById(video.hostId);
-    if (!host) return;
+  /* ------------------------------------------------------------------ */
+  /* Ciclo de vida                                                       */
+  /* ------------------------------------------------------------------ */
+
+  function toca() {
+    if (!videoEl) return;
+    var p;
+    try { p = videoEl.play(); } catch (e) { p = null; }
+    if (p && typeof p['catch'] === 'function') {
+      p['catch'](function () {
+        // Som bloqueado pela política de autoplay: repete no mudo.
+        videoEl.muted = true;
+        var q;
+        try { q = videoEl.play(); } catch (e) { q = null; }
+        if (q && typeof q['catch'] === 'function') q['catch'](function () {});
+        sincronizaBotoes();
+        toast('O navegador bloqueou o som. Toque no alto-falante para ativar.');
+      });
+    }
+  }
+
+  function boot() {
+    if (booting || loaded || dead || !pedido) return;
+    var el = host();
+    if (!el || !box) return;
 
     if (typeof pannellum === 'undefined') {
-      video.dead = true;
-      showFallback(video.box, 'A biblioteca do visualizador 360° não pôde ser carregada.', alternativaFoto());
+      showFallback('A biblioteca do visualizador 360° não pôde ser carregada.');
       return;
     }
-    if (!host.clientWidth || !host.clientHeight) return;
+    if (!el.clientWidth || !el.clientHeight) return;
 
     var limites = webglLimits();
     if (!limites) {
-      video.dead = true;
-      showFallback(video.box, 'Seu navegador está sem aceleração WebGL, necessária para o vídeo 360° interativo.', alternativaFoto());
-      return;
-    }
-    // O <video> chega ao Pannellum sem width/height, então não há como
-    // dividi-lo em metades: a textura precisa caber inteira na GPU.
-    if (limites.maxTextureSize < VIDEO_WIDTH) {
-      video.dead = true;
-      showFallback(video.box,
-        'Este aparelho suporta texturas de até ' + limites.maxTextureSize + 'px, e o vídeo 360° tem ' + VIDEO_WIDTH + 'px de largura.',
-        alternativaFoto());
+      showFallback('Seu navegador está sem aceleração WebGL, necessária para o tour 360° interativo.');
       return;
     }
 
-    video.booting = true;
-    showLoading(video.box, 'Carregando o vídeo 360°…');
+    booting = true;
+    showLoading('Procurando a melhor versão do vídeo…');
+
+    fontes = escolheFontes(limites.maxTextureSize);
+    primeiroQueExiste(fontes, 0, function (indice) {
+      if (indice === null) {
+        showFallback('O vídeo do tour 360° não foi encontrado no servidor.');
+        return;
+      }
+      fonteAtual = indice;
+      criaVideo(fontes[indice]);
+    });
+  }
+
+  function criaVideo(url) {
+    showLoading('Carregando o tour 360°…');
 
     var v = document.createElement('video');
     v.className = 'pano-video-source';
@@ -533,56 +457,46 @@
     v.playsInline = true;
     v.loop = true;
     v.preload = 'auto';
-    v.src = VIDEO_SOURCES[0];
-    video.el = v;
-    video.box.appendChild(v);
-
-    var caminho = 0;
-    v.addEventListener('error', function () {
-      caminho += 1;
-      if (caminho < VIDEO_SOURCES.length) {
-        v.src = VIDEO_SOURCES[caminho];
-        v.load();
-        return;
-      }
-      video.booting = false; video.dead = true;
-      showFallback(video.box, 'O vídeo 360° não pôde ser carregado. Verifique sua conexão.', alternativaFoto());
-    });
+    v.src = url;
+    videoEl = v;
+    box.appendChild(v);
+    if (window.valedroneTourFonte) window.valedroneTourFonte.usada = url;
 
     var montado = false;
+
+    v.addEventListener('error', function () {
+      // Um erro depois do vídeo já ter carregado (rede oscilando, por
+      // exemplo) não pode rebaixar a fonte: só trocamos antes do primeiro
+      // quadro chegar.
+      if (montado) return;
+      fonteAtual += 1;
+      if (fonteAtual < fontes.length) {
+        v.src = fontes[fonteAtual];
+        if (window.valedroneTourFonte) window.valedroneTourFonte.usada = fontes[fonteAtual];
+        v.load();
+        toca();
+        return;
+      }
+      showFallback('O vídeo do tour 360° não pôde ser carregado. Verifique sua conexão.');
+    });
+
     v.addEventListener('loadeddata', function () {
       if (montado) return;
       montado = true;
-      criaVideo(v);
+      montaViewer(v);
     });
 
     v.load();
-    tocaVideo(v);
+    toca();
   }
 
-  function tocaVideo(v) {
-    var p;
-    try { p = v.play(); } catch (e) { p = null; }
-    if (p && typeof p['catch'] === 'function') {
-      p['catch'](function () {
-        // Som bloqueado: repete no mudo, que é sempre permitido.
-        v.muted = true;
-        var q;
-        try { q = v.play(); } catch (e) { q = null; }
-        if (q && typeof q['catch'] === 'function') { q['catch'](function () {}); }
-        sincronizaBotoes();
-        toast(video.box, 'O navegador bloqueou o som. Toque no alto-falante para ativar.');
-      });
-    }
-  }
-
-  function criaVideo(v) {
+  function montaViewer(v) {
     try {
-      video.viewer = pannellum.viewer(video.hostId, {
+      viewer = pannellum.viewer('panorama-video', {
         type: 'equirectangular',
         panorama: v,
-        // dynamic sozinho nao basta: o Pannellum so inicia o render quando
-        // dynamicUpdate tambem vem true (b.dynamic && Ma && (P=..., pa())).
+        // dynamic sozinho não basta: o Pannellum só inicia o render quando
+        // dynamicUpdate também vem true.
         dynamic: true,
         dynamicUpdate: true,
         autoLoad: true,
@@ -595,185 +509,112 @@
         draggable: true,
         friction: 0.15,
         touchPanSpeedCoeffFactor: 1,
-        hfov: 100, minHfov: 50, maxHfov: 120,
+        hfov: HFOV_INICIAL, minHfov: 50, maxHfov: 120,
         yaw: 0, pitch: 0,
         autoRotate: 0,
         orientationOnByDefault: false
       });
     } catch (e) {
-      video.booting = false; video.dead = true;
-      showFallback(video.box, 'Falha ao iniciar o vídeo 360° neste navegador.', alternativaFoto());
+      showFallback('Falha ao iniciar o tour 360° neste navegador.');
       return;
     }
 
-    window.valedroneVideoViewer = video.viewer;
+    window.valedroneVideoViewer = viewer;
 
-    // No modo dinâmico o Pannellum entra pelo atalho `b.dynamic && Ma` e
-    // nunca dispara o evento 'load'. Ficamos de olho no isLoaded(): sem
-    // isso o overlay de carregamento nunca sai e, por cobrir o painel,
-    // engole o arraste do dedo.
-    video.viewer.on('load', finalizaVideo);
-    esperaVideoPronto(40);
+    // No modo dinâmico o Pannellum entra por um atalho e nunca dispara o
+    // evento 'load'. Sem detectar a prontidão, o overlay de carregamento
+    // fica por cima do painel e engole o arraste do dedo.
+    viewer.on('load', finaliza);
+    esperaPronto(40);
 
-    video.viewer.on('error', function (msg) {
-      try { video.viewer.destroy(); } catch (e) {}
-      video.viewer = null;
+    viewer.on('error', function (msg) {
+      try { viewer.destroy(); } catch (e) {}
+      viewer = null;
       window.valedroneVideoViewer = null;
-      video.booting = false; video.dead = true;
-      showFallback(video.box, msg || 'O vídeo 360° não pôde ser exibido neste aparelho.', alternativaFoto());
+      showFallback(msg || 'O tour 360° não pôde ser exibido neste aparelho.');
     });
   }
 
-  function esperaVideoPronto(tentativas) {
-    if (video.loaded || video.dead || !video.viewer) return;
+  function esperaPronto(tentativas) {
+    if (loaded || dead || !viewer) return;
     var pronto = false;
-    try { pronto = video.viewer.isLoaded(); } catch (e) {}
-    if (pronto) { finalizaVideo(); return; }
+    try { pronto = viewer.isLoaded(); } catch (e) {}
+    if (pronto) { finaliza(); return; }
     if (tentativas <= 0) {
-      video.booting = false;
-      video.dead = true;
-      showFallback(video.box, 'O vídeo 360° não pôde ser preparado para exibição neste navegador.', alternativaFoto());
+      showFallback('O vídeo não pôde ser preparado para exibição neste navegador.');
       return;
     }
-    setTimeout(function () { esperaVideoPronto(tentativas - 1); }, 150);
+    setTimeout(function () { esperaPronto(tentativas - 1); }, 150);
   }
 
-  function finalizaVideo() {
-    if (video.loaded || video.dead || !video.viewer) return;
-    video.booting = false;
-    video.loaded = true;
-    hideOverlay(video.box);
+  function finaliza() {
+    if (loaded || dead || !viewer) return;
+    booting = false;
+    loaded = true;
+    hideOverlay();
+    if (box) box.style.backgroundImage = '';
     // Reenvia a textura a cada quadro; é o que faz o vídeo andar.
-    try { video.viewer.setUpdate(true); } catch (e) {}
-    montaControlesVideo();
+    try { viewer.setUpdate(true); } catch (e) {}
+    montaControles();
     aplicaVisibilidade();
-    resizeAll();
+    scheduleResize();
   }
-
-  function sincronizaBotoes() {
-    var v = video.el;
-    if (!v) return;
-    setGlyph(ctrl(video.box, 'play'), v.paused ? '▶' : '❚❚', v.paused ? 'Reproduzir' : 'Pausar');
-    setGlyph(ctrl(video.box, 'mute'), v.muted ? '🔇' : '🔊', v.muted ? 'Ativar o som' : 'Silenciar');
-  }
-
-  function montaControlesVideo() {
-    addControl(video.box, 'play', 'Pausar', '❚❚', function () {
-      var v = video.el;
-      if (!v) return;
-      if (v.paused) { tocaVideo(v); } else { v.pause(); }
-      sincronizaBotoes();
-      aplicaVisibilidade();
-    });
-    addControl(video.box, 'mute', 'Silenciar', '🔊', function () {
-      var v = video.el;
-      if (!v) return;
-      v.muted = !v.muted;
-      if (!v.muted && v.paused) tocaVideo(v);
-      sincronizaBotoes();
-    });
-    addSharedControls(video);
-    sincronizaBotoes();
-
-    var v = video.el;
-    v.addEventListener('play', sincronizaBotoes);
-    v.addEventListener('pause', sincronizaBotoes);
-    v.addEventListener('volumechange', sincronizaBotoes);
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* Ciclo de vida comum                                                 */
-  /* ------------------------------------------------------------------ */
 
   function aplicaVisibilidade() {
-    var ativo = !document.hidden;
-
-    if (foto.viewer && foto.loaded) {
-      try {
-        if (ativo && foto.visible && !prefersReducedMotion()) foto.viewer.startAutoRotate(AUTOROTATE_SPEED);
-        else foto.viewer.stopAutoRotate();
-      } catch (e) {}
-    }
-
-    if (video.viewer && video.loaded && video.el) {
-      var rodando = ativo && video.visible;
-      try { video.viewer.setUpdate(rodando && !video.el.paused); } catch (e) {}
-      if (!rodando && !video.el.paused) { video.el.pause(); sincronizaBotoes(); }
-    }
+    if (!viewer || !loaded || !videoEl) return;
+    var rodando = visible && !document.hidden;
+    try { viewer.setUpdate(rodando && !videoEl.paused); } catch (e) {}
+    if (!rodando && !videoEl.paused) { videoEl.pause(); sincronizaBotoes(); }
   }
 
-  var resizeTimer = null;
-  function resizeAll() {
+  function scheduleResize() {
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function () {
       resizeTimer = null;
-      if (foto.viewer) { try { foto.viewer.resize(); } catch (e) {} } else bootFoto();
-      if (video.viewer) { try { video.viewer.resize(); } catch (e) {} } else bootVideo();
+      if (viewer) { try { viewer.resize(); } catch (e) {} }
+      else boot();
     }, 120);
   }
 
-  function observa(painel, aoAparecer) {
-    if (!painel.box) return;
+  function start() {
+    var el = host();
+    if (!el) return;
+    box = el.parentNode;
+
+    mostraCapa();
+    resolvePoster();
+
     if (window.IntersectionObserver) {
       var io = new IntersectionObserver(function (entries) {
         for (var i = 0; i < entries.length; i++) {
-          painel.visible = entries[i].isIntersecting;
-          if (painel.visible && aoAparecer) aoAparecer();
+          visible = entries[i].isIntersecting;
+          if (visible) boot();
           aplicaVisibilidade();
         }
       }, { rootMargin: '250px 0px' });
-      io.observe(painel.box);
+      io.observe(box);
     } else {
-      painel.visible = true;
-      if (aoAparecer) aoAparecer();
+      visible = true;
     }
+
     if (window.ResizeObserver) {
-      new ResizeObserver(function () { resizeAll(); }).observe(painel.box);
+      new ResizeObserver(function () { scheduleResize(); }).observe(box);
     }
-  }
 
-  function start() {
-    var hostFoto = document.getElementById(foto.hostId);
-    var hostVideo = document.getElementById(video.hostId);
-    foto.box = hostFoto ? hostFoto.parentNode : null;
-    video.box = hostVideo ? hostVideo.parentNode : null;
-
-    if (foto.box) observa(foto, bootFoto);
-    if (video.box) { mostraCapaVideo(); observa(video, bootVideo); }
-
-    window.addEventListener('resize', resizeAll);
-    window.addEventListener('orientationchange', function () { setTimeout(resizeAll, 300); });
+    window.addEventListener('resize', scheduleResize);
+    window.addEventListener('orientationchange', function () { setTimeout(scheduleResize, 300); });
     document.addEventListener('visibilitychange', aplicaVisibilidade);
 
     ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(function (evt) {
-      document.addEventListener(evt, function () {
-        if (foto.box) syncFullscreenButton(foto.box);
-        if (video.box) syncFullscreenButton(video.box);
-        resizeAll();
-      });
+      document.addEventListener(evt, function () { syncFullscreenButton(); scheduleResize(); });
     });
 
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape' && e.keyCode !== 27) return;
-      [foto.box, video.box].forEach(function (b) {
-        if (b && b.classList.contains('is-pseudo-fullscreen')) setPseudoFullscreen(b, false);
-      });
+      if (box && box.classList.contains('is-pseudo-fullscreen')) setPseudoFullscreen(false);
     });
-
-    // O alternador de abas vive em js/main.js; aqui só reagimos ao clique.
-    var tabs = document.querySelectorAll('.tour-tab-btn');
-    for (var i = 0; i < tabs.length; i++) {
-      tabs[i].addEventListener('click', function () { setTimeout(resizeAll, 80); });
-    }
   }
 
-  /* Mantido para o alternador de abas em js/main.js. */
-  window.initOrResizePannellum = function () {
-    foto.visible = true;
-    resizeAll();
-  };
-
-  window.valedronePannellumViewer = null;
   window.valedroneVideoViewer = null;
 
   if (document.readyState === 'loading') {
