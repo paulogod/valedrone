@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Página não listada: acessível por link direto, fora dos buscadores -->
+  <meta name="robots" content="noindex, nofollow">
+  <title>Criador de Fichas D&D 5.5 (2024) | Vale Drone RPG</title>
+  <meta name="description" content="Gerador e Criador de Fichas Online D&D 5.5 (2024) em português. Suporte a antecedentes customizados, itens customizados, ficha 100% editável, multiclasse, talentos customizados, catálogo completo de magias, cálculo de CA, maestria de armas e exportação/impressão em PDF oficial A4.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Folhas de Estilo -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="sheet.css">
+</head>
+<body>
+
+  <div class="app-wrapper">
+    
+    <!-- CABEÇALHO DO APLICATIVO -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-badge">
+          <i class="fa-solid fa-dice-d20"></i>
+        </div>
+        <div class="brand-titles">
+          <h1>Criador de Fichas D&D 5.5</h1>
+          <p class="brand-subtitle">Dungeons & Dragons 2024 • Livro do Jogador (PT-BR) • Ficha Oficial Editável</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" id="btnNewChar" title="Novo Personagem">
+          <i class="fa-solid fa-plus"></i> Novo
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btnRandomChar" title="Gerar Personagem Aleatório">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Aleatório
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btnManageChars" title="Gerenciar Fichas Salvas">
+          <i class="fa-solid fa-folder-open"></i> Salvos
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btnExportJson" title="Exportar Ficha em JSON">
+          <i class="fa-solid fa-file-export"></i> Exportar
+        </button>
+        <label class="btn btn-secondary btn-sm" style="cursor: pointer;" title="Importar Ficha JSON">
+          <i class="fa-solid fa-file-import"></i> Importar
+          <input type="file" id="inputImportJson" accept=".json" style="display: none;">
+        </label>
+        <button class="btn btn-gold btn-sm" id="btnPrintSheet" title="Imprimir ou Salvar Ficha em PDF Oficial A4">
+          <i class="fa-solid fa-print"></i> Imprimir / PDF
+        </button>
+        <button class="btn btn-gold btn-sm" id="btnExportOfficialPdf" title="Transferir tudo para o PDF oficial editável (Shift + clique para escolher outro arquivo)">
+          <i class="fa-solid fa-file-pdf"></i> Ficha PDF Oficial
+        </button>
+        <input type="file" id="inputOfficialPdf" accept="application/pdf,.pdf" style="display: none;">
+        <a href="https://valedrone.com.br/rpg" class="btn btn-secondary btn-sm" title="Ir para o RPG Master App">
+          <i class="fa-solid fa-ship"></i> RPG Master
+        </a>
+      </div>
+    </header>
+
+    <!-- BARRA DE SELEÇÃO DE MODO DO APP (WIZARD PASSO-A-PASSO vs FICHA EDITÁVEL DIRETA) -->
+    <div class="app-mode-bar">
+      <div class="app-mode-tabs" id="appModeTabs">
+        <button class="app-mode-btn active" id="btnModeWizard" data-mode="wizard">
+          <i class="fa-solid fa-hat-wizard"></i> Assistente<span class="tab-long-label"> Passo a Passo (Wizard)</span>
+        </button>
+        <button class="app-mode-btn" id="btnModeSheet" data-mode="sheet">
+          <i class="fa-solid fa-file-signature"></i> Ficha Editável<span class="tab-long-label"> Direta (Ficha Oficial)</span>
+        </button>
+      </div>
+
+      <div class="app-mode-actions">
+        <button class="btn btn-secondary btn-sm" id="btnGlobalRollD20" title="Rolar D20 Rápido">
+          <i class="fa-solid fa-dice-d20"></i> Rolar D20
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btnQuickSave" title="Salvar Ficha Localmente">
+          <i class="fa-solid fa-floppy-disk"></i> Salvar
+        </button>
+      </div>
+    </div>
+
+    <!-- ESPAÇO DE TRABALHO PRINCIPAL (SPLIT: ASSISTENTE + FICHA EM TEMPO REAL) -->
+    <main class="main-workspace" id="mainWorkspace">
+      
+      <!-- COLUNA ESQUERDA: PAINEL DO CRIADOR / WIZARD -->
+      <section class="creator-panel" id="creatorPanel">
+        
+        <!-- NAVEGAÇÃO DOS PASSOS DO WIZARD -->
+        <nav class="wizard-nav" id="wizardNav">
+          <button class="step-tab-btn active" data-step="1">
+            <span class="step-number">1</span> Origens & Classe
+          </button>
+          <button class="step-tab-btn" data-step="2">
+            <span class="step-number">2</span> Atributos
+          </button>
+          <button class="step-tab-btn" data-step="3">
+            <span class="step-number">3</span> Subclasse & Talentos
+          </button>
+          <button class="step-tab-btn" data-step="4">
+            <span class="step-number">4</span> Magias
+          </button>
+          <button class="step-tab-btn" data-step="5">
+            <span class="step-number">5</span> Equipamentos & Itens
+          </button>
+          <button class="step-tab-btn" data-step="6">
+            <span class="step-number">6</span> Biografia
+          </button>
+        </nav>
+
+        <!-- ==================== PASSO 1: CONCEITO & ORIGENS ==================== -->
+        <div class="step-content active" id="step1">
+          <div class="section-header">
+            <h2 class="section-title">1. Origens e Identidade Básica</h2>
+          </div>
+          <p class="section-desc">Defina o nome, classe primária, nível, espécie, linhagem e antecedente (oficial ou customizado) do seu herói.</p>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="inputCharName">Nome do Personagem</label>
+              <input type="text" class="form-control" id="inputCharName" placeholder="Ex: Valerius Vento-Bravo" value="">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputPlayerName">Nome do Jogador</label>
+              <input type="text" class="form-control" id="inputPlayerName" placeholder="Seu nome">
+            </div>
+          </div>
+
+          <!-- Classe Primária & Nível -->
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="selectClass1">Classe Primária</label>
+              <select class="form-control" id="selectClass1"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="selectLevel1">Nível da Classe 1</label>
+              <select class="form-control" id="selectLevel1"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="selectMulticlass">Multiclasse (Opcional)</label>
+              <select class="form-control" id="selectMulticlass">
+                <option value="none">Nenhuma (Classe Pura)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2" id="multiclassLevelRow" style="display: none;">
+            <div class="form-group">
+              <label class="form-label" for="selectLevel2">Nível da Classe 2</label>
+              <select class="form-control" id="selectLevel2"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nível Total de Personagem</label>
+              <input type="text" class="form-control" id="displayTotalLevel" readonly value="1">
+            </div>
+          </div>
+
+          <!-- Espécie & Linhagem -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="selectSpecies">Espécie (Raça)</label>
+              <select class="form-control" id="selectSpecies"></select>
+            </div>
+            <div class="form-group" id="lineageGroup">
+              <label class="form-label" for="selectLineage">Linhagem / Sub-raça</label>
+              <select class="form-control" id="selectLineage"></select>
+            </div>
+          </div>
+
+          <!-- Antecedente & Tendência -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="selectBackground">Antecedente (Background 2024)</label>
+              <select class="form-control" id="selectBackground"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="selectAlignment">Tendência</label>
+              <select class="form-control" id="selectAlignment">
+                <option value="">— Selecione a Tendência —</option>
+                <option value="Leal e Bom">Leal e Bom (LG)</option>
+                <option value="Neutro e Bom">Neutro e Bom (NG)</option>
+                <option value="Caótico e Bom">Caótico e Bom (CG)</option>
+                <option value="Leal e Neutro">Leal e Neutro (LN)</option>
+                <option value="Neutro">Neutro Verdadeiro (N)</option>
+                <option value="Caótico e Neutro">Caótico e Neutro (CN)</option>
+                <option value="Leal e Mau">Leal e Mau (LE)</option>
+                <option value="Neutro e Mau">Neutro e Mau (NE)</option>
+                <option value="Caótico e Mau">Caótico e Mau (CE)</option>
+                <option value="Sem Tendência">Sem Tendência / Não-alinhado</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- PAINEL DE ANTECEDENTE CUSTOMIZADO (SE SELECIONADO 'custom') -->
+          <div class="info-selection-card" id="customBackgroundPanel" style="display: none; border-color: rgba(251, 191, 36, 0.4); margin-bottom: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+              <h4 style="color: #fbbf24; margin: 0;"><i class="fa-solid fa-sliders"></i> Personalização do Antecedente (Custom Background)</h4>
+              <span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 9999px; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); font-weight: 600;">Personalizado</span>
+            </div>
+            <p style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.75rem;">
+              Conforme as regras oficiais do Livro do Jogador D&D 2024, você personaliza: <strong>Aumento de Atributos</strong> (+2/+1 ou +1/+1/+1 livres), <strong>1 Talento de Origem</strong>, <strong>2 Perícias</strong>, <strong>1 Ferramenta</strong> e <strong>Idiomas</strong>.
+            </p>
+
+            <!-- 0. Nome do Antecedente -->
+            <div class="custom-bg-section">
+              <div class="custom-bg-section-title">
+                <i class="fa-solid fa-signature"></i> Nome do Antecedente
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <input type="text" class="form-control" id="inputCustomBgName" maxlength="60"
+                       placeholder="Ex.: Caçador de Relíquias, Órfão das Docas, Erudito Exilado...">
+                <p style="font-size: 0.75rem; color: #94a3b8; margin: 0.35rem 0 0 0;">
+                  É este nome que aparece no campo <strong>Origem</strong> da ficha. Deixe em branco para usar "Personalizado".
+                </p>
+              </div>
+            </div>
+
+            <!-- 1. Atributos a Serem Aumentados -->
+            <div class="custom-bg-section">
+              <div class="custom-bg-section-title">
+                <i class="fa-solid fa-bolt"></i> 1. Aumento de Atributos do Antecedente
+              </div>
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label class="form-label" for="selectCustomBgBonusMode">Modo de Distribuição</label>
+                  <select class="form-control" id="selectCustomBgBonusMode">
+                    <option value="+2/+1">+2 em um / +1 em outro</option>
+                    <option value="+1/+1/+1">+1 em três atributos</option>
+                  </select>
+                </div>
+                <div class="form-group" id="groupCustomBgAttr1">
+                  <label class="form-label" id="labelCustomBgAttr1" for="selectCustomBgAttr1">Atributo Primário (+2)</label>
+                  <select class="form-control" id="selectCustomBgAttr1"></select>
+                </div>
+                <div class="form-group" id="groupCustomBgAttr2">
+                  <label class="form-label" id="labelCustomBgAttr2" for="selectCustomBgAttr2">Atributo Secundário (+1)</label>
+                  <select class="form-control" id="selectCustomBgAttr2"></select>
+                </div>
+                <div class="form-group" id="groupCustomBgAttr3" style="display: none;">
+                  <label class="form-label" id="labelCustomBgAttr3" for="selectCustomBgAttr3">Terceiro Atributo (+1)</label>
+                  <select class="form-control" id="selectCustomBgAttr3"></select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Talento de Origem Inicial -->
+            <div class="custom-bg-section">
+              <div class="custom-bg-section-title">
+                <i class="fa-solid fa-award"></i> 2. Talento de Origem Inicial (Nível 1)
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="selectCustomBgFeat">Escolha o Talento Concedido</label>
+                <select class="form-control" id="selectCustomBgFeat"></select>
+              </div>
+              <div id="customBgFeatPreview" class="feature-preview-box"></div>
+            </div>
+
+            <!-- 3. Perícias Concedidas -->
+            <div class="custom-bg-section">
+              <div class="custom-bg-section-title">
+                <i class="fa-solid fa-bullseye"></i> 3. Proficiência em 2 Perícias
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="selectCustomBgSkill1">1ª Perícia</label>
+                  <select class="form-control" id="selectCustomBgSkill1"></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="selectCustomBgSkill2">2ª Perícia</label>
+                  <select class="form-control" id="selectCustomBgSkill2"></select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Ferramentas Concedidas -->
+            <div class="custom-bg-section">
+              <div class="custom-bg-section-title">
+                <i class="fa-solid fa-toolbox"></i> 4. Proficiência em Ferramenta
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="selectCustomBgTool">Selecione o Kit / Ferramenta</label>
+                <select class="form-control" id="selectCustomBgTool"></select>
+              </div>
+              <div class="form-group" id="groupCustomBgToolOther" style="display: none;">
+                <label class="form-label" for="inputCustomBgToolOther">Nome da Ferramenta Personalizada</label>
+                <input type="text" class="form-control" id="inputCustomBgToolOther" placeholder="Ex: Ferramentas de Vidreiro Mágico">
+              </div>
+            </div>
+
+            <!-- 5. Idiomas Conhecidos -->
+            <div class="custom-bg-section">
+              <div class="custom-bg-section-title">
+                <i class="fa-solid fa-language"></i> 5. Idiomas Conhecidos (Línguas Oficiais D&D 2024)
+              </div>
+              <p style="font-size: 0.76rem; color: #94a3b8; margin-bottom: 0.4rem;">
+                Todos os heróis falam <strong>Comum</strong> mais os idiomas de espécie e antecedente (selecione os conhecidos):
+              </p>
+              <div class="languages-grid" id="customBgLanguagesGrid"></div>
+              <div class="form-group" style="margin-top: 0.5rem;">
+                <label class="form-label" for="inputCustomLanguagesExtra">Outros Idiomas Raros / Dialetos</label>
+                <input type="text" class="form-control" id="inputCustomLanguagesExtra" placeholder="Ex: Dialeto Subterrâneo, Língua dos Pássaros (separados por vírgula)">
+              </div>
+            </div>
+          </div>
+
+          <!-- RESUMO DE RECURSOS DA ESPÉCIE & ANTECEDENTE -->
+          <div class="info-selection-card" id="speciesBackgroundSummary"></div>
+        </div>
+
+        <!-- ==================== PASSO 2: ATRIBUTOS ==================== -->
+        <div class="step-content" id="step2">
+          <div class="section-header">
+            <h2 class="section-title">2. Geração e Atribuição de Atributos</h2>
+          </div>
+          <p class="section-desc">Escolha o método de geração e configure os 6 atributos fundamentais do seu aventureiro.</p>
+
+          <!-- Modos de Geração -->
+          <div class="ability-modes-bar">
+            <button class="btn btn-secondary ability-mode-btn active" data-mode="pointbuy">
+              <i class="fa-solid fa-coins"></i> Compra por Pontos (Point Buy 27)
+            </button>
+            <button class="btn btn-secondary ability-mode-btn" data-mode="standard">
+              <i class="fa-solid fa-list-ol"></i> Conjunto Padrão (15, 14, 13, 12, 10, 8)
+            </button>
+            <button class="btn btn-secondary ability-mode-btn" data-mode="roll">
+              <i class="fa-solid fa-dice"></i> Rolar 4d6 (Descarta Menor)
+            </button>
+            <button class="btn btn-secondary ability-mode-btn" data-mode="manual">
+              <i class="fa-solid fa-pen-to-square"></i> Entrada Manual Livre
+            </button>
+          </div>
+
+          <!-- Orçamento do Point Buy -->
+          <div class="point-buy-budget" id="pointBuyBudgetBar" style="display: flex;">
+            <span>Pontos Disponíveis:</span>
+            <strong id="pointBuyRemaining" style="font-size: 1.1rem; color: #c084fc;">27 / 27</strong>
+          </div>
+
+          <!-- Rolador de 4d6 -->
+          <div class="roll-section" id="rollDiceSection" style="display: none; margin-bottom: 1rem;">
+            <button class="btn btn-primary btn-block" id="btnRollAllStats">
+              <i class="fa-solid fa-dice-d20"></i> Rolar Todos os 6 Atributos (4d6 drop menor)
+            </button>
+            <div id="rollResultsHistory" style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem; text-align: center;"></div>
+          </div>
+
+          <!-- Grade dos 6 Atributos -->
+          <div class="ability-inputs-grid" id="abilityInputsGrid"></div>
+
+          <!-- Bônus de Atributos do Antecedente (se oficial) -->
+          <div class="info-selection-card" style="margin-top: 1rem;">
+            <h4><i class="fa-solid fa-angles-up"></i> Bônus de Atributos do Antecedente 2024</h4>
+            <div class="form-grid-3" id="backgroundBonusSelectors"></div>
+          </div>
+        </div>
+
+        <!-- ==================== PASSO 3: SUBCLASSE & TALENTOS ==================== -->
+        <div class="step-content" id="step3">
+          <div class="section-header">
+            <h2 class="section-title">3. Subclasse, Perícias & Talentos</h2>
+          </div>
+          <p class="section-desc">Escolha sua especialização de classe (desbloqueada no 3º nível), suas perícias e seus talentos. O talento de <strong>Origem</strong> é concedido automaticamente pelo antecedente escolhido no Passo 1. Use o botão <strong>i</strong> para ver os detalhes de cada talento.</p>
+
+          <!-- Seleção de Subclasse -->
+          <div class="form-group">
+            <label class="form-label" for="selectSubclass1">Subclasse da Classe Primária (Nível 3+)</label>
+            <select class="form-control" id="selectSubclass1"></select>
+          </div>
+          <div class="info-selection-card" id="subclass1Desc"></div>
+
+          <!-- Seleção de Perícias da Classe -->
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label" id="skillsChoiceLabel">Perícias da Classe:</label>
+            <div class="skills-selector-grid" id="skillsSelectorGrid"></div>
+          </div>
+
+          <!-- Lista Completa de Talentos (Oficiais + Customizáveis) -->
+          <div class="form-group" style="margin-top: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+              <label class="form-label" style="margin: 0;">Talentos do Personagem (clique em <strong>i</strong> para detalhes):</label>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnAddCustomFeatModalBtn">
+                <i class="fa-solid fa-plus"></i> + Novo Talento Personalizado
+              </button>
+            </div>
+            <div id="featsContainer"></div>
+          </div>
+        </div>
+
+        <!-- ==================== PASSO 4: MAGIAS ==================== -->
+        <div class="step-content" id="step4">
+          <div class="section-header">
+            <h2 class="section-title">4. Magias</h2>
+          </div>
+          <p class="section-desc">Catálogo oficial de magias do Livro do Jogador 2024. Nenhuma magia vem pré-selecionada: use <strong>Adicionar</strong> para levá-la à ficha, onde ela é descrita por completo. O botão <strong>i</strong> abre os detalhes da magia.</p>
+
+          <!-- Painel Informativo de Capacidade de Magias -->
+          <div class="spell-capacity-card" id="spellCapacityCard">
+            <div class="spell-capacity-stat">
+              <span class="spell-cap-val" id="cantripsCapacityCount">0 / 0</span>
+              <span class="spell-cap-label">Truques Conhecidos</span>
+            </div>
+            <div class="spell-capacity-stat">
+              <span class="spell-cap-val" id="preparedCapacityCount">0 / 0</span>
+              <span class="spell-cap-label">Magias Preparadas</span>
+            </div>
+            <div class="spell-capacity-stat">
+              <span class="spell-cap-val" id="grantedSpellsCount">0 concedidas</span>
+              <span class="spell-cap-label">Origens & Subclasses</span>
+            </div>
+            <div style="flex-basis: 100%; font-size: 0.78rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem; margin-top: 0.2rem;">
+              <i class="fa-solid fa-circle-info"></i> <span id="spellcastingSourceLabel">Classe Conjuradora: Conforme tabela oficial 2024.</span>
+            </div>
+          </div>
+
+          <!-- Filtros de Magias -->
+          <div class="spells-filter-bar">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="spellFilterClass">Filtrar por Lista de Classe</label>
+              <select class="form-control" id="spellFilterClass">
+                <option value="all">Todas as Classes</option>
+                <option value="bard">Bardo</option>
+                <option value="cleric">Clérigo</option>
+                <option value="druid">Druida</option>
+                <option value="sorcerer">Feiticeiro</option>
+                <option value="wizard">Mago</option>
+                <option value="paladin">Paladino</option>
+                <option value="ranger">Patrulheiro (Ranger)</option>
+                <option value="warlock">Bruxo (Warlock)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="spellFilterLevel">Círculo / Nível</label>
+              <select class="form-control" id="spellFilterLevel">
+                <option value="all">Todos os Círculos</option>
+                <option value="0">Truques (Nível 0)</option>
+                <option value="1">1º Círculo</option>
+                <option value="2">2º Círculo</option>
+                <option value="3">3º Círculo</option>
+                <option value="4">4º Círculo</option>
+                <option value="5">5º Círculo</option>
+                <option value="6">6º Círculo</option>
+                <option value="7">7º Círculo</option>
+                <option value="8">8º Círculo</option>
+                <option value="9">9º Círculo</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0; flex: 1.5;">
+              <label class="form-label" for="spellSearchInput">Buscar Magia</label>
+              <input type="text" class="form-control" id="spellSearchInput" placeholder="Ex: Bola de Fogo, Escudo, Curar Ferimentos...">
+            </div>
+          </div>
+
+          <!-- Lista de Magias Expostas em Grade -->
+          <div class="spells-catalog-grid" id="spellsCatalogList"></div>
+        </div>
+
+        <!-- ==================== PASSO 5: EQUIPAMENTOS & ITENS ==================== -->
+        <div class="step-content" id="step5">
+          <div class="section-header">
+            <h2 class="section-title">5. Equipamentos, Armas & Itens Customizáveis</h2>
+          </div>
+          <p class="section-desc">Selecione armaduras, escudos, armas com propriedades de Maestria (2024), moedas e crie <strong>Itens e Armas Personalizadas</strong>.</p>
+
+          <!-- Armaduras & Escudo -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="selectEquippedArmor">Armadura Equipada</label>
+              <select class="form-control" id="selectEquippedArmor"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="selectEquippedShield">Escudo Equipado</label>
+              <select class="form-control" id="selectEquippedShield"></select>
+            </div>
+          </div>
+
+          <!-- Armas Equipadas -->
+          <div class="form-group">
+            <label class="form-label">Armas Principais para Combate (Até 3 armas com Maestria 2024)</label>
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label class="form-label" for="selectWeapon1">Arma 1</label>
+                <select class="form-control" id="selectWeapon1"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="selectWeapon2">Arma 2</label>
+                <select class="form-control" id="selectWeapon2"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="selectWeapon3">Arma 3</label>
+                <select class="form-control" id="selectWeapon3"></select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Efeitos dos Estilos de Luta sobre armas e armadura -->
+          <div class="style-effects-panel" id="styleEffectsPanel" hidden></div>
+
+          <!-- SEÇÃO DE ITENS PERSONALIZADOS (CUSTOM ITEMS) -->
+          <div class="info-selection-card" style="border-color: rgba(251, 191, 36, 0.4); margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+              <h4 style="color: #fbbf24; margin: 0;"><i class="fa-solid fa-shield-cat"></i> Itens & Armas Personalizadas (Custom Items)</h4>
+              <button type="button" class="btn btn-gold btn-sm" id="btnAddCustomItemModalBtn">
+                <i class="fa-solid fa-plus"></i> + Novo Item Customizado
+              </button>
+            </div>
+            <p style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.6rem;">
+              Crie armas mágicas (+1/+2/+3), armaduras especiais, anéis de proteção, varinhas, relíquias com sintonização e poções com recálculo automático na ficha!
+            </p>
+            <div id="customItemsContainer" class="custom-items-list-grid"></div>
+          </div>
+
+          <!-- Inventário & Moedas -->
+          <div class="form-group">
+            <label class="form-label" for="textInventory">Outros Itens & Equipamento de Aventura</label>
+            <textarea class="form-control" id="textInventory" rows="4" placeholder="Mochila, corda, tochas, rações de viagem..."></textarea>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="inputGoldPO">Peças de Ouro (PO)</label>
+              <input type="number" class="form-control" id="inputGoldPO" value="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputSilverPP">Peças de Prata (PP)</label>
+              <input type="number" class="form-control" id="inputSilverPP" value="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputCopperPC">Peças de Cobre (PC)</label>
+              <input type="number" class="form-control" id="inputCopperPC" value="0" min="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== PASSO 6: BIOGRAFIA & DETALHES ==================== -->
+        <div class="step-content" id="step6">
+          <div class="section-header">
+            <h2 class="section-title">6. Biografia, Personalidade & Roleplay</h2>
+          </div>
+          <p class="section-desc">Preencha os traços de interpretação, aparência física e histórico para enriquecer sua narrativa.</p>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="inputAge">Idade<button type="button" class="bio-roll" data-bio-roll="age" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+              <input type="text" class="form-control" id="inputAge" placeholder="Ex: 28 anos">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputHeight">Altura<button type="button" class="bio-roll" data-bio-roll="height" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+              <input type="text" class="form-control" id="inputHeight" placeholder="Ex: 1,80 m">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputWeight">Peso<button type="button" class="bio-roll" data-bio-roll="weight" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+              <input type="text" class="form-control" id="inputWeight" placeholder="Ex: 85 kg">
+            </div>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label" for="inputEyes">Olhos<button type="button" class="bio-roll" data-bio-roll="eyes" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+              <input type="text" class="form-control" id="inputEyes" placeholder="Ex: Azuis">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputSkin">Pele<button type="button" class="bio-roll" data-bio-roll="skin" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+              <input type="text" class="form-control" id="inputSkin" placeholder="Ex: Clara">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputHair">Cabelo<button type="button" class="bio-roll" data-bio-roll="hair" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+              <input type="text" class="form-control" id="inputHair" placeholder="Ex: Castanho">
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="textPersonality">Traços de Personalidade<button type="button" class="bio-roll" data-bio-roll="personality" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+              <textarea class="form-control" id="textPersonality" rows="3" placeholder="Como seu personagem se comporta no dia a dia..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="textIdeals">Ideais<button type="button" class="bio-roll" data-bio-roll="ideals" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+              <textarea class="form-control" id="textIdeals" rows="3" placeholder="O que move seu herói na vida..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="textBonds">Vínculos<button type="button" class="bio-roll" data-bio-roll="bonds" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+              <textarea class="form-control" id="textBonds" rows="3" placeholder="Pessoas, lugares ou relíquias que você protege..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="textFlaws">Defeitos<button type="button" class="bio-roll" data-bio-roll="flaws" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+              <textarea class="form-control" id="textFlaws" rows="3" placeholder="Vícios, fraquezas ou segredos ocultos..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="textBackstory">História & Origem do Personagem<button type="button" class="bio-roll" data-bio-roll="backstory" title="Sortear automaticamente"><i class="fa-solid fa-dice-d20"></i></button></label>
+            <textarea class="form-control" id="textBackstory" rows="4" placeholder="Escreva a jornada e o passado do seu personagem..."></textarea>
+          </div>
+        </div>
+
+        <!-- BARRA DE NAVEGAÇÃO ANTERIOR / PRÓXIMO -->
+        <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+          <button class="btn btn-secondary" id="btnPrevStep" disabled>
+            <i class="fa-solid fa-chevron-left"></i> Anterior
+          </button>
+          <button class="btn btn-primary" id="btnNextStep">
+            Próximo <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- COLUNA DIREITA / MODO FICHA: VISUALIZADOR DA FICHA OFICIAL D&D 5.5 EDITÁVEL -->      <section class="sheet-viewer-panel" id="sheetViewerPanel">
+
+        <!-- BARRA DE FERRAMENTAS DA FICHA -->
+        <div class="sheet-toolbar">
+          <div class="sheet-page-tabs">
+            <button class="page-tab-btn active" data-page="1">
+              <i class="fa-solid fa-shield-halved"></i> Página 1<span class="tab-long-label">: Personagem & Combate</span>
+            </button>
+            <button class="page-tab-btn" data-page="2">
+              <i class="fa-solid fa-hat-wizard"></i> Página 2<span class="tab-long-label">: Magias & História</span>
+            </button>
+          </div>
+
+          <div class="sheet-quick-actions">
+            <span class="sheet-sync-status"><i class="fa-solid fa-arrows-rotate fa-spin"></i> Sincronização Ativa</span>
+            <div class="sheet-zoom-control" role="group" aria-label="Zoom da ficha">
+              <button type="button" class="sheet-zoom-btn" id="btnSheetZoomOut" title="Diminuir zoom" aria-label="Diminuir zoom">−</button>
+              <button type="button" class="sheet-zoom-label" id="btnSheetZoomFit" title="Ajustar a ficha à largura da tela">Ajustar</button>
+              <button type="button" class="sheet-zoom-btn" id="btnSheetZoomIn" title="Aumentar zoom" aria-label="Aumentar zoom">+</button>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnResetSheetOverrides" title="Descarta as edições manuais e volta a preencher os campos a partir do criador">
+              <i class="fa-solid fa-rotate-left"></i> Recalcular Campos
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnQuickRollD20" title="Rolar D20 Rápido">
+              <i class="fa-solid fa-dice-d20"></i> D20
+            </button>
+          </div>
+        </div>
+
+        <!-- CONTAINER DA FICHA OFICIAL D&D 2024 (2 PÁGINAS, IDÊNTICA À FICHA EDITÁVEL) -->
+        <div class="sheet-render-viewport">
+          <div class="sheet-preview-container" id="sheetContainer">
+
+            <!-- ==================================================================== -->
+            <!-- PÁGINA 1 — PERSONAGEM, ATRIBUTOS, PERÍCIAS, COMBATE E CARACTERÍSTICAS -->
+            <!-- ==================================================================== -->
+            <div class="sheet-page active-page" id="sheetPage1">
+
+              <!-- ---------- CABEÇALHO ---------- -->
+              <div class="of-header">
+                <div class="of-header-identity">
+                  <div class="of-field of-field-name">
+                    <input type="text" class="of-input of-input-xl" id="sheetCharName" value="">
+                    <span class="of-label">Nome do Personagem</span>
+                  </div>
+                  <div class="of-identity-grid">
+                    <div class="of-field">
+                      <input type="text" class="of-input" id="sheetOrigin">
+                      <span class="of-label">Origem</span>
+                    </div>
+                    <div class="of-field">
+                      <input type="text" class="of-input" id="sheetClassName">
+                      <span class="of-label">Classe</span>
+                    </div>
+                    <div class="of-field of-field-narrow">
+                      <input type="text" class="of-input of-input-center" id="sheetLevel">
+                      <span class="of-label">Nível</span>
+                    </div>
+                    <div class="of-field">
+                      <input type="text" class="of-input" id="sheetSpecies">
+                      <span class="of-label">Espécie</span>
+                    </div>
+                    <div class="of-field">
+                      <input type="text" class="of-input" id="sheetSubclass">
+                      <span class="of-label">Subclasse</span>
+                    </div>
+                    <div class="of-field of-field-narrow">
+                      <input type="text" class="of-input of-input-center" id="sheetXP">
+                      <span class="of-label">EXP</span>
+                    </div>
+                  </div>
+                  <div class="of-field of-field-player">
+                    <input type="text" class="of-input" id="sheetPlayerNameDisplay" placeholder="Seu nome">
+                    <span class="of-label">Jogador</span>
+                  </div>
+                </div>
+
+                <div class="of-header-combat">
+                  <div class="of-shield-box">
+                    <input type="text" class="of-input of-input-center of-shield-val" id="sheetAC" value="">
+                    <div class="of-boxlabel">Classe de Armadura</div>
+                    <label class="of-inline-check"><input type="checkbox" id="sheetShieldCheck"> Escudo</label>
+                  </div>
+
+                  <div class="of-hp-box">
+                    <div class="of-boxlabel">Pontos de Vida</div>
+                    <div class="of-hp-grid">
+                      <div class="of-hp-cell of-hp-current">
+                        <input type="number" class="of-input of-input-center of-input-lg" id="sheetHpCurrent" min="0">
+                        <span class="of-label">Atual</span>
+                      </div>
+                      <div class="of-hp-cell">
+                        <input type="number" class="of-input of-input-center" id="sheetHpTemp" min="0">
+                        <span class="of-label">Temp</span>
+                      </div>
+                      <div class="of-hp-cell">
+                        <input type="number" class="of-input of-input-center" id="sheetHpMax" min="0">
+                        <span class="of-label">Máx</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="of-hd-box">
+                    <div class="of-boxlabel">Dado de Vida</div>
+                    <div class="of-hd-grid">
+                      <div class="of-hp-cell">
+                        <input type="text" class="of-input of-input-center" id="sheetHitDiceSpent" value="">
+                        <span class="of-label">Gasto</span>
+                      </div>
+                      <div class="of-hp-cell">
+                        <input type="text" class="of-input of-input-center" id="sheetHitDiceMax">
+                        <span class="of-label">Máx</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="of-death-box">
+                    <div class="of-boxlabel">Teste de Res. de Morte</div>
+                    <div class="of-death-row">
+                      <span>Sucessos</span>
+                      <span class="of-death-dots">
+                        <input type="checkbox" class="of-dot succ" id="ds_succ_1">
+                        <input type="checkbox" class="of-dot succ" id="ds_succ_2">
+                        <input type="checkbox" class="of-dot succ" id="ds_succ_3">
+                      </span>
+                    </div>
+                    <div class="of-death-row">
+                      <span>Falhas</span>
+                      <span class="of-death-dots">
+                        <input type="checkbox" class="of-dot fail" id="ds_fail_1">
+                        <input type="checkbox" class="of-dot fail" id="ds_fail_2">
+                        <input type="checkbox" class="of-dot fail" id="ds_fail_3">
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ---------- CORPO: COLUNA ESQUERDA (ATRIBUTOS) + DIREITA ---------- -->
+              <div class="of-body">
+
+                <!-- ===== COLUNA ESQUERDA ===== -->
+                <div class="of-left">
+                  <div class="of-abilities">
+                    <div class="of-ability-col">
+                      <div class="of-pb-box">
+                        <input type="text" class="of-input of-input-center of-input-lg" id="sheetPB" value="">
+                        <span class="of-label">Bônus de Proficiência</span>
+                      </div>
+                      <div id="sheetAbilitiesColA"></div>
+                      <div class="of-inspiration" id="sheetInspirationBox" title="Clique para alternar a Inspiração Heroica">
+                        <span class="of-insp-dot" id="sheetInspiration"></span>
+                        <span class="of-insp-label">Inspiração Heroica</span>
+                      </div>
+                    </div>
+                    <div class="of-ability-col" id="sheetAbilitiesColB"></div>
+                  </div>
+
+                  <!-- Equipamento, Treino & Proficiências -->
+                  <div class="of-box of-prof-box">
+                    <div class="of-box-title">Equipamento, Treino &amp; Proficiências</div>
+                    <div class="of-prof-line">
+                      <span class="of-prof-tag">Treino de armadura</span>
+                      <label class="of-inline-check"><input type="checkbox" id="sheetArmorLight"> Leve</label>
+                      <label class="of-inline-check"><input type="checkbox" id="sheetArmorMedium"> Média</label>
+                      <label class="of-inline-check"><input type="checkbox" id="sheetArmorHeavy"> Pesada</label>
+                      <label class="of-inline-check"><input type="checkbox" id="sheetArmorShields"> Escudos</label>
+                    </div>
+                    <div class="of-prof-field">
+                      <span class="of-prof-tag">Armas</span>
+                      <textarea class="of-area" id="sheetWeaponProfs" rows="3"></textarea>
+                    </div>
+                    <div class="of-prof-field">
+                      <span class="of-prof-tag">Ferramentas</span>
+                      <textarea class="of-area" id="sheetToolProfs" rows="2"></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ===== COLUNA DIREITA ===== -->
+                <div class="of-right">
+                  <div class="of-stat-strip">
+                    <div class="of-stat-cell of-clickable" id="sheetInitiativeBadge" title="Clique para rolar Iniciativa">
+                      <input type="text" class="of-input of-input-center of-input-lg" id="sheetInitiative" value="">
+                      <span class="of-label">Iniciativa</span>
+                    </div>
+                    <div class="of-stat-cell">
+                      <input type="text" class="of-input of-input-center of-input-lg" id="sheetSpeed" value="">
+                      <span class="of-label">Velocidade</span>
+                    </div>
+                    <div class="of-stat-cell">
+                      <input type="text" class="of-input of-input-center of-input-lg" id="sheetSize" value="">
+                      <span class="of-label">Tamanho</span>
+                    </div>
+                    <div class="of-stat-cell">
+                      <input type="text" class="of-input of-input-center of-input-lg" id="sheetPassivePerception" value="">
+                      <span class="of-label">Percepção Passiva</span>
+                    </div>
+                  </div>
+
+                  <!-- Armas & Truques de Dano -->
+                  <div class="of-box">
+                    <div class="of-box-title of-box-title-row">
+                      <span>Armas &amp; Truques de Dano</span>
+                      <button type="button" class="of-mini-btn" id="btnAddSheetWeaponRow" title="Adicionar linha"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <table class="of-table of-weapons-table">
+                      <thead>
+                        <tr>
+                          <th class="w-name">Nome</th>
+                          <th class="w-atk">Bônus de Atq / CD</th>
+                          <th class="w-dmg">Dano &amp; Tipo</th>
+                          <th class="w-notes">Anotações</th>
+                          <th class="w-del"></th>
+                        </tr>
+                      </thead>
+                      <tbody id="sheetWeaponsTableBody"></tbody>
+                    </table>
+                  </div>
+
+                  <!-- Características de Classe -->
+                  <div class="of-box">
+                    <div class="of-box-title">Características de Classe</div>
+                    <div class="of-two-areas">
+                      <textarea class="of-area of-area-tall" id="sheetClassFeatures"></textarea>
+                      <textarea class="of-area of-area-tall" id="sheetClassFeatures2"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Características Raciais & Talentos -->
+                  <div class="of-two-boxes">
+                    <div class="of-box">
+                      <div class="of-box-title">Características Raciais</div>
+                      <textarea class="of-area of-area-tall" id="sheetSpeciesTraits"></textarea>
+                    </div>
+                    <div class="of-box">
+                      <div class="of-box-title">Talentos</div>
+                      <textarea class="of-area of-area-tall" id="sheetFeatsText"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ==================================================================== -->
+            <!-- PÁGINA 2 — MAGIAS, APARÊNCIA, HISTÓRIA, EQUIPAMENTO E MOEDAS         -->
+            <!-- ==================================================================== -->
+            <div class="sheet-page" id="sheetPage2">
+              <div class="of-body of-body-p2">
+
+                <!-- ===== COLUNA ESQUERDA: CONJURAÇÃO ===== -->
+                <div class="of-spells-col">
+                  <div class="of-cast-header">
+                    <div class="of-cast-stats">
+                      <div class="of-field">
+                        <input type="text" class="of-input of-input-center" id="sheetSpellAbility" value="">
+                        <span class="of-label">Atributo de Conjuração</span>
+                      </div>
+                      <div class="of-field">
+                        <input type="text" class="of-input of-input-center of-input-lg" id="sheetSpellMod" value="">
+                        <span class="of-label">Modificador de Conjuração</span>
+                      </div>
+                      <div class="of-field">
+                        <input type="text" class="of-input of-input-center of-input-lg" id="sheetSpellDC" value="">
+                        <span class="of-label">CD de Resistência de Magia</span>
+                      </div>
+                      <div class="of-field">
+                        <input type="text" class="of-input of-input-center of-input-lg" id="sheetSpellAttack" value="">
+                        <span class="of-label">Bônus de Ataque de Magia</span>
+                      </div>
+                    </div>
+
+                    <div class="of-box of-slots-box">
+                      <div class="of-box-title">Espaços de Magia</div>
+                      <div class="of-slots-grid" id="sheetSpellSlotsGrid"></div>
+                    </div>
+                  </div>
+
+                  <!-- Truques & Magias Preparadas -->
+                  <div class="of-box of-spells-box">
+                    <div class="of-box-title of-box-title-row">
+                      <span>Truques &amp; Magias Preparadas</span>
+                      <button type="button" class="of-mini-btn" id="btnAddSheetSpellRow" title="Adicionar linha"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <table class="of-table of-spells-table">
+                      <thead>
+                        <tr>
+                          <th class="s-lvl">Nível</th>
+                          <th class="s-name">Nome</th>
+                          <th class="s-time">Tempo de Conjuração</th>
+                          <th class="s-range">Alcance</th>
+                          <th class="s-crm" title="Concentração, Ritual e Material Necessário">C&nbsp;R&nbsp;M</th>
+                          <th class="s-notes">Anotações</th>
+                          <th class="s-del"></th>
+                        </tr>
+                      </thead>
+                      <tbody id="sheetSpellsTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- ===== COLUNA DIREITA: PERSONAGEM ===== -->
+                <div class="of-side-col">
+                  <div class="of-box">
+                    <div class="of-box-title">Aparência</div>
+                    <textarea class="of-area" id="sheetAppearance" rows="6"></textarea>
+                  </div>
+
+                  <div class="of-box">
+                    <div class="of-box-title">História &amp; Personalidade</div>
+                    <textarea class="of-area of-area-tall" id="sheetBackstoryDisplay"></textarea>
+                  </div>
+
+                  <div class="of-field of-field-boxed">
+                    <input type="text" class="of-input" id="sheetAlignment">
+                    <span class="of-label">Alinhamento</span>
+                  </div>
+
+                  <div class="of-box">
+                    <div class="of-box-title">Idiomas</div>
+                    <textarea class="of-area" id="sheetLanguages" rows="3"></textarea>
+                  </div>
+
+                  <div class="of-box">
+                    <div class="of-box-title">Equipamento</div>
+                    <textarea class="of-area of-area-tall" id="sheetEquipment"></textarea>
+                  </div>
+
+                  <div class="of-box">
+                    <div class="of-box-title">Sintonização de Item Mágico</div>
+                    <div class="of-attune-row">
+                      <input type="checkbox" class="of-dot" id="sheetAttuneChk_1">
+                      <input type="text" class="of-input" id="sheetAttune_1">
+                    </div>
+                    <div class="of-attune-row">
+                      <input type="checkbox" class="of-dot" id="sheetAttuneChk_2">
+                      <input type="text" class="of-input" id="sheetAttune_2">
+                    </div>
+                    <div class="of-attune-row">
+                      <input type="checkbox" class="of-dot" id="sheetAttuneChk_3">
+                      <input type="text" class="of-input" id="sheetAttune_3">
+                    </div>
+                  </div>
+
+                  <div class="of-box">
+                    <div class="of-box-title">Moedas</div>
+                    <div class="of-coins-grid">
+                      <div class="of-field"><input type="number" class="of-input of-input-center" id="sheetCoinPC" min="0"><span class="of-label">PC</span></div>
+                      <div class="of-field"><input type="number" class="of-input of-input-center" id="sheetCoinPP" min="0"><span class="of-label">PP</span></div>
+                      <div class="of-field"><input type="number" class="of-input of-input-center" id="sheetCoinPE" min="0"><span class="of-label">PE</span></div>
+                      <div class="of-field"><input type="number" class="of-input of-input-center" id="sheetCoinPO" min="0"><span class="of-label">PO</span></div>
+                      <div class="of-field"><input type="number" class="of-input of-input-center" id="sheetCoinPL" min="0"><span class="of-label">PL</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- MODAL: ADICIONAR TALENTO CUSTOMIZADO -->
+  <div class="modal-overlay" id="customFeatModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-sparkles"></i> Adicionar Talento Personalizado</h3>
+        <button class="modal-close-btn" id="closeCustomFeatModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="customFeatForm">
+        <div class="form-group">
+          <label class="form-label" for="customFeatName">Nome do Talento</label>
+          <input type="text" class="form-control" id="customFeatName" required placeholder="Ex: Mestre das Lâminas Arcanas">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="customFeatType">Tipo de Talento</label>
+          <select class="form-control" id="customFeatType">
+            <option value="custom">Geral / Regra da Casa (Custom)</option>
+            <option value="origin">Talento de Origem (Nível 1)</option>
+            <option value="epic">Talento Épico (Nível 19+)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="customFeatAbilityBonus">Bônus de Atributo (Opcional)</label>
+          <select class="form-control" id="customFeatAbilityBonus">
+            <option value="none">Nenhum</option>
+            <option value="str">+1 em Força</option>
+            <option value="dex">+1 em Destreza</option>
+            <option value="con">+1 em Constituição</option>
+            <option value="int">+1 em Inteligência</option>
+            <option value="wis">+1 em Sabedoria</option>
+            <option value="cha">+1 em Carisma</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="customFeatDesc">Descrição dos Benefícios e Regras</label>
+          <textarea class="form-control" id="customFeatDesc" rows="4" required placeholder="Descreva os efeitos e benefícios deste talento..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" id="btnCancelCustomFeat">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Talento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADICIONAR ITEM PERSONALIZADO (CUSTOM ITEM) -->
+  <div class="modal-overlay" id="customItemModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-shield-cat"></i> Adicionar Item / Arma Personalizada</h3>
+        <button class="modal-close-btn" id="closeCustomItemModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="customItemForm">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="customItemName">Nome do Item</label>
+            <input type="text" class="form-control" id="customItemName" required placeholder="Ex: Lâmina Solar +1">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customItemType">Tipo do Item</label>
+            <select class="form-control" id="customItemType">
+              <option value="weapon">Arma de Combate</option>
+              <option value="armor">Armadura / Veste</option>
+              <option value="shield">Escudo</option>
+              <option value="wondrous">Item Maravilhoso / Relíquia</option>
+              <option value="ring">Anel / Amuleto Mágico</option>
+              <option value="potion">Poção / Elixir</option>
+              <option value="scroll">Pergaminho Arcano</option>
+              <option value="other">Outro Item</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Campos para Armas -->
+        <div class="form-grid-3" id="customItemWeaponFields">
+          <div class="form-group">
+            <label class="form-label" for="customItemDamage">Dano (Ex: 1d8+1)</label>
+            <input type="text" class="form-control" id="customItemDamage" placeholder="1d8+1">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customItemDamageType">Tipo de Dano</label>
+            <select class="form-control" id="customItemDamageType">
+              <option value="Cortante">Cortante</option>
+              <option value="Perfurante">Perfurante</option>
+              <option value="Concussão">Concussão</option>
+              <option value="Fogo">Fogo</option>
+              <option value="Gélido">Gélido</option>
+              <option value="Elétrico">Elétrico</option>
+              <option value="Radiante">Radiante</option>
+              <option value="Necrótico">Necrótico</option>
+              <option value="Psíquico">Psíquico</option>
+              <option value="Força">Força</option>
+              <option value="Veneno">Veneno</option>
+              <option value="Ácido">Ácido</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customItemMastery">Propriedade / Maestria</label>
+            <input type="text" class="form-control" id="customItemMastery" placeholder="Ex: Vex, Empurrar, Acuidade">
+          </div>
+        </div>
+
+        <!-- Campos para Armadura / Proteção -->
+        <div class="form-grid-2" id="customItemProtectionFields" style="display: none;">
+          <div class="form-group">
+            <label class="form-label" for="customItemAcBonus">Bônus de Classe de Armadura (+CA)</label>
+            <input type="number" class="form-control" id="customItemAcBonus" value="0" min="0" max="10">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customItemAttunement">Requer Sintonização?</label>
+            <select class="form-control" id="customItemAttunement">
+              <option value="false">Não</option>
+              <option value="true">Sim (Sintonização Requerida)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="customItemWeight">Peso (kg)</label>
+            <input type="text" class="form-control" id="customItemWeight" placeholder="Ex: 1.5 kg">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customItemCost">Valor Estimado (PO)</label>
+            <input type="text" class="form-control" id="customItemCost" placeholder="Ex: 500 PO">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="customItemDesc">Descrição & Propriedades Mágicas</label>
+          <textarea class="form-control" id="customItemDesc" rows="3" placeholder="Descreva os efeitos mágicos, cargas e histórico do item..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #fbbf24;">
+            <input type="checkbox" id="customItemEquipNow" checked>
+            <span><strong>Equipar este item imediatamente</strong> (adiciona aos ataques ou CA se aplicável)</span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" id="btnCancelCustomItem">Cancelar</button>
+          <button type="submit" class="btn btn-gold">Salvar Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADICIONAR ATAQUE PERSONALIZADO NA FICHA -->
+  <div class="modal-overlay" id="customAttackModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-swords"></i> Adicionar Linha de Ataque</h3>
+        <button class="modal-close-btn" id="closeCustomAttackModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="customAttackForm">
+        <div class="form-group">
+          <label class="form-label" for="customAtkName">Nome do Ataque / Ação</label>
+          <input type="text" class="form-control" id="customAtkName" required placeholder="Ex: Golpe Desarmado, Mordida de Vampiro, Fogo das Fadas">
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="customAtkBonus">Bônus de Ataque</label>
+            <input type="text" class="form-control" id="customAtkBonus" required placeholder="Ex: +5">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customAtkDamage">Dano & Tipo / Efeito</label>
+            <input type="text" class="form-control" id="customAtkDamage" required placeholder="Ex: 1d6+3 Concussão">
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" id="btnCancelCustomAttack">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Adicionar à Ficha</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADICIONAR CARACTERÍSTICA NA FICHA -->
+  <div class="modal-overlay" id="customFeatureModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-feather-pointed"></i> Adicionar Característica / Recurso</h3>
+        <button class="modal-close-btn" id="closeCustomFeatureModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="customFeatureForm">
+        <div class="form-group">
+          <label class="form-label" for="customFeatureTitle">Título da Característica</label>
+          <input type="text" class="form-control" id="customFeatureTitle" required placeholder="Ex: Benção de Tymora">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="customFeatureDesc">Descrição do Efeito</label>
+          <textarea class="form-control" id="customFeatureDesc" rows="3" required placeholder="Descreva os efeitos e usos desta habilidade..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" id="btnCancelCustomFeature">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Adicionar à Ficha</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: GERENCIADOR DE FICHAS SALVAS -->
+  <div class="modal-overlay" id="manageCharsModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-folder-open"></i> Fichas Salvas no Navegador</h3>
+        <button class="modal-close-btn" id="closeManageCharsModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="savedCharsList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 320px; overflow-y: auto;"></div>
+      <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+        <button class="btn btn-secondary" id="btnSaveCurrentChar">
+          <i class="fa-solid fa-floppy-disk"></i> Salvar Ficha Atual
+        </button>
+        <button class="btn btn-secondary" id="btnCloseSavedChars">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- SCRIPTS -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script src="bio-random.js"></script>
+  <script src="pdf-export.js"></script>
+</body>
+</html>

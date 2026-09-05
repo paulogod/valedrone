@@ -1,0 +1,3 @@
+# Os PDFs oficiais da Wizards ficam só na máquina: não vão para o repositório
+# nem para o site. O botão "Ficha PDF Oficial" pede o arquivo ao jogador.
+*.pdf
