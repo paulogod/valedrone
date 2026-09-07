@@ -1872,6 +1872,69 @@ img, table, pre { max-width: 100%; }
   color: var(--text-muted);
 }
 
+/* Passo 4 — de onde vem cada parcela do limite de magias */
+.spell-cap-breakdown {
+  flex-basis: 100%;
+  font-size: 0.78rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.45rem;
+  margin-top: 0.1rem;
+}
+
+.spell-cap-breakdown > summary {
+  cursor: pointer;
+  color: #c084fc;
+  font-weight: 600;
+  list-style: none;
+}
+
+.spell-cap-breakdown > summary::before {
+  content: "\f0d7";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  margin-right: 0.35rem;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.spell-cap-breakdown[open] > summary::before { transform: rotate(-90deg); }
+.spell-cap-breakdown > summary::-webkit-details-marker { display: none; }
+
+.cap-bd-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.22rem 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+}
+
+.cap-bd-row.is-total {
+  border-bottom: none;
+  border-top: 1px solid rgba(192, 132, 252, 0.35);
+  margin-top: 0.15rem;
+  padding-top: 0.35rem;
+  font-weight: 700;
+  color: #e9d5ff;
+}
+
+.cap-bd-src { color: var(--text-muted); }
+.cap-bd-src em { font-style: normal; opacity: 0.7; }
+
+.cap-bd-num {
+  font-family: var(--font-mono);
+  color: #c084fc;
+  white-space: nowrap;
+}
+
+.cap-bd-note {
+  margin-top: 0.45rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.cap-bd-empty { color: var(--text-muted); }
+
 /* Passo 4 — filtros do catálogo */
 .spells-filter-bar {
   display: grid;

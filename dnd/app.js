@@ -1802,65 +1802,98 @@ function renderCustomItemsList() {
 function getSpellCapacityInfo(finalMods) {
   const class1Obj = DND5E_DATA.classes.find(c => c.id === character.class1);
   const class2Obj = character.class2 !== "none" ? DND5E_DATA.classes.find(c => c.id === character.class2) : null;
-  const speciesObj = DND5E_DATA.species.find(s => s.id === character.species);
-  const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background);
 
   let maxCantrips = 0;
   let maxPrepared = 0;
-  let grantedSpells = [];
+  // Cada parcela da soma fica registrada aqui para o painel poder explicá-la.
+  const breakdown = [];
+  const soma = (fonte, truques, preparadas, detalhe) => {
+    if (!truques && !preparadas) return;
+    maxCantrips += truques;
+    maxPrepared += preparadas;
+    breakdown.push({ fonte, truques, preparadas, detalhe });
+  };
 
-  if (class1Obj && class1Obj.spellcasting) {
-    const sc = class1Obj.spellcasting;
-    maxCantrips += (sc.cantripsKnown ? sc.cantripsKnown[character.level1] || 0 : 0);
-    
+  const somaClasse = (classObj, nivel, rotuloNivel) => {
+    if (!classObj || !classObj.spellcasting || nivel < 1) return;
+    const sc = classObj.spellcasting;
+    const truques = (sc.cantripsKnown && sc.cantripsKnown[nivel]) || 0;
+    let preparadas = 0;
     if (sc.calcPrepared) {
-      const mod = finalMods[sc.ability] || 0;
-      maxPrepared += sc.calcPrepared(character.level1, mod);
+      preparadas = sc.calcPrepared(nivel, finalMods[sc.ability] || 0);
     } else if (sc.preparedSpells) {
-      maxPrepared += (sc.preparedSpells[character.level1] || 0);
+      preparadas = sc.preparedSpells[nivel] || 0;
     }
+    soma(`${classObj.name} nível ${nivel}`, truques, preparadas, `tabela de ${rotuloNivel}`);
+  };
+
+  somaClasse(class1Obj, character.level1, "classe");
+  somaClasse(class2Obj, character.level2, "multiclasse");
+
+  if (character.species === "elf" && character.lineage === "high_elf") {
+    soma("Alto Elfo", 1, 0, "linhagem");
   }
 
-  if (class2Obj && class2Obj.spellcasting) {
-    const sc2 = class2Obj.spellcasting;
-    maxCantrips += (sc2.cantripsKnown ? sc2.cantripsKnown[character.level2] || 0 : 0);
-    if (sc2.calcPrepared) {
-      const mod2 = finalMods[sc2.ability] || 0;
-      maxPrepared += sc2.calcPrepared(character.level2, mod2);
-    } else if (sc2.preparedSpells) {
-      maxPrepared += (sc2.preparedSpells[character.level2] || 0);
-    }
-  }
+  // O talento Iniciado em Magia NÃO entra aqui: as magias dele são escolhidas
+  // dentro do próprio talento e chegam à ficha como concedidas, sem gastar a
+  // capacidade da classe. Somá-las de novo dava ao jogador dois truques e uma
+  // magia a mais do que ele tem direito.
+  const grantedSpells = getGrantedSpellEntries();
 
-  if (character.species === "elf" && character.lineage === "high_elf") maxCantrips += 1;
-
-  // Subclasse, espécie e talentos são resolvidos num lugar só, o mesmo que
-  // alimenta a tabela de magias da ficha.
-  grantedSpells = getGrantedSpellEntries();
-
-  const originFeatId = getOriginFeatId();
-  if (originFeatId && originFeatId.startsWith("magic_initiate")) {
-    maxCantrips += 2;
-    maxPrepared += 1;
-  }
-
-  const currentCantripsCount = character.spellsKnown.filter(id => {
+  const contaPorNivel = (querTruque) => character.spellsKnown.filter(id => {
     const sp = DND5E_DATA.spells.find(s => s.id === id);
-    return sp && sp.level === 0;
-  }).length;
-
-  const currentPreparedCount = character.spellsKnown.filter(id => {
-    const sp = DND5E_DATA.spells.find(s => s.id === id);
-    return sp && sp.level > 0;
+    return sp && (querTruque ? sp.level === 0 : sp.level > 0);
   }).length;
 
   return {
     maxCantrips,
-    currentCantripsCount,
+    currentCantripsCount: contaPorNivel(true),
     maxPrepared,
-    currentPreparedCount,
-    grantedSpells
+    currentPreparedCount: contaPorNivel(false),
+    grantedSpells,
+    breakdown
   };
+}
+
+/**
+ * Mostra de onde vem cada parcela dos limites de truques e magias preparadas.
+ * Sem isso o painel dá só o total, e não há como o jogador conferir se o número
+ * bate com a tabela da classe dele.
+ */
+function renderSpellCapacityBreakdown(capInfo) {
+  const box = document.getElementById("spellCapacityBreakdown");
+  if (!box) return;
+
+  if (!capInfo.breakdown.length) {
+    box.innerHTML = '<span class="cap-bd-empty">Nenhuma fonte de conjuração: esta combinação de classe e nível não concede truques nem magias preparadas.</span>';
+    return;
+  }
+
+  const linha = (rotulo, detalhe, truques, preparadas, classe) => {
+    const partes = [];
+    if (truques) partes.push(`${truques > 0 ? "+" : ""}${truques} truque${Math.abs(truques) > 1 ? "s" : ""}`);
+    if (preparadas) partes.push(`${preparadas > 0 ? "+" : ""}${preparadas} preparada${Math.abs(preparadas) > 1 ? "s" : ""}`);
+    return `<div class="cap-bd-row ${classe || ""}">
+      <span class="cap-bd-src">${rotulo}${detalhe ? ` <em>(${detalhe})</em>` : ""}</span>
+      <span class="cap-bd-num">${partes.join(" · ")}</span>
+    </div>`;
+  };
+
+  let html = capInfo.breakdown
+    .map(b => linha(b.fonte, b.detalhe, b.truques, b.preparadas))
+    .join("");
+
+  html += linha("Total", "", capInfo.maxCantrips, capInfo.maxPrepared, "is-total")
+    .replace(/\+(\d+)/g, "$1");
+
+  if (capInfo.grantedSpells.length) {
+    const fontes = [...new Set(capInfo.grantedSpells.map(g => g.source))].join("; ");
+    html += `<div class="cap-bd-note">
+      <i class="fa-solid fa-gift"></i> ${capInfo.grantedSpells.length} magia(s) concedida(s) por ${fontes} — elas já vêm preparadas e <strong>não ocupam</strong> os limites acima.
+    </div>`;
+  }
+
+  box.innerHTML = html;
 }
 
 /**
@@ -1870,6 +1903,7 @@ function renderSpellsCatalog() {
   const container = document.getElementById("spellsCatalogList");
   const filterClass = document.getElementById("spellFilterClass") ? document.getElementById("spellFilterClass").value : "all";
   const filterLevel = document.getElementById("spellFilterLevel") ? document.getElementById("spellFilterLevel").value : "all";
+  const filterSchool = document.getElementById("spellFilterSchool") ? document.getElementById("spellFilterSchool").value : "all";
   const searchQuery = (document.getElementById("spellSearchInput") ? document.getElementById("spellSearchInput").value : "").toLowerCase().trim();
 
   if (!container) return;
@@ -1878,8 +1912,9 @@ function renderSpellsCatalog() {
   const filteredSpells = DND5E_DATA.spells.filter(sp => {
     const matchClass = filterClass === "all" || (sp.classes && sp.classes.includes(filterClass));
     const matchLevel = filterLevel === "all" || sp.level.toString() === filterLevel;
+    const matchSchool = filterSchool === "all" || sp.school === filterSchool;
     const matchSearch = sp.name.toLowerCase().includes(searchQuery) || sp.desc.toLowerCase().includes(searchQuery);
-    return matchClass && matchLevel && matchSearch;
+    return matchClass && matchLevel && matchSchool && matchSearch;
   });
 
   if (filteredSpells.length === 0) {
@@ -2062,6 +2097,8 @@ function recalculateCharacter() {
         ? "Classe Conjuradora: — escolha a classe no Passo 1 —"
         : `Classe Conjuradora: ${class1Obj.name} (${class1Obj.spellcasting ? 'Conjurador ' + class1Obj.spellcasting.type : 'Não-conjurador'})`;
     }
+
+    renderSpellCapacityBreakdown(capInfo);
   }
 
   // 4. Pontos de Vida (HP)
@@ -3373,6 +3410,9 @@ function bindEvents() {
 
   const spellFilterLevel = document.getElementById("spellFilterLevel");
   if (spellFilterLevel) spellFilterLevel.addEventListener("change", renderSpellsCatalog);
+
+  const spellFilterSchool = document.getElementById("spellFilterSchool");
+  if (spellFilterSchool) spellFilterSchool.addEventListener("change", renderSpellsCatalog);
 
   const spellSearchInput = document.getElementById("spellSearchInput");
   if (spellSearchInput) spellSearchInput.addEventListener("input", renderSpellsCatalog);

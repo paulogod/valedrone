@@ -943,6 +943,47 @@ Dois efeitos colaterais dessa conferência:
   `bonusSpells: ["chaos_bolt"]` apontava para uma magia que não está no PHB e
   virou lista vazia.
 
+### 9.6 Capacidade de magias conferida e explicada
+
+Duas contas estavam erradas:
+
+- **Cinco das oito classes conjuradoras não tinham tabela de Magias
+  Preparadas** — Clérigo, Druida, Mago, Paladino e Guardião —, então o painel
+  do Passo 4 mostrava `0 / 0` para elas. As tabelas foram lidas do capítulo 3
+  do livro (a coluna Magias Preparadas é a última antes das de espaço de magia)
+  e gravadas em `spellcasting.preparedSpells`. De quebra, Bardo e Feiticeiro
+  tinham 22 no nível 19, onde o livro diz 21.
+- **O talento Iniciado em Magia era contado duas vezes.** As magias dele são
+  escolhidas dentro do próprio talento e chegam à ficha como concedidas, sem
+  gastar a capacidade da classe; ainda assim o cálculo somava +2 truques e +1
+  magia ao limite, dando ao jogador escolhas a mais.
+
+`getSpellCapacityInfo()` passou a devolver um `breakdown` com cada parcela da
+soma, e o painel ganhou um "Como esses números são somados" que lista fonte por
+fonte — tabela da classe, multiclasse, linhagem — e fecha com o total. As
+magias concedidas por subclasse, espécie e talentos aparecem à parte, com o
+aviso de que não ocupam o limite.
+
+O Passo 4 também ganhou **filtro por escola de magia**, ao lado dos de classe e
+círculo.
+
+### 9.7 Verificação de scripts no mesmo escopo
+
+`tools/checar-scripts.js` carrega `data.js`, `app.js`, `bio-random.js` e
+`pdf-export.js` no **mesmo** contexto, como o navegador faz, e confere que
+`DND5E_DATA` e as funções principais existem no fim.
+
+Existe por um motivo concreto: `index.html` declarava `var APP_VERSION` e
+`pdf-export.js` declarava `const APP_VERSION`. É redeclaração no mesmo escopo
+global — o `pdf-export.js` inteiro morria com SyntaxError e os dois botões de
+PDF paravam de funcionar, sem erro visível na página. `node --check` valida cada
+arquivo isolado e não vê esse tipo de colisão.
+
+A versão agora é declarada só no `index.html`; o `pdf-export.js` a lê de
+`window.APP_VERSION`. As folhas de estilo voltaram a ser tags estáticas: um CSS
+velho é cosmético e passa em minutos, enquanto errar o carregamento delas deixa
+a página inteira sem estilo.
+
 ---
 
 ## 10. Como o código da ficha funciona

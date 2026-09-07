@@ -17,26 +17,26 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <!-- Folhas de Estilo -->
-  <!-- ARQUIVOS LOCAIS COM VERSÃO
-       O GitHub Pages serve estes arquivos com max-age=600: sem o ?v= o
-       navegador roda a versão anterior por até 10 minutos depois de cada
-       publicação, misturando script novo com script velho. A query só entra
-       quando a página vem por http — em file:// alguns navegadores a tratam
-       como parte do nome e não acham o arquivo.
-       document.write mantém a ordem de execução e o DOMContentLoaded no lugar,
-       o que inserir as tags por JS não garante.
-       AO PUBLICAR UMA MUDANÇA: troque APP_VERSION aqui e em pdf-export.js. -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="sheet.css">
+
+  <!-- VERSÃO DOS SCRIPTS LOCAIS
+       O GitHub Pages serve os estáticos com max-age=600: sem o ?v= o navegador
+       roda o script anterior por até 10 minutos depois de cada publicação,
+       misturando arquivo novo com arquivo velho. A query só entra quando a
+       página vem por http — em file:// alguns navegadores a tratam como parte
+       do nome do arquivo.
+       As folhas de estilo ficam como tags estáticas de propósito: um CSS velho
+       é cosmético e passa em minutos, enquanto errar o carregamento delas
+       deixa a página inteira sem estilo.
+       AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
+       pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907b";
-    (function () {
+    var APP_VERSION = "20260907c";
+    window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
-      window.comVersao = function (arquivo) {
-        return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
-      };
-      ["style.css", "sheet.css"].forEach(function (css) {
-        document.write('<link rel="stylesheet" href="' + comVersao(css) + '">');
-      });
-    })();
+      return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
+    };
   </script>
 </head>
 <body>
@@ -436,6 +436,11 @@
             <div style="flex-basis: 100%; font-size: 0.78rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem; margin-top: 0.2rem;">
               <i class="fa-solid fa-circle-info"></i> <span id="spellcastingSourceLabel">Classe Conjuradora: Conforme tabela oficial 2024.</span>
             </div>
+            <!-- De onde vem cada parcela dos limites acima -->
+            <details class="spell-cap-breakdown" id="spellCapacityBreakdownBox">
+              <summary>Como esses números são somados</summary>
+              <div id="spellCapacityBreakdown"></div>
+            </details>
           </div>
 
           <!-- Filtros de Magias -->
@@ -468,6 +473,20 @@
                 <option value="7">7º Círculo</option>
                 <option value="8">8º Círculo</option>
                 <option value="9">9º Círculo</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="spellFilterSchool">Escola de Magia</label>
+              <select class="form-control" id="spellFilterSchool">
+                <option value="all">Todas as Escolas</option>
+                <option value="Abjuração">Abjuração (Abjuration)</option>
+                <option value="Adivinhação">Adivinhação (Divination)</option>
+                <option value="Encantamento">Encantamento (Enchantment)</option>
+                <option value="Evocação">Evocação (Evocation)</option>
+                <option value="Ilusão">Ilusão (Illusion)</option>
+                <option value="Invocação">Invocação (Conjuration)</option>
+                <option value="Necromancia">Necromancia (Necromancy)</option>
+                <option value="Transmutação">Transmutação (Transmutation)</option>
               </select>
             </div>
             <div class="form-group" style="margin-bottom: 0; flex: 1.5;">

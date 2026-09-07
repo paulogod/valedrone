@@ -21,8 +21,12 @@ const OFFICIAL_PDF_FILE = "D&D 5.5 - Ficha editável.pdf";
 const OFFICIAL_PDF_URLS = ["ficha-oficial.pdf", OFFICIAL_PDF_FILE];
 const PDF_LIB_FILE = "pdf-lib.min.js";
 const FICHA_EMBED_FILE = "ficha-oficial-embed.js";
-/* Mesma versão das tags do index.html. Trocar ao publicar uma mudança. */
-const APP_VERSION = "20260907b";
+/* A versão é declarada uma única vez, no index.html (var APP_VERSION). Declarar
+   um `const APP_VERSION` aqui seria redeclaração no mesmo escopo global: o
+   arquivo inteiro morre com SyntaxError e nenhum botão chega a ser ligado. */
+function appVersion() {
+  return window.APP_VERSION || "0";
+}
 
 /* Cache da sessão: bytes do PDF em branco e promessas de carga dos scripts */
 let _officialPdfBytes = null;
@@ -433,7 +437,7 @@ async function fillOfficialPdf(srcBytes, payload) {
  */
 function versionado(src) {
   const porHttp = location.protocol === "http:" || location.protocol === "https:";
-  return porHttp ? `${src}?v=${APP_VERSION}` : src;
+  return porHttp ? `${src}?v=${appVersion()}` : src;
 }
 
 /** Carrega um script uma única vez, sob demanda, e resolve quando ele terminar */
