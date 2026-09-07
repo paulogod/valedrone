@@ -422,7 +422,7 @@ const DND5E_DATA = {
   "classes": [
     {
       "id": "barbarian",
-      "name": "Bárbaro",
+      "name": "Bárbaro (Barbarian)",
       "hitDie": 12,
       "primaryAbility": [
         "str"
@@ -472,57 +472,57 @@ const DND5E_DATA = {
           "Sentido de Perigo (Danger Sense)"
         ],
         "3": [
-          "Subclasse de Bárbaro",
+          "Subclasse de Bárbaro (Barbarian Subclass)",
           "Conhecimento Primitivo (Primal Knowledge)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "5": [
-          "Ataque Extra",
+          "Ataque Extra (Extra Attack)",
           "Movimento Rápido (+3m / +10ft)"
         ],
         "6": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
           "Instinto Selvagem (Vantagem na Iniciativa)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "9": [
           "Crítico Brutal (+1 dado de dano)"
         ],
         "10": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "11": [
-          "Fúria Implacável"
+          "Fúria Implacável (Relentless Rage)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "13": [
-          "Golpe Brutal aprimorado"
+          "Golpe Brutal aprimorado (Improved Brutal Strike)"
         ],
         "14": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "15": [
-          "Fúria Persistente"
+          "Fúria Persistente (Persistent Rage)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "17": [
           "Crítico Brutal (+2 dados)"
         ],
         "18": [
-          "Força Indomável"
+          "Força Indomável (Indomitable Might)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
           "Campeão Primitivo (+4 FOR, +4 CON, Máx 25)"
@@ -531,29 +531,29 @@ const DND5E_DATA = {
       "subclasses": [
         {
           "id": "berserker",
-          "name": "Caminho do Berserker",
+          "name": "Caminho do Berserker (Path of the Berserker)",
           "desc": "Guerreiro movido por pura fúria frenética, desferindo golpes avassaladores adicionais e ignorando o medo."
         },
         {
           "id": "wild_heart",
-          "name": "Caminho do Coração Selvagem",
+          "name": "Caminho do Coração Selvagem (Path of the Wild Heart)",
           "desc": "Canaliza espíritos totêmicos animais como Urso, Águia e Lobo para resistência e bônus em grupo."
         },
         {
           "id": "world_tree",
-          "name": "Caminho da Árvore do Mundo",
+          "name": "Caminho da Árvore do Mundo (Path of the World Tree)",
           "desc": "Conecta-se às raízes de Yggdrasil, ganhando vitalidade temporal e teletransporte em combate."
         },
         {
           "id": "zealot",
-          "name": "Caminho do Zelote",
+          "name": "Caminho do Zelote (Path of the Zealot)",
           "desc": "Abraçado pelo furor divino de uma divindade guerreira, causando dano radiante/necrótico e desafiando a morte."
         }
       ]
     },
     {
       "id": "bard",
-      "name": "Bardo",
+      "name": "Bardo (Bard)",
       "hitDie": 8,
       "primaryAbility": [
         "cha"
@@ -652,33 +652,33 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Conjuração de Bardo",
+          "Conjuração de Bardo (Spellcasting)",
           "Inspiração de Bardo (d6)"
         ],
         "2": [
           "Pau pra Toda Obra (Jack of All Trades)",
           "Especialização (2 perícias)",
-          "Canção de Descanso"
+          "Canção de Descanso (Song of Rest)"
         ],
         "3": [
-          "Subclasse de Bardo"
+          "Subclasse de Bardo (Bard Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "5": [
           "Fonte de Inspiração (Recupera inspiração em descanso curto)",
           "Inspiração de Bardo (d8)"
         ],
         "6": [
-          "Contracanto",
-          "Característica de Subclasse"
+          "Contracanto (Countercharm)",
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
           "Magias de 4º Círculo"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "9": [
           "Especialização (2 perícias adicionais)"
@@ -691,50 +691,50 @@ const DND5E_DATA = {
           "Magias de 6º Círculo"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "14": [
-          "Segredos Mágicos adicionais",
-          "Característica de Subclasse"
+          "Segredos Mágicos adicionais (Magical Secrets)",
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "15": [
           "Inspiração de Bardo (d12)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "18": [
           "Segredos Mágicos Supremos"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
-          "Inspiração Suprema"
+          "Inspiração Suprema (Superior Inspiration)"
         ]
       },
       "subclasses": [
         {
           "id": "lore",
-          "name": "Colégio do Conhecimento",
+          "name": "Colégio do Conhecimento (College of Lore)",
           "desc": "Mestres de perícias, palavras cortantes que sabotam inimigos e acesso antecipado a segredos mágicos de qualquer classe.",
           "bonusSpells": []
         },
         {
           "id": "valor",
-          "name": "Colégio da Bravura",
+          "name": "Colégio da Bravura (College of Valor)",
           "desc": "Bardos marciais proficientes com armaduras médias, escudos e armas marciais, inspirando aliados em ataques de combate.",
           "bonusSpells": []
         },
         {
           "id": "dance",
-          "name": "Colégio da Dança",
+          "name": "Colégio da Dança (College of Dance)",
           "desc": "Guerreiros acrobáticos que lutam desarmados com agilidade cintilante e compartilham movimento com aliados.",
           "bonusSpells": []
         },
         {
           "id": "glamour",
-          "name": "Colégio do Glamour",
+          "name": "Colégio do Glamour (College of Glamour)",
           "desc": "Tocados pelo poder de Feywild, tecem ilusões e majestade feérica hipnotizante sobre multidões e inimigos.",
           "bonusSpells": [
             "command",
@@ -745,7 +745,7 @@ const DND5E_DATA = {
     },
     {
       "id": "cleric",
-      "name": "Clérigo",
+      "name": "Clérigo (Cleric)",
       "hitDie": 8,
       "primaryAbility": [
         "wis"
@@ -809,56 +809,56 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Conjuração Divina",
+          "Conjuração Divina (Spellcasting)",
           "Ordem Divina (Protetor ou Taumaturgo)"
         ],
         "2": [
           "Canalizar Divindade (Expulsar Mortos-Vivos, Centelha Divina)"
         ],
         "3": [
-          "Subclasse de Clérigo"
+          "Subclasse de Clérigo (Cleric Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "5": [
           "Destruir Mortos-Vivos (CR 1/2)"
         ],
         "6": [
-          "Característica de Subclasse",
-          "Canalizar Divindade adicional"
+          "Característica de Subclasse (Subclass Feature)",
+          "Canalizar Divindade adicional (Channel Divinity)"
         ],
         "7": [
           "Magias de 4º Círculo",
-          "Abençoado pelos Deuses"
+          "Abençoado pelos Deuses (Blessed Strikes)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento",
-          "Golpe Abençoado / Conjuração Poderosa"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)",
+          "Golpe Abençoado / Conjuração Poderosa (Divine Strike / Potent Spellcasting)"
         ],
         "9": [
           "Magias de 5º Círculo"
         ],
         "10": [
-          "Intervenção Divina"
+          "Intervenção Divina (Divine Intervention)"
         ],
         "11": [
           "Destruir Mortos-Vivos (CR 2)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "14": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "17": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
           "Intervenção Divina Maior (Garante sucesso automático)"
@@ -867,7 +867,7 @@ const DND5E_DATA = {
       "subclasses": [
         {
           "id": "life",
-          "name": "Domínio da Vida",
+          "name": "Domínio da Vida (Life Domain)",
           "desc": "Mestres absolutos da cura e restauração, maximizando pontos de vida restaurados a si e a seus companheiros.",
           "bonusSpells": [
             "bless",
@@ -882,7 +882,7 @@ const DND5E_DATA = {
         },
         {
           "id": "light",
-          "name": "Domínio da Luz",
+          "name": "Domínio da Luz (Light Domain)",
           "desc": "Canalizam o fogo sagrado e radiância solar para queimar as trevas e cegar inimigos com clarões divinos.",
           "bonusSpells": [
             "burning_hands",
@@ -896,7 +896,7 @@ const DND5E_DATA = {
         },
         {
           "id": "trickery",
-          "name": "Domínio da Trapaça",
+          "name": "Domínio da Trapaça (Trickery Domain)",
           "desc": "Seguidores de deuses da astúcia, criando cópias ilusórias, ficando invisíveis e enganando os oponentes.",
           "bonusSpells": [
             "charm_person",
@@ -910,7 +910,7 @@ const DND5E_DATA = {
         },
         {
           "id": "war",
-          "name": "Domínio da Guerra",
+          "name": "Domínio da Guerra (War Domain)",
           "desc": "Campeões abençoados com proficiência em armas marciais e armaduras pesadas, desferindo ataques extras inspirados.",
           "bonusSpells": [
             "divine_favor",
@@ -927,7 +927,7 @@ const DND5E_DATA = {
     },
     {
       "id": "druid",
-      "name": "Druida",
+      "name": "Druida (Druid)",
       "hitDie": 8,
       "primaryAbility": [
         "wis"
@@ -996,50 +996,50 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Conjuração Primitiva",
+          "Conjuração Primitiva (Spellcasting)",
           "Ordem Druídica (Mago ou Protetor)"
         ],
         "2": [
           "Forma Selvagem (Wild Shape)",
-          "Companheiro Selvagem"
+          "Companheiro Selvagem (Wild Companion)"
         ],
         "3": [
-          "Subclasse de Druida"
+          "Subclasse de Druida (Druid Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento",
-          "Formas Selvagens aquáticas"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)",
+          "Formas Selvagens aquáticas (Wild Shape)"
         ],
         "5": [
           "Magias de 3º Círculo"
         ],
         "6": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
-          "Golpe Primitivo"
+          "Golpe Primitivo (Primal Strike)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento",
-          "Formas Selvagens voadoras"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)",
+          "Formas Selvagens voadoras (Wild Shape)"
         ],
         "10": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "14": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "18": [
-          "Besta Mágica / Conjuração em Forma Selvagem"
+          "Besta Mágica / Conjuração em Forma Selvagem (Beast Spells)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
           "Arquidruida (Forma Selvagem ilimitada)"
@@ -1048,7 +1048,7 @@ const DND5E_DATA = {
       "subclasses": [
         {
           "id": "moon",
-          "name": "Círculo da Lua",
+          "name": "Círculo da Lua (Circle of the Moon)",
           "desc": "Especialistas na Forma Selvagem em combate, transformando-se em feras vorazes e elementais com ação bônus.",
           "bonusSpells": [
             "cure_wounds",
@@ -1057,7 +1057,7 @@ const DND5E_DATA = {
         },
         {
           "id": "land",
-          "name": "Círculo da Terra",
+          "name": "Círculo da Terra (Circle of the Land)",
           "desc": "Profundamente ligados aos biomas do mundo (Costas, Desertos, Florestas, Montanhas), recuperando magias no descanso.",
           "bonusSpells": [
             "barkskin",
@@ -1067,7 +1067,7 @@ const DND5E_DATA = {
         },
         {
           "id": "sea",
-          "name": "Círculo do Mar",
+          "name": "Círculo do Mar (Circle of the Sea)",
           "desc": "Manipulam tempestades, ondas oceânicas e névoas marinhas para infligir dano elétrico e de frio.",
           "bonusSpells": [
             "fog_cloud",
@@ -1078,7 +1078,7 @@ const DND5E_DATA = {
         },
         {
           "id": "stars",
-          "name": "Círculo das Estrelas",
+          "name": "Círculo das Estrelas (Circle of Stars)",
           "desc": "Mapeiam as constelações celestes em um mapa estelar, assumindo formas estelares (Arqueiro, Cálice, Dragão).",
           "bonusSpells": [
             "guiding_bolt"
@@ -1088,7 +1088,7 @@ const DND5E_DATA = {
     },
     {
       "id": "fighter",
-      "name": "Guerreiro",
+      "name": "Guerreiro (Fighter)",
       "hitDie": 10,
       "primaryAbility": [
         "str",
@@ -1141,60 +1141,60 @@ const DND5E_DATA = {
         ],
         "2": [
           "Surto de Ação (Action Surge)",
-          "Mente Tática"
+          "Mente Tática (Tactical Mind)"
         ],
         "3": [
-          "Subclasse de Guerreiro"
+          "Subclasse de Guerreiro (Fighter Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "5": [
           "Ataque Extra (1 ataque adicional)"
         ],
         "6": [
-          "Aumento no Valor de Habilidade ou Talento Extra"
+          "Aumento no Valor de Habilidade ou Talento Extra (Ability Score Improvement)"
         ],
         "7": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "9": [
           "Indomável (Indomitable - Rola novamente salvaguarda com bônus)"
         ],
         "10": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "11": [
           "Ataque Extra (2 ataques adicionais - Total 3)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "13": [
           "Indomável (2 usos)",
-          "Ataques Táticos"
+          "Ataques Táticos (Tactical Master)"
         ],
         "14": [
-          "Aumento no Valor de Habilidade ou Talento Extra"
+          "Aumento no Valor de Habilidade ou Talento Extra (Ability Score Improvement)"
         ],
         "15": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "17": [
           "Surto de Ação (2 usos)",
           "Indomável (3 usos)"
         ],
         "18": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
           "Ataque Extra (3 ataques adicionais - Total 4)"
@@ -1203,29 +1203,29 @@ const DND5E_DATA = {
       "subclasses": [
         {
           "id": "champion",
-          "name": "Campeão",
+          "name": "Campeão (Champion)",
           "desc": "Atleta formidável com margem crítica expandida (crítico em 19-20), mobilidade sobre-humana e sobrevivência heroica."
         },
         {
           "id": "battle_master",
-          "name": "Mestre da Batalha",
+          "name": "Mestre da Batalha (Battle Master)",
           "desc": "Tático de elite que emprega Dados de Superioridade (d8/d10) e Manobras marciais para controlar o campo de batalha."
         },
         {
           "id": "eldritch_knight",
-          "name": "Cavaleiro Arcano",
+          "name": "Cavaleiro Arcano (Eldritch Knight)",
           "desc": "Combina proezas marciais devastadoras com magias de abjuração e evocação, vinculando armas à sua mente."
         },
         {
           "id": "psi_warrior",
-          "name": "Guerreiro Psiônico",
+          "name": "Guerreiro Psiônico (Psi Warrior)",
           "desc": "Canaliza a energia psíquica para impulsionar seus golpes, erguer barreiras telecinéticas e movimentar objetos."
         }
       ]
     },
     {
       "id": "monk",
-      "name": "Monge",
+      "name": "Monge (Monk)",
       "hitDie": 8,
       "primaryAbility": [
         "dex",
@@ -1267,71 +1267,71 @@ const DND5E_DATA = {
         "1": [
           "Defesa Sem Armadura (10 + DES + SAB)",
           "Artes Marciais (d6)",
-          "Ataque Desarmado com Ação Bônus"
+          "Ataque Desarmado com Ação Bônus (Martial Arts)"
         ],
         "2": [
           "Pontos de Foco (Ki)",
           "Rajada de Golpes (Flurry of Blows)",
-          "Defesa Paciente",
-          "Passo do Vento",
+          "Defesa Paciente (Patient Defense)",
+          "Passo do Vento (Step of the Wind)",
           "Movimento Sem Armadura (+3m)"
         ],
         "3": [
-          "Subclasse de Monge",
+          "Subclasse de Monge (Monk Subclass)",
           "Defletir Projéteis (Deflect Missiles)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento",
-          "Queda Lenta"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)",
+          "Queda Lenta (Slow Fall)"
         ],
         "5": [
-          "Ataque Extra",
+          "Ataque Extra (Extra Attack)",
           "Golpe Atordoante (Stunning Strike)"
         ],
         "6": [
           "Golpes com Foco (Dano de Energia)",
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
-          "Evasão",
-          "Mente Tranquila"
+          "Evasão (Evasion)",
+          "Mente Tranquila (Stillness of Mind)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "9": [
           "Movimento Aprimorado (Andar sobre líquidos e paredes)"
         ],
         "10": [
-          "Auto-Restauração",
-          "Característica de Subclasse"
+          "Auto-Restauração (Self-Restoration)",
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "11": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "13": [
-          "Língua do Sol e da Lua"
+          "Língua do Sol e da Lua (Tongue of the Sun and Moon)"
         ],
         "14": [
           "Alma de Diamante (Proficiência em Todas as Salvaguardas)"
         ],
         "15": [
-          "Corpo Intemporal"
+          "Corpo Intemporal (Timeless Body)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "17": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "18": [
           "Corpo Vazio (Invisibilidade e Resistência)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
           "Corpo e Mente Perfeitos (+4 DES, +4 SAB)"
@@ -1340,29 +1340,29 @@ const DND5E_DATA = {
       "subclasses": [
         {
           "id": "open_hand",
-          "name": "Caminho da Palma Aberta",
+          "name": "Caminho da Palma Aberta (Warrior of the Open Hand)",
           "desc": "Mestres do combate desarmado puro, derrubando, empurrando ou desabilitando reações inimigas com a Rajada de Golpes."
         },
         {
           "id": "shadow",
-          "name": "Caminho da Sombra",
+          "name": "Caminho da Sombra (Warrior of Shadow)",
           "desc": "Ninjas e assassinos silenciosos que tecem trevas mágicas e se teletransportam entre as sombras."
         },
         {
           "id": "four_elements",
-          "name": "Caminho dos Elementos",
+          "name": "Caminho dos Elementos (Warrior of the Elements)",
           "desc": "Canalizam o fogo, água, terra e ar como extensões de seus corpos com alcances ampliados."
         },
         {
           "id": "mercy",
-          "name": "Caminho da Misericórdia",
+          "name": "Caminho da Misericórdia (Warrior of Mercy)",
           "desc": "Manipuladores da força vital para curar ferimentos de aliados ou infligir toques necróticos debilitantes."
         }
       ]
     },
     {
       "id": "paladin",
-      "name": "Paladino",
+      "name": "Paladino (Paladin)",
       "hitDie": 10,
       "primaryAbility": [
         "str",
@@ -1431,23 +1431,23 @@ const DND5E_DATA = {
       "featuresByLevel": {
         "1": [
           "Imposição das Mãos (Lay on Hands)",
-          "Sentido Divino",
+          "Sentido Divino (Divine Sense)",
           "Maestria em Armas (2 armas)"
         ],
         "2": [
-          "Estilo de Luta",
-          "Conjuração de Paladino",
+          "Estilo de Luta (Fighting Style)",
+          "Conjuração de Paladino (Spellcasting)",
           "Golpe Divino (Paladin's Smite)"
         ],
         "3": [
           "Subclasse de Paladino (Juramento Sagrado)",
-          "Canalizar Divindade"
+          "Canalizar Divindade (Channel Divinity)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "5": [
-          "Ataque Extra",
+          "Ataque Extra (Extra Attack)",
           "Montaria Fiel (Find Steed preparado automaticamente)"
         ],
         "6": [
@@ -1457,7 +1457,7 @@ const DND5E_DATA = {
           "Característica de Subclasse (Aura)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "9": [
           "Magias de 3º Círculo"
@@ -1469,22 +1469,22 @@ const DND5E_DATA = {
           "Golpes Radiantes (+1d8 de dano radiante em todos os acertos)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "14": [
-          "Toque Purificador"
+          "Toque Purificador (Cleansing Touch)"
         ],
         "15": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "18": [
           "Auras Expandidas (9 metros / 30ft)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
           "Avatar Sagrado do Juramento"
@@ -1493,7 +1493,7 @@ const DND5E_DATA = {
       "subclasses": [
         {
           "id": "devotion",
-          "name": "Juramento de Devoção",
+          "name": "Juramento de Devoção (Oath of Devotion)",
           "desc": "O clássico cavaleiro da justiça e honra, imbuindo armas com luz sagrada e emanando aura de pureza.",
           "bonusSpells": [
             "protection_from_evil",
@@ -1504,7 +1504,7 @@ const DND5E_DATA = {
         },
         {
           "id": "ancients",
-          "name": "Juramento dos Anciãos",
+          "name": "Juramento dos Anciãos (Oath of the Ancients)",
           "desc": "Guardiões da luz primordial e da natureza, criando trepadeiras místicas e concedendo resistência a dano de magias.",
           "bonusSpells": [
             "ensnaring_strike",
@@ -1515,7 +1515,7 @@ const DND5E_DATA = {
         },
         {
           "id": "vengeance",
-          "name": "Juramento de Vingança",
+          "name": "Juramento de Vingança (Oath of Vengeance)",
           "desc": "Punição implacável para o mal, caçando alvos jurados com Voto de Inimizade para garantir Vantagem.",
           "bonusSpells": [
             "bane",
@@ -1527,7 +1527,7 @@ const DND5E_DATA = {
         },
         {
           "id": "glory",
-          "name": "Juramento de Glória",
+          "name": "Juramento de Glória (Oath of Glory)",
           "desc": "Heroísmo lendário e feitos atléticos épicos, inspirando aliados com velocidade e vigor inabaláveis.",
           "bonusSpells": [
             "guiding_bolt",
@@ -1539,7 +1539,7 @@ const DND5E_DATA = {
     },
     {
       "id": "ranger",
-      "name": "Guardião (Patrulheiro)",
+      "name": "Guardião (Ranger)",
       "hitDie": 10,
       "primaryAbility": [
         "dex",
@@ -1608,31 +1608,31 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Conjuração de Guardião",
-          "Marca do Caçador Gratuita",
+          "Conjuração de Guardião (Spellcasting)",
+          "Marca do Caçador Gratuita (Hunter's Mark)",
           "Maestria em Armas (2 armas)"
         ],
         "2": [
-          "Estilo de Luta",
+          "Estilo de Luta (Fighting Style)",
           "Explorador Hábil (Deft Explorer - Especialização e Idiomas)"
         ],
         "3": [
-          "Subclasse de Guardião"
+          "Subclasse de Guardião (Ranger Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "5": [
-          "Ataque Extra"
+          "Ataque Extra (Extra Attack)"
         ],
         "6": [
           "Andarilho Errante (+3m deslocamento, escalada e natação)"
         ],
         "7": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "9": [
           "Magias de 3º Círculo"
@@ -1641,31 +1641,31 @@ const DND5E_DATA = {
           "Incansável (Tireless - Recupera exaustão e concede PV temporários)"
         ],
         "11": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "13": [
           "Camuflagem da Natureza (Invisibilidade como Ação Bônus)"
         ],
         "14": [
-          "Desaparecer"
+          "Desaparecer (Vanish)"
         ],
         "15": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "17": [
           "Magias de 5º Círculo"
         ],
         "18": [
-          "Sentidos Selvagens"
+          "Sentidos Selvagens (Feral Senses)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
           "Caçador Implacável (+SAB no ataque ou dano contra alvos marcados)"
@@ -1674,7 +1674,7 @@ const DND5E_DATA = {
       "subclasses": [
         {
           "id": "hunter",
-          "name": "Caçador",
+          "name": "Caçador (Hunter)",
           "desc": "Combatente letal adaptado para aniquilar hordas ou monstros gigantes com Colosso Caçador e Salva de Ataques.",
           "bonusSpells": [
             "hunters_mark"
@@ -1682,7 +1682,7 @@ const DND5E_DATA = {
         },
         {
           "id": "beast_master",
-          "name": "Mestre das Feras",
+          "name": "Mestre das Feras (Beast Master)",
           "desc": "Forma um elo espiritual inquebrável com uma Besta Primitiva da Terra, Ar ou Mar que combate ao seu lado.",
           "bonusSpells": [
             "animal_friendship",
@@ -1691,7 +1691,7 @@ const DND5E_DATA = {
         },
         {
           "id": "gloom_stalker",
-          "name": "Perseguidor Sombrio",
+          "name": "Perseguidor Sombrio (Gloom Stalker)",
           "desc": "Predador das trevas do Subterrâneo, invisível para criaturas com visão no escuro e com ataques rápidos no 1º turno.",
           "bonusSpells": [
             "disguise_self",
@@ -1702,7 +1702,7 @@ const DND5E_DATA = {
         },
         {
           "id": "fey_wanderer",
-          "name": "Andarilho Feérico",
+          "name": "Andarilho Feérico (Fey Wanderer)",
           "desc": "Imbuído com os dons do Feywild, somando Sabedoria em testes de Carisma e aterrorizando ou encantando inimigos.",
           "bonusSpells": [
             "charm_person",
@@ -1714,7 +1714,7 @@ const DND5E_DATA = {
     },
     {
       "id": "rogue",
-      "name": "Ladino",
+      "name": "Ladino (Rogue)",
       "hitDie": 8,
       "primaryAbility": [
         "dex"
@@ -1770,11 +1770,11 @@ const DND5E_DATA = {
           "Ação Astuta (Cunning Action - Desengajar, Disparar, Esconder com Ação Bônus)"
         ],
         "3": [
-          "Subclasse de Ladino",
+          "Subclasse de Ladino (Rogue Subclass)",
           "Ataque Furtivo (2d6)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "5": [
           "Esquiva Sobrenatural (Uncanny Dodge)",
@@ -1788,24 +1788,24 @@ const DND5E_DATA = {
           "Ataque Furtivo (4d6)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "9": [
-          "Característica de Subclasse",
+          "Característica de Subclasse (Subclass Feature)",
           "Ataque Furtivo (5d6)"
         ],
         "10": [
-          "Aumento no Valor de Habilidade ou Talento Extra"
+          "Aumento no Valor de Habilidade ou Talento Extra (Ability Score Improvement)"
         ],
         "11": [
           "Talento Confiável (Reliable Talent - Mínimo 10 no d20 para perícias proficientes)",
           "Ataque Furtivo (6d6)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "13": [
-          "Característica de Subclasse",
+          "Característica de Subclasse (Subclass Feature)",
           "Ataque Furtivo (7d6)"
         ],
         "14": [
@@ -1816,17 +1816,17 @@ const DND5E_DATA = {
           "Ataque Furtivo (8d6)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "17": [
-          "Característica de Subclasse",
+          "Característica de Subclasse (Subclass Feature)",
           "Ataque Furtivo (9d6)"
         ],
         "18": [
           "Elusivo (Nenhum ataque tem vantagem contra você)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
           "Golpe de Sorte (Transforma erro em acerto ou teste em 20)",
@@ -1836,29 +1836,29 @@ const DND5E_DATA = {
       "subclasses": [
         {
           "id": "thief",
-          "name": "Ladrão",
+          "name": "Ladrão (Thief)",
           "desc": "Mãos rápidas para usar itens ou gazuas como ação bônus, escalada veloz e uso irrestrito de qualquer item mágico."
         },
         {
           "id": "assassin",
-          "name": "Assassino",
+          "name": "Assassino (Assassin)",
           "desc": "Mestre dos disfarces, venenos e assassinatos fulminantes contra oponentes surpresos no primeiro turno."
         },
         {
           "id": "arcane_trickster",
-          "name": "Trapaceiro Arcano",
+          "name": "Trapaceiro Arcano (Arcane Trickster)",
           "desc": "Usa ilusão e encantamento para trapaças mágicas, controlando uma Mão Mágica invisível e furtiva."
         },
         {
           "id": "soulknife",
-          "name": "Lâmina Psíquica",
+          "name": "Lâmina Psíquica (Soulknife)",
           "desc": "Materializa adagas psíquicas de energia mental para atacar à distância e telepatia silenciosa com aliados."
         }
       ]
     },
     {
       "id": "sorcerer",
-      "name": "Feiticeiro",
+      "name": "Feiticeiro (Sorcerer)",
       "hitDie": 6,
       "primaryAbility": [
         "cha"
@@ -1941,7 +1941,7 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Conjuração Inata",
+          "Conjuração Inata (Innate Sorcery)",
           "Fúria Feiticeira (Innate Sorcery - Vantagem em ataques mágicos e +1 na CD)"
         ],
         "2": [
@@ -1949,61 +1949,61 @@ const DND5E_DATA = {
           "Metamagia (2 opções)"
         ],
         "3": [
-          "Subclasse de Feiticeiro"
+          "Subclasse de Feiticeiro (Sorcerer Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "5": [
           "Magias de 3º Círculo",
-          "Restauração de Feitiçaria"
+          "Restauração de Feitiçaria (Sorcerous Restoration)"
         ],
         "6": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
           "Magias de 4º Círculo",
-          "Metamagia Adicional"
+          "Metamagia Adicional (Metamagic)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "9": [
           "Magias de 5º Círculo"
         ],
         "10": [
-          "Metamagia Adicional",
-          "Característica de Subclasse"
+          "Metamagia Adicional (Metamagic)",
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "11": [
           "Magias de 6º Círculo"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "14": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "17": [
-          "Metamagia Adicional"
+          "Metamagia Adicional (Metamagic)"
         ],
         "18": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
-          "Feitiçaria Incarnada"
+          "Feitiçaria Incarnada (Arcane Apotheosis)"
         ]
       },
       "subclasses": [
         {
           "id": "draconic",
-          "name": "Linhagem Dracônica",
+          "name": "Linhagem Dracônica (Draconic Sorcery)",
           "desc": "Herança de dragões ancestrais com escamas naturais (CA 13 + DES), +1 PV por nível e dano elemental aumentado.",
           "bonusSpells": [
             "fire_bolt",
@@ -2013,13 +2013,13 @@ const DND5E_DATA = {
         },
         {
           "id": "wild_magic",
-          "name": "Magia Selvagem",
+          "name": "Magia Selvagem (Wild Magic Sorcery)",
           "desc": "Canaliza o puro caos do cosmos, manipulando marés de sorte e desencadeando surtos de magia caótica e imprevisível.",
           "bonusSpells": []
         },
         {
           "id": "aberrant",
-          "name": "Mente Aberrante",
+          "name": "Mente Aberrante (Aberrant Sorcery)",
           "desc": "Poderes psiônicos do Reino Distante com conjuração sutil sem componentes e ataques telepáticos profundos.",
           "bonusSpells": [
             "mind_sliver",
@@ -2029,7 +2029,7 @@ const DND5E_DATA = {
         },
         {
           "id": "clockwork",
-          "name": "Alma Mecânica",
+          "name": "Alma Mecânica (Clockwork Sorcery)",
           "desc": "Conexão com a ordem perfeita de Mechanus, neutralizando vantagens e desvantagens com engrenagens cósmicas.",
           "bonusSpells": [
             "alarm",
@@ -2041,7 +2041,7 @@ const DND5E_DATA = {
     },
     {
       "id": "warlock",
-      "name": "Bruxo",
+      "name": "Bruxo (Warlock)",
       "hitDie": 8,
       "primaryAbility": [
         "cha"
@@ -2138,44 +2138,44 @@ const DND5E_DATA = {
           "Subclasse de Bruxo (Patrono Transcendental)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "5": [
           "Invocações Místicas (Total 5)",
           "Magias de Pacto de 3º Círculo"
         ],
         "6": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
           "Magias de Pacto de 4º Círculo"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "9": [
           "Magias de Pacto de 5º Círculo"
         ],
         "10": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "11": [
           "Arcano Místico (Magia de 6º Círculo)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "13": [
           "Arcano Místico (Magia de 7º Círculo)"
         ],
         "14": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "15": [
           "Arcano Místico (Magia de 8º Círculo)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "17": [
           "Arcano Místico (Magia de 9º Círculo)"
@@ -2184,7 +2184,7 @@ const DND5E_DATA = {
           "Invocações Místicas (Total 8)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
           "Mestre do Pacto (Recupera todos os espaços de magia em 1 minuto)"
@@ -2227,7 +2227,7 @@ const DND5E_DATA = {
         },
         {
           "id": "celestial",
-          "name": "O Celestial",
+          "name": "O Celestial (The Celestial)",
           "desc": "Pacto com anjos e seres das esferas superiores, concedendo luz e uma reserva de dados de cura por luz celestial.",
           "bonusSpells": [
             "light",
@@ -2265,7 +2265,7 @@ const DND5E_DATA = {
     },
     {
       "id": "wizard",
-      "name": "Mago",
+      "name": "Mago (Wizard)",
       "hitDie": 6,
       "primaryAbility": [
         "int"
@@ -2326,10 +2326,10 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Grimório de Magias",
-          "Conjuração de Mago",
+          "Grimório de Magias (Spellbook)",
+          "Conjuração de Mago (Spellcasting)",
           "Recuperação Arcana (Arcane Recovery)",
-          "Conjuração de Rituais"
+          "Conjuração de Rituais (Ritual Adept)"
         ],
         "2": [
           "Estudioso (Scholar - Especialização em 1 perícia acadêmica)"
@@ -2338,43 +2338,43 @@ const DND5E_DATA = {
           "Subclasse de Mago (Ordem Acadêmica)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "5": [
           "Magias de 3º Círculo"
         ],
         "6": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
           "Magias de 4º Círculo"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "9": [
           "Magias de 5º Círculo"
         ],
         "10": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "11": [
           "Magias de 6º Círculo"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "14": [
-          "Característica de Subclasse"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento"
+          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
         ],
         "18": [
           "Domínio Mágico (Spell Mastery - Truque e Magia de 1º/2º círculo à vontade)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico"
+          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
         ],
         "20": [
           "Magias de Assinatura (Signature Spells)"
@@ -2383,7 +2383,7 @@ const DND5E_DATA = {
       "subclasses": [
         {
           "id": "abjuration",
-          "name": "Escola de Abjuração",
+          "name": "Escola de Abjuração (School of Abjuration)",
           "desc": "Especialistas em proteção e barreiras protetoras, erguendo um Égide Arcano que absorve dano direcionado ao mago e aliados.",
           "bonusSpells": [
             "shield",
@@ -2392,7 +2392,7 @@ const DND5E_DATA = {
         },
         {
           "id": "evocation",
-          "name": "Escola de Evocação",
+          "name": "Escola de Evocação (School of Evocation)",
           "desc": "Mestres de explosões elementais devastadoras, moldando magias para criar bolsões de segurança para seus companheiros.",
           "bonusSpells": [
             "magic_missile",
@@ -2401,7 +2401,7 @@ const DND5E_DATA = {
         },
         {
           "id": "divination",
-          "name": "Escola de Adivinhação",
+          "name": "Escola de Adivinhação (School of Divination)",
           "desc": "Clarividentes que preveem o futuro com Presságio (Portent), substituindo rolagens de dados de amigos ou inimigos.",
           "bonusSpells": [
             "detect_magic",
@@ -2410,7 +2410,7 @@ const DND5E_DATA = {
         },
         {
           "id": "illusion",
-          "name": "Escola de Ilusão",
+          "name": "Escola de Ilusão (School of Illusion)",
           "desc": "Mestres em enganar os sentidos, tornando ilusões palpáveis e manipulando a realidade visual do campo.",
           "bonusSpells": [
             "minor_illusion",
@@ -2423,17 +2423,17 @@ const DND5E_DATA = {
   "species": [
     {
       "id": "human",
-      "name": "Humano",
+      "name": "Humano (Human)",
       "speed": 9,
       "size": "Médio",
       "darkvision": 0,
       "traits": [
         {
-          "name": "Versátil",
+          "name": "Versátil (Versatile)",
           "desc": "Ganha proficiência em uma perícia à sua escolha e um Talento de Origem adicional à sua escolha."
         },
         {
-          "name": "Inspiração Heroica",
+          "name": "Inspiração Heroica (Heroic Inspiration)",
           "desc": "Ganha Inspiração Heroica no final de cada descanso longo."
         }
       ],
@@ -2441,21 +2441,21 @@ const DND5E_DATA = {
     },
     {
       "id": "elf",
-      "name": "Elfo",
+      "name": "Elfo (Elf)",
       "speed": 9,
       "size": "Médio",
       "darkvision": 18,
       "traits": [
         {
-          "name": "Ancestralidade Feérica",
+          "name": "Ancestralidade Feérica (Fey Ancestry)",
           "desc": "Vantagem em salvaguardas para evitar ou encerrar a condição Enfeitiçado."
         },
         {
-          "name": "Sentidos Aguçados",
+          "name": "Sentidos Aguçados (Keen Senses)",
           "desc": "Proficiência gratuita na perícia Percepção."
         },
         {
-          "name": "Transe",
+          "name": "Transe (Trance)",
           "desc": "Não precisa dormir; medita por 4 horas para ter os benefícios de um descanso longo."
         }
       ],
@@ -2479,21 +2479,21 @@ const DND5E_DATA = {
     },
     {
       "id": "dwarf",
-      "name": "Anão",
+      "name": "Anão (Dwarf)",
       "speed": 9,
       "size": "Médio",
       "darkvision": 36,
       "traits": [
         {
-          "name": "Resiliência Anã",
+          "name": "Resiliência Anã (Dwarven Resilience)",
           "desc": "Resistência a dano de veneno e vantagem em salvaguardas contra veneno."
         },
         {
-          "name": "Tenacidade Anã",
+          "name": "Tenacidade Anã (Dwarven Toughness)",
           "desc": "Seus pontos de vida máximos aumentam em 1 por nível."
         },
         {
-          "name": "Sentido nas Rochas",
+          "name": "Sentido nas Rochas (Stonecunning)",
           "desc": "Visão no escuro ampliada e sentido sísmico em terreno de pedra."
         }
       ],
@@ -2518,15 +2518,15 @@ const DND5E_DATA = {
       "darkvision": 0,
       "traits": [
         {
-          "name": "Sortudo",
+          "name": "Sortudo (Lucky)",
           "desc": "Ao tirar 1 em um d20 de ataque, teste ou salvaguarda, pode rolar novamente o dado."
         },
         {
-          "name": "Bravura",
+          "name": "Bravura (Brave)",
           "desc": "Vantagem em salvaguardas para evitar ou encerrar a condição Amedrontado."
         },
         {
-          "name": "Agilidade Halfling",
+          "name": "Agilidade Halfling (Halfling Nimbleness)",
           "desc": "Pode se mover através do espaço de qualquer criatura de tamanho maior que o seu."
         }
       ],
@@ -2545,17 +2545,17 @@ const DND5E_DATA = {
     },
     {
       "id": "dragonborn",
-      "name": "Draconato",
+      "name": "Draconato (Dragonborn)",
       "speed": 9,
       "size": "Médio",
       "darkvision": 18,
       "traits": [
         {
-          "name": "Arma de Sopro",
+          "name": "Arma de Sopro (Breath Weapon)",
           "desc": "Exala energia dracônica em cone de 4,5m ou linha de 9m (dano escala com o nível: 1d10 a 4d10)."
         },
         {
-          "name": "Resistência Dracônica",
+          "name": "Resistência Dracônica (Damage Resistance)",
           "desc": "Resistência ao tipo de dano associado à sua cor ancestral."
         },
         {
@@ -2598,13 +2598,13 @@ const DND5E_DATA = {
     },
     {
       "id": "gnome",
-      "name": "Gnomo",
+      "name": "Gnomo (Gnome)",
       "speed": 9,
       "size": "Pequeno",
       "darkvision": 18,
       "traits": [
         {
-          "name": "Esperteza Gnômica",
+          "name": "Esperteza Gnômica (Gnomish Cunning)",
           "desc": "Vantagem em todas as salvaguardas de Inteligência, Sabedoria e Carisma."
         }
       ],
@@ -2623,13 +2623,13 @@ const DND5E_DATA = {
     },
     {
       "id": "goliath",
-      "name": "Golias",
+      "name": "Golias (Goliath)",
       "speed": 10.5,
       "size": "Médio",
       "darkvision": 0,
       "traits": [
         {
-          "name": "Porte Poderoso",
+          "name": "Porte Poderoso (Powerful Build)",
           "desc": "Conta como uma categoria de tamanho maior para capacidade de carga e arrasto."
         },
         {
@@ -2672,11 +2672,11 @@ const DND5E_DATA = {
           "desc": "Pode Disparar como Ação Bônus e ganha pontos de vida temporários iguais ao Bônus de Proficiência."
         },
         {
-          "name": "Resistência Implacável",
+          "name": "Resistência Implacável (Relentless Endurance)",
           "desc": "Ao ser reduzido a 0 PV mas não morrer imediatamente, fica com 1 PV (1 vez por descanso longo)."
         },
         {
-          "name": "Físico Poderoso",
+          "name": "Físico Poderoso (Powerful Build)",
           "desc": "Capacidade de carga dobrada."
         }
       ],
@@ -2690,11 +2690,11 @@ const DND5E_DATA = {
       "darkvision": 18,
       "traits": [
         {
-          "name": "Herança Sobrenatural",
+          "name": "Herança Sobrenatural (Fiendish Legacy)",
           "desc": "Resistência a dano elemental e magias inatas conforme a linhagem."
         },
         {
-          "name": "Taumaturgia",
+          "name": "Taumaturgia (Thaumaturgy)",
           "desc": "Conhece o truque Taumaturgia gratuitamente."
         }
       ],
@@ -2724,15 +2724,15 @@ const DND5E_DATA = {
       "darkvision": 18,
       "traits": [
         {
-          "name": "Resistência Celestial",
+          "name": "Resistência Celestial (Celestial Resistance)",
           "desc": "Resistência a dano Necrótico e dano Radiante."
         },
         {
-          "name": "Mãos Que Curam",
+          "name": "Mãos Que Curam (Healing Hands)",
           "desc": "Com uma ação, toca uma criatura e restaura PV iguais a rolagens de d4s iguais ao seu Bônus de Proficiência."
         },
         {
-          "name": "Luz Divina",
+          "name": "Luz Divina (Light Bearer)",
           "desc": "Conhece o truque Luz."
         }
       ],
@@ -2779,7 +2779,7 @@ const DND5E_DATA = {
     },
     {
       "id": "acolyte",
-      "name": "Acólito",
+      "name": "Acólito (Acolyte)",
       "abilityOptions": [
         "int",
         "wis",
@@ -2799,7 +2799,7 @@ const DND5E_DATA = {
     },
     {
       "id": "artisan",
-      "name": "Artesão da Guilda",
+      "name": "Artesão da Guilda (Guild Artisan)",
       "abilityOptions": [
         "str",
         "dex",
@@ -2819,7 +2819,7 @@ const DND5E_DATA = {
     },
     {
       "id": "charlatan",
-      "name": "Charlatão",
+      "name": "Charlatão (Charlatan)",
       "abilityOptions": [
         "dex",
         "con",
@@ -2840,7 +2840,7 @@ const DND5E_DATA = {
     },
     {
       "id": "criminal",
-      "name": "Criminoso",
+      "name": "Criminoso (Criminal)",
       "abilityOptions": [
         "dex",
         "con",
@@ -2861,7 +2861,7 @@ const DND5E_DATA = {
     },
     {
       "id": "entertainer",
-      "name": "Artista",
+      "name": "Artista (Entertainer)",
       "abilityOptions": [
         "str",
         "dex",
@@ -2882,7 +2882,7 @@ const DND5E_DATA = {
     },
     {
       "id": "farmer",
-      "name": "Fazendeiro",
+      "name": "Fazendeiro (Farmer)",
       "abilityOptions": [
         "str",
         "con",
@@ -2902,7 +2902,7 @@ const DND5E_DATA = {
     },
     {
       "id": "guard",
-      "name": "Guarda",
+      "name": "Guarda (Guard)",
       "abilityOptions": [
         "str",
         "int",
@@ -2922,7 +2922,7 @@ const DND5E_DATA = {
     },
     {
       "id": "guide",
-      "name": "Guia",
+      "name": "Guia (Guide)",
       "abilityOptions": [
         "dex",
         "con",
@@ -2943,7 +2943,7 @@ const DND5E_DATA = {
     },
     {
       "id": "hermit",
-      "name": "Eremita",
+      "name": "Eremita (Hermit)",
       "abilityOptions": [
         "con",
         "wis",
@@ -2963,7 +2963,7 @@ const DND5E_DATA = {
     },
     {
       "id": "noble",
-      "name": "Nobre",
+      "name": "Nobre (Noble)",
       "abilityOptions": [
         "str",
         "int",
@@ -2983,7 +2983,7 @@ const DND5E_DATA = {
     },
     {
       "id": "sailor",
-      "name": "Marinheiro",
+      "name": "Marinheiro (Sailor)",
       "abilityOptions": [
         "str",
         "dex",
@@ -3003,7 +3003,7 @@ const DND5E_DATA = {
     },
     {
       "id": "sage",
-      "name": "Sábio",
+      "name": "Sábio (Sage)",
       "abilityOptions": [
         "con",
         "int",
@@ -3023,7 +3023,7 @@ const DND5E_DATA = {
     },
     {
       "id": "soldier",
-      "name": "Soldado",
+      "name": "Soldado (Soldier)",
       "abilityOptions": [
         "str",
         "dex",
@@ -3043,7 +3043,7 @@ const DND5E_DATA = {
     },
     {
       "id": "urchin",
-      "name": "Órfão / Moleque de Rua",
+      "name": "Órfão / Moleque de Rua (Urchin)",
       "abilityOptions": [
         "dex",
         "con",
@@ -3451,70 +3451,70 @@ const DND5E_DATA = {
     },
     {
       "id": "boon_combat_prowess",
-      "name": "Dádiva da Proeza de Combate",
+      "name": "Dádiva da Proeza de Combate (Boon of Combat Prowess)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). 1 vez por turno, ao errar uma jogada de ataque, você pode transformá-la em um acerto."
     },
     {
       "id": "boon_dimensional_travel",
-      "name": "Dádiva da Viagem Dimensional",
+      "name": "Dádiva da Viagem Dimensional (Boon of Dimensional Travel)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). Imediatamente após realizar a ação de Ataque ou Magia, pode se teletransportar até 9 metros sem gastar movimento."
     },
     {
       "id": "boon_energy_resistance",
-      "name": "Dádiva da Resistência Energética",
+      "name": "Dádiva da Resistência Energética (Boon of Energy Resistance)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). Ganha resistência permanente a 2 tipos de dano elemental à sua escolha (podendo trocar ao fim de descanso longo)."
     },
     {
       "id": "boon_fate",
-      "name": "Dádiva do Destino",
+      "name": "Dádiva do Destino (Boon of Fate)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). Quando você ou criatura a 18m rolar um d20, pode adicionar ou subtrair 2d4 do resultado final como Reação."
     },
     {
       "id": "boon_fortitude",
-      "name": "Dádiva da Fortitude Épica",
+      "name": "Dádiva da Fortitude Épica (Boon of Fortitude)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). Seus PV máximos aumentam em 40; ao receber qualquer cura, recupera PV adicionais iguais ao seu modificador de Constituição."
     },
     {
       "id": "boon_irresistible_offense",
-      "name": "Dádiva da Ofensiva Irresistível",
+      "name": "Dádiva da Ofensiva Irresistível (Boon of Irresistible Offense)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). Todos os seus ataques e danos ignoram completamente resistências a dano; em acerto crítico causa dano extra igual ao seu valor de atributo."
     },
     {
       "id": "boon_night_spirit",
-      "name": "Dádiva do Espírito Noturno",
+      "name": "Dádiva do Espírito Noturno (Boon of the Night Spirit)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). Enquanto estiver em penumbra ou escuridão, fica Invisível como Ação Bônus e ganha resistência a todos os danos exceto psíquico e radiante."
     },
     {
       "id": "boon_recovery",
-      "name": "Dádiva da Recuperação Heroica",
+      "name": "Dádiva da Recuperação Heroica (Boon of Recovery)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). Ao cair a 0 PV, você pode recuperar instantaneamente metade dos seus pontos de vida máximos (1 vez por descanso longo)."
     },
     {
       "id": "boon_speed",
-      "name": "Dádiva da Velocidade Suprema",
+      "name": "Dádiva da Velocidade Suprema (Boon of Speed)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). Seu deslocamento aumenta em +9 metros; você pode realizar a ação de Desengajar como Ação Bônus."
     },
     {
       "id": "boon_truesight",
-      "name": "Dádiva da Visão Verdadeira",
+      "name": "Dádiva da Visão Verdadeira (Boon of Truesight)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). Você ganha Visão da Verdade (Truesight) permanente com alcance de 18 metros."
@@ -4586,7 +4586,7 @@ const DND5E_DATA = {
     },
     {
       "id": "amigos",
-      "name": "Amigos",
+      "name": "Amigos (Friends)",
       "level": 0,
       "school": "Encantamento",
       "time": "Ação",
@@ -4704,7 +4704,7 @@ const DND5E_DATA = {
     },
     {
       "id": "elementalismo",
-      "name": "Elementalismo",
+      "name": "Elementalismo (Elementalism)",
       "level": 0,
       "school": "Transmutação",
       "time": "Ação",
@@ -4720,7 +4720,7 @@ const DND5E_DATA = {
     },
     {
       "id": "explosao_elemental",
-      "name": "Explosão Elemental",
+      "name": "Explosão Elemental (Sorcerous Burst)",
       "level": 0,
       "school": "Evocação",
       "time": "Ação",
@@ -4734,7 +4734,7 @@ const DND5E_DATA = {
     },
     {
       "id": "fagulha_estelar",
-      "name": "Fagulha Estelar",
+      "name": "Fagulha Estelar (Starry Wisp)",
       "level": 0,
       "school": "Evocação",
       "time": "Ação",
@@ -4749,7 +4749,7 @@ const DND5E_DATA = {
     },
     {
       "id": "true_strike",
-      "name": "Ataque Certeiro (True Strike 2024)",
+      "name": "Ataque Certeiro (True Strike)",
       "level": 0,
       "school": "Adivinhação",
       "time": "Ação",
@@ -4896,7 +4896,7 @@ const DND5E_DATA = {
     },
     {
       "id": "blade_ward",
-      "name": "Proteção Contra Lâminas (Blade Ward 2024)",
+      "name": "Proteção Contra Lâminas (Blade Ward)",
       "level": 0,
       "school": "Abjuração",
       "time": "Ação",
@@ -5007,7 +5007,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mind_sliver",
-      "name": "Talho Mental",
+      "name": "Talho Mental (Mind Sliver)",
       "level": 0,
       "school": "Encantamento",
       "time": "Ação",
@@ -5068,7 +5068,7 @@ const DND5E_DATA = {
     },
     {
       "id": "trovao",
-      "name": "Trovão",
+      "name": "Trovão (Thunderclap)",
       "level": 0,
       "school": "Evocação",
       "time": "Ação",
@@ -5100,7 +5100,7 @@ const DND5E_DATA = {
     },
     {
       "id": "alarm",
-      "name": "Alarme",
+      "name": "Alarme (Alarm)",
       "level": 1,
       "school": "Abjuração",
       "time": "1 minuto ou Ritual",
@@ -5115,7 +5115,7 @@ const DND5E_DATA = {
     },
     {
       "id": "animal_friendship",
-      "name": "Amizade Animal",
+      "name": "Amizade Animal (Animal Friendship)",
       "level": 1,
       "school": "Encantamento",
       "time": "Ação",
@@ -5175,7 +5175,7 @@ const DND5E_DATA = {
     },
     {
       "id": "bom_fruto",
-      "name": "Bom Fruto",
+      "name": "Bom Fruto (Goodberry)",
       "level": 1,
       "school": "Invocação",
       "time": "Ação",
@@ -5190,7 +5190,7 @@ const DND5E_DATA = {
     },
     {
       "id": "bracos_de_hadar",
-      "name": "Braços de Hadar",
+      "name": "Braços de Hadar (Arms of Hadar)",
       "level": 1,
       "school": "Invocação",
       "time": "Ação",
@@ -5220,7 +5220,7 @@ const DND5E_DATA = {
     },
     {
       "id": "compreender_idiomas",
-      "name": "Compreender Idiomas",
+      "name": "Compreender Idiomas (Comprehend Languages)",
       "level": 1,
       "school": "Adivinhação",
       "time": "Ação ou Ritual",
@@ -5237,7 +5237,7 @@ const DND5E_DATA = {
     },
     {
       "id": "convocar_familiar",
-      "name": "Convocar Familiar",
+      "name": "Convocar Familiar (Find Familiar)",
       "level": 1,
       "school": "Invocação",
       "time": "1 hora ou Ritual",
@@ -5251,7 +5251,7 @@ const DND5E_DATA = {
     },
     {
       "id": "criar_ou_destruir_agua",
-      "name": "Criar ou Destruir Água",
+      "name": "Criar ou Destruir Água (Create or Destroy Water)",
       "level": 1,
       "school": "Transmutação",
       "time": "Ação",
@@ -5266,7 +5266,7 @@ const DND5E_DATA = {
     },
     {
       "id": "cure_wounds",
-      "name": "Curar Ferimentos (Cure Wounds 2024)",
+      "name": "Curar Ferimentos (Cure Wounds)",
       "level": 1,
       "school": "Abjuração",
       "time": "Ação",
@@ -5298,7 +5298,7 @@ const DND5E_DATA = {
     },
     {
       "id": "destruicao_cauterizante",
-      "name": "Destruição Cauterizante",
+      "name": "Destruição Cauterizante (Searing Smite)",
       "level": 1,
       "school": "Evocação",
       "time": "Ação Bônus, que você realiza imediatamente após acertar um alvo com uma arma Corpo a Corpo ou um Ataque Desarmado",
@@ -5326,7 +5326,7 @@ const DND5E_DATA = {
     },
     {
       "id": "divine_smite",
-      "name": "Destruição Divina (Divine Smite 2024)",
+      "name": "Destruição Divina (Divine Smite)",
       "level": 1,
       "school": "Evocação",
       "time": "Ação Bônus, que você realiza imediatamente após acertar um alvo com uma arma Corpo a Corpo ou um Ataque Desarmado",
@@ -5375,7 +5375,7 @@ const DND5E_DATA = {
     },
     {
       "id": "detectar_o_bem_e_o_mal",
-      "name": "Detectar o Bem e o Mal",
+      "name": "Detectar o Bem e o Mal (Detect Evil and Good)",
       "level": 1,
       "school": "Adivinhação",
       "time": "Ação",
@@ -5390,7 +5390,7 @@ const DND5E_DATA = {
     },
     {
       "id": "detectar_veneno_e_doenca",
-      "name": "Detectar Veneno e Doença",
+      "name": "Detectar Veneno e Doença (Detect Poison and Disease)",
       "level": 1,
       "school": "Adivinhação",
       "time": "Ação ou Ritual",
@@ -5407,7 +5407,7 @@ const DND5E_DATA = {
     },
     {
       "id": "disco_flutuante_de_tenser",
-      "name": "Disco Flutuante de Tenser",
+      "name": "Disco Flutuante de Tenser (Tenser's Floating Disk)",
       "level": 1,
       "school": "Invocação",
       "time": "Ação ou Ritual",
@@ -5437,7 +5437,7 @@ const DND5E_DATA = {
     },
     {
       "id": "duelo_compelido",
-      "name": "Duelo Compelido",
+      "name": "Duelo Compelido (Compelled Duel)",
       "level": 1,
       "school": "Encantamento",
       "time": "Ação Bônus",
@@ -5484,7 +5484,7 @@ const DND5E_DATA = {
     },
     {
       "id": "escrita_ilusoria",
-      "name": "Escrita Ilusória",
+      "name": "Escrita Ilusória (Illusory Script)",
       "level": 1,
       "school": "Ilusão",
       "time": "1 minuto ou Ritual",
@@ -5530,7 +5530,7 @@ const DND5E_DATA = {
     },
     {
       "id": "faca_de_gelo",
-      "name": "Faca de Gelo",
+      "name": "Faca de Gelo (Ice Knife)",
       "level": 1,
       "school": "Invocação",
       "time": "Ação",
@@ -5546,7 +5546,7 @@ const DND5E_DATA = {
     },
     {
       "id": "falar_com_animais",
-      "name": "Falar com Animais",
+      "name": "Falar com Animais (Speak with Animals)",
       "level": 1,
       "school": "Adivinhação",
       "time": "Ação ou Ritual",
@@ -5563,7 +5563,7 @@ const DND5E_DATA = {
     },
     {
       "id": "divine_favor",
-      "name": "Favor Divino",
+      "name": "Favor Divino (Divine Favor)",
       "level": 1,
       "school": "Transmutação",
       "time": "Ação Bônus",
@@ -5592,7 +5592,7 @@ const DND5E_DATA = {
     },
     {
       "id": "tashas_hideous_laughter",
-      "name": "Riso Histérico de Tasha",
+      "name": "Riso Histérico de Tasha (Tasha's Hideous Laughter)",
       "level": 1,
       "school": "Encantamento",
       "time": "Ação",
@@ -5608,7 +5608,7 @@ const DND5E_DATA = {
     },
     {
       "id": "ensnaring_strike",
-      "name": "Golpe Constritor",
+      "name": "Golpe Constritor (Ensnaring Strike)",
       "level": 1,
       "school": "Invocação",
       "time": "Ação Bônus, que você realiza imediatamente após atingir uma criatura com uma arma",
@@ -5622,7 +5622,7 @@ const DND5E_DATA = {
     },
     {
       "id": "graxa",
-      "name": "Graxa",
+      "name": "Graxa (Grease)",
       "level": 1,
       "school": "Invocação",
       "time": "Ação",
@@ -5637,7 +5637,7 @@ const DND5E_DATA = {
     },
     {
       "id": "heroism",
-      "name": "Heroísmo",
+      "name": "Heroísmo (Heroism)",
       "level": 1,
       "school": "Encantamento",
       "time": "Ação",
@@ -5652,7 +5652,7 @@ const DND5E_DATA = {
     },
     {
       "id": "identificar",
-      "name": "Identificar",
+      "name": "Identificar (Identify)",
       "level": 1,
       "school": "Adivinhação",
       "time": "1 minuto ou Ritual",
@@ -5667,7 +5667,7 @@ const DND5E_DATA = {
     },
     {
       "id": "imagem_silenciosa",
-      "name": "Imagem Silenciosa",
+      "name": "Imagem Silenciosa (Silent Image)",
       "level": 1,
       "school": "Ilusão",
       "time": "Ação",
@@ -5697,7 +5697,7 @@ const DND5E_DATA = {
     },
     {
       "id": "leque_cromatico",
-      "name": "Leque Cromático",
+      "name": "Leque Cromático (Color Spray)",
       "level": 1,
       "school": "Ilusão",
       "time": "Ação",
@@ -5791,7 +5791,7 @@ const DND5E_DATA = {
     },
     {
       "id": "orbe_cromatico",
-      "name": "Orbe Cromático",
+      "name": "Orbe Cromático (Chromatic Orb)",
       "level": 1,
       "school": "Evocação",
       "time": "Ação",
@@ -5806,7 +5806,7 @@ const DND5E_DATA = {
     },
     {
       "id": "healing_word",
-      "name": "Palavra Curativa (Healing Word 2024)",
+      "name": "Palavra Curativa (Healing Word)",
       "level": 1,
       "school": "Abjuração",
       "time": "Ação Bônus",
@@ -5822,7 +5822,7 @@ const DND5E_DATA = {
     },
     {
       "id": "passos_largos",
-      "name": "Passos Largos",
+      "name": "Passos Largos (Longstrider)",
       "level": 1,
       "school": "Transmutação",
       "time": "Ação",
@@ -5855,7 +5855,7 @@ const DND5E_DATA = {
     },
     {
       "id": "protection_from_evil",
-      "name": "Proteção Contra o Bem e o Mal",
+      "name": "Proteção Contra o Bem e o Mal (Protection from Evil and Good)",
       "level": 1,
       "school": "Abjuração",
       "time": "Ação",
@@ -5873,7 +5873,7 @@ const DND5E_DATA = {
     },
     {
       "id": "purificar_alimentos_e_bebidas",
-      "name": "Purificar Alimentos e Bebidas",
+      "name": "Purificar Alimentos e Bebidas (Purify Food and Drink)",
       "level": 1,
       "school": "Transmutação",
       "time": "Ação ou Ritual",
@@ -5905,7 +5905,7 @@ const DND5E_DATA = {
     },
     {
       "id": "witch_bolt",
-      "name": "Raio de Bruxa (Witch Bolt 2024)",
+      "name": "Raio de Bruxa (Witch Bolt)",
       "level": 1,
       "school": "Evocação",
       "time": "Ação",
@@ -5935,7 +5935,7 @@ const DND5E_DATA = {
     },
     {
       "id": "raio_nauseante",
-      "name": "Raio Nauseante",
+      "name": "Raio Nauseante (Ray of Sickness)",
       "level": 1,
       "school": "Necromancia",
       "time": "Ação",
@@ -5950,7 +5950,7 @@ const DND5E_DATA = {
     },
     {
       "id": "repreensao_diabolica",
-      "name": "Repreensão Diabólica",
+      "name": "Repreensão Diabólica (Hellish Rebuke)",
       "level": 1,
       "school": "Evocação",
       "time": "Reação, que você realiza ao receber dano de uma criatura à sua vista e a até 18 metros de você",
@@ -5964,7 +5964,7 @@ const DND5E_DATA = {
     },
     {
       "id": "retirada_acelerada",
-      "name": "Retirada Acelerada",
+      "name": "Retirada Acelerada (Expeditious Retreat)",
       "level": 1,
       "school": "Transmutação",
       "time": "Ação Bônus",
@@ -5980,7 +5980,7 @@ const DND5E_DATA = {
     },
     {
       "id": "salto",
-      "name": "Salto",
+      "name": "Salto (Jump)",
       "level": 1,
       "school": "Transmutação",
       "time": "Ação Bônus",
@@ -6011,7 +6011,7 @@ const DND5E_DATA = {
     },
     {
       "id": "saraivada_de_espinhos",
-      "name": "Saraivada de Espinhos",
+      "name": "Saraivada de Espinhos (Hail of Thorns)",
       "level": 1,
       "school": "Invocação",
       "time": "Ação Bônus, que você realiza imediatamente após atingir uma criatura com um ataque com arma à Distância",
@@ -6025,7 +6025,7 @@ const DND5E_DATA = {
     },
     {
       "id": "servo_invisivel",
-      "name": "Servo Invisível",
+      "name": "Servo Invisível (Unseen Servant)",
       "level": 1,
       "school": "Invocação",
       "time": "Ação ou Ritual",
@@ -6041,7 +6041,7 @@ const DND5E_DATA = {
     },
     {
       "id": "sleep",
-      "name": "Sono (Sleep 2024)",
+      "name": "Sono (Sleep)",
       "level": 1,
       "school": "Encantamento",
       "time": "Ação",
@@ -6071,7 +6071,7 @@ const DND5E_DATA = {
     },
     {
       "id": "vitalidade_vazia",
-      "name": "Vitalidade Vazia",
+      "name": "Vitalidade Vazia (False Life)",
       "level": 1,
       "school": "Necromancia",
       "time": "Ação",
@@ -6086,7 +6086,7 @@ const DND5E_DATA = {
     },
     {
       "id": "calm_emotions",
-      "name": "Acalmar Emoções",
+      "name": "Acalmar Emoções (Calm Emotions)",
       "level": 2,
       "school": "Encantamento",
       "time": "Ação",
@@ -6101,7 +6101,7 @@ const DND5E_DATA = {
     },
     {
       "id": "alterar_se",
-      "name": "Alterar-se",
+      "name": "Alterar-se (Alter Self)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -6116,7 +6116,7 @@ const DND5E_DATA = {
     },
     {
       "id": "enhance_ability",
-      "name": "Aprimorar Atributo",
+      "name": "Aprimorar Atributo (Enhance Ability)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -6149,7 +6149,7 @@ const DND5E_DATA = {
     },
     {
       "id": "magic_weapon",
-      "name": "Arma Mágica",
+      "name": "Arma Mágica (Magic Weapon)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação Bônus",
@@ -6166,7 +6166,7 @@ const DND5E_DATA = {
     },
     {
       "id": "arrombar",
-      "name": "Arrombar",
+      "name": "Arrombar (Knock)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -6182,7 +6182,7 @@ const DND5E_DATA = {
     },
     {
       "id": "augurio",
-      "name": "Augúrio",
+      "name": "Augúrio (Augury)",
       "level": 2,
       "school": "Adivinhação",
       "time": "1 minuto ou Ritual",
@@ -6198,7 +6198,7 @@ const DND5E_DATA = {
     },
     {
       "id": "aumentar_reduzir",
-      "name": "Aumentar/Reduzir",
+      "name": "Aumentar/Reduzir (Enlarge/Reduce)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -6215,7 +6215,7 @@ const DND5E_DATA = {
     },
     {
       "id": "aura_magica_de_nystul",
-      "name": "Aura Mágica de Nystul",
+      "name": "Aura Mágica de Nystul (Nystul's Magic Aura)",
       "level": 2,
       "school": "Ilusão",
       "time": "Ação",
@@ -6247,7 +6247,7 @@ const DND5E_DATA = {
     },
     {
       "id": "boca_encantada",
-      "name": "Boca Encantada",
+      "name": "Boca Encantada (Magic Mouth)",
       "level": 2,
       "school": "Ilusão",
       "time": "1 minuto ou Ritual",
@@ -6262,7 +6262,7 @@ const DND5E_DATA = {
     },
     {
       "id": "cativar",
-      "name": "Cativar",
+      "name": "Cativar (Enthrall)",
       "level": 2,
       "school": "Encantamento",
       "time": "Ação",
@@ -6277,7 +6277,7 @@ const DND5E_DATA = {
     },
     {
       "id": "blindness_deafness",
-      "name": "Cegueira/Surdez",
+      "name": "Cegueira/Surdez (Blindness/Deafness)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -6294,7 +6294,7 @@ const DND5E_DATA = {
     },
     {
       "id": "chama_continua",
-      "name": "Chama Contínua",
+      "name": "Chama Contínua (Continual Flame)",
       "level": 2,
       "school": "Evocação",
       "time": "Ação",
@@ -6310,7 +6310,7 @@ const DND5E_DATA = {
     },
     {
       "id": "find_steed",
-      "name": "Encontrar Montaria (Find Steed 2024)",
+      "name": "Encontrar Montaria (Find Steed)",
       "level": 2,
       "school": "Invocação",
       "time": "Ação",
@@ -6324,7 +6324,7 @@ const DND5E_DATA = {
     },
     {
       "id": "rope_trick",
-      "name": "Corda Extradimensional",
+      "name": "Corda Extradimensional (Rope Trick)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -6334,11 +6334,11 @@ const DND5E_DATA = {
       "classes": [
         "wizard"
       ],
-      "desc": "Montaria SobrenaturalCelestial Grande, Feérico ou Ínfero (À Sua Escolha), Neutro CA 10 + 1 por círculo de magia PV 5 + 10 por círculo de magia (a montaria tem um número de Dados de Vida [d10s] igual ao círculo da magia) Deslocamento 18 m, Voo 18 m (requer magia de 4º círculo ou superior) or +4 +4 Des +1 +1 Con +2 +2 Int -2 -2 Sab +1 +1 Car -1 -1 Sentidos Percepção Passiva 11 Idiomas Telepatia 1,5 km (funciona apenas com você) ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosVínculo Vital. Ao recuperar Pontos de Vida de uma magia 1º círculo ou superior, a montaria recupera o mesmo número de Pontos de Vida se você estiver a até 1,5 metro dela.AçõesPancada Sobrenatural. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 mais o círculo da magia de pontos de dano Radiante (Celestial), Psíquico (Feérico) ou Necrótico (Ínfero).Ações BônusDerrubar Brilho (Apenas Ínfero; Recarrega após um Descanso Longo). Salvaguarda de Sabedoria: CD é igual a CD para evitar sua magia, uma criatura a até 18 metros à vista da montaria. Falha: O alvo tem a condição Amedrontado até o final do seu próximo turno. Passo Feérico (Apenas Feérico; Recarrega após um Descanso Longo). A montaria se teleporta, junto com seu cavaleiro, para um espaço desocupado à sua escolha a até 18 metros de distância de onde está. Toque Curativo (Apenas Celestial; Recarrega após um Descanso Longo). Uma criatura a até 1,5 metro da montaria recupera um número de Pontos de Vida igual a 2d8 mais o círculo da magia. Você toca uma corda. Uma extremidade dela paira para cima até que a corda fique perpendicular ao chão ou alcance um teto. Na extremidade superior da corda, um portal Invisível de 1 metro por 1,5 metro se abre para um espaço extradimensional que permanece até que a magia termine. Esse espaço pode ser alcançado escalando a corda, que pode ser puxada para dentro ou para fora dele. O espaço pode conter até oito criaturas Médias ou menores. Ataques, magias e outros efeitos não podem passar para dentro ou para fora do espaço, mas as criaturas dentro dele podem ver através do portal. Qualquer coisa dentro do espaço cai quando a magia termina."
+      "desc": "Você toca uma corda. Uma extremidade dela paira para cima até que a corda fique perpendicular ao chão ou alcance um teto. Na extremidade superior da corda, um portal Invisível de 1 metro por 1,5 metro se abre para um espaço extradimensional que permanece até que a magia termine. Esse espaço pode ser alcançado escalando a corda, que pode ser puxada para dentro ou para fora dele. O espaço pode conter até oito criaturas Médias ou menores. Ataques, magias e outros efeitos não podem passar para dentro ou para fora do espaço, mas as criaturas dentro dele podem ver através do portal. Qualquer coisa dentro do espaço cai quando a magia termina."
     },
     {
       "id": "cordao_de_flechas",
-      "name": "Cordão de Flechas",
+      "name": "Cordão de Flechas (Cordon of Arrows)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -6352,7 +6352,7 @@ const DND5E_DATA = {
     },
     {
       "id": "coroa_da_loucura",
-      "name": "Coroa da Loucura",
+      "name": "Coroa da Loucura (Crown of Madness)",
       "level": 2,
       "school": "Encantamento",
       "time": "Ação",
@@ -6400,7 +6400,7 @@ const DND5E_DATA = {
     },
     {
       "id": "destruicao_radiante",
-      "name": "Destruição Radiante",
+      "name": "Destruição Radiante (Shining Smite)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação Bônus, que você realiza imediatamente após atingir uma criatura com uma arma Corpo a Corpo ou um Ataque Desarmado",
@@ -6414,7 +6414,7 @@ const DND5E_DATA = {
     },
     {
       "id": "detect_thoughts",
-      "name": "Detectar Pensamentos",
+      "name": "Detectar Pensamentos (Detect Thoughts)",
       "level": 2,
       "school": "Adivinhação",
       "time": "Ação",
@@ -6430,7 +6430,7 @@ const DND5E_DATA = {
     },
     {
       "id": "encontrar_armadilhas",
-      "name": "Encontrar Armadilhas",
+      "name": "Encontrar Armadilhas (Find Traps)",
       "level": 2,
       "school": "Adivinhação",
       "time": "Ação",
@@ -6446,7 +6446,7 @@ const DND5E_DATA = {
     },
     {
       "id": "escalada_de_aranha",
-      "name": "Escalada de Aranha",
+      "name": "Escalada de Aranha (Spider Climb)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -6494,7 +6494,7 @@ const DND5E_DATA = {
     },
     {
       "id": "espinho_mental",
-      "name": "Espinho Mental",
+      "name": "Espinho Mental (Mind Spike)",
       "level": 2,
       "school": "Adivinhação",
       "time": "Ação",
@@ -6510,7 +6510,7 @@ const DND5E_DATA = {
     },
     {
       "id": "esquentar_metal",
-      "name": "Esquentar Metal",
+      "name": "Esquentar Metal (Heat Metal)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -6525,7 +6525,7 @@ const DND5E_DATA = {
     },
     {
       "id": "flecha_acida_de_melf",
-      "name": "Flecha Ácida de Melf",
+      "name": "Flecha Ácida de Melf (Melf's Acid Arrow)",
       "level": 2,
       "school": "Evocação",
       "time": "Ação",
@@ -6539,7 +6539,7 @@ const DND5E_DATA = {
     },
     {
       "id": "phantasmal_force",
-      "name": "Força Espectral",
+      "name": "Força Espectral (Phantasmal Force)",
       "level": 2,
       "school": "Ilusão",
       "time": "Ação",
@@ -6572,7 +6572,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocar_fera",
-      "name": "Invocar Fera",
+      "name": "Invocar Fera (Summon Beast)",
       "level": 2,
       "school": "Invocação",
       "time": "Ação",
@@ -6587,7 +6587,7 @@ const DND5E_DATA = {
     },
     {
       "id": "lamina_flamejante",
-      "name": "Lâmina Flamejante",
+      "name": "Lâmina Flamejante (Flame Blade)",
       "level": 2,
       "school": "Evocação",
       "time": "Ação Bônus",
@@ -6617,7 +6617,7 @@ const DND5E_DATA = {
     },
     {
       "id": "localizar_animais_ou_plantas",
-      "name": "Localizar Animais ou Plantas",
+      "name": "Localizar Animais ou Plantas (Locate Animals or Plants)",
       "level": 2,
       "school": "Adivinhação",
       "time": "Ação ou Ritual",
@@ -6633,7 +6633,7 @@ const DND5E_DATA = {
     },
     {
       "id": "localizar_objeto",
-      "name": "Localizar Objeto",
+      "name": "Localizar Objeto (Locate Object)",
       "level": 2,
       "school": "Adivinhação",
       "time": "Ação",
@@ -6652,7 +6652,7 @@ const DND5E_DATA = {
     },
     {
       "id": "gust_of_wind",
-      "name": "Lufada de Vento",
+      "name": "Lufada de Vento (Gust of Wind)",
       "level": 2,
       "school": "Evocação",
       "time": "Ação",
@@ -6669,7 +6669,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mensageiro_animal",
-      "name": "Mensageiro Animal",
+      "name": "Mensageiro Animal (Animal Messenger)",
       "level": 2,
       "school": "Encantamento",
       "time": "Ação ou Ritual",
@@ -6685,7 +6685,7 @@ const DND5E_DATA = {
     },
     {
       "id": "nuvem_de_adagas",
-      "name": "Nuvem de Adagas",
+      "name": "Nuvem de Adagas (Cloud of Daggers)",
       "level": 2,
       "school": "Invocação",
       "time": "Ação",
@@ -6702,7 +6702,7 @@ const DND5E_DATA = {
     },
     {
       "id": "oracao_de_cura",
-      "name": "Oração de Cura",
+      "name": "Oração de Cura (Prayer of Healing)",
       "level": 2,
       "school": "Abjuração",
       "time": "10 minutos",
@@ -6752,7 +6752,7 @@ const DND5E_DATA = {
     },
     {
       "id": "pass_without_trace",
-      "name": "Passo Sem Pegadas (Pass Without Trace)",
+      "name": "Passo Sem Pegadas (Pass without Trace)",
       "level": 2,
       "school": "Abjuração",
       "time": "Ação",
@@ -6767,7 +6767,7 @@ const DND5E_DATA = {
     },
     {
       "id": "barkskin",
-      "name": "Pele-Casca",
+      "name": "Pele-Casca (Barkskin)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação Bônus",
@@ -6782,7 +6782,7 @@ const DND5E_DATA = {
     },
     {
       "id": "protecao_contra_veneno",
-      "name": "Proteção Contra Veneno",
+      "name": "Proteção Contra Veneno (Protection from Poison)",
       "level": 2,
       "school": "Abjuração",
       "time": "Ação",
@@ -6814,7 +6814,7 @@ const DND5E_DATA = {
     },
     {
       "id": "raio_do_enfraquecimento",
-      "name": "Raio do Enfraquecimento",
+      "name": "Raio do Enfraquecimento (Ray of Enfeeblement)",
       "level": 2,
       "school": "Necromancia",
       "time": "Ação",
@@ -6860,7 +6860,7 @@ const DND5E_DATA = {
     },
     {
       "id": "repouso_tranquilo",
-      "name": "Repouso Tranquilo",
+      "name": "Repouso Tranquilo (Gentle Repose)",
       "level": 2,
       "school": "Necromancia",
       "time": "Ação ou Ritual",
@@ -6894,7 +6894,7 @@ const DND5E_DATA = {
     },
     {
       "id": "beast_sense",
-      "name": "Sentido Feral",
+      "name": "Sentido Feral (Beast Sense)",
       "level": 2,
       "school": "Adivinhação",
       "time": "Ação ou Ritual",
@@ -6925,7 +6925,7 @@ const DND5E_DATA = {
     },
     {
       "id": "dragon_breath",
-      "name": "Sopro de Dragão",
+      "name": "Sopro de Dragão (Dragon's Breath)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação Bônus",
@@ -6972,7 +6972,7 @@ const DND5E_DATA = {
     },
     {
       "id": "tranca_arcana",
-      "name": "Tranca Arcana",
+      "name": "Tranca Arcana (Arcane Lock)",
       "level": 2,
       "school": "Abjuração",
       "time": "Ação",
@@ -6986,7 +6986,7 @@ const DND5E_DATA = {
     },
     {
       "id": "turvar",
-      "name": "Turvar",
+      "name": "Turvar (Blur)",
       "level": 2,
       "school": "Ilusão",
       "time": "Ação",
@@ -7017,7 +7017,7 @@ const DND5E_DATA = {
     },
     {
       "id": "vigor_arcano",
-      "name": "Vigor Arcano",
+      "name": "Vigor Arcano (Arcane Vigor)",
       "level": 2,
       "school": "Abjuração",
       "time": "Ação Bônus",
@@ -7032,7 +7032,7 @@ const DND5E_DATA = {
     },
     {
       "id": "vinculo_de_protecao",
-      "name": "Vínculo de Proteção",
+      "name": "Vínculo de Proteção (Warding Bond)",
       "level": 2,
       "school": "Abjuração",
       "time": "Ação",
@@ -7047,7 +7047,7 @@ const DND5E_DATA = {
     },
     {
       "id": "visao_no_escuro",
-      "name": "Visão no Escuro",
+      "name": "Visão no Escuro (Darkvision)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -7064,7 +7064,7 @@ const DND5E_DATA = {
     },
     {
       "id": "zona_da_verdade",
-      "name": "Zona da Verdade",
+      "name": "Zona da Verdade (Zone of Truth)",
       "level": 2,
       "school": "Encantamento",
       "time": "Ação",
@@ -7080,7 +7080,7 @@ const DND5E_DATA = {
     },
     {
       "id": "animar_mortos",
-      "name": "Animar Mortos",
+      "name": "Animar Mortos (Animate Dead)",
       "level": 3,
       "school": "Necromancia",
       "time": "1 minuto",
@@ -7095,7 +7095,7 @@ const DND5E_DATA = {
     },
     {
       "id": "arma_elemental",
-      "name": "Arma Elemental",
+      "name": "Arma Elemental (Elemental Weapon)",
       "level": 3,
       "school": "Transmutação",
       "time": "Ação",
@@ -7111,7 +7111,7 @@ const DND5E_DATA = {
     },
     {
       "id": "aura_de_vitalidade",
-      "name": "Aura de Vitalidade",
+      "name": "Aura de Vitalidade (Aura of Vitality)",
       "level": 3,
       "school": "Abjuração",
       "time": "Ação",
@@ -7142,7 +7142,7 @@ const DND5E_DATA = {
     },
     {
       "id": "water_walk",
-      "name": "Caminhar Sobre as Águas",
+      "name": "Caminhar Sobre as Águas (Water Walk)",
       "level": 3,
       "school": "Transmutação",
       "time": "Ação ou Ritual",
@@ -7174,7 +7174,7 @@ const DND5E_DATA = {
     },
     {
       "id": "circulo_magico",
-      "name": "Círculo Mágico",
+      "name": "Círculo Mágico (Magic Circle)",
       "level": 3,
       "school": "Abjuração",
       "time": "1 minuto",
@@ -7191,7 +7191,7 @@ const DND5E_DATA = {
     },
     {
       "id": "clairvoyance",
-      "name": "Clarividência",
+      "name": "Clarividência (Clairvoyance)",
       "level": 3,
       "school": "Adivinhação",
       "time": "10 minutos",
@@ -7208,7 +7208,7 @@ const DND5E_DATA = {
     },
     {
       "id": "counterspell",
-      "name": "Contra-Mágica (Counterspell 2024)",
+      "name": "Contra-Mágica (Counterspell)",
       "level": 3,
       "school": "Abjuração",
       "time": "Reação, que você executa quando vê uma criatura a até 18 metros de você conjurando uma magia com componentes Verbais, Somáticos ou Materiais",
@@ -7224,7 +7224,7 @@ const DND5E_DATA = {
     },
     {
       "id": "convocar_feerico",
-      "name": "Convocar Feérico",
+      "name": "Convocar Feérico (Summon Fey)",
       "level": 3,
       "school": "Invocação",
       "time": "Ação",
@@ -7237,7 +7237,7 @@ const DND5E_DATA = {
         "ranger",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Feérico. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Feérico . Ao conjurar a magia, escolha um humor: Alegre, Enfurecido ou Malandro. A criatura se assemelha a uma criatura Feérica à sua escolha definida pelo humor escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece se reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é neUm Guardião conjura Convocar Feérico, conjurando um Espírito Feérico enfurecido para enfrentar um Merrow saqueador. Espírito FeéricoFeérico Pequeno, Neutro CA 12 + o círculo da magia PV 30 + 10 para cada círculo de magia acima de 3 Deslocamento 9 m, Voo 9 m or +1 +1 Des +3 +3 Con +2 +2 Int +2 +2 Sab +0 +0 Car +3 +3 Imunidades Enfeitiçado Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Silvestre, compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)AçõesAtaques Múltiplos. O espírito realiza um número de ataques com Lâmina Feérica igual à metade do círculo da magia (arredondado para baixo). Lâmina Feérica. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 2d6 + 3 + o círculo da magia pontos de dano Energético.Ações BônusPasso Feérico. O espírito se teleporta magicamente até 9 metros para um espaço desocupado à vista dele. Em seguida, ocorre um dos seguintes efeitos, com base no humor escolhido para o espírito: Alegre. Salvaguarda de Sabedoria: CD é igual a CD para evitar sua magia, uma criatura à vista do espírito e a até 3 metros dele. Falha: O alvo fica Enfeitiçado por você e pelo espírito por 1 minuto ou até que o alvo sofra qualquer dano. Enfurecido. O espírito tem Vantagem na próxima jogada de ataque que realizar antes do final deste turno. Malandro. O espírito preenche um Cubo de 3 metros de lado a até 1,5 metro dele com Escuridão mágica, que dura até o final do próximo turno dele. cessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Feérico. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Feérico . Ao conjurar a magia, escolha um humor: Alegre, Enfurecido ou Malandro. A criatura se assemelha a uma criatura Feérica à sua escolha definida pelo humor escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece se reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é neUm Guardião conjura Convocar Feérico, conjurando um Espírito Feérico enfurecido para enfrentar um Merrow saqueador."
     },
     {
       "id": "call_lightning",
@@ -7255,7 +7255,7 @@ const DND5E_DATA = {
     },
     {
       "id": "plant_growth",
-      "name": "Crescimento de Plantas",
+      "name": "Crescimento de Plantas (Plant Growth)",
       "level": 3,
       "school": "Transmutação",
       "time": "Ação (Crescimento Excessivo) ou 8 horas (Fertilização)",
@@ -7271,7 +7271,7 @@ const DND5E_DATA = {
     },
     {
       "id": "criar_comida_e_agua",
-      "name": "Criar Comida e Água",
+      "name": "Criar Comida e Água (Create Food and Water)",
       "level": 3,
       "school": "Invocação",
       "time": "Ação",
@@ -7286,7 +7286,7 @@ const DND5E_DATA = {
     },
     {
       "id": "destruicao_cegante",
-      "name": "Destruição Cegante",
+      "name": "Destruição Cegante (Blinding Smite)",
       "level": 3,
       "school": "Evocação",
       "time": "Ação Bônus, que você realiza imediatamente após atingir uma criatura com uma arma Corpo a Corpo ou um Ataque Desarmado",
@@ -7321,7 +7321,7 @@ const DND5E_DATA = {
     },
     {
       "id": "falar_com_mortos",
-      "name": "Falar com Mortos",
+      "name": "Falar com Mortos (Speak with Dead)",
       "level": 3,
       "school": "Necromancia",
       "time": "Ação",
@@ -7337,7 +7337,7 @@ const DND5E_DATA = {
     },
     {
       "id": "falar_com_plantas",
-      "name": "Falar com Plantas",
+      "name": "Falar com Plantas (Speak with Plants)",
       "level": 3,
       "school": "Transmutação",
       "time": "Ação",
@@ -7353,7 +7353,7 @@ const DND5E_DATA = {
     },
     {
       "id": "flecha_relampago",
-      "name": "Flecha Relâmpago",
+      "name": "Flecha Relâmpago (Lightning Arrow)",
       "level": 3,
       "school": "Transmutação",
       "time": "Ação Bônus, que você realiza imediatamente após atingir ou errar um alvo com um ataque à distância usando uma arma",
@@ -7367,7 +7367,7 @@ const DND5E_DATA = {
     },
     {
       "id": "hunger_of_hadar",
-      "name": "Fome de Hadar",
+      "name": "Fome de Hadar (Hunger of Hadar)",
       "level": 3,
       "school": "Invocação",
       "time": "Ação",
@@ -7381,7 +7381,7 @@ const DND5E_DATA = {
     },
     {
       "id": "forma_gasosa",
-      "name": "Forma Gasosa",
+      "name": "Forma Gasosa (Gaseous Form)",
       "level": 3,
       "school": "Transmutação",
       "time": "Ação",
@@ -7397,7 +7397,7 @@ const DND5E_DATA = {
     },
     {
       "id": "glifo_de_protecao",
-      "name": "Glifo de Proteção",
+      "name": "Glifo de Proteção (Glyph of Warding)",
       "level": 3,
       "school": "Abjuração",
       "time": "1 hora",
@@ -7427,7 +7427,7 @@ const DND5E_DATA = {
     },
     {
       "id": "imagem_maior",
-      "name": "Imagem Maior",
+      "name": "Imagem Maior (Major Image)",
       "level": 3,
       "school": "Ilusão",
       "time": "Ação",
@@ -7444,7 +7444,7 @@ const DND5E_DATA = {
     },
     {
       "id": "indetectavel",
-      "name": "Indetectável",
+      "name": "Indetectável (Nondetection)",
       "level": 3,
       "school": "Abjuração",
       "time": "Ação",
@@ -7460,7 +7460,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocar_animais",
-      "name": "Invocar Animais",
+      "name": "Invocar Animais (Conjure Animals)",
       "level": 3,
       "school": "Invocação",
       "time": "Ação",
@@ -7475,7 +7475,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocar_barragem",
-      "name": "Invocar Barragem",
+      "name": "Invocar Barragem (Conjure Barrage)",
       "level": 3,
       "school": "Invocação",
       "time": "Ação",
@@ -7485,11 +7485,11 @@ const DND5E_DATA = {
       "classes": [
         "ranger"
       ],
-      "desc": "Espírito Aberrante (Pseudo-observador) Espírito AberranteAberração Média, Neutra CA 11 + o círculo da magia PV 40 + 10 para cada círculo de magia acima de 4 Deslocamento 9 m; Voo 9 m (pairar; apenas Pseudoobservador) or +3 +3 Des +0 +0 Con +2 +2 Int +3 +3 Sab +0 +0 Car -2 -2 Imunidades Psíquico Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Dialeto Obscuro, entende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosAura Sussurrante (Apenas Devorador de Mentes). No início de cada turno do espírito, ele emite energia psiônica se não tem a condição Incapacitado. Salvaguarda de Sabedoria: CD é igual a CD para evitar sua magia, cada criatura (exceto você) a até 1,5 metro do espírito. Falha: 2d6 pontos de dano Psíquico. Regeneração (Apenas Slaad). O espírito recupera 5 Pontos de Vida no início do turno dele se tiver pelo menos 1 Ponto de Vida.AçõesAtaques Múltiplos. O espírito realiza um número de ataques igual à metade do círculo da magia (arredondado para baixo). Garras (Apenas Slaad). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d10 + 3 mais o círculo da magia em pontos de dano Cortante, e o alvo não pode recuperar Pontos de Vida até o início do próximo turno do espírito. Pancada Psíquica (Apenas Devorador de Mentes). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 3 mais o círculo da magia em pontos de dano Psíquico. Raio Ocular (Somente Pseudo-observador). Jogada de Ataque à Distância: Bônus é igual ao seu modificador de ataque mágico, alcance 45 m. Dano: 1d8 + 3 mais o círculo da magia em pontos de dano Psíquico. Você brande a arma usada para conjurar a magia e invoca armas espectrais semelhantes (ou munição apropriada para a arma) que são lançadas adiante e depois desaparecem. Cada criatura à sua escolha à sua vista em um Cone de 18 metros realiza uma salvaguarda de Destreza, sofrendo 5d8 pontos de dano Energético se falhar, ou metade desse dano em caso de sucesso. Usando um Espaço de Magia de Círculo Superior. O dano aumenta em 1d8 para cada círculo de espaço de magia acima de 3."
+      "desc": "Você brande a arma usada para conjurar a magia e invoca armas espectrais semelhantes (ou munição apropriada para a arma) que são lançadas adiante e depois desaparecem. Cada criatura à sua escolha à sua vista em um Cone de 18 metros realiza uma salvaguarda de Destreza, sofrendo 5d8 pontos de dano Energético se falhar, ou metade desse dano em caso de sucesso. Usando um Espaço de Magia de Círculo Superior. O dano aumenta em 1d8 para cada círculo de espaço de magia acima de 3."
     },
     {
       "id": "invocar_morto_vivo",
-      "name": "Invocar Morto-Vivo",
+      "name": "Invocar Morto-Vivo (Summon Undead)",
       "level": 3,
       "school": "Necromancia",
       "time": "Ação",
@@ -7500,7 +7500,7 @@ const DND5E_DATA = {
         "warlock",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Morto-Vivo. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Morto-vivo. Ao conjurar a magia, escolha a forma da criatura: Esquelético, Fantasmagórico ou Pútrido. O espírito se assemelha a uma criatura Morta-viva com a forma escolhida, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas. CA 11 + o círculo da magia PV 30 (apenas Fantasmagórico e Pútrido) ou 20 (apenas Esquelético) + 10 para cada círculo de magia acima de 3 Deslocamento 9 m; Voo 12 m (pairar; apenas Fantasmagórico) or +1 +1 Des +3 +3 Con +2 +2 Int -3 -3 Sab +0 +0 Car -1 -1 Imunidades Necrótico, Venenoso; Amedrontado, Envenenado, Exaustão, Paralisado Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosAura Purulenta (Apenas Pútrido). Salvaguarda de Constituição: CD é igual a CD para evitar sua magia, qualquer criatura (exceto você) que inicie o turno dentro de uma Emanação de 1,5 metro originada a partir do espírito. Falha: A criatura tem a condição Envenenado até o início de seu próximo turno. Passagem Incorpórea (Apenas Fantasmagórico). O espírito pode se mover através de outras criaturas e objetos como se fossem Terreno Difícil. Se ele terminar o turno dentro de um objeto, ele é desviado para o espaço desocupado mais próximo e sofre 1d10 pontos de dano Energético por cada 1,5 metro percorrido.AçõesAtaques Múltiplos. O espírito realiza um número de ataques igual à metade do círculo da magia (arredondado para baixo). Garra Podre (Apenas Pútrido). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d6 + 3 mais o círculo da magia em pontos de dano Cortante. Se o alvo tem a condição Envenenado, ele tem a condição Paralisado até o final do próximo turno dele. Raio da Cova (Somente Esquelético). Jogada de Ataque à Distância: Bônus é igual ao seu modificador de ataque mágico, alcance 45 m. Dano: 2d4 + 3 mais o círculo da magia em pontos de dano Necrótico. Toque Mortal (Apenas Fantasmagórico). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 3 mais o círculo da magia em pontos de dano Necrótico, e o alvo tem a condição Amedrontado até o final do próximo turno dele."
+      "desc": "Você invoca um Espírito Morto-Vivo. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Morto-vivo. Ao conjurar a magia, escolha a forma da criatura: Esquelético, Fantasmagórico ou Pútrido. O espírito se assemelha a uma criatura Morta-viva com a forma escolhida, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
     },
     {
       "id": "slow",
@@ -7520,7 +7520,7 @@ const DND5E_DATA = {
     },
     {
       "id": "linguas",
-      "name": "Línguas",
+      "name": "Línguas (Tongues)",
       "level": 3,
       "school": "Adivinhação",
       "time": "Ação",
@@ -7538,7 +7538,7 @@ const DND5E_DATA = {
     },
     {
       "id": "daylight",
-      "name": "Luz do Dia",
+      "name": "Luz do Dia (Daylight)",
       "level": 3,
       "school": "Evocação",
       "time": "Ação",
@@ -7587,7 +7587,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mesclar_se_as_rochas",
-      "name": "Mesclar-se às Rochas",
+      "name": "Mesclar-se às Rochas (Meld into Stone)",
       "level": 3,
       "school": "Transmutação",
       "time": "Ação ou Ritual",
@@ -7603,7 +7603,7 @@ const DND5E_DATA = {
     },
     {
       "id": "montaria_fantasmagorica",
-      "name": "Montaria Fantasmagórica",
+      "name": "Montaria Fantasmagórica (Phantom Steed)",
       "level": 3,
       "school": "Ilusão",
       "time": "1 minuto ou Ritual",
@@ -7617,7 +7617,7 @@ const DND5E_DATA = {
     },
     {
       "id": "muralha_de_vento",
-      "name": "Muralha de Vento",
+      "name": "Muralha de Vento (Wind Wall)",
       "level": 3,
       "school": "Evocação",
       "time": "Ação",
@@ -7632,7 +7632,7 @@ const DND5E_DATA = {
     },
     {
       "id": "nevasca",
-      "name": "Nevasca",
+      "name": "Nevasca (Sleet Storm)",
       "level": 3,
       "school": "Invocação",
       "time": "Ação",
@@ -7648,7 +7648,7 @@ const DND5E_DATA = {
     },
     {
       "id": "stinking_cloud",
-      "name": "Nuvem Fétida",
+      "name": "Nuvem Fétida (Stinking Cloud)",
       "level": 3,
       "school": "Invocação",
       "time": "Ação",
@@ -7696,7 +7696,7 @@ const DND5E_DATA = {
     },
     {
       "id": "pequeno_refugio_de_leomund",
-      "name": "Pequeno Refúgio de Leomund",
+      "name": "Pequeno Refúgio de Leomund (Leomund's Tiny Hut)",
       "level": 3,
       "school": "Evocação",
       "time": "1 minuto ou Ritual",
@@ -7726,7 +7726,7 @@ const DND5E_DATA = {
     },
     {
       "id": "protecao_contra_energia",
-      "name": "Proteção Contra Energia",
+      "name": "Proteção Contra Energia (Protection from Energy)",
       "level": 3,
       "school": "Abjuração",
       "time": "Ação",
@@ -7759,7 +7759,7 @@ const DND5E_DATA = {
     },
     {
       "id": "remeter",
-      "name": "Remeter",
+      "name": "Remeter (Sending)",
       "level": 3,
       "school": "Adivinhação",
       "time": "Ação",
@@ -7775,7 +7775,7 @@ const DND5E_DATA = {
     },
     {
       "id": "remover_maldicao",
-      "name": "Remover Maldição",
+      "name": "Remover Maldição (Remove Curse)",
       "level": 3,
       "school": "Abjuração",
       "time": "Ação",
@@ -7792,7 +7792,7 @@ const DND5E_DATA = {
     },
     {
       "id": "respirar_na_agua",
-      "name": "Respirar na Água",
+      "name": "Respirar na Água (Water Breathing)",
       "level": 3,
       "school": "Transmutação",
       "time": "Ação ou Ritual",
@@ -7826,7 +7826,7 @@ const DND5E_DATA = {
     },
     {
       "id": "rogar_maldicao",
-      "name": "Rogar Maldição",
+      "name": "Rogar Maldição (Bestow Curse)",
       "level": 3,
       "school": "Necromancia",
       "time": "Ação",
@@ -7842,7 +7842,7 @@ const DND5E_DATA = {
     },
     {
       "id": "simular_morte",
-      "name": "Simular Morte",
+      "name": "Simular Morte (Feign Death)",
       "level": 3,
       "school": "Necromancia",
       "time": "Ação ou Ritual",
@@ -7859,7 +7859,7 @@ const DND5E_DATA = {
     },
     {
       "id": "beacon_of_hope",
-      "name": "Sinal de Esperança",
+      "name": "Sinal de Esperança (Beacon of Hope)",
       "level": 3,
       "school": "Abjuração",
       "time": "Ação",
@@ -7905,7 +7905,7 @@ const DND5E_DATA = {
     },
     {
       "id": "arca_secreta_de_leomund",
-      "name": "Arca Secreta de Leomund",
+      "name": "Arca Secreta de Leomund (Leomund's Secret Chest)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação",
@@ -7919,7 +7919,7 @@ const DND5E_DATA = {
     },
     {
       "id": "assassino_fantasmagorico",
-      "name": "Assassino Fantasmagórico",
+      "name": "Assassino Fantasmagórico (Phantasmal Killer)",
       "level": 4,
       "school": "Ilusão",
       "time": "Ação",
@@ -7934,7 +7934,7 @@ const DND5E_DATA = {
     },
     {
       "id": "aura_de_pureza",
-      "name": "Aura de Pureza",
+      "name": "Aura de Pureza (Aura of Purity)",
       "level": 4,
       "school": "Abjuração",
       "time": "Ação",
@@ -7949,7 +7949,7 @@ const DND5E_DATA = {
     },
     {
       "id": "aura_de_vida",
-      "name": "Aura de Vida",
+      "name": "Aura de Vida (Aura of Life)",
       "level": 4,
       "school": "Abjuração",
       "time": "Ação",
@@ -7982,7 +7982,7 @@ const DND5E_DATA = {
     },
     {
       "id": "cao_fiel_de_mordenkainen",
-      "name": "Cão Fiel de Mordenkainen",
+      "name": "Cão Fiel de Mordenkainen (Mordenkainen's Faithful Hound)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação",
@@ -7996,7 +7996,7 @@ const DND5E_DATA = {
     },
     {
       "id": "compulsao",
-      "name": "Compulsão",
+      "name": "Compulsão (Compulsion)",
       "level": 4,
       "school": "Encantamento",
       "time": "Ação",
@@ -8010,7 +8010,7 @@ const DND5E_DATA = {
     },
     {
       "id": "confusao",
-      "name": "Confusão",
+      "name": "Confusão (Confusion)",
       "level": 4,
       "school": "Encantamento",
       "time": "Ação",
@@ -8027,7 +8027,7 @@ const DND5E_DATA = {
     },
     {
       "id": "control_water",
-      "name": "Controlar Água",
+      "name": "Controlar Água (Control Water)",
       "level": 4,
       "school": "Transmutação",
       "time": "Ação",
@@ -8043,7 +8043,7 @@ const DND5E_DATA = {
     },
     {
       "id": "convocar_elemental",
-      "name": "Convocar Elemental",
+      "name": "Convocar Elemental (Summon Elemental)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação",
@@ -8055,7 +8055,7 @@ const DND5E_DATA = {
         "ranger",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Elemental. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Elemental. Ao conjurar a magia, escolha um elemento: Água, Ar, Fogo ou Terra. A criatura se assemelha a uma forma bípede envolta no elemento escolhido, o que determina certas características no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas. Espírito Celestial (Vingador) Espírito ElementalElemental Médio, Neutro CA 11 + o círculo da magia PV 50 + 10 para cada círculo de magia acima de 4 Deslocamento 12 m; Escavação 12 m (apenas Terra); Natação 12 m (apenas Água); Voo 12 m (pairar; apenas Ar) or +4 +4 Des +2 +2 Con +3 +3 Int -3 -3 Sab +0 +0 Car +3 +3 Resistências Ácido (apenas Água), Cortante e Perfurante (apenas Terra), Elétrico e Trovejante (apenas Ar) Imunidades Ígneo (somente Fogo), Venenoso; Envenenado, Exaustão, Paralisado, Petrificado Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Primordial, compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosEstado Amorfo (Apenas Água, Ar e Fogo). O espírito pode se mover por um espaço tão estreito quanto 2,5 centímetros de largura sem contá-lo como Terreno Difícil.AçõesAtaques Múltiplos. O espírito realiza um número de ataques de Pancada igual à metade do círculo da magia (arredondado para baixo). Pancada. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d10 + 4 + o círculo da magia pontos de dano Contundente (apenas Terra), Elétrico (apenas Ar), Gélido (apenas Água) ou Íg neo (apenas Fogo)."
+      "desc": "Você invoca um Espírito Elemental. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Elemental. Ao conjurar a magia, escolha um elemento: Água, Ar, Fogo ou Terra. A criatura se assemelha a uma forma bípede envolta no elemento escolhido, o que determina certas características no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
     },
     {
       "id": "guardian_of_faith",
@@ -8073,7 +8073,7 @@ const DND5E_DATA = {
     },
     {
       "id": "destruicao_atordoante",
-      "name": "Destruição Atordoante",
+      "name": "Destruição Atordoante (Staggering Smite)",
       "level": 4,
       "school": "Encantamento",
       "time": "Ação Bônus, que você realiza imediatamente após atingir uma criatura com uma arma Corpo a Corpo ou um Ataque Desarmado",
@@ -8087,7 +8087,7 @@ const DND5E_DATA = {
     },
     {
       "id": "dominate_beast",
-      "name": "Dominar Fera",
+      "name": "Dominar Fera (Dominate Beast)",
       "level": 4,
       "school": "Encantamento",
       "time": "Ação",
@@ -8103,7 +8103,7 @@ const DND5E_DATA = {
     },
     {
       "id": "enfeiticar_monstro",
-      "name": "Enfeitiçar Monstro",
+      "name": "Enfeitiçar Monstro (Charm Monster)",
       "level": 4,
       "school": "Encantamento",
       "time": "Ação",
@@ -8121,7 +8121,7 @@ const DND5E_DATA = {
     },
     {
       "id": "fire_shield",
-      "name": "Escudo Ardente",
+      "name": "Escudo Ardente (Fire Shield)",
       "level": 4,
       "school": "Evocação",
       "time": "Ação",
@@ -8137,7 +8137,7 @@ const DND5E_DATA = {
     },
     {
       "id": "esfera_resiliente_de_otiluke",
-      "name": "Esfera Resiliente de Otiluke",
+      "name": "Esfera Resiliente de Otiluke (Otiluke's Resilient Sphere)",
       "level": 4,
       "school": "Abjuração",
       "time": "Ação",
@@ -8151,7 +8151,7 @@ const DND5E_DATA = {
     },
     {
       "id": "esfera_vitriolica",
-      "name": "Esfera Vitriólica",
+      "name": "Esfera Vitriólica (Vitriolic Sphere)",
       "level": 4,
       "school": "Evocação",
       "time": "Ação",
@@ -8166,7 +8166,7 @@ const DND5E_DATA = {
     },
     {
       "id": "fabricar",
-      "name": "Fabricar",
+      "name": "Fabricar (Fabricate)",
       "level": 4,
       "school": "Transmutação",
       "time": "10 minutos",
@@ -8180,7 +8180,7 @@ const DND5E_DATA = {
     },
     {
       "id": "fonte_do_luar",
-      "name": "Fonte do Luar",
+      "name": "Fonte do Luar (Fount of Moonlight)",
       "level": 4,
       "school": "Evocação",
       "time": "Ação",
@@ -8195,7 +8195,7 @@ const DND5E_DATA = {
     },
     {
       "id": "inseto_gigante",
-      "name": "Inseto Gigante",
+      "name": "Inseto Gigante (Giant Insect)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação",
@@ -8225,7 +8225,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocar_aberracao",
-      "name": "Invocar Aberração",
+      "name": "Invocar Aberração (Summon Aberration)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação",
@@ -8236,11 +8236,11 @@ const DND5E_DATA = {
         "warlock",
         "wizard"
       ],
-      "desc": "Inseto GiganteFera Grande, Sem Alinhamento CA 11 + o círculo da magia PV 30 + 10 para cada círculo de magia acima do 4 Deslocamento 12 m, Escalada 12 m, Voo 12 m (apenas Vespa) or +3 +3 Des +1 +1 Con +2 +2 Int -3 -3 Sab -3 -3 Car +2 +2 Sentidos: Visão no Escuro 18 m, Percepção Passiva 12 Idiomas Compreende os idiomas que você conhece ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosEscalada de Aranha. O inseto pode escalar superfícies difíceis, inclusive ao longo de tetos, sem precisar realizar um teste de atributo.AçõesAtaques Múltiplos. O inseto realiza um número de ataques igual à metade do círculo da magia (arredondado para baixo). Punição Venenosa. Jogada de Ataque Corpo a Corpo. Bônus é igual ao seu modificador de ataque mágico, alcance 3 m. Dano: 1d6 + 3 mais o círculo da magia em pontos de dano Perfurante mais 1d4 pontos de dano Venenoso. Raio de Teia (Apenas Aranha). Jogada de Ataque à Distância. Bônus é igual ao seu modificador de ataque mágico, alcance 18 m. Dano: 1d10 + 3 mais o círculo da magia em pontos de dano Contundente, e o Deslocamento do alvo é reduzido a 0 até o início do próximo turno do inseto.Ações BônusCuspe Venenoso (Apenas Centopeia). Salvaguarda de Constituição. Sua CD para evitar magia, uma criatura à vista do inseto a até 3 metros. Falha: O alvo tem a condição Envenenado até o início do próximo turno do inseto. Você invoca um Espírito Aberrante. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Aberrante . Ao conjurar a magia, escolha entre Devorador de Mentes, Pseudo-observador ou Slaad. A criatura se assemelha a uma Aberração desse tipo, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Aberrante. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Aberrante . Ao conjurar a magia, escolha entre Devorador de Mentes, Pseudo-observador ou Slaad. A criatura se assemelha a uma Aberração desse tipo, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
     },
     {
       "id": "invocar_constructo",
-      "name": "Invocar Constructo",
+      "name": "Invocar Constructo (Summon Construct)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação",
@@ -8250,11 +8250,11 @@ const DND5E_DATA = {
       "classes": [
         "wizard"
       ],
-      "desc": "Você invoca o espírito de um Construto. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito do Constructo . Ao conjurar a magia, escolha um material: Argila, Metal ou Pedra. A criatura se assemelha a uma estátua animada (você determina a aparência) composto do material escolhido, que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas. Espírito do ConstructoConstructo Médio, Neutro CA 13 + o círculo da magia PV 40 + 15 para cada círculo de magia acima de 4 Deslocamento 9 m or +4 +4 Des +0 +0 Con +4 +4 Int +2 +2 Sab +0 +0 Car -3 -3 Resistências Venenoso Imunidades Amedrontado, Enfeitiçado, Envenenado, Exaustão, Paralisado Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosCorpo Aquecido (Apenas Metal). Uma criatura que atinge o espírito com um ataque corpo a corpo ou que inicia seu turno imobilizando o espírito sofre 1d10 pontos de dano Ígneo. Letargia Empedernida (Apenas Pedra). Quando uma criatura começa o turno dela a até 3 metros do espírito, o espírito pode atacá-la com energia mágica se o espírito puder vêla. Salvaguarda de Sabedoria: CD é igual a CD para evitar sua magia. Falha: Até o início do próximo turno do espírito, o alvo não pode realizar Ataques de Oportunidade e seu Deslocamento é reduzido pela metade.AçõesAtaques Múltiplos. O espírito realiza um número de ataques de Pancada igual à metade do círculo da magia (arredondado para baixo). Pancada. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 4 + o círculo da magia pontos de dano Contundente.ReaçõesReação Violenta (Apenas Argila). Gatilho: O espírito sofre dano de uma criatura. Reação: O espírito realiza um ataque de Pancada contra essa criatura, se possível, ou o espírito se move até metade do seu Deslocamento em direção a essa criatura sem provocar Ataques de Oportunidade. ,"
+      "desc": "Você invoca o espírito de um Construto. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito do Constructo . Ao conjurar a magia, escolha um material: Argila, Metal ou Pedra. A criatura se assemelha a uma estátua animada (você determina a aparência) composto do material escolhido, que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
     },
     {
       "id": "invocar_elementais_menores",
-      "name": "Invocar Elementais Menores",
+      "name": "Invocar Elementais Menores (Conjure Minor Elementals)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação",
@@ -8265,11 +8265,11 @@ const DND5E_DATA = {
         "druid",
         "wizard"
       ],
-      "desc": "Espírito do Constructo (Pedra) Espírito Dracônico (Frio) Espírito DracônicoDragão Grande, Neutro CA 14 + o círculo da magia PV 50 + 10 para cada círculo de magia acima de 5 Deslocamento 9 m, Natação 9 m; Voo 18 m or +4 +4 Des +2 +2 Con +3 +3 Int +0 +0 Sab +2 +2 Car +2 +2 Resistências Ácido, Elétrico, Gélido, Ígneo, Venenoso Imunidades Amedrontado, Enfeitiçado, Envenenado Sentidos Visão às Cegas 9 m, Visão no Escuro 18 m, Percepção Passiva 12 Idiomas Dracônico, compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosResistências Compartilhadas. Ao invocar o espírito, escolha uma das resistências dele. Você tem Resistência ao tipo de dano escolhido até que a magia termine.AçõesAtaques Múltiplos. O espírito realiza um número de ataques de Dilacerar igual à metade do círculo da magia (arredondado para baixo) e usa o Ataque de Sopro. Ataque de Sopro. Salvaguarda de Destreza: CD é igual a CD para evitar sua magia, cada criatura em um Cone de 9 metros. Falha: 2d6 pontos de dano de um tipo ao qual o espírito tem Resistência (à sua escolha quando você conjura a magia). Sucesso: Metade do dano. Dilacerar. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 3 m. Dano: 1d6 + 4 + o círculo da magia pontos de dano Perfurante. , Você conjura espíritos dos Planos Elementais que voam ao seu redor em uma Emanação de 4,5 metros pela duração da magia. Até que a magia termine, qualquer ataque que você realizar causa 2d8 pontos de dano adicional quando você atinge uma criatura na Emanação. Este dano é Ácido, Elétrico, Gélido ou Ígneo (à sua escolha quando realizar o ataque). Além disso, o terreno da Emanação é Terreno Difícil para seus inimigos. Usando um Espaço de Magia de Círculo Superior. O dano aumenta em 1d8 para cada círculo de espaço de magia acima de 4."
+      "desc": "Você conjura espíritos dos Planos Elementais que voam ao seu redor em uma Emanação de 4,5 metros pela duração da magia. Até que a magia termine, qualquer ataque que você realizar causa 2d8 pontos de dano adicional quando você atinge uma criatura na Emanação. Este dano é Ácido, Elétrico, Gélido ou Ígneo (à sua escolha quando realizar o ataque). Além disso, o terreno da Emanação é Terreno Difícil para seus inimigos. Usando um Espaço de Magia de Círculo Superior. O dano aumenta em 1d8 para cada círculo de espaço de magia acima de 4."
     },
     {
       "id": "invocar_seres_da_floresta",
-      "name": "Invocar Seres da Floresta",
+      "name": "Invocar Seres da Floresta (Conjure Woodland Beings)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação",
@@ -8284,7 +8284,7 @@ const DND5E_DATA = {
     },
     {
       "id": "localizar_criatura",
-      "name": "Localizar Criatura",
+      "name": "Localizar Criatura (Locate Creature)",
       "level": 4,
       "school": "Adivinhação",
       "time": "Ação",
@@ -8320,7 +8320,7 @@ const DND5E_DATA = {
     },
     {
       "id": "moldar_rochas",
-      "name": "Moldar Rochas",
+      "name": "Moldar Rochas (Stone Shape)",
       "level": 4,
       "school": "Transmutação",
       "time": "Ação",
@@ -8336,7 +8336,7 @@ const DND5E_DATA = {
     },
     {
       "id": "freedom_of_movement",
-      "name": "Movimentação Livre",
+      "name": "Movimentação Livre (Freedom of Movement)",
       "level": 4,
       "school": "Abjuração",
       "time": "Ação",
@@ -8369,7 +8369,7 @@ const DND5E_DATA = {
     },
     {
       "id": "olho_arcano",
-      "name": "Olho Arcano",
+      "name": "Olho Arcano (Arcane Eye)",
       "level": 4,
       "school": "Adivinhação",
       "time": "Ação",
@@ -8383,7 +8383,7 @@ const DND5E_DATA = {
     },
     {
       "id": "pele_rocha",
-      "name": "Pele-Rocha",
+      "name": "Pele-Rocha (Stoneskin)",
       "level": 4,
       "school": "Transmutação",
       "time": "Ação",
@@ -8434,7 +8434,7 @@ const DND5E_DATA = {
     },
     {
       "id": "pressagio",
-      "name": "Presságio",
+      "name": "Presságio (Divination)",
       "level": 4,
       "school": "Adivinhação",
       "time": "Ação ou Ritual",
@@ -8465,7 +8465,7 @@ const DND5E_DATA = {
     },
     {
       "id": "santuario_particular_de_mordenkainten",
-      "name": "Santuário Particular de Mordenkainten",
+      "name": "Santuário Particular de Mordenkainten (Mordenkainen's Private Sanctum)",
       "level": 4,
       "school": "Abjuração",
       "time": "10 minutos",
@@ -8495,7 +8495,7 @@ const DND5E_DATA = {
     },
     {
       "id": "black_tentacles",
-      "name": "Tentáculos Negros de Evard",
+      "name": "Tentáculos Negros de Evard (Evard's Black Tentacles)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação",
@@ -8509,7 +8509,7 @@ const DND5E_DATA = {
     },
     {
       "id": "terreno_alucinatorio",
-      "name": "Terreno Alucinatório",
+      "name": "Terreno Alucinatório (Hallucinatory Terrain)",
       "level": 4,
       "school": "Ilusão",
       "time": "10 minutos",
@@ -8526,7 +8526,7 @@ const DND5E_DATA = {
     },
     {
       "id": "vinha_agarradora",
-      "name": "Vinha Agarradora",
+      "name": "Vinha Agarradora (Grasping Vine)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação Bônus",
@@ -8541,7 +8541,7 @@ const DND5E_DATA = {
     },
     {
       "id": "aljava_veloz",
-      "name": "Aljava Veloz",
+      "name": "Aljava Veloz (Swift Quiver)",
       "level": 5,
       "school": "Transmutação",
       "time": "Ação Bônus",
@@ -8555,7 +8555,7 @@ const DND5E_DATA = {
     },
     {
       "id": "ancora_planar",
-      "name": "Âncora Planar",
+      "name": "Âncora Planar (Planar Binding)",
       "level": 5,
       "school": "Abjuração",
       "time": "1 hora",
@@ -8573,7 +8573,7 @@ const DND5E_DATA = {
     },
     {
       "id": "animar_objetos",
-      "name": "Animar Objetos",
+      "name": "Animar Objetos (Animate Objects)",
       "level": 5,
       "school": "Transmutação",
       "time": "Ação",
@@ -8585,11 +8585,11 @@ const DND5E_DATA = {
         "sorcerer",
         "wizard"
       ],
-      "desc": "Objetos são animados ao seu comando. Escolha uma série de objetos não mágicos no alcance da magia que não estejam sendo usados ou carregados, não estejam fixados a uma superfície e não sejam Colossais. O número máximo de objetos é igual ao seu modificador de atributo de conjuração. Para este número, um tamanho Médio ou menor conta como um objeto, um alvo Grande conta como dois e um alvo Enorme conta como três. Cada alvo se anima, faz brotar pernas e se torna um Constructo que usa o bloco de estatísticas do Objeto Animado ; esta criatura está sob seu controle até que a magia termine ou até que ela seja reduzida a 0 Pontos de Vida. Cada criatura que você anima com esta magia é uma aliada sua e de seus aliados. Em combate, ela compartilha a contagem de Iniciativa com você e tem o turno dela imediatamente após o seu. Até que a magia encerre, você pode executar uma Ação Bônus para comandar mentalmente qualquer criatura que tenha animado com essa magia se a criatura estiver a até 150 metros de você (se você controlar várias criaturas, pode comandar quaisquer delas ao mesmo tempo, emitindo o mesmo comando para cada uma). Se você não der nenhum comando, a criatura executa a ação Esquivar e se move apenas para evitar danos. Quando a criatura é reduzida a 0 Pontos de Vida, ela reverte para sua forma de objeto, e qualquer dano restante é transferido para essa forma. Usando um Espaço de Magia de Círculo Superior. O dano de Pancada da criatura aumenta em 1d4 (Médio ou menor), 1d6 (Grande) ou 1d12 (Enorme) para cada círculo de espaço de magia acima de 5. Objetos AnimadosConstruto Grande ou Menor, Sem Alinhamento PV 10 (Médio ou menor), 20 (Grande), 40 (Enorme) Deslocamento 9 m or +3 +3 Des +0 +0 Con +0 +0 Int -4 -4 Sab -4 -4 Car -5 -5 Imunidades Psíquico, Venenoso; Amedrontado, Enfeitiçado, Envenenado, Exaustão, Paralisado Sentidos Visão às Cegas 9 m, Percepção Passiva 6 Idiomas Compreende os idiomas que você conhece ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)AçõesPancada. Jogada de Ataque Corpo a Corpo: Bônus igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: Energético igual a 1d4 + 3 (Médio ou menor), 2d6 + 3 + seu modificador de atributo de conjuração (Grande) ou 2d12 + 3 + seu modificador de atributo de conjuração (Enorme)."
+      "desc": "Objetos são animados ao seu comando. Escolha uma série de objetos não mágicos no alcance da magia que não estejam sendo usados ou carregados, não estejam fixados a uma superfície e não sejam Colossais. O número máximo de objetos é igual ao seu modificador de atributo de conjuração. Para este número, um tamanho Médio ou menor conta como um objeto, um alvo Grande conta como dois e um alvo Enorme conta como três. Cada alvo se anima, faz brotar pernas e se torna um Constructo que usa o bloco de estatísticas do Objeto Animado ; esta criatura está sob seu controle até que a magia termine ou até que ela seja reduzida a 0 Pontos de Vida. Cada criatura que você anima com esta magia é uma aliada sua e de seus aliados. Em combate, ela compartilha a contagem de Iniciativa com você e tem o turno dela imediatamente após o seu. Até que a magia encerre, você pode executar uma Ação Bônus para comandar mentalmente qualquer criatura que tenha animado com essa magia se a criatura estiver a até 150 metros de você (se você controlar várias criaturas, pode comandar quaisquer delas ao mesmo tempo, emitindo o mesmo comando para cada uma). Se você não der nenhum comando, a criatura executa a ação Esquivar e se move apenas para evitar danos. Quando a criatura é reduzida a 0 Pontos de Vida, ela reverte para sua forma de objeto, e qualquer dano restante é transferido para essa forma. Usando um Espaço de Magia de Círculo Superior. O dano de Pancada da criatura aumenta em 1d4 (Médio ou menor), 1d6 (Grande) ou 1d12 (Enorme) para cada círculo de espaço de magia acima de 5."
     },
     {
       "id": "circulo_de_poder",
-      "name": "Círculo de Poder",
+      "name": "Círculo de Poder (Circle of Power)",
       "level": 5,
       "school": "Abjuração",
       "time": "Ação",
@@ -8605,7 +8605,7 @@ const DND5E_DATA = {
     },
     {
       "id": "teleportation_circle",
-      "name": "Círculo de Teletransporte",
+      "name": "Círculo de Teletransporte (Teleportation Circle)",
       "level": 5,
       "school": "Invocação",
       "time": "1 minuto",
@@ -8636,7 +8636,7 @@ const DND5E_DATA = {
     },
     {
       "id": "comunhao",
-      "name": "Comunhão",
+      "name": "Comunhão (Commune)",
       "level": 5,
       "school": "Adivinhação",
       "time": "1 minuto ou Ritual",
@@ -8650,7 +8650,7 @@ const DND5E_DATA = {
     },
     {
       "id": "comunhao_com_a_natureza",
-      "name": "Comunhão com a Natureza",
+      "name": "Comunhão com a Natureza (Commune with Nature)",
       "level": 5,
       "school": "Adivinhação",
       "time": "1 minuto ou Ritual",
@@ -8681,7 +8681,7 @@ const DND5E_DATA = {
     },
     {
       "id": "hallow",
-      "name": "Consagrar",
+      "name": "Consagrar (Hallow)",
       "level": 5,
       "school": "Abjuração",
       "time": "24 horas",
@@ -8695,7 +8695,7 @@ const DND5E_DATA = {
     },
     {
       "id": "contagio",
-      "name": "Contágio",
+      "name": "Contágio (Contagion)",
       "level": 5,
       "school": "Necromancia",
       "time": "Ação",
@@ -8710,7 +8710,7 @@ const DND5E_DATA = {
     },
     {
       "id": "contato_extraplanar",
-      "name": "Contato Extraplanar",
+      "name": "Contato Extraplanar (Contact Other Plane)",
       "level": 5,
       "school": "Adivinhação",
       "time": "1 minuto ou Ritual",
@@ -8725,7 +8725,7 @@ const DND5E_DATA = {
     },
     {
       "id": "convocar_celestial",
-      "name": "Convocar Celestial",
+      "name": "Convocar Celestial (Summon Celestial)",
       "level": 5,
       "school": "Invocação",
       "time": "Ação",
@@ -8736,11 +8736,11 @@ const DND5E_DATA = {
         "cleric",
         "paladin"
       ],
-      "desc": "Um Dragão de Latão conjura Controlar o Clima para salvar uma comunidade de uma tempestade destrutiva. Você invoca um Espírito Celestial. Ele se manifesta em uma forma angelical em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Celestial . Ao conjurar a magia, escolha Defensor ou Vingador. Sua escolha determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas. Espírito CelestialCelestial Grande, Neutro CA 11 + o círculo da magia + 2 (apenas Defensor) PV 40 + 10 para cada círculo de magia acima de 5 Deslocamento 9 m, Voo 12 m or +3 +3 Des +2 +2 Con +3 +3 Int +0 +0 Sab +2 +2 Car +3 +3 Resistências Radiante Imunidades Amedrontado, Enfeitiçado Sentidos Visão no Escuro 18 m, Percepção Passiva 12 Idiomas Celestial, compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)AçõesAtaques Múltiplos. O espírito realiza um número de ataques igual à metade do círculo da magia (arredondado para baixo). Arco Radiante (Apenas Vingador). Jogada de Ataque à Distância: Bônus é igual ao seu modificador de ataque mágico , alcance 180 m. Dano: 2d6 + 2 + o círculo da magia pontos de dano Radiante. Maça Radiante (Apenas Defensor). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d10 + 3 + o círculo da magia pontos de dano Radiante, e o espírito pode escolher a si mesmo ou outra criatura à vista dele a até 3 metros do alvo. A criatura escolhida obtém 1d10 Pontos de Vida Temporários. Toque Curativo (1/Dia). O espírito toca outra criatura. O alvo recupera Pontos de Vida iguais a 2d8 + o círculo da magia."
+      "desc": "Você invoca um Espírito Celestial. Ele se manifesta em uma forma angelical em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Celestial . Ao conjurar a magia, escolha Defensor ou Vingador. Sua escolha determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
     },
     {
       "id": "criacao",
-      "name": "Criação",
+      "name": "Criação (Creation)",
       "level": 5,
       "school": "Ilusão",
       "time": "1 minuto",
@@ -8755,7 +8755,7 @@ const DND5E_DATA = {
     },
     {
       "id": "criar_passagem",
-      "name": "Criar Passagem",
+      "name": "Criar Passagem (Passwall)",
       "level": 5,
       "school": "Transmutação",
       "time": "Ação",
@@ -8769,7 +8769,7 @@ const DND5E_DATA = {
     },
     {
       "id": "cupula_antivida",
-      "name": "Cúpula Antivida",
+      "name": "Cúpula Antivida (Antilife Shell)",
       "level": 5,
       "school": "Abjuração",
       "time": "Ação",
@@ -8783,7 +8783,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mass_cure_wounds",
-      "name": "Curar Ferimentos em Massa (Mass Cure Wounds 2024)",
+      "name": "Curar Ferimentos em Massa (Mass Cure Wounds)",
       "level": 5,
       "school": "Abjuração",
       "time": "Ação",
@@ -8799,7 +8799,7 @@ const DND5E_DATA = {
     },
     {
       "id": "despertar",
-      "name": "Despertar",
+      "name": "Despertar (Awaken)",
       "level": 5,
       "school": "Transmutação",
       "time": "8 horas",
@@ -8814,7 +8814,7 @@ const DND5E_DATA = {
     },
     {
       "id": "despistar",
-      "name": "Despistar",
+      "name": "Despistar (Mislead)",
       "level": 5,
       "school": "Ilusão",
       "time": "Ação",
@@ -8844,7 +8844,7 @@ const DND5E_DATA = {
     },
     {
       "id": "dissipar_o_bem_e_o_mal",
-      "name": "Dissipar o Bem e o Mal",
+      "name": "Dissipar o Bem e o Mal (Dispel Evil and Good)",
       "level": 5,
       "school": "Abjuração",
       "time": "Ação",
@@ -8859,7 +8859,7 @@ const DND5E_DATA = {
     },
     {
       "id": "dominate_person",
-      "name": "Dominar Pessoa",
+      "name": "Dominar Pessoa (Dominate Person)",
       "level": 5,
       "school": "Encantamento",
       "time": "Ação",
@@ -8875,7 +8875,7 @@ const DND5E_DATA = {
     },
     {
       "id": "estatica_sinaptica",
-      "name": "Estática Sináptica",
+      "name": "Estática Sináptica (Synaptic Static)",
       "level": 5,
       "school": "Encantamento",
       "time": "Ação",
@@ -8892,7 +8892,7 @@ const DND5E_DATA = {
     },
     {
       "id": "golpe_de_arco",
-      "name": "Golpe de Arço",
+      "name": "Golpe de Arço (Steel Wind Strike)",
       "level": 5,
       "school": "Invocação",
       "time": "Ação",
@@ -8907,7 +8907,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocar_dragao",
-      "name": "Invocar Dragão",
+      "name": "Invocar Dragão (Summon Dragon)",
       "level": 5,
       "school": "Invocação",
       "time": "Ação",
@@ -8921,7 +8921,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocar_elemental",
-      "name": "Invocar Elemental",
+      "name": "Invocar Elemental (Conjure Elemental)",
       "level": 5,
       "school": "Invocação",
       "time": "Ação",
@@ -8936,7 +8936,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocar_saraivada",
-      "name": "Invocar Saraivada",
+      "name": "Invocar Saraivada (Conjure Volley)",
       "level": 5,
       "school": "Invocação",
       "time": "Ação",
@@ -8950,7 +8950,7 @@ const DND5E_DATA = {
     },
     {
       "id": "lendas_e_historias",
-      "name": "Lendas e Histórias",
+      "name": "Lendas e Histórias (Legend Lore)",
       "level": 5,
       "school": "Adivinhação",
       "time": "10 minutos",
@@ -8966,7 +8966,7 @@ const DND5E_DATA = {
     },
     {
       "id": "ligacao_telepatica_de_rary",
-      "name": "Ligação Telepática de Rary",
+      "name": "Ligação Telepática de Rary (Rary's Telepathic Bond)",
       "level": 5,
       "school": "Adivinhação",
       "time": "Ação ou Ritual",
@@ -8981,7 +8981,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mao_de_bigby",
-      "name": "Mão de Bigby",
+      "name": "Mão de Bigby (Bigby's Hand)",
       "level": 5,
       "school": "Evocação",
       "time": "Ação",
@@ -8996,7 +8996,7 @@ const DND5E_DATA = {
     },
     {
       "id": "missao",
-      "name": "Missão",
+      "name": "Missão (Geas)",
       "level": 5,
       "school": "Encantamento",
       "time": "1 minuto",
@@ -9014,7 +9014,7 @@ const DND5E_DATA = {
     },
     {
       "id": "modificar_memoria",
-      "name": "Modificar Memória",
+      "name": "Modificar Memória (Modify Memory)",
       "level": 5,
       "school": "Encantamento",
       "time": "Ação",
@@ -9043,7 +9043,7 @@ const DND5E_DATA = {
     },
     {
       "id": "muralha_de_pedra",
-      "name": "Muralha de Pedra",
+      "name": "Muralha de Pedra (Wall of Stone)",
       "level": 5,
       "school": "Evocação",
       "time": "Ação",
@@ -9074,7 +9074,7 @@ const DND5E_DATA = {
     },
     {
       "id": "onda_destrutiva",
-      "name": "Onda Destrutiva",
+      "name": "Onda Destrutiva (Destructive Wave)",
       "level": 5,
       "school": "Evocação",
       "time": "Ação",
@@ -9105,7 +9105,7 @@ const DND5E_DATA = {
     },
     {
       "id": "passo_arboreo",
-      "name": "Passo Arbóreo",
+      "name": "Passo Arbóreo (Tree Stride)",
       "level": 5,
       "school": "Invocação",
       "time": "Ação",
@@ -9120,7 +9120,7 @@ const DND5E_DATA = {
     },
     {
       "id": "praga_de_insetos",
-      "name": "Praga de Insetos",
+      "name": "Praga de Insetos (Insect Plague)",
       "level": 5,
       "school": "Invocação",
       "time": "Ação",
@@ -9136,7 +9136,7 @@ const DND5E_DATA = {
     },
     {
       "id": "presenca_regia_de_yolande",
-      "name": "Presença Régia de Yolande",
+      "name": "Presença Régia de Yolande (Yolande's Regal Presence)",
       "level": 5,
       "school": "Encantamento",
       "time": "Ação",
@@ -9151,7 +9151,7 @@ const DND5E_DATA = {
     },
     {
       "id": "reencarnar",
-      "name": "Reencarnar",
+      "name": "Reencarnar (Reincarnate)",
       "level": 5,
       "school": "Necromancia",
       "time": "1 hora",
@@ -9199,7 +9199,7 @@ const DND5E_DATA = {
     },
     {
       "id": "seeming",
-      "name": "Similaridade",
+      "name": "Similaridade (Seeming)",
       "level": 5,
       "school": "Ilusão",
       "time": "Ação",
@@ -9215,7 +9215,7 @@ const DND5E_DATA = {
     },
     {
       "id": "sonho",
-      "name": "Sonho",
+      "name": "Sonho (Dream)",
       "level": 5,
       "school": "Ilusão",
       "time": "1 minuto",
@@ -9246,7 +9246,7 @@ const DND5E_DATA = {
     },
     {
       "id": "tempestade_radiante_de_jallarzti",
-      "name": "Tempestade Radiante de Jallarzti",
+      "name": "Tempestade Radiante de Jallarzti (Jallarzi's Storm of Radiance)",
       "level": 5,
       "school": "Evocação",
       "time": "Ação",
@@ -9279,7 +9279,7 @@ const DND5E_DATA = {
     },
     {
       "id": "aliado_extraplanar",
-      "name": "Aliado Extraplanar",
+      "name": "Aliado Extraplanar (Planar Ally)",
       "level": 6,
       "school": "Invocação",
       "time": "10 minutos",
@@ -9309,7 +9309,7 @@ const DND5E_DATA = {
     },
     {
       "id": "barreira_de_laminas",
-      "name": "Barreira de Lâminas",
+      "name": "Barreira de Lâminas (Blade Barrier)",
       "level": 6,
       "school": "Evocação",
       "time": "Ação",
@@ -9323,7 +9323,7 @@ const DND5E_DATA = {
     },
     {
       "id": "caldeirao_borbulhante_de_tasha",
-      "name": "Caldeirão Borbulhante de Tasha",
+      "name": "Caldeirão Borbulhante de Tasha (Tasha's Bubbling Cauldron)",
       "level": 6,
       "school": "Invocação",
       "time": "Ação",
@@ -9338,7 +9338,7 @@ const DND5E_DATA = {
     },
     {
       "id": "caminhar_no_vento",
-      "name": "Caminhar no Vento",
+      "name": "Caminhar no Vento (Wind Walk)",
       "level": 6,
       "school": "Transmutação",
       "time": "1 minuto",
@@ -9352,7 +9352,7 @@ const DND5E_DATA = {
     },
     {
       "id": "circulo_da_morte",
-      "name": "Círculo da Morte",
+      "name": "Círculo da Morte (Circle of Death)",
       "level": 6,
       "school": "Necromancia",
       "time": "Ação",
@@ -9368,7 +9368,7 @@ const DND5E_DATA = {
     },
     {
       "id": "contingencia",
-      "name": "Contingência",
+      "name": "Contingência (Contingency)",
       "level": 6,
       "school": "Abjuração",
       "time": "10 minutos",
@@ -9397,7 +9397,7 @@ const DND5E_DATA = {
     },
     {
       "id": "criar_mortos_vivos",
-      "name": "Criar Mortos-Vivos",
+      "name": "Criar Mortos-Vivos (Create Undead)",
       "level": 6,
       "school": "Necromancia",
       "time": "1 minuto",
@@ -9428,7 +9428,7 @@ const DND5E_DATA = {
     },
     {
       "id": "danca_irresistivel_de_otto",
-      "name": "Dança Irresistível de Otto",
+      "name": "Dança Irresistível de Otto (Otto's Irresistible Dance)",
       "level": 6,
       "school": "Encantamento",
       "time": "Ação",
@@ -9443,7 +9443,7 @@ const DND5E_DATA = {
     },
     {
       "id": "de_carne_para_pedra",
-      "name": "De Carne para Pedra",
+      "name": "De Carne para Pedra (Flesh to Stone)",
       "level": 6,
       "school": "Transmutação",
       "time": "Ação",
@@ -9474,7 +9474,7 @@ const DND5E_DATA = {
     },
     {
       "id": "encontrar_o_caminho",
-      "name": "Encontrar o Caminho",
+      "name": "Encontrar o Caminho (Find the Path)",
       "level": 6,
       "school": "Adivinhação",
       "time": "1 minuto",
@@ -9490,7 +9490,7 @@ const DND5E_DATA = {
     },
     {
       "id": "esfera_congelante_de_otiluke",
-      "name": "Esfera Congelante de Otiluke",
+      "name": "Esfera Congelante de Otiluke (Otiluke's Freezing Sphere)",
       "level": 6,
       "school": "Evocação",
       "time": "Ação",
@@ -9505,7 +9505,7 @@ const DND5E_DATA = {
     },
     {
       "id": "globe_of_invulnerability",
-      "name": "Globo de Invulnerabilidade",
+      "name": "Globo de Invulnerabilidade (Globe of Invulnerability)",
       "level": 6,
       "school": "Abjuração",
       "time": "Ação",
@@ -9520,7 +9520,7 @@ const DND5E_DATA = {
     },
     {
       "id": "ilusao_programada",
-      "name": "Ilusão Programada",
+      "name": "Ilusão Programada (Programmed Illusion)",
       "level": 6,
       "school": "Ilusão",
       "time": "Ação",
@@ -9535,7 +9535,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocacao_instantanea_de_drawmij",
-      "name": "Invocação Instantânea de Drawmij",
+      "name": "Invocação Instantânea de Drawmij (Drawmij's Instant Summons)",
       "level": 6,
       "school": "Invocação",
       "time": "1 minuto ou Ritual",
@@ -9549,7 +9549,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocar_feerico",
-      "name": "Invocar Feérico",
+      "name": "Invocar Feérico (Conjure Fey)",
       "level": 6,
       "school": "Invocação",
       "time": "Ação",
@@ -9563,7 +9563,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocar_infero",
-      "name": "Invocar Ínfero",
+      "name": "Invocar Ínfero (Summon Fiend)",
       "level": 6,
       "school": "Invocação",
       "time": "Ação",
@@ -9574,11 +9574,11 @@ const DND5E_DATA = {
         "warlock",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Ínfero. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Ínfero. Ao conjurar a magia, escolha Demônio, Diabo ou Yugoloth. A criatura se assemelha a um Ínfero do tipo escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Espírito ÍnferoÍnfero Grande, Neutro CA 12 + o círculo da magia PV 50 (apenas Demônio) ou 40 (apenas Diabo) ou 60 (apenas Yugoloth) + 15 para cada círculo de magia acima de 6 Deslocamento 12 m; Escalada 12 m (apenas Demônio); Voo 18 m (apenas Diabo) or +1 +1 Des +3 +3 Con +2 +2 Int +0 +0 Sab +0 +0 Car +3 +3 Resistências Ígneo Imunidades Venenoso; Envenenado Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Abissal, Infernal, Telepatia 18 m ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosEspasmos da Morte (Apenas Demônio). Quando o espírito é reduzido a 0 Pontos de Vida ou a magia terminar, o espírito explode. Salvaguarda de Destreza: CD é igual a CD para evitar sua magia, cada criatura em uma Emanação de 3 metros originada a partir do espírito. Falha: 2d10 mais o círculo da magia em pontos de dano Ígneo. Sucesso: Metade do dano. Resistência à Magia. O espírito tem Vantagem em salvaguardas contra magias e outros efeitos mágicos. Visão Diabólica (Apenas Diabo). Escuridão Mágica não impede a Visão no Escuro do espírito.AçõesAtaques Múltiplos. O espírito realiza um número de ataques igual à metade do círculo da magia (arredondado para baixo). Arremesso de Chamas (Apenas Diabo). Jogada de Ataque à Distância: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m ou alcance 45 m. Dano: 2d6 + 3 mais o círculo da magia em pontos de dano pontos de dano Ígneo. Garras (Apenas Yugoloth). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 3 mais o círculo da magia em pontos de dano Cortante. Imediatamente após o ataque acertar ou errar, o espírito pode se teleportar até 9 metros para um espaço desocupado à vista dele. Mordida (Apenas Demônio). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d12 + 3 mais o círculo da magia em pontos de dano Necrótico. Espírito Ínfero (Diabo) Espírito BestialFera Pequena, Neutra CA 11 + o círculo da magia PV 20 (apenas Ar) ou 30 (apenas Água e Terra) + 5 para cada círculo de magia acima de 2 Deslocamento 9 m; Escalada 9 m (Apenas Terra); Natação 9 m (Apenas água); Voo 18 m (Apenas Ar) or +1 +1 Des +3 +3 Con +2 +2 Int +0 +0 Sab +0 +0 Car +3 +3 Sentidos: Visão no Escuro 18 m, Percepção Passiva 12 Idiomas: Compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosRespirar na Água (Apenas Água). O espírito só pode respirar debaixo d'água. Sobrevoo (Apenas Ar). O espírito não provoca Ataques de Oportunidade quando voa para fora do alcance de um inimigo. Táticas de Grupo (Apenas Água e Terra). O espírito tem Vantagem em uma jogada de ataque contra uma criatura se pelo menos um dos aliados do espírito estiver a até 1,5 metro da criatura e o aliado não tem a condição Incapacitado.AçõesAtaques Múltiplos. O espírito realiza um número de ataques de Dilacerar igual à metade do círculo da magia (arredondado para baixo). Dilacerar. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 4 mais o círculo da magia em pontos de dano Perfurante. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Ínfero. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Ínfero. Ao conjurar a magia, escolha Demônio, Diabo ou Yugoloth. A criatura se assemelha a um Ínfero do tipo escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo."
     },
     {
       "id": "mau_olhado",
-      "name": "Mau Olhado",
+      "name": "Mau Olhado (Eyebite)",
       "level": 6,
       "school": "Necromancia",
       "time": "Ação",
@@ -9609,7 +9609,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mover_terra",
-      "name": "Mover Terra",
+      "name": "Mover Terra (Move Earth)",
       "level": 6,
       "school": "Transmutação",
       "time": "Ação",
@@ -9625,7 +9625,7 @@ const DND5E_DATA = {
     },
     {
       "id": "muralha_de_espinhos",
-      "name": "Muralha de Espinhos",
+      "name": "Muralha de Espinhos (Wall of Thorns)",
       "level": 6,
       "school": "Invocação",
       "time": "Uma ação",
@@ -9639,7 +9639,7 @@ const DND5E_DATA = {
     },
     {
       "id": "muralha_de_gelo",
-      "name": "Muralha de Gelo",
+      "name": "Muralha de Gelo (Wall of Ice)",
       "level": 6,
       "school": "Evocação",
       "time": "Ação",
@@ -9653,7 +9653,7 @@ const DND5E_DATA = {
     },
     {
       "id": "palavra_de_regresso",
-      "name": "Palavra de Regresso",
+      "name": "Palavra de Regresso (Word of Recall)",
       "level": 6,
       "school": "Invocação",
       "time": "Ação",
@@ -9667,7 +9667,7 @@ const DND5E_DATA = {
     },
     {
       "id": "portais_arcanos",
-      "name": "Portais Arcanos",
+      "name": "Portais Arcanos (Arcane Gate)",
       "level": 6,
       "school": "Invocação",
       "time": "Ação",
@@ -9683,7 +9683,7 @@ const DND5E_DATA = {
     },
     {
       "id": "proibicao",
-      "name": "Proibição",
+      "name": "Proibição (Forbiddance)",
       "level": 6,
       "school": "Abjuração",
       "time": "10 minutos ou Ritual",
@@ -9697,7 +9697,7 @@ const DND5E_DATA = {
     },
     {
       "id": "proteger_fortaleza",
-      "name": "Proteger Fortaleza",
+      "name": "Proteger Fortaleza (Guards and Wards)",
       "level": 6,
       "school": "Abjuração",
       "time": "1 hora",
@@ -9729,7 +9729,7 @@ const DND5E_DATA = {
     },
     {
       "id": "receptaculo_arcano",
-      "name": "Receptáculo Arcano",
+      "name": "Receptáculo Arcano (Magic Jar)",
       "level": 6,
       "school": "Necromancia",
       "time": "1 minuto",
@@ -9743,7 +9743,7 @@ const DND5E_DATA = {
     },
     {
       "id": "sugestao_em_massa",
-      "name": "Sugestão em Massa",
+      "name": "Sugestão em Massa (Mass Suggestion)",
       "level": 6,
       "school": "Encantamento",
       "time": "Ação",
@@ -9759,7 +9759,7 @@ const DND5E_DATA = {
     },
     {
       "id": "transporte_via_plantas",
-      "name": "Transporte via Plantas",
+      "name": "Transporte via Plantas (Transport via Plants)",
       "level": 6,
       "school": "Invocação",
       "time": "Ação",
@@ -9791,7 +9791,7 @@ const DND5E_DATA = {
     },
     {
       "id": "bola_de_fogo_adiavel",
-      "name": "Bola de Fogo Adiável",
+      "name": "Bola de Fogo Adiável (Delayed Blast Fireball)",
       "level": 7,
       "school": "Evocação",
       "time": "Ação",
@@ -9838,7 +9838,7 @@ const DND5E_DATA = {
     },
     {
       "id": "espada_de_mordenkainen",
-      "name": "Espada de Mordenkainen",
+      "name": "Espada de Mordenkainen (Mordenkainen's Sword)",
       "level": 7,
       "school": "Evocação",
       "time": "Ação",
@@ -9853,7 +9853,7 @@ const DND5E_DATA = {
     },
     {
       "id": "forma_eterea",
-      "name": "Forma Etérea",
+      "name": "Forma Etérea (Etherealness)",
       "level": 7,
       "school": "Invocação",
       "time": "Ação",
@@ -9871,7 +9871,7 @@ const DND5E_DATA = {
     },
     {
       "id": "inverter_a_gravidade",
-      "name": "Inverter a Gravidade",
+      "name": "Inverter a Gravidade (Reverse Gravity)",
       "level": 7,
       "school": "Transmutação",
       "time": "Ação",
@@ -9887,7 +9887,7 @@ const DND5E_DATA = {
     },
     {
       "id": "invocar_celestial",
-      "name": "Invocar Celestial",
+      "name": "Invocar Celestial (Conjure Celestial)",
       "level": 7,
       "school": "Invocação",
       "time": "Ação",
@@ -9901,7 +9901,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mansao_magnifica_de_mordenkainten",
-      "name": "Mansão Magnífica de Mordenkainten",
+      "name": "Mansão Magnífica de Mordenkainten (Mordenkainen's Magnificent Mansion)",
       "level": 7,
       "school": "Invocação",
       "time": "1 minuto",
@@ -9916,7 +9916,7 @@ const DND5E_DATA = {
     },
     {
       "id": "miragem_arcana",
-      "name": "Miragem Arcana",
+      "name": "Miragem Arcana (Mirage Arcane)",
       "level": 7,
       "school": "Ilusão",
       "time": "10 minutos",
@@ -9932,7 +9932,7 @@ const DND5E_DATA = {
     },
     {
       "id": "palavra_de_poder_fortificar",
-      "name": "Palavra de Poder: Fortificar",
+      "name": "Palavra de Poder: Fortificar (Power Word Fortify)",
       "level": 7,
       "school": "Encantamento",
       "time": "Ação",
@@ -9947,7 +9947,7 @@ const DND5E_DATA = {
     },
     {
       "id": "palavra_sagrada",
-      "name": "Palavra Sagrada",
+      "name": "Palavra Sagrada (Divine Word)",
       "level": 7,
       "school": "Evocação",
       "time": "Ação Bônus",
@@ -9961,7 +9961,7 @@ const DND5E_DATA = {
     },
     {
       "id": "projetar_imagem",
-      "name": "Projetar Imagem",
+      "name": "Projetar Imagem (Project Image)",
       "level": 7,
       "school": "Ilusão",
       "time": "Ação",
@@ -9976,7 +9976,7 @@ const DND5E_DATA = {
     },
     {
       "id": "rajada_prismatica",
-      "name": "Rajada Prismática",
+      "name": "Rajada Prismática (Prismatic Spray)",
       "level": 7,
       "school": "Evocação",
       "time": "Ação",
@@ -9992,7 +9992,7 @@ const DND5E_DATA = {
     },
     {
       "id": "refugiar",
-      "name": "Refugiar",
+      "name": "Refugiar (Sequester)",
       "level": 7,
       "school": "Transmutação",
       "time": "Ação",
@@ -10006,7 +10006,7 @@ const DND5E_DATA = {
     },
     {
       "id": "regeneracao",
-      "name": "Regeneração",
+      "name": "Regeneração (Regenerate)",
       "level": 7,
       "school": "Transmutação",
       "time": "1 minuto",
@@ -10037,7 +10037,7 @@ const DND5E_DATA = {
     },
     {
       "id": "simbolo",
-      "name": "Símbolo",
+      "name": "Símbolo (Symbol)",
       "level": 7,
       "school": "Abjuração",
       "time": "1 minuto",
@@ -10054,7 +10054,7 @@ const DND5E_DATA = {
     },
     {
       "id": "simulacro",
-      "name": "Simulacro",
+      "name": "Simulacro (Simulacrum)",
       "level": 7,
       "school": "Ilusão",
       "time": "12 horas",
@@ -10118,7 +10118,7 @@ const DND5E_DATA = {
     },
     {
       "id": "antipatia_simpatia",
-      "name": "Antipatia/Simpatia",
+      "name": "Antipatia/Simpatia (Antipathy/Sympathy)",
       "level": 8,
       "school": "Encantamento",
       "time": "1 hora",
@@ -10177,7 +10177,7 @@ const DND5E_DATA = {
     },
     {
       "id": "controlar_o_clima",
-      "name": "Controlar o Clima",
+      "name": "Controlar o Clima (Control Weather)",
       "level": 8,
       "school": "Transmutação",
       "time": "10 minutos",
@@ -10227,7 +10227,7 @@ const DND5E_DATA = {
     },
     {
       "id": "formas_animais",
-      "name": "Formas Animais",
+      "name": "Formas Animais (Animal Shapes)",
       "level": 8,
       "school": "Transmutação",
       "time": "Ação",
@@ -10255,7 +10255,7 @@ const DND5E_DATA = {
     },
     {
       "id": "limpar_a_mente",
-      "name": "Limpar a Mente",
+      "name": "Limpar a Mente (Mind Blank)",
       "level": 8,
       "school": "Abjuração",
       "time": "Ação",
@@ -10270,7 +10270,7 @@ const DND5E_DATA = {
     },
     {
       "id": "loquacidade",
-      "name": "Loquacidade",
+      "name": "Loquacidade (Glibness)",
       "level": 8,
       "school": "Encantamento",
       "time": "Ação",
@@ -10285,7 +10285,7 @@ const DND5E_DATA = {
     },
     {
       "id": "nuvem_incendiaria",
-      "name": "Nuvem Incendiária",
+      "name": "Nuvem Incendiária (Incendiary Cloud)",
       "level": 8,
       "school": "Invocação",
       "time": "Ação",
@@ -10301,7 +10301,7 @@ const DND5E_DATA = {
     },
     {
       "id": "palavra_de_poder_atordoar",
-      "name": "Palavra de Poder: Atordoar",
+      "name": "Palavra de Poder: Atordoar (Power Word Stun)",
       "level": 8,
       "school": "Encantamento",
       "time": "Ação",
@@ -10318,7 +10318,7 @@ const DND5E_DATA = {
     },
     {
       "id": "semiplano",
-      "name": "Semiplano",
+      "name": "Semiplano (Demiplane)",
       "level": 8,
       "school": "Invocação",
       "time": "Ação",
@@ -10334,7 +10334,7 @@ const DND5E_DATA = {
     },
     {
       "id": "suplicio",
-      "name": "Suplício",
+      "name": "Suplício (Befuddlement)",
       "level": 8,
       "school": "Encantamento",
       "time": "Ação",
@@ -10351,7 +10351,7 @@ const DND5E_DATA = {
     },
     {
       "id": "telepatia",
-      "name": "Telepatia",
+      "name": "Telepatia (Telepathy)",
       "level": 8,
       "school": "Adivinhação",
       "time": "Ação",
@@ -10395,7 +10395,7 @@ const DND5E_DATA = {
     },
     {
       "id": "aprisionamento",
-      "name": "Aprisionamento",
+      "name": "Aprisionamento (Imprisonment)",
       "level": 9,
       "school": "Abjuração",
       "time": "1 minuto",
@@ -10454,7 +10454,7 @@ const DND5E_DATA = {
     },
     {
       "id": "encarnacao_fantasmagorica",
-      "name": "Encarnação Fantasmagórica",
+      "name": "Encarnação Fantasmagórica (Weird)",
       "level": 9,
       "school": "Ilusão",
       "time": "Ação",
@@ -10469,7 +10469,7 @@ const DND5E_DATA = {
     },
     {
       "id": "metamorfose",
-      "name": "Metamorfose",
+      "name": "Metamorfose (Shapechange)",
       "level": 9,
       "school": "Transmutação",
       "time": "Ação",
@@ -10562,7 +10562,7 @@ const DND5E_DATA = {
     },
     {
       "id": "portal",
-      "name": "Portal",
+      "name": "Portal (Gate)",
       "level": 9,
       "school": "Invocação",
       "time": "Ação",
@@ -10579,7 +10579,7 @@ const DND5E_DATA = {
     },
     {
       "id": "projecao_astral",
-      "name": "Projeção Astral",
+      "name": "Projeção Astral (Astral Projection)",
       "level": 9,
       "school": "Necromancia",
       "time": "1 hora",
@@ -10627,7 +10627,7 @@ const DND5E_DATA = {
     },
     {
       "id": "tempestade_da_vinganca",
-      "name": "Tempestade da Vingança",
+      "name": "Tempestade da Vingança (Storm of Vengeance)",
       "level": 9,
       "school": "Invocação",
       "time": "Ação",

@@ -363,15 +363,17 @@ function pdfFontSizeFor(field) {
 }
 
 /**
- * O corpo de letra tem que ser gravado no campo E em cada widget: o PDF traz um
- * tamanho fixo por widget, e é ele que a pdf-lib usa ao redesenhar — sem isto o
- * "0 = automático" do campo é ignorado e o texto longo sai cortado.
+ * O corpo de letra vai no campo E na DA de cada widget. O campo é o que a
+ * pdf-lib usa ao redesenhar (com 0 ela mesma calcula quanto cabe); a DA é o que
+ * o Acrobat usa se o jogador editar o campo depois, já que a ficha continua
+ * editável. /Helv é o nome que existe no DR do formulário — apontar para
+ * qualquer outro deixa o campo sem fonte na hora da edição.
  */
 function setPdfFieldFontSize(field, size) {
   try { field.setFontSize(size); } catch (err) { /* campo sem DA própria */ }
   field.acroField.getWidgets().forEach(widget => {
     if (typeof widget.setDefaultAppearance === "function") {
-      widget.setDefaultAppearance(`/HelvFicha ${size} Tf 0 g`);
+      widget.setDefaultAppearance(`/Helv ${size} Tf 0 g`);
     }
   });
 }
@@ -382,10 +384,12 @@ async function fillOfficialPdf(srcBytes, payload) {
   const pdfDoc = await PDFDocument.load(srcBytes, { ignoreEncryption: true });
   const form = pdfDoc.getForm();
   const byNum = indexPdfFields(form);
-  // customName: sem um nome próprio, o /Helv do formulário original (uma fonte
-  // serifada mais larga) continua valendo na hora de desenhar, e o texto sai
-  // medido com uma fonte e escrito com outra — ou seja, cortado na caixa.
-  const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica, { customName: "HelvFicha" });
+  // Sem customName de propósito: a pdf-lib usa esse nome como /BaseFont, e um
+  // BaseFont que não é uma das 14 fontes padrão nem traz FontDescriptor faz o
+  // Acrobat reclamar ("a fonte contém /BBox inválida"). Com Helvetica pura, o
+  // updateFieldAppearances() abaixo ainda troca o /Helv do DR do formulário
+  // pela fonte que ele mede, então o texto não sai cortado.
+  const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
   let filled = 0;
   const missing = [];
 

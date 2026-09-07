@@ -902,6 +902,37 @@ inseparável viraram os equivalentes ASCII — é o mesmo conjunto que
 aceita WinAnsi. Hoje o `data.js` não tem nenhum caractere de controle nem
 pontuação tipográfica.
 
+### 9.4 Nomes em inglês entre parênteses
+
+Todo nome de conteúdo de jogo passou a trazer o nome oficial em inglês entre
+parênteses — "Nuvem Fétida (Stinking Cloud)" —, porque é assim que se acha o
+verbete na internet. Foram completados 391 nomes de magia e 275 de habilidade:
+características de classe, subclasses, classes, espécies, traços, talentos e
+antecedentes. Sufixos como "(Counterspell 2024)" viraram "(Counterspell)", que é
+o que se digita na busca, e parênteses redundantes ("Halfling (Halfling)")
+saíram.
+
+Os nomes em inglês foram conferidos contra a lista das 391 magias do PHB de
+2024 — o mesmo total que saiu da extração do capítulo 7, o que é uma checagem
+independente de que nenhuma magia ficou de fora. A conferência pegou quatro
+erros: *Branding Smite* → **Shining Smite**, *Feeblemind* → **Befuddlement**,
+*Soul Cage* → **Magic Jar** e a caixa de *Pass without Trace*.
+
+Nove entradas continuam sem inglês de propósito: sete são marcadores de nível
+("Magias de 4º Círculo"), não características com nome próprio, e duas
+("Avatar Sagrado do Juramento", "Segredos Mágicos Supremos") não têm equivalente
+oficial — inventar um atrapalharia justamente a busca.
+
+### 9.5 Blocos de estatísticas fora das descrições
+
+As magias de invocação trazem no livro o bloco de estatísticas da criatura, e a
+extração colava esse bloco na descrição — em cinco casos (*Corda
+Extradimensional*, *Invocar Barragem*, *Invocar Aberração*, *Invocar Elementais
+Menores*, *Convocar Celestial*) a descrição chegava a **começar** pelo bloco de
+outra magia. As doze descrições afetadas foram cortadas no ponto em que a prosa
+termina; o texto da tabela saía ilegível ("or +3 +3 Des +0 +0 Con"), então não
+se perdeu nada aproveitável.
+
 Dois efeitos colaterais dessa conferência:
 
 - **34 magias concedidas por subclasse estavam apontando para o vazio** —
