@@ -21,6 +21,8 @@ const OFFICIAL_PDF_FILE = "D&D 5.5 - Ficha editável.pdf";
 const OFFICIAL_PDF_URLS = ["ficha-oficial.pdf", OFFICIAL_PDF_FILE];
 const PDF_LIB_FILE = "pdf-lib.min.js";
 const FICHA_EMBED_FILE = "ficha-oficial-embed.js";
+/* Mesma versão das tags do index.html. Trocar ao publicar uma mudança. */
+const APP_VERSION = "20260907b";
 
 /* Cache da sessão: bytes do PDF em branco e promessas de carga dos scripts */
 let _officialPdfBytes = null;
@@ -423,11 +425,22 @@ async function fillOfficialPdf(srcBytes, payload) {
 
 /* --------------------------------------------- CARGA DA pdf-lib E DO PDF */
 
+/**
+ * O GitHub Pages serve estes arquivos com max-age=600, então sem o ?v= o
+ * navegador fica até 10 minutos rodando a versão anterior depois de uma
+ * publicação. Em file:// a query não entra: alguns navegadores a tratam como
+ * parte do nome do arquivo e não acham nada.
+ */
+function versionado(src) {
+  const porHttp = location.protocol === "http:" || location.protocol === "https:";
+  return porHttp ? `${src}?v=${APP_VERSION}` : src;
+}
+
 /** Carrega um script uma única vez, sob demanda, e resolve quando ele terminar */
 function loadScriptOnce(src) {
   return new Promise((resolve, reject) => {
     const tag = document.createElement("script");
-    tag.src = src;
+    tag.src = versionado(src);
     tag.onload = () => resolve();
     tag.onerror = () => reject(new Error(`não foi possível carregar ${src}`));
     document.head.appendChild(tag);

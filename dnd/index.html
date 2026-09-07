@@ -17,8 +17,27 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <!-- Folhas de Estilo -->
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="sheet.css">
+  <!-- ARQUIVOS LOCAIS COM VERSÃO
+       O GitHub Pages serve estes arquivos com max-age=600: sem o ?v= o
+       navegador roda a versão anterior por até 10 minutos depois de cada
+       publicação, misturando script novo com script velho. A query só entra
+       quando a página vem por http — em file:// alguns navegadores a tratam
+       como parte do nome e não acham o arquivo.
+       document.write mantém a ordem de execução e o DOMContentLoaded no lugar,
+       o que inserir as tags por JS não garante.
+       AO PUBLICAR UMA MUDANÇA: troque APP_VERSION aqui e em pdf-export.js. -->
+  <script>
+    var APP_VERSION = "20260907b";
+    (function () {
+      var porHttp = location.protocol === "http:" || location.protocol === "https:";
+      window.comVersao = function (arquivo) {
+        return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
+      };
+      ["style.css", "sheet.css"].forEach(function (css) {
+        document.write('<link rel="stylesheet" href="' + comVersao(css) + '">');
+      });
+    })();
+  </script>
 </head>
 <body>
 
@@ -1204,9 +1223,10 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS -->
-  <script src="data.js"></script>
-  <script src="app.js"></script>
-  <script src="bio-random.js"></script>
-  <script src="pdf-export.js"></script>
+  <script>
+    ["data.js", "app.js", "bio-random.js", "pdf-export.js"].forEach(function (js) {
+      document.write('<script src="' + comVersao(js) + '"><\/script>');
+    });
+  </script>
 </body>
 </html>
