@@ -133,7 +133,7 @@ let _ofBlank = true;
 document.addEventListener("DOMContentLoaded", () => {
   initUI();
   bindEvents();
-  discardActiveCharacter();
+  refreshSessionRestoreButton();
   syncWizardControls();
   populateDropdowns();
   recalculateCharacter();
@@ -1904,6 +1904,15 @@ function renderSpellsCatalog() {
   const filterClass = document.getElementById("spellFilterClass") ? document.getElementById("spellFilterClass").value : "all";
   const filterLevel = document.getElementById("spellFilterLevel") ? document.getElementById("spellFilterLevel").value : "all";
   const filterSchool = document.getElementById("spellFilterSchool") ? document.getElementById("spellFilterSchool").value : "all";
+  const soSelecionadas = document.getElementById("spellFilterSelected")
+    ? document.getElementById("spellFilterSelected").getAttribute("aria-pressed") === "true"
+    : false;
+  // "Selecionadas" mostra o que está na ficha: o que o jogador escolheu mais o
+  // que subclasse, espécie e talentos concedem — que também aparece na ficha.
+  const idsNaFicha = new Set([
+    ...character.spellsKnown,
+    ...getGrantedSpellEntries().map(g => g.id)
+  ]);
   const searchQuery = (document.getElementById("spellSearchInput") ? document.getElementById("spellSearchInput").value : "").toLowerCase().trim();
 
   if (!container) return;
@@ -1914,11 +1923,22 @@ function renderSpellsCatalog() {
     const matchLevel = filterLevel === "all" || sp.level.toString() === filterLevel;
     const matchSchool = filterSchool === "all" || sp.school === filterSchool;
     const matchSearch = sp.name.toLowerCase().includes(searchQuery) || sp.desc.toLowerCase().includes(searchQuery);
-    return matchClass && matchLevel && matchSchool && matchSearch;
+    const matchSelected = !soSelecionadas || idsNaFicha.has(sp.id);
+    return matchClass && matchLevel && matchSchool && matchSearch && matchSelected;
   });
 
+  const btnSelecionadas = document.getElementById("spellFilterSelected");
+  if (btnSelecionadas) {
+    const total = idsNaFicha.size;
+    btnSelecionadas.classList.toggle("is-on", soSelecionadas);
+    const contador = btnSelecionadas.querySelector(".spell-selected-count");
+    if (contador) contador.textContent = total ? ` (${total})` : "";
+  }
+
   if (filteredSpells.length === 0) {
-    container.innerHTML = `<p class="spells-empty-msg">Nenhuma magia encontrada para os filtros selecionados.</p>`;
+    container.innerHTML = `<p class="spells-empty-msg">${soSelecionadas
+      ? "Nenhuma magia na ficha ainda. Use <strong>Adicionar</strong> para levar magias para lá."
+      : "Nenhuma magia encontrada para os filtros selecionados."}</p>`;
     return;
   }
 
@@ -3414,6 +3434,13 @@ function bindEvents() {
   const spellFilterSchool = document.getElementById("spellFilterSchool");
   if (spellFilterSchool) spellFilterSchool.addEventListener("change", renderSpellsCatalog);
 
+  const spellFilterSelected = document.getElementById("spellFilterSelected");
+  if (spellFilterSelected) spellFilterSelected.addEventListener("click", () => {
+    const ligado = spellFilterSelected.getAttribute("aria-pressed") === "true";
+    spellFilterSelected.setAttribute("aria-pressed", ligado ? "false" : "true");
+    renderSpellsCatalog();
+  });
+
   const spellSearchInput = document.getElementById("spellSearchInput");
   if (spellSearchInput) spellSearchInput.addEventListener("input", renderSpellsCatalog);
 
@@ -3477,6 +3504,8 @@ function bindEvents() {
   // Botões do Cabeçalho e Ações Globais
   document.getElementById("btnNewChar").addEventListener("click", resetCharacter);
   document.getElementById("btnRandomChar").addEventListener("click", generateRandomCharacter);
+  const btnRestore = document.getElementById("btnRestoreSession");
+  if (btnRestore) btnRestore.addEventListener("click", restoreCachedSession);
   document.getElementById("btnExportJson").addEventListener("click", exportCharacterJson);
   document.getElementById("inputImportJson").addEventListener("change", importCharacterJson);
   // "Imprimir / PDF" é ligado em pdf-export.js: ele gera a ficha oficial preenchida
@@ -3711,6 +3740,7 @@ function resetCharacter() {
     character = createBlankCharacter();
 
     localStorage.removeItem("dnd55_active_character");
+    hideSessionRestoreButton();
     syncWizardControls();
     populateDropdowns();
     renderAbilityInputs();
@@ -3815,11 +3845,17 @@ function importCharacterJson(e) {
  * Uma ficha que já está na lista continua sendo atualizada a cada mudança —
  * quem já salvou não precisa salvar de novo a cada campo.
  *
- * Não existe mais "personagem ativo" gravado: a página abre sempre em branco,
- * então guardá-lo só deixaria lixo no navegador. Veja discardActiveCharacter().
+ * "dnd55_active_character" é o cache da sessão: gravado a cada mudança, nunca
+ * restaurado sozinho. Quem o traz de volta é o botão do cabeçalho.
+ * Veja getCachedSession().
  */
 function saveToLocalStorage(forceSlot = false) {
   try {
+    localStorage.setItem("dnd55_active_character", JSON.stringify(character));
+    // A partir da primeira edição o cache é o trabalho em andamento, não uma
+    // sessão anterior — oferecer "restaurar" aqui só confundiria.
+    hideSessionRestoreButton();
+
     const savedList = JSON.parse(localStorage.getItem("dnd55_saved_characters") || "[]");
     const existingIndex = savedList.findIndex(c => c.id === character.id);
     if (existingIndex >= 0) {
@@ -3857,20 +3893,64 @@ function migrateLegacyCharacter(parsed) {
 }
 
 /**
- * A página abre sempre em branco.
+ * A página abre sempre em branco, mas a sessão anterior não é jogada fora.
  *
- * O app guardava o personagem em edição em "dnd55_active_character" e o
- * restaurava ao carregar, o que fazia a ficha de outra sessão reaparecer para
- * quem só queria começar do zero. A chave é descartada aqui; as fichas que o
- * jogador salvou de propósito continuam em "dnd55_saved_characters" e são
- * abertas pelo botão Salvos.
+ * O app restaurava "dnd55_active_character" sozinho no carregamento, e a ficha
+ * de outra sessão reaparecia para quem só queria começar do zero. Agora ela
+ * fica guardada e só volta se o jogador pedir, pelo botão que aparece no
+ * cabeçalho quando há algo para restaurar.
  */
-function discardActiveCharacter() {
+function getCachedSession() {
   try {
-    localStorage.removeItem("dnd55_active_character");
+    const bruto = localStorage.getItem("dnd55_active_character");
+    if (!bruto) return null;
+    const dados = JSON.parse(bruto);
+    // Uma ficha intocada não vale um botão: só conta se tiver algo preenchido.
+    const temConteudo = (dados.name || "").trim() !== ""
+      || (dados.class1 && dados.class1 !== "none")
+      || (dados.species && dados.species !== "none")
+      || (dados.spellsKnown || []).length > 0;
+    return temConteudo ? dados : null;
   } catch (err) {
-    console.error("Erro ao limpar o LocalStorage:", err);
+    console.error("Erro ao ler a sessão anterior:", err);
+    return null;
   }
+}
+
+function hideSessionRestoreButton() {
+  const btn = document.getElementById("btnRestoreSession");
+  if (btn) btn.hidden = true;
+}
+
+/**
+ * Mostra o botão de restaurar quando há sessão guardada. Só é chamado na
+ * abertura da página: depois disso o cache já é a sessão atual.
+ */
+function refreshSessionRestoreButton() {
+  const btn = document.getElementById("btnRestoreSession");
+  if (!btn) return;
+  const sessao = getCachedSession();
+  if (!sessao) {
+    btn.hidden = true;
+    return;
+  }
+  const nome = (sessao.name || "").trim() || "sem nome";
+  btn.hidden = false;
+  btn.title = `Voltar para a ficha da sessão anterior (${nome})`;
+  const rotulo = btn.querySelector(".restore-session-name");
+  if (rotulo) rotulo.textContent = nome;
+}
+
+function restoreCachedSession() {
+  const sessao = getCachedSession();
+  if (!sessao) {
+    showToast("Não há sessão anterior guardada neste navegador.");
+    hideSessionRestoreButton();
+    return;
+  }
+  applyLoadedCharacter(sessao);
+  hideSessionRestoreButton();
+  showToast(`↩️ Sessão anterior restaurada${sessao.name ? `: ${sessao.name}` : ""}.`);
 }
 
 function renderSavedCharsList() {

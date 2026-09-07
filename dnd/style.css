@@ -1884,6 +1884,38 @@ img, table, pre { max-width: 100%; }
   color: var(--text-muted);
 }
 
+/* Alternador "Selecionadas" do catálogo de magias. Fica na barra de filtros,
+   então precisa da mesma altura dos <select> ao lado. */
+.spell-filter-toggle {
+  width: 100%;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.spell-filter-toggle.is-on {
+  background: rgba(139, 92, 246, 0.28);
+  border-color: rgba(192, 132, 252, 0.6);
+  color: #f3e8ff;
+}
+
+.spell-selected-count {
+  font-family: var(--font-mono);
+  opacity: 0.8;
+}
+
+/* Botão "Restaurar" do cabeçalho: o nome da ficha entra nele, então precisa de
+   um limite para não empurrar os outros botões da barra para fora. */
+.restore-session-name {
+  display: inline-block;
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+  font-style: italic;
+  opacity: 0.85;
+}
+
 /* Passo 4 — de onde vem cada parcela do limite de magias */
 .spell-cap-breakdown {
   flex-basis: 100%;

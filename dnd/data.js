@@ -463,36 +463,33 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
+          "Defesa sem Armadura (Unarmored Defense)",
           "Fúria (Rage)",
-          "Defesa Sem Armadura (10 + DES + CON)",
-          "Maestria em Armas (2 armas)"
-        ],
-        "2": [
-          "Ataque Descuidado (Reckless Attack)",
-          "Sentido de Perigo (Danger Sense)"
+          "Maestria em Arma (Weapon Mastery)"
         ],
         "3": [
-          "Subclasse de Bárbaro (Barbarian Subclass)",
-          "Conhecimento Primitivo (Primal Knowledge)"
+          "Conhecimento Primordial (Primal Knowledge)",
+          "Subclasse Bárbaro (Barbarian Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "5": [
           "Ataque Extra (Extra Attack)",
-          "Movimento Rápido (+3m / +10ft)"
+          "Movimento Rápido (Fast Movement)"
         ],
         "6": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
-          "Instinto Selvagem (Vantagem na Iniciativa)"
+          "Bote Instintivo (Instinctive Pounce)",
+          "Instintos Primitivos (Feral Instinct)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "9": [
-          "Crítico Brutal (+1 dado de dano)"
+          "Golpe Brutal (Brutal Strike)"
         ],
         "10": [
           "Característica de Subclasse (Subclass Feature)"
@@ -501,10 +498,10 @@ const DND5E_DATA = {
           "Fúria Implacável (Relentless Rage)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "13": [
-          "Golpe Brutal aprimorado (Improved Brutal Strike)"
+          "Golpe Brutal Fortalecido (Improved Brutal Strike)"
         ],
         "14": [
           "Característica de Subclasse (Subclass Feature)"
@@ -513,19 +510,19 @@ const DND5E_DATA = {
           "Fúria Persistente (Persistent Rage)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "17": [
-          "Crítico Brutal (+2 dados)"
+          "Golpe Brutal Fortalecido (Improved Brutal Strike)"
         ],
         "18": [
           "Força Indomável (Indomitable Might)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Campeão Primitivo (+4 FOR, +4 CON, Máx 25)"
+          "Campeão Primitivo (Primal Champion)"
         ]
       },
       "subclasses": [
@@ -652,65 +649,54 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Conjuração de Bardo (Spellcasting)",
-          "Inspiração de Bardo (d6)"
+          "Inspiração de Bardo (Bardic Inspiration)",
+          "Conjuração (Spellcasting)"
         ],
         "2": [
-          "Pau pra Toda Obra (Jack of All Trades)",
-          "Especialização (2 perícias)",
-          "Canção de Descanso (Song of Rest)"
+          "Especialista (Expertise)",
+          "Pau pra Toda Obra (Jack of All Trades)"
         ],
         "3": [
           "Subclasse de Bardo (Bard Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "5": [
-          "Fonte de Inspiração (Recupera inspiração em descanso curto)",
-          "Inspiração de Bardo (d8)"
+          "Fonte de Inspiração (Font of Inspiration)"
         ],
         "6": [
-          "Contracanto (Countercharm)",
           "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
-          "Magias de 4º Círculo"
+          "Contra-Encantamento (Countercharm)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "9": [
-          "Especialização (2 perícias adicionais)"
+          "Especialização (Expertise)"
         ],
         "10": [
-          "Segredos Mágicos (Magias de qualquer classe)",
-          "Inspiração de Bardo (d10)"
-        ],
-        "11": [
-          "Magias de 6º Círculo"
+          "Segredos Mágicos (Magical Secrets)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "14": [
-          "Segredos Mágicos adicionais (Magical Secrets)",
           "Característica de Subclasse (Subclass Feature)"
         ],
-        "15": [
-          "Inspiração de Bardo (d12)"
-        ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "18": [
-          "Segredos Mágicos Supremos"
+          "Inspiração Superior (Superior Inspiration)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Inspiração Suprema (Superior Inspiration)"
+          "Palavras de Criação (Words of Creation)"
         ]
       },
       "subclasses": [
@@ -831,59 +817,50 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Conjuração Divina (Spellcasting)",
-          "Ordem Divina (Protetor ou Taumaturgo)"
+          "Conjuração (Spellcasting)",
+          "Ordem Divina (Divine Order)"
         ],
         "2": [
-          "Canalizar Divindade (Expulsar Mortos-Vivos, Centelha Divina)"
+          "Canalizar Divindade (Channel Divinity)"
         ],
         "3": [
-          "Subclasse de Clérigo (Cleric Subclass)"
+          "Subclasse Clérigo (Cleric Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "5": [
-          "Destruir Mortos-Vivos (CR 1/2)"
+          "Fulminar Mortos-Vivos (Sear Undead)"
         ],
         "6": [
-          "Característica de Subclasse (Subclass Feature)",
-          "Canalizar Divindade adicional (Channel Divinity)"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
-          "Magias de 4º Círculo",
-          "Abençoado pelos Deuses (Blessed Strikes)"
+          "Golpes Abençoados (Blessed Strikes)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)",
-          "Golpe Abençoado / Conjuração Poderosa (Divine Strike / Potent Spellcasting)"
-        ],
-        "9": [
-          "Magias de 5º Círculo"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "10": [
           "Intervenção Divina (Divine Intervention)"
         ],
-        "11": [
-          "Destruir Mortos-Vivos (CR 2)"
-        ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "14": [
-          "Característica de Subclasse (Subclass Feature)"
+          "Golpes Abençoados Aprimorado (Improved Blessed Strikes)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "17": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Intervenção Divina Maior (Garante sucesso automático)"
+          "Intervenção Divina Maior (Greater Divine Intervention)"
         ]
       },
       "subclasses": [
@@ -1040,53 +1017,55 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Conjuração Primitiva (Spellcasting)",
-          "Ordem Druídica (Mago ou Protetor)"
+          "Conjuração (Spellcasting)",
+          "Idioma Druídico (Druidic)",
+          "Ordem Primal (Primal Order)"
         ],
         "2": [
-          "Forma Selvagem (Wild Shape)",
-          "Companheiro Selvagem (Wild Companion)"
+          "Companheiro Selvagem (Wild Companion)",
+          "Forma Selvagem (Wild Shape)"
         ],
         "3": [
           "Subclasse de Druida (Druid Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)",
-          "Formas Selvagens aquáticas (Wild Shape)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "5": [
-          "Magias de 3º Círculo"
+          "Ressurgimento Selvagem (Wild Resurgence)"
         ],
         "6": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
-          "Golpe Primitivo (Primal Strike)"
+          "Fúria Elemental (Elemental Fury)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)",
-          "Formas Selvagens voadoras (Wild Shape)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "10": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "14": [
           "Característica de Subclasse (Subclass Feature)"
         ],
+        "15": [
+          "Fúria Elemental Aprimorada (Improved Elemental Fury)"
+        ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "18": [
-          "Besta Mágica / Conjuração em Forma Selvagem (Beast Spells)"
+          "Magias Bestiais (Beast Spells)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Arquidruida (Forma Selvagem ilimitada)"
+          "Arquidruida (Archdruid)"
         ]
       },
       "subclasses": [
@@ -1180,68 +1159,70 @@ const DND5E_DATA = {
       "featuresByLevel": {
         "1": [
           "Estilo de Luta (Fighting Style)",
-          "Retomar o Fôlego (Second Wind)",
-          "Maestria em Armas (3 armas)"
+          "Maestria em Arma (Weapon Mastery)",
+          "Recuperar Fôlego (Second Wind)"
         ],
         "2": [
-          "Surto de Ação (Action Surge)",
-          "Mente Tática (Tactical Mind)"
+          "Mente Tática (Tactical Mind)",
+          "Surto de Ação (Action Surge)"
         ],
         "3": [
           "Subclasse de Guerreiro (Fighter Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "5": [
-          "Ataque Extra (1 ataque adicional)"
+          "Ajuste Tático (Tactical Shift)",
+          "Ataque Extra (Extra Attack)"
         ],
         "6": [
-          "Aumento no Valor de Habilidade ou Talento Extra (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "7": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "9": [
-          "Indomável (Indomitable - Rola novamente salvaguarda com bônus)"
+          "Indomável (Indomitable)",
+          "Mestre Tático (Tactical Master)"
         ],
         "10": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "11": [
-          "Ataque Extra (2 ataques adicionais - Total 3)"
+          "Dois Ataques Extras (Extra Attack (two))"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "13": [
-          "Indomável (2 usos)",
-          "Ataques Táticos (Tactical Master)"
+          "Ataques Estudados (Studied Attacks)",
+          "Indomável (Indomitable)"
         ],
         "14": [
-          "Aumento no Valor de Habilidade ou Talento Extra (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "15": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "17": [
-          "Surto de Ação (2 usos)",
-          "Indomável (3 usos)"
+          "Indomável (Indomitable)",
+          "Surto de Ação (Action Surge)"
         ],
         "18": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Ataque Extra (3 ataques adicionais - Total 4)"
+          "Três Ataques Extras (Extra Attack (three))"
         ]
       },
       "subclasses": [
@@ -1309,23 +1290,20 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Defesa Sem Armadura (10 + DES + SAB)",
-          "Artes Marciais (d6)",
-          "Ataque Desarmado com Ação Bônus (Martial Arts)"
+          "Artes Marciais (Martial Arts)",
+          "Defesa sem Armadura (Unarmored Defense)"
         ],
         "2": [
-          "Pontos de Foco (Ki)",
-          "Rajada de Golpes (Flurry of Blows)",
-          "Defesa Paciente (Patient Defense)",
-          "Passo do Vento (Step of the Wind)",
-          "Movimento Sem Armadura (+3m)"
+          "Foco do Monge (Monk's Focus)",
+          "Movimento sem Armadura (Unarmored Movement)",
+          "Metabolismo Incomum (Uncanny Metabolism)"
         ],
         "3": [
-          "Subclasse de Monge (Monk Subclass)",
-          "Defletir Projéteis (Deflect Missiles)"
+          "Defletir Ataques (Deflect Attacks)",
+          "Subclasse de Monge (Monk Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)",
+          "Aumento no Valor de Atributo (Ability Score Improvement)",
           "Queda Lenta (Slow Fall)"
         ],
         "5": [
@@ -1333,52 +1311,51 @@ const DND5E_DATA = {
           "Golpe Atordoante (Stunning Strike)"
         ],
         "6": [
-          "Golpes com Foco (Dano de Energia)",
+          "Ataques Potencializados (Empowered Strikes)",
           "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
-          "Evasão (Evasion)",
-          "Mente Tranquila (Stillness of Mind)"
+          "Evasão (Evasion)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "9": [
-          "Movimento Aprimorado (Andar sobre líquidos e paredes)"
+          "Movimento Acrobático (Acrobatic Movement)"
         ],
         "10": [
-          "Auto-Restauração (Self-Restoration)",
-          "Característica de Subclasse (Subclass Feature)"
+          "Autocura (Self-Restoration)",
+          "Foco Aprimorado (Heightened Focus)"
         ],
         "11": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "13": [
-          "Língua do Sol e da Lua (Tongue of the Sun and Moon)"
+          "Defletir Energia (Deflect Energy)"
         ],
         "14": [
-          "Alma de Diamante (Proficiência em Todas as Salvaguardas)"
+          "Sobrevivente Disciplinado (Disciplined Survivor)"
         ],
         "15": [
-          "Corpo Intemporal (Timeless Body)"
+          "Foco Perfeito (Perfect Focus)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "17": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "18": [
-          "Corpo Vazio (Invisibilidade e Resistência)"
+          "Defesa Superior (Superior Defense)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Corpo e Mente Perfeitos (+4 DES, +4 SAB)"
+          "Corpo e Mente (Body and Mind)"
         ]
       },
       "subclasses": [
@@ -1496,64 +1473,63 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Imposição das Mãos (Lay on Hands)",
-          "Sentido Divino (Divine Sense)",
-          "Maestria em Armas (2 armas)"
+          "Conjuração (Spellcasting)",
+          "Maestria em Arma (Weapon Mastery)",
+          "Mãos Consagradas (Lay On Hands)"
         ],
         "2": [
-          "Estilo de Luta (Fighting Style)",
-          "Conjuração de Paladino (Spellcasting)",
-          "Golpe Divino (Paladin's Smite)"
+          "Destruição do Paladino (Paladin's Smite)",
+          "Estilo de Luta (Fighting Style)"
         ],
         "3": [
-          "Subclasse de Paladino (Juramento Sagrado)",
-          "Canalizar Divindade (Channel Divinity)"
+          "Canalizar Divindade (Channel Divinity)",
+          "Subclasse de Paladino (Paladin Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "5": [
           "Ataque Extra (Extra Attack)",
-          "Montaria Fiel (Find Steed preparado automaticamente)"
+          "Montaria Fiel (Faithful Steed)"
         ],
         "6": [
-          "Aura de Proteção (+CAR em todas as Salvaguardas próximas)"
+          "Aura de Proteção (Aura of Protection)"
         ],
         "7": [
-          "Característica de Subclasse (Aura)"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "9": [
-          "Magias de 3º Círculo"
+          "Repudiar Inimigos (Abjure Foes)"
         ],
         "10": [
-          "Aura de Coragem (Imunidade a Amedrontado)"
+          "Aura de Coragem (Aura of Courage)"
         ],
         "11": [
-          "Golpes Radiantes (+1d8 de dano radiante em todos os acertos)"
+          "Golpes Radiantes (Radiant Strikes)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "14": [
-          "Toque Purificador (Cleansing Touch)"
+          "Toque Restaurador (Restoring Touch)"
         ],
         "15": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "18": [
-          "Auras Expandidas (9 metros / 30ft)"
+          "Aura Expandida (Aura Expansion)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Avatar Sagrado do Juramento"
+          "Característica de Subclasse (Subclass Feature)"
         ]
       },
       "subclasses": [
@@ -1696,67 +1672,67 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Conjuração de Guardião (Spellcasting)",
-          "Marca do Caçador Gratuita (Hunter's Mark)",
-          "Maestria em Armas (2 armas)"
+          "Conjuração (Spellcasting)",
+          "Inimigo Favorito (Favored Enemy)",
+          "Maestria em Arma (Weapon Mastery)"
         ],
         "2": [
           "Estilo de Luta (Fighting Style)",
-          "Explorador Hábil (Deft Explorer - Especialização e Idiomas)"
+          "Explorador Hábil (Deft Explorer)"
         ],
         "3": [
           "Subclasse de Guardião (Ranger Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "5": [
           "Ataque Extra (Extra Attack)"
         ],
         "6": [
-          "Andarilho Errante (+3m deslocamento, escalada e natação)"
+          "Errante (Roving)"
         ],
         "7": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "9": [
-          "Magias de 3º Círculo"
+          "Especialista (Expertise)"
         ],
         "10": [
-          "Incansável (Tireless - Recupera exaustão e concede PV temporários)"
+          "Incansável (Tireless)"
         ],
         "11": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "13": [
-          "Camuflagem da Natureza (Invisibilidade como Ação Bônus)"
+          "Predador Implacável (Relentless Hunter)"
         ],
         "14": [
-          "Desaparecer (Vanish)"
+          "Véu da Natureza (Nature's Veil)"
         ],
         "15": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "17": [
-          "Magias de 5º Círculo"
+          "Caçador Preciso (Precise Hunter)"
         ],
         "18": [
           "Sentidos Selvagens (Feral Senses)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Caçador Implacável (+SAB no ataque ou dano contra alvos marcados)"
+          "Matador de Inimigos Favoritos (Foe Slayer)"
         ]
       },
       "subclasses": [
@@ -1849,76 +1825,70 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Especialização (2 perícias)",
-          "Ataque Furtivo (1d6)",
-          "Gíria de Ladrão (Thieves' Cant)",
-          "Maestria em Armas (2 armas)"
+          "Ataque Furtivo (Sneak Attack)",
+          "Especialização (Expertise)",
+          "Gíria dos Ladrões (Thieves' Cant)",
+          "Maestria em Arma (Weapon Mastery)"
         ],
         "2": [
-          "Ação Astuta (Cunning Action - Desengajar, Disparar, Esconder com Ação Bônus)"
+          "Ação Ardilosa (Cunning Action)"
         ],
         "3": [
-          "Subclasse de Ladino (Rogue Subclass)",
-          "Ataque Furtivo (2d6)"
+          "Mira Firme (Steady Aim)",
+          "Subclasse Ladino (Rogue Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "5": [
           "Esquiva Sobrenatural (Uncanny Dodge)",
-          "Ataque Furtivo (3d6)"
+          "Golpe Astuto (Cunning Strike)"
         ],
         "6": [
-          "Especialização (2 perícias adicionais)"
+          "Especialista (Expertise)"
         ],
         "7": [
           "Evasão (Evasion)",
-          "Ataque Furtivo (4d6)"
+          "Talento Confiável (Reliable Talent)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "9": [
-          "Característica de Subclasse (Subclass Feature)",
-          "Ataque Furtivo (5d6)"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "10": [
-          "Aumento no Valor de Habilidade ou Talento Extra (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "11": [
-          "Talento Confiável (Reliable Talent - Mínimo 10 no d20 para perícias proficientes)",
-          "Ataque Furtivo (6d6)"
+          "Golpe Astuto Aprimorado (Improved Cunning Strike)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "13": [
-          "Característica de Subclasse (Subclass Feature)",
-          "Ataque Furtivo (7d6)"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "14": [
-          "Sentido Cego (Blindsense)"
+          "Golpes Sujos (Devious Strikes)"
         ],
         "15": [
-          "Mente Escorregadia (Proficiência em Salvaguarda de Sabedoria)",
-          "Ataque Furtivo (8d6)"
+          "Mente Escorregadia (Slippery Mind)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "17": [
-          "Característica de Subclasse (Subclass Feature)",
-          "Ataque Furtivo (9d6)"
+          "Característica de Subclasse (Subclass Feature)"
         ],
         "18": [
-          "Elusivo (Nenhum ataque tem vantagem contra você)"
+          "Elusivo (Elusive)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Golpe de Sorte (Transforma erro em acerto ou teste em 20)",
-          "Ataque Furtivo (10d6)"
+          "Golpe de Sorte (Stroke of Luck)"
         ]
       },
       "subclasses": [
@@ -2029,63 +1999,55 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Conjuração Inata (Innate Sorcery)",
-          "Fúria Feiticeira (Innate Sorcery - Vantagem em ataques mágicos e +1 na CD)"
+          "Conjuração (Spellcasting)",
+          "Feitiçaria Inata (Innate Sorcery)"
         ],
         "2": [
-          "Fonte de Magia (Pontos de Feitiçaria)",
-          "Metamagia (2 opções)"
+          "Fonte de Magia (Font of Magic)",
+          "Metamagia (Metamagic)",
+          "Opções de Metamagia (Metamagic Options)"
         ],
         "3": [
           "Subclasse de Feiticeiro (Sorcerer Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "5": [
-          "Magias de 3º Círculo",
-          "Restauração de Feitiçaria (Sorcerous Restoration)"
+          "Restauração Feiticeira (Sorcerous Restoration)"
         ],
         "6": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "7": [
-          "Magias de 4º Círculo",
-          "Metamagia Adicional (Metamagic)"
+          "Feitiçaria Encarnada (Sorcery Incarnate)"
         ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
-        ],
-        "9": [
-          "Magias de 5º Círculo"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "10": [
-          "Metamagia Adicional (Metamagic)",
-          "Característica de Subclasse (Subclass Feature)"
-        ],
-        "11": [
-          "Magias de 6º Círculo"
+          "Metamagia (Metamagic)"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "14": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "17": [
-          "Metamagia Adicional (Metamagic)"
+          "Metamagia (Metamagic)"
         ],
         "18": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Feitiçaria Incarnada (Arcane Apotheosis)"
+          "Apoteose Arcana (Arcane Apotheosis)"
         ]
       },
       "subclasses": [
@@ -2215,67 +2177,56 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Magia de Pacto (Pact Magic)",
-          "Invocação Mística (1 à escolha)",
-          "Pacto do Bruxo (Lâmina, Tomo ou Corrente)"
+          "Invocações Místicas (Eldritch Invocations)",
+          "Magia de Pacto (Pact Magic)"
         ],
         "2": [
-          "Invocações Místicas adicionais (Total 3)"
+          "Astúcia Mágica (Magical Cunning)"
         ],
         "3": [
-          "Subclasse de Bruxo (Patrono Transcendental)"
+          "Subclasse de Bruxo (Warlock Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
-        ],
-        "5": [
-          "Invocações Místicas (Total 5)",
-          "Magias de Pacto de 3º Círculo"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "6": [
           "Característica de Subclasse (Subclass Feature)"
         ],
-        "7": [
-          "Magias de Pacto de 4º Círculo"
-        ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "9": [
-          "Magias de Pacto de 5º Círculo"
+          "Contatar Patrono (Contact Patron)"
         ],
         "10": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "11": [
-          "Arcano Místico (Magia de 6º Círculo)"
+          "Arcana Mística (6º círculo) (Mystic Arcanum (level 6))"
         ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "13": [
-          "Arcano Místico (Magia de 7º Círculo)"
+          "Arcana Mística (7º círculo) (Mystic Arcanum (level 7))"
         ],
         "14": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "15": [
-          "Arcano Místico (Magia de 8º Círculo)"
+          "Arcana Mística (8º círculo) (Mystic Arcanum (level 8))"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "17": [
-          "Arcano Místico (Magia de 9º Círculo)"
-        ],
-        "18": [
-          "Invocações Místicas (Total 8)"
+          "Arcana Mística (9º círculo) (Mystic Arcanum (level 9))"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Mestre do Pacto (Recupera todos os espaços de magia em 1 minuto)"
+          "Mestre Místico (Eldritch Master)"
         ]
       },
       "subclasses": [
@@ -2436,58 +2387,48 @@ const DND5E_DATA = {
       ],
       "featuresByLevel": {
         "1": [
-          "Grimório de Magias (Spellbook)",
-          "Conjuração de Mago (Spellcasting)",
-          "Recuperação Arcana (Arcane Recovery)",
-          "Conjuração de Rituais (Ritual Adept)"
+          "Adepto de Ritual (Ritual Adept)",
+          "Conjuração (Spellcasting)",
+          "Recuperação Arcana (Arcane Recovery)"
         ],
         "2": [
-          "Estudioso (Scholar - Especialização em 1 perícia acadêmica)"
+          "Acadêmico (Scholar)"
         ],
         "3": [
-          "Subclasse de Mago (Ordem Acadêmica)"
+          "Subclasse de Mago (Wizard Subclass)"
         ],
         "4": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "5": [
-          "Magias de 3º Círculo"
+          "Memorizar Magia (Memorize Spell)"
         ],
         "6": [
           "Característica de Subclasse (Subclass Feature)"
         ],
-        "7": [
-          "Magias de 4º Círculo"
-        ],
         "8": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
-        ],
-        "9": [
-          "Magias de 5º Círculo"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "10": [
           "Característica de Subclasse (Subclass Feature)"
         ],
-        "11": [
-          "Magias de 6º Círculo"
-        ],
         "12": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "14": [
           "Característica de Subclasse (Subclass Feature)"
         ],
         "16": [
-          "Aumento no Valor de Habilidade ou Talento (Ability Score Improvement)"
+          "Aumento no Valor de Atributo (Ability Score Improvement)"
         ],
         "18": [
-          "Domínio Mágico (Spell Mastery - Truque e Magia de 1º/2º círculo à vontade)"
+          "Maestria de Magias (Spell Mastery)"
         ],
         "19": [
-          "Aumento no Valor de Habilidade ou Talento Épico (Epic Boon)"
+          "Dádiva Épica (Epic Boon)"
         ],
         "20": [
-          "Magias de Assinatura (Signature Spells)"
+          "Assinatura Mágica (Signature Spells)"
         ]
       },
       "subclasses": [

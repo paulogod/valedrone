@@ -1015,6 +1015,37 @@ encostadas à direita. A etiqueta "Sincronização Ativa" só aparece a partir d
 1400px — em 1024px ela cabia, mas era ela que empurrava os botões para a
 segunda linha.
 
+### 9.10 Botão para restaurar a sessão anterior
+
+Abrir em branco custava o trabalho não salvo de quem recarregasse a página sem
+querer. Agora `dnd55_active_character` volta a ser gravado a cada mudança —
+como cache da sessão —, mas **nunca é restaurado sozinho**: quando há algo
+guardado, aparece um botão *Restaurar* no cabeçalho com o nome da ficha.
+
+O botão só aparece na abertura da página. A partir da primeira edição o cache
+já é o trabalho em andamento, e oferecer "restaurar" ali só confundiria.
+
+### 9.11 Tabelas de características refeitas a partir do livro
+
+As tabelas `featuresByLevel` misturavam edições — o Bardo tinha "Canção de
+Descanso" no nível 2, que saiu em 2024, e várias linhas eram marcadores de nível
+("Magias de 4º Círculo") em vez de características. Todas as 12 foram relidas da
+coluna "Características de Classe" das tabelas do capítulo 3, com o nome oficial
+em inglês junto: 257 entradas, cobrindo os 20 níveis de cada classe.
+
+Os nomes que sobravam sem tradução sumiram junto, porque eram invenções do app
+e não existem no livro.
+
+`asiLevels` continua incluindo o nível 19, onde a tabela diz "Dádiva Épica": é
+uma escolha de talento como as outras, só restrita aos talentos de Dádiva, e é
+`asiLevels` que abre essa escolha na interface.
+
+### 9.12 Filtro "Selecionadas" no catálogo de magias
+
+Um alternador ao lado dos filtros de classe, círculo e escola mostra só o que
+está na ficha — as magias escolhidas mais as concedidas por subclasse, espécie e
+talentos, que também aparecem lá. O contador no próprio botão diz quantas são.
+
 ---
 
 ## 10. Como o código da ficha funciona

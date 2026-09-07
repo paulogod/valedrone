@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907d";
+    var APP_VERSION = "20260907f";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -58,6 +58,11 @@
       <div class="header-actions">
         <button class="btn btn-secondary btn-sm" id="btnNewChar" title="Novo Personagem">
           <i class="fa-solid fa-plus"></i> Novo
+        </button>
+        <!-- Só aparece quando há sessão anterior guardada; ver
+             refreshSessionRestoreButton() em app.js -->
+        <button class="btn btn-secondary btn-sm" id="btnRestoreSession" hidden>
+          <i class="fa-solid fa-clock-rotate-left"></i> Restaurar <span class="restore-session-name"></span>
         </button>
         <button class="btn btn-secondary btn-sm" id="btnRandomChar" title="Gerar Personagem Aleatório">
           <i class="fa-solid fa-wand-magic-sparkles"></i> Aleatório
@@ -488,6 +493,13 @@
                 <option value="Necromancia">Necromancia (Necromancy)</option>
                 <option value="Transmutação">Transmutação (Transmutation)</option>
               </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0; flex: 0 0 auto;">
+              <label class="form-label">Na ficha</label>
+              <button type="button" class="btn btn-secondary spell-filter-toggle" id="spellFilterSelected"
+                      aria-pressed="false" title="Mostrar só as magias que já estão na ficha">
+                <i class="fa-solid fa-list-check"></i> Selecionadas<span class="spell-selected-count"></span>
+              </button>
             </div>
             <div class="form-group" style="margin-bottom: 0; flex: 1.5;">
               <label class="form-label" for="spellSearchInput">Buscar Magia</label>
