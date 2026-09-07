@@ -703,29 +703,22 @@ const DND5E_DATA = {
         {
           "id": "lore",
           "name": "Colégio do Conhecimento (College of Lore)",
-          "desc": "Mestres de perícias, palavras cortantes que sabotam inimigos e acesso antecipado a segredos mágicos de qualquer classe.",
-          "bonusSpells": []
+          "desc": "Mestres de perícias, palavras cortantes que sabotam inimigos e acesso antecipado a segredos mágicos de qualquer classe."
         },
         {
           "id": "valor",
           "name": "Colégio da Bravura (College of Valor)",
-          "desc": "Bardos marciais proficientes com armaduras médias, escudos e armas marciais, inspirando aliados em ataques de combate.",
-          "bonusSpells": []
+          "desc": "Bardos marciais proficientes com armaduras médias, escudos e armas marciais, inspirando aliados em ataques de combate."
         },
         {
           "id": "dance",
           "name": "Colégio da Dança (College of Dance)",
-          "desc": "Guerreiros acrobáticos que lutam desarmados com agilidade cintilante e compartilham movimento com aliados.",
-          "bonusSpells": []
+          "desc": "Guerreiros acrobáticos que lutam desarmados com agilidade cintilante e compartilham movimento com aliados."
         },
         {
           "id": "glamour",
           "name": "Colégio do Glamour (College of Glamour)",
-          "desc": "Tocados pelo poder de Feywild, tecem ilusões e majestade feérica hipnotizante sobre multidões e inimigos.",
-          "bonusSpells": [
-            "command",
-            "charm_person"
-          ]
+          "desc": "Tocados pelo poder de Feywild, tecem ilusões e majestade feérica hipnotizante sobre multidões e inimigos."
         }
       ]
     },
@@ -868,59 +861,101 @@ const DND5E_DATA = {
           "id": "life",
           "name": "Domínio da Vida (Life Domain)",
           "desc": "Mestres absolutos da cura e restauração, maximizando pontos de vida restaurados a si e a seus companheiros.",
-          "bonusSpells": [
-            "bless",
-            "cure_wounds",
-            "lesser_restoration",
-            "spiritual_weapon",
-            "beacon_of_hope",
-            "revivify",
-            "death_ward",
-            "mass_cure_wounds"
-          ]
+          "bonusSpells": {
+            "3": [
+              "aid",
+              "bless",
+              "cure_wounds",
+              "lesser_restoration"
+            ],
+            "5": [
+              "mass_healing_word",
+              "revivify"
+            ],
+            "7": [
+              "aura_de_vida",
+              "death_ward"
+            ],
+            "9": [
+              "mass_cure_wounds",
+              "greater_restoration"
+            ]
+          }
         },
         {
           "id": "light",
           "name": "Domínio da Luz (Light Domain)",
           "desc": "Canalizam o fogo sagrado e radiância solar para queimar as trevas e cegar inimigos com clarões divinos.",
-          "bonusSpells": [
-            "burning_hands",
-            "faerie_fire",
-            "scorching_ray",
-            "daylight",
-            "fireball",
-            "guardian_of_faith",
-            "flame_strike"
-          ]
+          "bonusSpells": {
+            "3": [
+              "faerie_fire",
+              "burning_hands",
+              "scorching_ray",
+              "see_invisibility"
+            ],
+            "5": [
+              "fireball",
+              "daylight"
+            ],
+            "7": [
+              "wall_of_fire",
+              "olho_arcano"
+            ],
+            "9": [
+              "flame_strike",
+              "scrying"
+            ]
+          }
         },
         {
           "id": "trickery",
           "name": "Domínio da Trapaça (Trickery Domain)",
           "desc": "Seguidores de deuses da astúcia, criando cópias ilusórias, ficando invisíveis e enganando os oponentes.",
-          "bonusSpells": [
-            "charm_person",
-            "disguise_self",
-            "mirror_image",
-            "pass_without_trace",
-            "blink",
-            "dimension_door",
-            "dominate_person"
-          ]
+          "bonusSpells": {
+            "3": [
+              "disguise_self",
+              "charm_person",
+              "invisibility",
+              "pass_without_trace"
+            ],
+            "5": [
+              "indetectavel",
+              "hypnotic_pattern"
+            ],
+            "7": [
+              "confusao",
+              "dimension_door"
+            ],
+            "9": [
+              "dominate_person",
+              "modificar_memoria"
+            ]
+          }
         },
         {
           "id": "war",
           "name": "Domínio da Guerra (War Domain)",
           "desc": "Campeões abençoados com proficiência em armas marciais e armaduras pesadas, desferindo ataques extras inspirados.",
-          "bonusSpells": [
-            "divine_favor",
-            "shield_of_faith",
-            "magic_weapon",
-            "spiritual_weapon",
-            "crusaders_mantle",
-            "spirit_guardians",
-            "freedom_of_movement",
-            "hold_monster"
-          ]
+          "bonusSpells": {
+            "3": [
+              "spiritual_weapon",
+              "magic_weapon",
+              "shield_of_faith",
+              "guiding_bolt"
+            ],
+            "5": [
+              "spirit_guardians",
+              "crusaders_mantle"
+            ],
+            "7": [
+              "fire_shield",
+              "freedom_of_movement"
+            ],
+            "9": [
+              "golpe_de_arco",
+              "hold_monster"
+            ]
+          }
         }
       ]
     },
@@ -1073,39 +1108,58 @@ const DND5E_DATA = {
           "id": "moon",
           "name": "Círculo da Lua (Circle of the Moon)",
           "desc": "Especialistas na Forma Selvagem em combate, transformando-se em feras vorazes e elementais com ação bônus.",
-          "bonusSpells": [
-            "cure_wounds",
-            "moonbeam"
-          ]
+          "bonusSpells": {
+            "3": [
+              "cure_wounds",
+              "fagulha_estelar",
+              "moonbeam"
+            ],
+            "5": [
+              "invocar_animais"
+            ],
+            "7": [
+              "fonte_do_luar"
+            ],
+            "9": [
+              "mass_cure_wounds"
+            ]
+          }
         },
         {
           "id": "land",
           "name": "Círculo da Terra (Circle of the Land)",
-          "desc": "Profundamente ligados aos biomas do mundo (Costas, Desertos, Florestas, Montanhas), recuperando magias no descanso.",
-          "bonusSpells": [
-            "barkskin",
-            "misty_step",
-            "lightning_bolt"
-          ]
+          "desc": "Profundamente ligados aos biomas do mundo (Costas, Desertos, Florestas, Montanhas), recuperando magias no descanso."
         },
         {
           "id": "sea",
           "name": "Círculo do Mar (Circle of the Sea)",
           "desc": "Manipulam tempestades, ondas oceânicas e névoas marinhas para infligir dano elétrico e de frio.",
-          "bonusSpells": [
-            "fog_cloud",
-            "gust_of_wind",
-            "water_walk",
-            "control_water"
-          ]
+          "bonusSpells": {
+            "3": [
+              "shatter",
+              "gust_of_wind",
+              "fog_cloud",
+              "thunderwave",
+              "ray_of_frost"
+            ],
+            "5": [
+              "lightning_bolt",
+              "respirar_na_agua"
+            ],
+            "7": [
+              "control_water",
+              "ice_storm"
+            ],
+            "9": [
+              "invocar_elemental",
+              "hold_monster"
+            ]
+          }
         },
         {
           "id": "stars",
           "name": "Círculo das Estrelas (Circle of Stars)",
-          "desc": "Mapeiam as constelações celestes em um mapa estelar, assumindo formas estelares (Arqueiro, Cálice, Dragão).",
-          "bonusSpells": [
-            "guiding_bolt"
-          ]
+          "desc": "Mapeiam as constelações celestes em um mapa estelar, assumindo formas estelares (Arqueiro, Cálice, Dragão)."
         }
       ]
     },
@@ -1537,45 +1591,109 @@ const DND5E_DATA = {
           "id": "devotion",
           "name": "Juramento de Devoção (Oath of Devotion)",
           "desc": "O clássico cavaleiro da justiça e honra, imbuindo armas com luz sagrada e emanando aura de pureza.",
-          "bonusSpells": [
-            "protection_from_evil",
-            "sanctuary",
-            "lesser_restoration",
-            "beacon_of_hope"
-          ]
+          "bonusSpells": {
+            "3": [
+              "shield_of_faith",
+              "protection_from_evil"
+            ],
+            "5": [
+              "aid",
+              "zona_da_verdade"
+            ],
+            "9": [
+              "dispel_magic",
+              "beacon_of_hope"
+            ],
+            "13": [
+              "guardian_of_faith",
+              "freedom_of_movement"
+            ],
+            "17": [
+              "flame_strike",
+              "comunhao"
+            ]
+          }
         },
         {
           "id": "ancients",
           "name": "Juramento dos Anciãos (Oath of the Ancients)",
           "desc": "Guardiões da luz primordial e da natureza, criando trepadeiras místicas e concedendo resistência a dano de magias.",
-          "bonusSpells": [
-            "ensnaring_strike",
-            "misty_step",
-            "moonbeam",
-            "plant_growth"
-          ]
+          "bonusSpells": {
+            "3": [
+              "falar_com_animais",
+              "ensnaring_strike"
+            ],
+            "5": [
+              "misty_step",
+              "moonbeam"
+            ],
+            "9": [
+              "plant_growth",
+              "protecao_contra_energia"
+            ],
+            "13": [
+              "pele_rocha",
+              "ice_storm"
+            ],
+            "17": [
+              "comunhao_com_a_natureza",
+              "passo_arboreo"
+            ]
+          }
         },
         {
           "id": "vengeance",
           "name": "Juramento de Vingança (Oath of Vengeance)",
           "desc": "Punição implacável para o mal, caçando alvos jurados com Voto de Inimizade para garantir Vantagem.",
-          "bonusSpells": [
-            "bane",
-            "hunters_mark",
-            "hold_person",
-            "misty_step",
-            "haste"
-          ]
+          "bonusSpells": {
+            "3": [
+              "hunters_mark",
+              "bane"
+            ],
+            "5": [
+              "hold_person",
+              "misty_step"
+            ],
+            "9": [
+              "haste",
+              "protecao_contra_energia"
+            ],
+            "13": [
+              "banishment",
+              "dimension_door"
+            ],
+            "17": [
+              "hold_monster",
+              "scrying"
+            ]
+          }
         },
         {
           "id": "glory",
           "name": "Juramento de Glória (Oath of Glory)",
           "desc": "Heroísmo lendário e feitos atléticos épicos, inspirando aliados com velocidade e vigor inabaláveis.",
-          "bonusSpells": [
-            "guiding_bolt",
-            "heroism",
-            "enhance_ability"
-          ]
+          "bonusSpells": {
+            "3": [
+              "heroism",
+              "guiding_bolt"
+            ],
+            "5": [
+              "enhance_ability",
+              "magic_weapon"
+            ],
+            "9": [
+              "haste",
+              "protecao_contra_energia"
+            ],
+            "13": [
+              "compulsao",
+              "freedom_of_movement"
+            ],
+            "17": [
+              "lendas_e_historias",
+              "presenca_regia_de_yolande"
+            ]
+          }
         }
       ]
     },
@@ -1739,40 +1857,56 @@ const DND5E_DATA = {
         {
           "id": "hunter",
           "name": "Caçador (Hunter)",
-          "desc": "Combatente letal adaptado para aniquilar hordas ou monstros gigantes com Colosso Caçador e Salva de Ataques.",
-          "bonusSpells": [
-            "hunters_mark"
-          ]
+          "desc": "Combatente letal adaptado para aniquilar hordas ou monstros gigantes com Colosso Caçador e Salva de Ataques."
         },
         {
           "id": "beast_master",
           "name": "Mestre das Feras (Beast Master)",
-          "desc": "Forma um elo espiritual inquebrável com uma Besta Primitiva da Terra, Ar ou Mar que combate ao seu lado.",
-          "bonusSpells": [
-            "animal_friendship",
-            "beast_sense"
-          ]
+          "desc": "Forma um elo espiritual inquebrável com uma Besta Primitiva da Terra, Ar ou Mar que combate ao seu lado."
         },
         {
           "id": "gloom_stalker",
           "name": "Perseguidor Sombrio (Gloom Stalker)",
           "desc": "Predador das trevas do Subterrâneo, invisível para criaturas com visão no escuro e com ataques rápidos no 1º turno.",
-          "bonusSpells": [
-            "disguise_self",
-            "rope_trick",
-            "fear",
-            "greater_invisibility"
-          ]
+          "bonusSpells": {
+            "3": [
+              "disguise_self"
+            ],
+            "5": [
+              "rope_trick"
+            ],
+            "9": [
+              "fear"
+            ],
+            "13": [
+              "greater_invisibility"
+            ],
+            "17": [
+              "seeming"
+            ]
+          }
         },
         {
           "id": "fey_wanderer",
           "name": "Andarilho Feérico (Fey Wanderer)",
           "desc": "Imbuído com os dons do Feywild, somando Sabedoria em testes de Carisma e aterrorizando ou encantando inimigos.",
-          "bonusSpells": [
-            "charm_person",
-            "misty_step",
-            "dimension_door"
-          ]
+          "bonusSpells": {
+            "3": [
+              "charm_person"
+            ],
+            "5": [
+              "misty_step"
+            ],
+            "9": [
+              "convocar_feerico"
+            ],
+            "13": [
+              "dimension_door"
+            ],
+            "17": [
+              "despistar"
+            ]
+          }
         }
       ]
     },
@@ -2055,37 +2189,82 @@ const DND5E_DATA = {
           "id": "draconic",
           "name": "Linhagem Dracônica (Draconic Sorcery)",
           "desc": "Herança de dragões ancestrais com escamas naturais (CA 13 + DES), +1 PV por nível e dano elemental aumentado.",
-          "bonusSpells": [
-            "fire_bolt",
-            "dragon_breath",
-            "fly"
-          ]
+          "bonusSpells": {
+            "3": [
+              "alterar_se",
+              "command",
+              "orbe_cromatico",
+              "dragon_breath"
+            ],
+            "5": [
+              "fear",
+              "fly"
+            ],
+            "7": [
+              "enfeiticar_monstro",
+              "olho_arcano"
+            ],
+            "9": [
+              "invocar_dragao",
+              "lendas_e_historias"
+            ]
+          }
         },
         {
           "id": "wild_magic",
           "name": "Magia Selvagem (Wild Magic Sorcery)",
-          "desc": "Canaliza o puro caos do cosmos, manipulando marés de sorte e desencadeando surtos de magia caótica e imprevisível.",
-          "bonusSpells": []
+          "desc": "Canaliza o puro caos do cosmos, manipulando marés de sorte e desencadeando surtos de magia caótica e imprevisível."
         },
         {
           "id": "aberrant",
           "name": "Mente Aberrante (Aberrant Sorcery)",
           "desc": "Poderes psiônicos do Reino Distante com conjuração sutil sem componentes e ataques telepáticos profundos.",
-          "bonusSpells": [
-            "mind_sliver",
-            "dissonant_whispers",
-            "detect_thoughts"
-          ]
+          "bonusSpells": {
+            "3": [
+              "calm_emotions",
+              "bracos_de_hadar",
+              "detect_thoughts",
+              "dissonant_whispers",
+              "mind_sliver"
+            ],
+            "5": [
+              "hunger_of_hadar",
+              "remeter"
+            ],
+            "7": [
+              "invocar_aberracao",
+              "black_tentacles"
+            ],
+            "9": [
+              "ligacao_telepatica_de_rary",
+              "telekinesis"
+            ]
+          }
         },
         {
           "id": "clockwork",
           "name": "Alma Mecânica (Clockwork Sorcery)",
           "desc": "Conexão com a ordem perfeita de Mechanus, neutralizando vantagens e desvantagens com engrenagens cósmicas.",
-          "bonusSpells": [
-            "alarm",
-            "protection_from_evil",
-            "lesser_restoration"
-          ]
+          "bonusSpells": {
+            "3": [
+              "alarm",
+              "aid",
+              "protection_from_evil",
+              "lesser_restoration"
+            ],
+            "5": [
+              "dispel_magic",
+              "protecao_contra_energia"
+            ],
+            "7": [
+              "invocar_constructo",
+              "freedom_of_movement"
+            ],
+            "9": [
+              "wall_of_force",
+              "greater_restoration"
+            ]
+          }
         }
       ]
     },
@@ -2234,71 +2413,104 @@ const DND5E_DATA = {
           "id": "fiend",
           "name": "O Demônio (Fiend)",
           "desc": "Pacto com lordes dos Nove Infernos ou Abismo, ganhando PV temporários ao abater inimigos e bênção da sorte infernal.",
-          "bonusSpells": [
-            "burning_hands",
-            "command",
-            "blindness_deafness",
-            "scorching_ray",
-            "fireball",
-            "stinking_cloud",
-            "fire_shield",
-            "wall_of_fire",
-            "flame_strike",
-            "hallow"
-          ]
+          "bonusSpells": {
+            "3": [
+              "command",
+              "burning_hands",
+              "scorching_ray",
+              "suggestion"
+            ],
+            "5": [
+              "fireball",
+              "stinking_cloud"
+            ],
+            "7": [
+              "fire_shield",
+              "wall_of_fire"
+            ],
+            "9": [
+              "missao",
+              "praga_de_insetos"
+            ]
+          }
         },
         {
           "id": "archfey",
           "name": "A Arquifada (Archfey)",
           "desc": "Pacto com seres caprichosos do Feywild com passos enevoados constantes, presenças aterrorizantes ou encantadoras.",
-          "bonusSpells": [
-            "faerie_fire",
-            "sleep",
-            "calm_emotions",
-            "misty_step",
-            "blink",
-            "plant_growth",
-            "dominate_beast",
-            "greater_invisibility",
-            "dominate_person",
-            "seeming"
-          ]
+          "bonusSpells": {
+            "3": [
+              "calm_emotions",
+              "faerie_fire",
+              "phantasmal_force",
+              "misty_step",
+              "sleep"
+            ],
+            "5": [
+              "plant_growth",
+              "blink"
+            ],
+            "7": [
+              "dominate_beast",
+              "greater_invisibility"
+            ],
+            "9": [
+              "dominate_person",
+              "seeming"
+            ]
+          }
         },
         {
           "id": "celestial",
           "name": "O Celestial (The Celestial)",
           "desc": "Pacto com anjos e seres das esferas superiores, concedendo luz e uma reserva de dados de cura por luz celestial.",
-          "bonusSpells": [
-            "light",
-            "sacred_flame",
-            "cure_wounds",
-            "guiding_bolt",
-            "flaming_sphere",
-            "lesser_restoration",
-            "daylight",
-            "revivify",
-            "guardian_of_faith",
-            "wall_of_fire",
-            "flame_strike",
-            "greater_restoration"
-          ]
+          "bonusSpells": {
+            "3": [
+              "aid",
+              "sacred_flame",
+              "cure_wounds",
+              "light",
+              "guiding_bolt",
+              "lesser_restoration"
+            ],
+            "5": [
+              "daylight",
+              "revivify"
+            ],
+            "7": [
+              "guardian_of_faith",
+              "wall_of_fire"
+            ],
+            "9": [
+              "convocar_celestial",
+              "greater_restoration"
+            ]
+          }
         },
         {
           "id": "great_old_one",
           "name": "O Grande Antigo (Great Old One)",
           "desc": "Pacto com entidades cósmicas ancestrais alienígenas, projetando telepatia, pensamentos despertos e escudos psíquicos.",
-          "bonusSpells": [
-            "dissonant_whispers",
-            "tashas_hideous_laughter",
-            "detect_thoughts",
-            "phantasmal_force",
-            "clairvoyance",
-            "hunger_of_hadar",
-            "black_tentacles",
-            "dominate_beast",
-            "dominate_person",
-            "telekinesis"
-          ]
+          "bonusSpells": {
+            "3": [
+              "detect_thoughts",
+              "phantasmal_force",
+              "tashas_hideous_laughter",
+              "dissonant_whispers"
+            ],
+            "5": [
+              "clairvoyance",
+              "hunger_of_hadar"
+            ],
+            "7": [
+              "confusao",
+              "invocar_aberracao"
+            ],
+            "9": [
+              "modificar_memoria",
+              "telekinesis"
+            ]
+          }
         }
       ]
     },
@@ -2435,38 +2647,22 @@ const DND5E_DATA = {
         {
           "id": "abjuration",
           "name": "Escola de Abjuração (School of Abjuration)",
-          "desc": "Especialistas em proteção e barreiras protetoras, erguendo um Égide Arcano que absorve dano direcionado ao mago e aliados.",
-          "bonusSpells": [
-            "shield",
-            "counterspell"
-          ]
+          "desc": "Especialistas em proteção e barreiras protetoras, erguendo um Égide Arcano que absorve dano direcionado ao mago e aliados."
         },
         {
           "id": "evocation",
           "name": "Escola de Evocação (School of Evocation)",
-          "desc": "Mestres de explosões elementais devastadoras, moldando magias para criar bolsões de segurança para seus companheiros.",
-          "bonusSpells": [
-            "magic_missile",
-            "fireball"
-          ]
+          "desc": "Mestres de explosões elementais devastadoras, moldando magias para criar bolsões de segurança para seus companheiros."
         },
         {
           "id": "divination",
           "name": "Escola de Adivinhação (School of Divination)",
-          "desc": "Clarividentes que preveem o futuro com Presságio (Portent), substituindo rolagens de dados de amigos ou inimigos.",
-          "bonusSpells": [
-            "detect_magic",
-            "see_invisibility"
-          ]
+          "desc": "Clarividentes que preveem o futuro com Presságio (Portent), substituindo rolagens de dados de amigos ou inimigos."
         },
         {
           "id": "illusion",
           "name": "Escola de Ilusão (School of Illusion)",
-          "desc": "Mestres em enganar os sentidos, tornando ilusões palpáveis e manipulando a realidade visual do campo.",
-          "bonusSpells": [
-            "minor_illusion",
-            "invisibility"
-          ]
+          "desc": "Mestres em enganar os sentidos, tornando ilusões palpáveis e manipulando a realidade visual do campo."
         }
       ]
     }

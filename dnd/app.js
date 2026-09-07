@@ -486,14 +486,7 @@ function updateSubclassesDropdown() {
       selectSubclass1.value = character.subclass1;
       const curSub = classObj.subclasses.find(s => s.id === character.subclass1);
       
-      let bonusSpellsHtml = "";
-      if (curSub && curSub.bonusSpells && curSub.bonusSpells.length > 0) {
-        const spellNames = curSub.bonusSpells.map(sid => {
-          const sp = DND5E_DATA.spells.find(s => s.id === sid);
-          return sp ? sp.name : sid;
-        }).join(", ");
-        bonusSpellsHtml = `<p style="margin-top: 0.3rem; font-size: 0.8rem; color: #fbbf24;"><strong>Magias Concedidas:</strong> ${spellNames}</p>`;
-      }
+      const bonusSpellsHtml = subclassSpellsHtml(curSub, character.level1);
 
       if (curSub) {
         subclass1Desc.innerHTML = `<h4><i class="fa-solid fa-khanda"></i> ${curSub.name}</h4><p>${curSub.desc}</p>${bonusSpellsHtml}`;
@@ -1166,7 +1159,13 @@ function updateFeatsList() {
 
   // ---------- 2. Demais talentos (lista + botão "i") ----------
   const selectable = DND5E_DATA.feats.filter(f => f.type !== "origin");
-  const escolhidos = selectable.filter(f => character.selectedFeats.includes(f.id));
+  // Estilo de Luta não gasta escolha de talento: vem da característica de classe
+  // (Guerreiro e Paladino no nível 2, Guardião no 2). Contá-lo junto fazia o
+  // painel mostrar coisas como "3 / 1" num Paladino de nível 4.
+  const escolhidos = selectable.filter(f =>
+    character.selectedFeats.includes(f.id) && f.type !== "fighting_style");
+  const estilos = selectable.filter(f =>
+    character.selectedFeats.includes(f.id) && f.type === "fighting_style");
   const vagas = getFeatSlotInfo();
 
   const busca = (_featFilterState.busca || "").toLowerCase().trim();
@@ -1215,6 +1214,9 @@ function updateFeatsList() {
       ${escolhidos.length
         ? `<p class="feat-slots-mine"><i class="fa-solid fa-check"></i> ${escolhidos.map(f => f.name.split(" (")[0]).join(" · ")}</p>`
         : `<p class="feat-slots-mine is-empty">Nenhum talento escolhido ainda.</p>`}
+      ${estilos.length
+        ? `<p class="feat-slots-mine"><i class="fa-solid fa-shield"></i> Estilo de Luta (da classe, não gasta escolha): ${estilos.map(f => f.name.split(" (")[0]).join(" · ")}</p>`
+        : ""}
     </div>
 
     <div class="feat-filter-bar">
@@ -1227,7 +1229,7 @@ function updateFeatsList() {
       </select>
       <button type="button" class="btn btn-secondary feat-filter-toggle${soMeus ? " is-on" : ""}" id="featFilterMine"
               aria-pressed="${soMeus}" title="Mostrar só os talentos do personagem">
-        <i class="fa-solid fa-list-check"></i> Só os meus${escolhidos.length ? ` (${escolhidos.length})` : ""}
+        <i class="fa-solid fa-list-check"></i> Só os meus${escolhidos.length + estilos.length ? ` (${escolhidos.length + estilos.length})` : ""}
       </button>
     </div>
 
@@ -1668,6 +1670,45 @@ function getFeatAbilityBonus(abilityId) {
  * Todas as magias concedidas sem passar pelo catálogo do Passo 4:
  * subclasse, espécie/linhagem e talentos (fixas e escolhidas).
  */
+/**
+ * Lista das magias da subclasse por nível, marcando o que ainda não chegou.
+ * Mostrar a tabela inteira ajuda a planejar; marcar o que falta evita a
+ * impressão de que a magia já está disponível.
+ */
+function subclassSpellsHtml(sub, nivel) {
+  if (!sub || !sub.bonusSpells) return "";
+  const niveis = Object.keys(sub.bonusSpells).map(Number).sort((a, b) => a - b);
+  if (!niveis.length) return "";
+  const nomeDaMagia = (id) => {
+    const sp = DND5E_DATA.spells.find(s => s.id === id);
+    return sp ? sp.name.split(" (")[0] : id;
+  };
+  const linhas = niveis.map(n => {
+    const chegou = n <= nivel;
+    return `<span style="opacity: ${chegou ? 1 : 0.45}">Nível ${n}: ${sub.bonusSpells[n].map(nomeDaMagia).join(", ")}${chegou ? "" : " (ainda não)"}</span>`;
+  });
+  return `<p style="margin-top: 0.3rem; font-size: 0.8rem; color: #fbbf24; line-height: 1.5;">
+    <strong>Magias Concedidas:</strong><br>${linhas.join("<br>")}</p>`;
+}
+
+/**
+ * Magias que a subclasse já concede até o nível informado.
+ *
+ * `bonusSpells` é um mapa nível -> ids, direto da tabela "Magias de <Subclasse>"
+ * do capítulo 3. Subclasse sem tabela no livro (colégios de Bardo, escolas de
+ * Mago, Caçador, Mestre das Feras, Círculo da Terra e Círculo das Estrelas) não
+ * tem a chave — o Círculo da Terra tem, mas por tipo de terreno escolhido a cada
+ * Descanso Longo, que o app não modela.
+ */
+function subclassSpellsUpTo(sub, nivel) {
+  if (!sub || !sub.bonusSpells || nivel < 1) return [];
+  return Object.keys(sub.bonusSpells)
+    .map(Number)
+    .filter(n => n <= nivel)
+    .sort((a, b) => a - b)
+    .flatMap(n => sub.bonusSpells[n]);
+}
+
 function getGrantedSpellEntries() {
   const out = [];
   const push = (id, source, name) => {
@@ -1680,14 +1721,18 @@ function getGrantedSpellEntries() {
   const class1Obj = DND5E_DATA.classes.find(c => c.id === character.class1);
   const class2Obj = character.class2 !== "none" ? DND5E_DATA.classes.find(c => c.id === character.class2) : null;
 
-  if (character.level1 >= 3 && class1Obj && class1Obj.subclasses) {
-    const sub = class1Obj.subclasses.find(s => s.id === character.subclass1);
-    if (sub && sub.bonusSpells) sub.bonusSpells.forEach(id => push(id, `Subclasse (${sub.name})`));
-  }
-  if (class2Obj && character.level2 >= 3 && class2Obj.subclasses) {
-    const sub2 = class2Obj.subclasses.find(s => s.id === character.subclass2);
-    if (sub2 && sub2.bonusSpells) sub2.bonusSpells.forEach(id => push(id, `Subclasse (${sub2.name})`));
-  }
+  // As magias de subclasse chegam por nível, conforme a tabela do livro (3, 5, 7
+  // e 9 no conjurador pleno; 3, 5, 9, 13 e 17 no Paladino e no Guardião). Antes
+  // a lista era achatada e vinha inteira já no nível 3 — um Paladino de nível 4
+  // aparecia com magias de 2º e 3º círculo.
+  const somarSubclasse = (classObj, subId, nivel) => {
+    if (!classObj || !classObj.subclasses) return;
+    const sub = classObj.subclasses.find(x => x.id === subId);
+    if (!sub || !sub.bonusSpells) return;
+    subclassSpellsUpTo(sub, nivel).forEach(id => push(id, `Subclasse (${sub.name})`));
+  };
+  somarSubclasse(class1Obj, character.subclass1, character.level1);
+  if (class2Obj) somarSubclasse(class2Obj, character.subclass2, character.level2);
 
   if (character.species === "elf" && character.lineage === "high_elf") {
     if (character.level1 >= 3) push("misty_step", "Alto Elfo");
@@ -3636,14 +3681,7 @@ function bindEvents() {
     const classObj = DND5E_DATA.classes.find(c => c.id === character.class1);
     const subObj = classObj ? classObj.subclasses.find(s => s.id === character.subclass1) : null;
     if (subObj) {
-      let bonusSpellsHtml = "";
-      if (subObj.bonusSpells && subObj.bonusSpells.length > 0) {
-        const spellNames = subObj.bonusSpells.map(sid => {
-          const sp = DND5E_DATA.spells.find(s => s.id === sid);
-          return sp ? sp.name : sid;
-        }).join(", ");
-        bonusSpellsHtml = `<p style="margin-top: 0.3rem; font-size: 0.8rem; color: #fbbf24;"><strong>Magias Concedidas:</strong> ${spellNames}</p>`;
-      }
+      const bonusSpellsHtml = subclassSpellsHtml(subObj, character.level1);
       document.getElementById("subclass1Desc").innerHTML = `<h4><i class="fa-solid fa-khanda"></i> ${subObj.name}</h4><p>${subObj.desc}</p>${bonusSpellsHtml}`;
     }
     recalculateCharacter();

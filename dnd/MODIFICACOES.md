@@ -1089,6 +1089,39 @@ O DOM simulado foi extraído justamente porque as cópias em cada arquivo
 divergiram: uma delas não tinha `getAttribute`, e um teste quebrou por falta do
 stub, não por defeito no app.
 
+### 9.15 Magias de subclasse concedidas no nível certo
+
+`bonusSpells` era uma lista achatada, e `getGrantedSpellEntries()` despejava ela
+inteira assim que o personagem chegava ao nível 3. Um Paladino de nível 4
+aparecia com magias de 2º e 3º círculo que ele ainda não tem.
+
+As 19 tabelas "Magias de <Subclasse>" do capítulo 3 foram extraídas com o nível
+de cada linha, e `bonusSpells` virou um mapa nível → magias. Conjurador pleno
+recebe nos níveis 3, 5, 7 e 9; Paladino e Guardião, nos níveis 3, 5, 9, 13 e 17.
+A tela da subclasse passou a listar a tabela inteira, esmaecendo o que ainda não
+chegou — ajuda a planejar sem dar a impressão de que já está disponível.
+
+Treze subclasses tiveram `bonusSpells` **removido** porque não têm tabela no
+livro: os quatro colégios de Bardo, as quatro escolas de Mago, Caçador, Mestre
+das Feras, Círculo das Estrelas, Magia Selvagem e Círculo da Terra. O Círculo da
+Terra é o único caso com tabela de verdade, mas por tipo de terreno escolhido a
+cada Descanso Longo (árido, polar, temperado, tropical) — o app não modela essa
+escolha, e conceder um terreno fixo seria pior do que não conceder nada.
+
+### 9.16 Estilo de Luta fora da contagem de talentos
+
+O Estilo de Luta é uma característica de classe (Guerreiro e Paladino no nível
+2, Guardião no 2), não uma escolha de talento — mas está no `data.js` como
+talento do tipo `fighting_style` e entrava na conta, mostrando coisas como
+"3 / 1". Agora ele é listado à parte, com a nota de que não gasta escolha.
+
+### 9.17 Progressão de nível conferida
+
+`tools/checar-progressao.js` compara as 12 classes com a tabela do capítulo 3:
+dado de vida, nível da subclasse, níveis de talento e os níveis em que cada
+tabela de magia de subclasse entrega. Tudo bate — inclusive as exceções do
+Guerreiro (talento extra nos níveis 6 e 14) e do Ladino (nível 10).
+
 ---
 
 ## 10. Como o código da ficha funciona
