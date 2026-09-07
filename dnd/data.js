@@ -1128,7 +1128,73 @@ const DND5E_DATA = {
         {
           "id": "land",
           "name": "Círculo da Terra (Circle of the Land)",
-          "desc": "Profundamente ligados aos biomas do mundo (Costas, Desertos, Florestas, Montanhas), recuperando magias no descanso."
+          "desc": "Profundamente ligados aos biomas do mundo (Costas, Desertos, Florestas, Montanhas), recuperando magias no descanso.",
+          "landSpells": {
+            "Árido": {
+              "3": [
+                "burning_hands",
+                "fire_bolt",
+                "turvar"
+              ],
+              "5": [
+                "fireball"
+              ],
+              "7": [
+                "blight"
+              ],
+              "9": [
+                "muralha_de_pedra"
+              ]
+            },
+            "Polar": {
+              "3": [
+                "fog_cloud",
+                "hold_person",
+                "ray_of_frost"
+              ],
+              "5": [
+                "nevasca"
+              ],
+              "7": [
+                "ice_storm"
+              ],
+              "9": [
+                "cone_of_cold"
+              ]
+            },
+            "Temperado": {
+              "3": [
+                "misty_step",
+                "sleep",
+                "shocking_grasp"
+              ],
+              "5": [
+                "lightning_bolt"
+              ],
+              "7": [
+                "freedom_of_movement"
+              ],
+              "9": [
+                "passo_arboreo"
+              ]
+            },
+            "Tropical": {
+              "3": [
+                "acid_splash",
+                "raio_nauseante",
+                "web"
+              ],
+              "5": [
+                "stinking_cloud"
+              ],
+              "7": [
+                "polymorph"
+              ],
+              "9": [
+                "praga_de_insetos"
+              ]
+            }
+          }
         },
         {
           "id": "sea",

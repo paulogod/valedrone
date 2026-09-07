@@ -486,7 +486,8 @@ function updateSubclassesDropdown() {
       selectSubclass1.value = character.subclass1;
       const curSub = classObj.subclasses.find(s => s.id === character.subclass1);
       
-      const bonusSpellsHtml = subclassSpellsHtml(curSub, character.level1);
+      const bonusSpellsHtml = subclassSpellsHtml(curSub, character.level1)
+                             + landSpellsHtml(curSub, character.level1);
 
       if (curSub) {
         subclass1Desc.innerHTML = `<h4><i class="fa-solid fa-khanda"></i> ${curSub.name}</h4><p>${curSub.desc}</p>${bonusSpellsHtml}`;
@@ -1159,9 +1160,10 @@ function updateFeatsList() {
 
   // ---------- 2. Demais talentos (lista + botão "i") ----------
   const selectable = DND5E_DATA.feats.filter(f => f.type !== "origin");
-  // Estilo de Luta não gasta escolha de talento: vem da característica de classe
-  // (Guerreiro e Paladino no nível 2, Guardião no 2). Contá-lo junto fazia o
-  // painel mostrar coisas como "3 / 1" num Paladino de nível 4.
+  // Estilo de Luta não gasta escolha de talento: vem de característica de classe.
+  // Contá-lo junto fazia o painel mostrar coisas como "3 / 1" num Paladino de
+  // nível 4. A quantidade fica livre de propósito — subclasses e variantes de
+  // mesa concedem estilos extras, e travar isso atrapalharia mais que ajudaria.
   const escolhidos = selectable.filter(f =>
     character.selectedFeats.includes(f.id) && f.type !== "fighting_style");
   const estilos = selectable.filter(f =>
@@ -1215,7 +1217,7 @@ function updateFeatsList() {
         ? `<p class="feat-slots-mine"><i class="fa-solid fa-check"></i> ${escolhidos.map(f => f.name.split(" (")[0]).join(" · ")}</p>`
         : `<p class="feat-slots-mine is-empty">Nenhum talento escolhido ainda.</p>`}
       ${estilos.length
-        ? `<p class="feat-slots-mine"><i class="fa-solid fa-shield"></i> Estilo de Luta (da classe, não gasta escolha): ${estilos.map(f => f.name.split(" (")[0]).join(" · ")}</p>`
+        ? `<p class="feat-slots-mine"><i class="fa-solid fa-shield"></i> Estilos de Luta (livres, não gastam escolha de talento): ${estilos.map(f => f.name.split(" (")[0]).join(" · ")}</p>`
         : ""}
     </div>
 
@@ -1670,6 +1672,36 @@ function getFeatAbilityBonus(abilityId) {
  * Todas as magias concedidas sem passar pelo catálogo do Passo 4:
  * subclasse, espécie/linhagem e talentos (fixas e escolhidas).
  */
+/**
+ * Tabelas de terreno do Círculo da Terra.
+ *
+ * É o único caso do livro em que as magias não são fixas: o Druida escolhe um
+ * terreno a cada Descanso Longo e usa a tabela correspondente. O app não modela
+ * essa escolha, então as quatro tabelas ficam só descritas — conceder as de um
+ * terreno fixo daria magias que o personagem pode não ter.
+ */
+function landSpellsHtml(sub, nivel) {
+  if (!sub || !sub.landSpells) return "";
+  const nomeDaMagia = (id) => {
+    const sp = DND5E_DATA.spells.find(s => s.id === id);
+    return sp ? sp.name.split(" (")[0] : id;
+  };
+  const blocos = Object.keys(sub.landSpells).map(terreno => {
+    const tab = sub.landSpells[terreno];
+    const linhas = Object.keys(tab).map(Number).sort((a, b) => a - b).map(n => {
+      const chegou = n <= nivel;
+      return `<span style="opacity: ${chegou ? 1 : 0.45}">Nível ${n}: ${tab[n].map(nomeDaMagia).join(", ")}</span>`;
+    });
+    return `<div style="margin-top: 0.25rem;"><strong>${terreno}</strong><br>${linhas.join("<br>")}</div>`;
+  });
+  return `<div style="margin-top: 0.3rem; font-size: 0.8rem; color: #fbbf24; line-height: 1.5;">
+    <strong>Magias de Círculo Druídico</strong> — escolha um terreno a cada Descanso Longo
+    e prepare a lista dele até o seu nível. Como a escolha muda a cada descanso, o app não
+    adiciona essas magias à ficha automaticamente.
+    ${blocos.join("")}
+  </div>`;
+}
+
 /**
  * Lista das magias da subclasse por nível, marcando o que ainda não chegou.
  * Mostrar a tabela inteira ajuda a planejar; marcar o que falta evita a
@@ -3681,7 +3713,8 @@ function bindEvents() {
     const classObj = DND5E_DATA.classes.find(c => c.id === character.class1);
     const subObj = classObj ? classObj.subclasses.find(s => s.id === character.subclass1) : null;
     if (subObj) {
-      const bonusSpellsHtml = subclassSpellsHtml(subObj, character.level1);
+      const bonusSpellsHtml = subclassSpellsHtml(subObj, character.level1)
+                             + landSpellsHtml(subObj, character.level1);
       document.getElementById("subclass1Desc").innerHTML = `<h4><i class="fa-solid fa-khanda"></i> ${subObj.name}</h4><p>${subObj.desc}</p>${bonusSpellsHtml}`;
     }
     recalculateCharacter();

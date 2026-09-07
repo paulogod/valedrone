@@ -1103,17 +1103,23 @@ chegou — ajuda a planejar sem dar a impressão de que já está disponível.
 
 Treze subclasses tiveram `bonusSpells` **removido** porque não têm tabela no
 livro: os quatro colégios de Bardo, as quatro escolas de Mago, Caçador, Mestre
-das Feras, Círculo das Estrelas, Magia Selvagem e Círculo da Terra. O Círculo da
-Terra é o único caso com tabela de verdade, mas por tipo de terreno escolhido a
-cada Descanso Longo (árido, polar, temperado, tropical) — o app não modela essa
-escolha, e conceder um terreno fixo seria pior do que não conceder nada.
+das Feras, Círculo das Estrelas, Magia Selvagem e Círculo da Terra.
+
+O **Círculo da Terra** é o único caso com tabela de verdade, mas indexada por
+tipo de terreno — o Druida escolhe árido, polar, temperado ou tropical a cada
+Descanso Longo. As quatro tabelas ficam em `landSpells` e são apenas
+**descritas** na tela da subclasse, com o aviso de que a escolha muda a cada
+descanso; nada é adicionado à ficha, porque conceder um terreno fixo daria
+magias que o personagem pode não ter naquele dia.
 
 ### 9.16 Estilo de Luta fora da contagem de talentos
 
-O Estilo de Luta é uma característica de classe (Guerreiro e Paladino no nível
-2, Guardião no 2), não uma escolha de talento — mas está no `data.js` como
-talento do tipo `fighting_style` e entrava na conta, mostrando coisas como
-"3 / 1". Agora ele é listado à parte, com a nota de que não gasta escolha.
+O Estilo de Luta é característica de classe, não escolha de talento — mas está
+no `data.js` como talento do tipo `fighting_style` e entrava na conta, mostrando
+coisas como "3 / 1". Agora é listado à parte, como livre.
+
+A quantidade fica sem limite de propósito: subclasses e variantes de mesa
+concedem estilos extras, e travar pela classe atrapalharia mais do que ajudaria.
 
 ### 9.17 Progressão de nível conferida
 
