@@ -1046,6 +1046,49 @@ Um alternador ao lado dos filtros de classe, círculo e escola mostra só o que
 está na ficha — as magias escolhidas mais as concedidas por subclasse, espécie e
 talentos, que também aparecem lá. O contador no próprio botão diz quantas são.
 
+### 9.13 Visualização de magias e talentos
+
+Cinco mudanças no Passo 3 e no Passo 4:
+
+**Catálogo agrupado por círculo.** Eram 391 linhas corridas, que só se navegavam
+filtrando. Agora cada círculo tem um cabeçalho fixo com a contagem do grupo e
+quantas dali já estão na ficha.
+
+**Coluna de escola com ícone e cor.** O glifo se reconhece mais rápido do que a
+palavra escrita, e a cor separa os grupos de relance. O nome por extenso volta a
+aparecer a partir de 1100px.
+
+**Etiquetas na linha da magia.** `C` (Concentração), `R` (Ritual) e `M`
+(componente Material específico) ficavam enterrados no texto de duração, tempo
+de conjuração e componentes — que é justamente onde menos se olha na hora de
+escolher. São 160 magias com Concentração e 31 com Ritual.
+
+**Origem das concedidas.** Magias que vêm de subclasse, espécie ou talento agora
+têm fundo próprio, uma etiqueta com o tipo (o texto completo fica no tooltip) e,
+no lugar do botão Adicionar, a marca "Concedida" — elas já estão na ficha e não
+se escolhem.
+
+**Talentos: vagas, filtros e grupos.** `asiLevels` já estava no `data.js` e não
+era usado por ninguém: o app nunca dizia quantos talentos o personagem podia
+escolher, então passar do limite não gerava aviso. Agora há um cartão com
+"N / M escolhas usadas", de quais níveis elas vêm e a lista dos escolhidos. A
+lista ganhou busca, filtro por tipo e um alternador "Só os meus", e passou a ser
+agrupada em Gerais, Estilos de Luta e Dádivas Épicas.
+
+### 9.14 Verificadores
+
+São três, todos sobre o mesmo DOM simulado (`tools/dom-falso.js`):
+
+| Arquivo | O que garante |
+|---|---|
+| `checar-scripts.js` | Os quatro scripts carregam juntos, sem colisão de nome; toda classe conjuradora tem tabela de preparadas; toda escola tem ícone |
+| `checar-render.js` | Catálogo e lista de talentos renderizam, com grupos, etiquetas e sem `undefined` no HTML |
+| `checar-persistencia.js` | A página abre em branco, o botão Restaurar aparece e some na hora certa, e digitar não vira ficha salva |
+
+O DOM simulado foi extraído justamente porque as cópias em cada arquivo
+divergiram: uma delas não tinha `getAttribute`, e um teste quebrou por falta do
+stub, não por defeito no app.
+
 ---
 
 ## 10. Como o código da ficha funciona

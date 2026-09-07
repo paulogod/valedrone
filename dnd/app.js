@@ -1084,6 +1084,50 @@ function updateSkillsSelector() {
 /**
  * Atualiza a lista de talentos oficiais e customizados no Passo 3
  */
+/* Filtros da lista de talentos. Ficam fora do `character` de propósito: são
+   estado da tela, não escolha do personagem, e não devem ir para a ficha salva. */
+let _featFilterState = { busca: "", tipo: "all", soMeus: false };
+
+/**
+ * Quantas escolhas de talento o personagem tem até o nível atual.
+ *
+ * `asiLevels` já estava no data.js e não era usado por ninguém: o app nunca
+ * dizia ao jogador quantos talentos ele podia escolher, então passar do limite
+ * não dava nenhum aviso.
+ */
+function getFeatSlotInfo() {
+  const partes = [];
+  let total = 0;
+
+  const contar = (classObj, nivel, rotulo) => {
+    if (!classObj || !classObj.asiLevels || nivel < 1) return;
+    const niveis = classObj.asiLevels.filter(n => n <= nivel);
+    if (!niveis.length) return;
+    total += niveis.length;
+    partes.push(`${rotulo} nível ${nivel}: ${niveis.length} (níveis ${niveis.join(", ")})`);
+  };
+
+  contar(DND5E_DATA.classes.find(c => c.id === character.class1), character.level1,
+         classLabelOf(character.class1));
+  if (character.class2 && character.class2 !== "none") {
+    contar(DND5E_DATA.classes.find(c => c.id === character.class2), character.level2,
+           classLabelOf(character.class2));
+  }
+
+  return {
+    total,
+    detalhe: partes.length
+      ? partes.join(" · ")
+      : "Escolha classe e nível no Passo 1 para o app calcular quantos talentos você tem."
+  };
+}
+
+/** Nome curto de uma classe pelo id ("wizard" -> "Mago") */
+function classLabelOf(id) {
+  const c = DND5E_DATA.classes.find(x => x.id === id);
+  return c ? c.name.split(" (")[0] : "Classe";
+}
+
 function updateFeatsList() {
   const container = document.getElementById("featsContainer");
   if (!container) return;
@@ -1122,22 +1166,86 @@ function updateFeatsList() {
 
   // ---------- 2. Demais talentos (lista + botão "i") ----------
   const selectable = DND5E_DATA.feats.filter(f => f.type !== "origin");
+  const escolhidos = selectable.filter(f => character.selectedFeats.includes(f.id));
+  const vagas = getFeatSlotInfo();
+
+  const busca = (_featFilterState.busca || "").toLowerCase().trim();
+  const tipo = _featFilterState.tipo || "all";
+  const soMeus = !!_featFilterState.soMeus;
+
+  const visiveis = selectable.filter(f => {
+    const meu = character.selectedFeats.includes(f.id);
+    if (soMeus && !meu) return false;
+    if (tipo !== "all" && f.type !== tipo) return false;
+    if (!busca) return true;
+    return f.name.toLowerCase().includes(busca) || (f.desc || "").toLowerCase().includes(busca);
+  });
+
+  const GRUPOS = [
+    ["general", "Talentos Gerais"],
+    ["fighting_style", "Estilos de Luta"],
+    ["epic_boon", "Dádivas Épicas"]
+  ];
+
+  const linhaDoTalento = (f) => {
+    const meu = character.selectedFeats.includes(f.id);
+    return `
+      <div class="feat-row${meu ? " is-selected" : ""}" data-row="${f.id}">
+        <input type="checkbox" class="feat-check" id="featChk_${f.id}" value="${f.id}" ${meu ? "checked" : ""}>
+        <label class="feat-row-name" for="featChk_${f.id}">${f.name}</label>
+        ${f.prereq ? `<span class="feat-row-prereq" title="Pré-requisito: ${String(f.prereq).replace(/"/g, "&quot;")}"><i class="fa-solid fa-lock-open"></i> ${f.prereq}</span>` : ""}
+        <span class="feat-row-tag tag-${f.type}">${featTypeLabel(f.type)}</span>
+        <button type="button" class="feat-info-btn" data-info="${f.id}" title="Mais informações"><i class="fa-solid fa-info"></i></button>
+      </div>
+      <div class="feat-info-panel" data-panel="${f.id}" hidden>${buildFeatInfoHtml(f)}</div>
+      ${buildFeatChoiceBoxHtml(f, meu)}`;
+  };
+
   const officialSection = document.createElement("div");
   officialSection.className = "feat-list-block";
   officialSection.innerHTML = `
-    <h4 class="feat-block-title">Talentos Gerais, Estilos de Luta e Épicos (${selectable.length})</h4>
-    <div class="feat-list">
-      ${selectable.map(f => `
-        <div class="feat-row${character.selectedFeats.includes(f.id) ? ' is-selected' : ''}" data-row="${f.id}">
-          <input type="checkbox" class="feat-check" id="featChk_${f.id}" value="${f.id}" ${character.selectedFeats.includes(f.id) ? 'checked' : ''}>
-          <label class="feat-row-name" for="featChk_${f.id}">${f.name}</label>
-          <span class="feat-row-tag tag-${f.type}">${featTypeLabel(f.type)}</span>
-          <button type="button" class="feat-info-btn" data-info="${f.id}" title="Mais informações"><i class="fa-solid fa-info"></i></button>
-        </div>
-        <div class="feat-info-panel" data-panel="${f.id}" hidden>${buildFeatInfoHtml(f)}</div>
-        ${buildFeatChoiceBoxHtml(f, character.selectedFeats.includes(f.id))}
-      `).join('')}
+    <h4 class="feat-block-title">Talentos do Personagem</h4>
+
+    <div class="feat-slots-card">
+      <div class="feat-slots-line">
+        <span class="feat-slots-num${escolhidos.length > vagas.total ? " is-over" : ""}">${escolhidos.length} / ${vagas.total}</span>
+        <span class="feat-slots-label">escolhas de talento usadas</span>
+      </div>
+      <p class="feat-slots-note">${vagas.detalhe}</p>
+      ${escolhidos.length
+        ? `<p class="feat-slots-mine"><i class="fa-solid fa-check"></i> ${escolhidos.map(f => f.name.split(" (")[0]).join(" · ")}</p>`
+        : `<p class="feat-slots-mine is-empty">Nenhum talento escolhido ainda.</p>`}
     </div>
+
+    <div class="feat-filter-bar">
+      <input type="text" class="form-control" id="featSearchInput" placeholder="Buscar talento..." value="${busca.replace(/"/g, "&quot;")}">
+      <select class="form-control" id="featFilterType">
+        <option value="all"${tipo === "all" ? " selected" : ""}>Todos os tipos</option>
+        <option value="general"${tipo === "general" ? " selected" : ""}>Gerais</option>
+        <option value="fighting_style"${tipo === "fighting_style" ? " selected" : ""}>Estilos de Luta</option>
+        <option value="epic_boon"${tipo === "epic_boon" ? " selected" : ""}>Dádivas Épicas</option>
+      </select>
+      <button type="button" class="btn btn-secondary feat-filter-toggle${soMeus ? " is-on" : ""}" id="featFilterMine"
+              aria-pressed="${soMeus}" title="Mostrar só os talentos do personagem">
+        <i class="fa-solid fa-list-check"></i> Só os meus${escolhidos.length ? ` (${escolhidos.length})` : ""}
+      </button>
+    </div>
+
+    ${visiveis.length === 0
+      ? `<p class="feat-empty-msg">Nenhum talento encontrado para esses filtros.</p>`
+      : GRUPOS.map(([id, rotulo]) => {
+          const doGrupo = visiveis.filter(f => f.type === id);
+          if (!doGrupo.length) return "";
+          const meus = doGrupo.filter(f => character.selectedFeats.includes(f.id)).length;
+          return `
+            <div class="feat-group">
+              <h5 class="feat-group-head">
+                <span>${rotulo}</span>
+                <span class="feat-group-count">${doGrupo.length}${meus ? ` · ${meus} no personagem` : ""}</span>
+              </h5>
+              <div class="feat-list">${doGrupo.map(linhaDoTalento).join("")}</div>
+            </div>`;
+        }).join("")}
   `;
   container.appendChild(officialSection);
 
@@ -1175,7 +1283,32 @@ function updateFeatsList() {
   // ---------- Eventos (delegação única no container, vinculada uma só vez) ----------
   if (!container.dataset.delegateBound) {
     container.dataset.delegateBound = "1";
+
+    // A lista é redesenhada a cada tecla, então o foco e o cursor da busca
+    // precisam ser devolvidos — sem isso digitar fica impossível.
+    container.addEventListener("input", (e) => {
+      if (e.target.id !== "featSearchInput") return;
+      _featFilterState.busca = e.target.value;
+      const pos = e.target.selectionStart;
+      updateFeatsList();
+      const novo = document.getElementById("featSearchInput");
+      if (novo) { novo.focus(); novo.setSelectionRange(pos, pos); }
+    });
+
+    container.addEventListener("change", (e) => {
+      if (e.target.id !== "featFilterType") return;
+      _featFilterState.tipo = e.target.value;
+      updateFeatsList();
+    });
+
     container.addEventListener("click", (e) => {
+      const btnMeus = e.target.closest("#featFilterMine");
+      if (btnMeus) {
+        _featFilterState.soMeus = !_featFilterState.soMeus;
+        updateFeatsList();
+        return;
+      }
+
       const infoBtn = e.target.closest(".feat-info-btn");
       if (infoBtn) {
         const id = infoBtn.getAttribute("data-info");
@@ -1944,37 +2077,67 @@ function renderSpellsCatalog() {
 
   const table = document.createElement("table");
   table.className = "spells-table";
+
+  // De onde veio cada magia concedida, para a etiqueta na linha
+  const origemPorId = {};
+  getGrantedSpellEntries().forEach(g => { origemPorId[g.id] = g.source; });
+
+  // Agrupado por círculo: 391 linhas corridas não se navegam sem um filtro.
+  const porCirculo = new Map();
+  filteredSpells.forEach(sp => {
+    if (!porCirculo.has(sp.level)) porCirculo.set(sp.level, []);
+    porCirculo.get(sp.level).push(sp);
+  });
+
+  const linhaDaMagia = (sp) => {
+    const isKnown = character.spellsKnown.includes(sp.id);
+    const origem = origemPorId[sp.id];
+    return `
+      <tr class="spell-row${isKnown ? " is-known" : ""}${origem ? " is-granted" : ""}" data-row="${sp.id}">
+        <td class="col-name">
+          <span class="spell-row-name">${sp.name}</span>
+          ${spellTagsHtml(sp, origem)}
+        </td>
+        <td class="col-school">${spellSchoolHtml(sp.school)}</td>
+        <td class="col-classes">${formatSpellClasses(sp)}</td>
+        <td class="col-info"><button type="button" class="spell-info-btn" data-info="${sp.id}" title="Detalhes da magia"><i class="fa-solid fa-info"></i></button></td>
+        <td class="col-action">
+          ${origem
+            ? `<span class="spell-granted-lock" title="Concedida por ${origem} — já vem na ficha"><i class="fa-solid fa-gift"></i> Concedida</span>`
+            : `<button type="button" class="btn btn-sm ${isKnown ? "btn-gold" : "btn-secondary"} btn-toggle-spell" data-id="${sp.id}">
+                 <i class="fa-solid ${isKnown ? "fa-check" : "fa-plus"}"></i> ${isKnown ? "Na ficha" : "Adicionar"}
+               </button>`}
+        </td>
+      </tr>
+      <tr class="spell-info-row" data-panel="${sp.id}" hidden>
+        <td colspan="5">${buildSpellInfoHtml(sp)}</td>
+      </tr>`;
+  };
+
+  const corpo = [...porCirculo.keys()].sort((a, b) => a - b).map(nivel => {
+    const magias = porCirculo.get(nivel);
+    const naFicha = magias.filter(sp => idsNaFicha.has(sp.id)).length;
+    return `
+      <tr class="spell-group-row">
+        <th colspan="5" class="spell-group-head">
+          <span class="spell-group-title">${formatSpellLevel(nivel)}</span>
+          <span class="spell-group-count">${magias.length} magia${magias.length > 1 ? "s" : ""}${naFicha ? ` · ${naFicha} na ficha` : ""}</span>
+        </th>
+      </tr>
+      ${magias.map(linhaDaMagia).join("")}`;
+  }).join("");
+
   table.innerHTML = `
     <thead>
       <tr>
         <th class="col-name">Magia</th>
-        <th class="col-level">Nível</th>
+        <th class="col-school">Escola</th>
         <th class="col-classes">Classes</th>
         <th class="col-info">Info</th>
         <th class="col-action">Ficha</th>
       </tr>
     </thead>
-    <tbody>
-      ${filteredSpells.map(sp => {
-        const isKnown = character.spellsKnown.includes(sp.id);
-        return `
-          <tr class="spell-row${isKnown ? ' is-known' : ''}" data-row="${sp.id}">
-            <td class="col-name">${sp.name}</td>
-            <td class="col-level">${formatSpellLevel(sp.level)}</td>
-            <td class="col-classes">${formatSpellClasses(sp)}</td>
-            <td class="col-info"><button type="button" class="spell-info-btn" data-info="${sp.id}" title="Detalhes da magia"><i class="fa-solid fa-info"></i></button></td>
-            <td class="col-action">
-              <button type="button" class="btn btn-sm ${isKnown ? 'btn-gold' : 'btn-secondary'} btn-toggle-spell" data-id="${sp.id}">
-                <i class="fa-solid ${isKnown ? 'fa-check' : 'fa-plus'}"></i> ${isKnown ? 'Na ficha' : 'Adicionar'}
-              </button>
-            </td>
-          </tr>
-          <tr class="spell-info-row" data-panel="${sp.id}" hidden>
-            <td colspan="5">${buildSpellInfoHtml(sp)}</td>
-          </tr>
-        `;
-      }).join('')}
-    </tbody>
+    <tbody>${corpo}</tbody>
   `;
 
   table.addEventListener("click", (e) => {
@@ -2006,6 +2169,67 @@ function renderSpellsCatalog() {
 }
 
 /**
+ * Ícone e cor de cada escola de magia. Ler "Evocação" em texto no meio da linha
+ * é mais lento do que reconhecer o glifo, e a cor separa os grupos de relance.
+ */
+const SPELL_SCHOOLS = {
+  "Abjuração":    { icon: "fa-shield-halved",   slug: "abjuracao" },
+  "Adivinhação":  { icon: "fa-eye",             slug: "adivinhacao" },
+  "Encantamento": { icon: "fa-wand-sparkles",   slug: "encantamento" },
+  "Evocação":     { icon: "fa-fire",            slug: "evocacao" },
+  "Ilusão":       { icon: "fa-masks-theater",   slug: "ilusao" },
+  "Invocação":    { icon: "fa-hand-sparkles",   slug: "invocacao" },
+  "Necromancia":  { icon: "fa-skull",           slug: "necromancia" },
+  "Transmutação": { icon: "fa-arrows-spin",     slug: "transmutacao" }
+};
+
+function spellSchoolHtml(school) {
+  const info = SPELL_SCHOOLS[school];
+  if (!info) return school || "-";
+  return `<span class="spell-school is-${info.slug}" title="${school}">
+    <i class="fa-solid ${info.icon}"></i><span class="spell-school-name">${school}</span>
+  </span>`;
+}
+
+/** Uma magia exige Concentração? (o livro põe isso na Duração) */
+function spellNeedsConcentration(sp) {
+  return /Concentração/i.test(sp.duration || "");
+}
+
+/** Pode ser conjurada como Ritual? (o livro põe isso no Tempo de Conjuração) */
+function spellIsRitual(sp) {
+  return /Ritual/i.test(sp.time || "");
+}
+
+/**
+ * Etiquetas da linha da magia. Concentração e ritual decidem escolha e ficavam
+ * enterrados no texto de duração e tempo de conjuração; a origem separa o que o
+ * jogador escolheu do que a subclasse, a espécie ou um talento deram.
+ */
+function spellTagsHtml(sp, origem) {
+  const tags = [];
+  if (spellNeedsConcentration(sp)) {
+    tags.push('<span class="spell-tag is-conc" title="Exige Concentração">C</span>');
+  }
+  if (spellIsRitual(sp)) {
+    tags.push('<span class="spell-tag is-ritual" title="Pode ser conjurada como Ritual">R</span>');
+  }
+  if (/\bM\b/.test(sp.components || "") && /\(/.test(sp.components || "")) {
+    tags.push('<span class="spell-tag is-mat" title="Componente Material específico: ' +
+              String(sp.components).replace(/"/g, "&quot;") + '">M</span>');
+  }
+  if (origem) {
+    // A origem completa é longa ("Subclasse (Domínio da Vida (Life Domain))") e
+    // não cabe numa etiqueta: na linha vai só o tipo, o resto fica no tooltip.
+    const curta = /^Subclasse/.test(origem) ? "Subclasse"
+                : /^Talento/.test(origem) ? "Talento"
+                : "Espécie";
+    tags.push(`<span class="spell-tag is-origin" title="Concedida por ${String(origem).replace(/"/g, "&quot;")}">${curta}</span>`);
+  }
+  return tags.length ? `<span class="spell-tags">${tags.join("")}</span>` : "";
+}
+
+/**
  * "Truque" ou "Nº Círculo"
  */
 function formatSpellLevel(level) {
@@ -2019,7 +2243,8 @@ function formatSpellClasses(sp) {
   if (!sp.classes || sp.classes.length === 0) return "-";
   return sp.classes.map(c => {
     const cls = DND5E_DATA.classes.find(cl => cl.id === c);
-    return cls ? cls.name : c;
+    // Só a parte em português: "Bardo (Bard), Mago (Wizard)" não cabe na coluna
+    return cls ? cls.name.split(" (")[0] : c;
   }).join(", ");
 }
 
