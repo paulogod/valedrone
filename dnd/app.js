@@ -259,17 +259,7 @@ function initUI() {
     selectEquippedShield.appendChild(opt);
   });
 
-  // Preencher Armas (1, 2, 3)
-  ["selectWeapon1", "selectWeapon2", "selectWeapon3"].forEach(id => {
-    const el = document.getElementById(id);
-    el.innerHTML = '<option value="none">Nenhuma Arma</option>';
-    DND5E_DATA.weapons.forEach(w => {
-      const opt = document.createElement("option");
-      opt.value = w.id;
-      opt.textContent = `${w.name} [${w.damage} ${w.damageType}] • ${w.category} ${w.type} • Maestria: ${w.masteryName}`;
-      el.appendChild(opt);
-    });
-  });
+  renderWeaponSlots();
 
   renderAbilityInputs();
   renderSpellsCatalog();
@@ -294,7 +284,6 @@ function syncWizardControls() {
   set("selectAlignment", character.alignment);
   set("selectEquippedArmor", character.equippedArmor);
   set("selectEquippedShield", character.equippedShield);
-  ["selectWeapon1", "selectWeapon2", "selectWeapon3"].forEach((id, i) => set(id, character.weapons[i] || "none"));
   set("textInventory", character.inventory || "");
   set("inputCustomBgName", (character.customBg && character.customBg.name) || "");
   set("inputCustomLanguagesExtra", character.customLanguages || "");
@@ -1088,6 +1077,152 @@ function updateSkillsSelector() {
    estado da tela, não escolha do personagem, e não devem ir para a ficha salva. */
 let _featFilterState = { busca: "", tipo: "all", soMeus: false };
 
+/* ------------------------------------ MAGIAS NA TABELA DE ATAQUES */
+
+const ATRIBUTO_CURTO = { "Força": "FOR", "Destreza": "DES", "Constituição": "CON",
+                         "Inteligência": "INT", "Sabedoria": "SAB", "Carisma": "CAR" };
+
+/**
+ * O atributo de conjuração da classe do personagem, ou null se ele não conjura.
+ */
+function spellcastingAbilityOf() {
+  const c1 = DND5E_DATA.classes.find(c => c.id === character.class1);
+  const c2 = DND5E_DATA.classes.find(c => c.id === character.class2);
+  const sc = (c1 && c1.spellcasting) || (c2 && c2.spellcasting);
+  return sc ? sc.ability : null;
+}
+
+/**
+ * Lê da descrição o que a magia pede: jogada de ataque, salvaguarda, ou nenhum
+ * dos dois. O livro escreve isso em prosa, então a leitura é por padrão de
+ * texto — o resultado vai para a ficha como apoio, não como regra fechada.
+ */
+function spellCombatInfo(sp) {
+  const desc = sp.desc || "";
+  const ataque = /jogada de ataque|ataque mágico|ataque corpo a corpo com magia/i.test(desc);
+  const mSalva = desc.match(/salvaguarda de (Força|Destreza|Constituição|Inteligência|Sabedoria|Carisma)/i);
+  const mDano = desc.match(/(\d+d\d+)[^.]{0,40}?dano (?:de )?(\wÁ-ú+|[A-ZÀ-Ú][a-zà-ú]+)/);
+  const dado = desc.match(/\d+d\d+/);
+  return {
+    ataque,
+    salvaguarda: mSalva ? mSalva[1].charAt(0).toUpperCase() + mSalva[1].slice(1).toLowerCase() : null,
+    dano: mDano ? `${mDano[1]} ${mDano[2]}` : (dado ? dado[0] : ""),
+  };
+}
+
+/**
+ * Maior círculo de espaço de magia que o personagem tem. Sai da tabela de
+ * espaços, não do DOM: assim o cálculo também vale fora da tela renderizada.
+ */
+function highestSpellSlotLevel() {
+  const daClasse = (classId, nivel) => {
+    const c = DND5E_DATA.classes.find(x => x.id === classId);
+    if (!c || !c.spellcasting || nivel < 1) return 0;
+    const tabela = DND5E_DATA.spellSlotsTable[c.spellcasting.type] || DND5E_DATA.spellSlotsTable.full;
+    const linha = tabela[nivel];
+    if (!linha) return 0;
+    for (let i = linha.length - 1; i >= 0; i--) if (linha[i] > 0) return i + 1;
+    return 0;
+  };
+  return Math.max(1,
+    daClasse(character.class1, character.level1),
+    character.class2 !== "none" ? daClasse(character.class2, character.level2) : 0);
+}
+
+/**
+ * Magias que mudam os números de uma arma em vez de atacar sozinhas.
+ *
+ * Elas não têm jogada de ataque nem salvaguarda na descrição, então a leitura
+ * por texto não as pega — e são justamente as que o jogador precisa acompanhar
+ * na tabela de ataques. Cada uma diz como calcular a linha resultante.
+ */
+const SPELL_WEAPON_BUFFS = {
+  shillelagh: {
+    // O dado cresce com o nível do personagem, não com o círculo do espaço.
+    armas: ["quarterstaff", "clava"],
+    linha(ctx) {
+      const nivel = ctx.nivelTotal;
+      const dado = nivel >= 17 ? "2d6" : nivel >= 11 ? "1d12" : nivel >= 5 ? "1d10" : "1d8";
+      const arma = ctx.armaEquipada
+        ? ctx.armaEquipada.name
+        : "sem Cajado ou Clava equipado";
+      return {
+        atk: `${ctx.atkMagico >= 0 ? "+" : ""}${ctx.atkMagico}`,
+        damage: `${dado}${ctx.mod ? (ctx.mod > 0 ? " +" + ctx.mod : " " + ctx.mod) : ""} Energético`,
+        notes: `${arma} • usa o atributo de conjuração no ataque e no dano • dano Energético ou o normal da arma`
+      };
+    }
+  },
+  magic_weapon: {
+    linha(ctx) {
+      // +1 no 2º círculo, +2 do 3º ao 5º, +3 do 6º em diante
+      const maior = ctx.maiorCirculo;
+      const bonus = maior >= 6 ? 3 : maior >= 3 ? 2 : 1;
+      return {
+        atk: `+${bonus}`,
+        damage: `+${bonus} no dano`,
+        notes: `Some no ataque e no dano da arma tocada • +${bonus} com espaço de ${maior}º círculo (+1 no 2º, +2 do 3º ao 5º, +3 do 6º em diante)`
+      };
+    }
+  }
+};
+
+/**
+ * Linhas de ataque vindas das magias que o personagem tem na ficha.
+ *
+ * Um truque de dano ocupa a mesma tabela que as armas na ficha oficial ("ARMAS
+ * & TRUQUES DE DANO"), e magias como Bordão Místico ou Arma Mágica mudam os
+ * números de um ataque — sem elas ali, o jogador ficava sem onde acompanhar.
+ * Magias sem ataque nem salvaguarda ficam de fora: são utilidade, não ataque.
+ */
+function spellAttackRows(finalMods, pb) {
+  const ability = spellcastingAbilityOf();
+  if (!ability) return [];
+  const mod = finalMods[ability] || 0;
+  const cd = 8 + mod + pb;
+  const atkMagico = mod + pb;
+
+  const ids = [...new Set([
+    ...(character.spellsKnown || []),
+    ...getGrantedSpellEntries().map(g => g.id)
+  ])];
+
+  const nivelTotal = (character.level1 || 0) + (character.class2 !== "none" ? (character.level2 || 0) : 0);
+  const maiorCirculo = highestSpellSlotLevel();
+
+  return ids.map(id => {
+    const sp = DND5E_DATA.spells.find(x => x.id === id);
+    if (!sp) return null;
+
+    const buff = SPELL_WEAPON_BUFFS[id];
+    if (buff) {
+      const armaEquipada = (buff.armas || [])
+        .map(wid => DND5E_DATA.weapons.find(w => w.id === wid))
+        .find(w => w && character.weapons.includes(w.id));
+      const r = buff.linha({ mod, atkMagico, cd, nivelTotal, maiorCirculo, armaEquipada });
+      return { srcId: "spell:" + sp.id, name: sp.name.split(" (")[0], ...r };
+    }
+
+    const info = spellCombatInfo(sp);
+    if (!info.ataque && !info.salvaguarda) return null;
+    const notas = [
+      formatSpellLevel(sp.level),
+      sp.time,
+      sp.range,
+      spellNeedsConcentration(sp) ? "Concentração" : null
+    ].filter(Boolean).join(" • ");
+    return {
+      srcId: "spell:" + sp.id,
+      name: sp.name.split(" (")[0],
+      atk: info.ataque
+        ? `${atkMagico >= 0 ? "+" : ""}${atkMagico}`
+        : `CD ${cd} ${ATRIBUTO_CURTO[info.salvaguarda] || ""}`.trim(),
+      damage: info.dano,
+      notes: notas
+    };
+  }).filter(Boolean);
+}
+
 /**
  * Quantas armas o personagem pode manter com a propriedade de maestria ativa.
  *
@@ -1135,11 +1270,42 @@ function toggleWeaponMastery(weaponId) {
   saveToLocalStorage();
 }
 
-/** Botão de maestria de cada uma das três armas equipadas */
-function renderWeaponMasteryButtons() {
+/**
+ * Lista de armas equipadas: um select por arma, com o botão de maestria e o de
+ * remover. A quantidade é livre — o jogador adiciona quantas quiser, e a ficha
+ * oficial avisa se passarem das linhas que cabem no papel.
+ */
+function renderWeaponSlots() {
+  const container = document.getElementById("weaponSlots");
+  if (!container) return;
+  if (!Array.isArray(character.weapons)) character.weapons = [];
+
   const limite = getWeaponMasteryLimit();
-  const ativas = (character.activeMasteries || []).filter(id =>
-    character.weapons.includes(id));
+  const opcoes = (selecionado) => ['<option value="none">Nenhuma arma</option>']
+    .concat(DND5E_DATA.weapons.map(w =>
+      `<option value="${w.id}"${w.id === selecionado ? " selected" : ""}>` +
+      `${w.name} [${w.damage} ${w.damageType}] • ${w.category} ${w.type} • Maestria: ${w.masteryName}` +
+      `</option>`)).join("");
+
+  container.innerHTML = character.weapons.map((wId, i) => {
+    const w = wId && wId !== "none" ? DND5E_DATA.weapons.find(x => x.id === wId) : null;
+    const on = w && isMasteryActive(w.id);
+    return `
+      <div class="weapon-slot">
+        <select class="form-control weapon-slot-select" data-slot="${i}" aria-label="Arma ${i + 1}">${opcoes(wId)}</select>
+        ${w && limite > 0
+          ? `<button type="button" class="btn btn-secondary btn-sm weapon-mastery-btn${on ? " is-on" : ""}" data-slot="${i}"
+               title="${on ? "Maestria ativa" : "Ativar a maestria desta arma"}. ${masteryDesc(w.mastery).replace(/"/g, "&quot;")}">
+               <i class="fa-solid ${on ? "fa-toggle-on" : "fa-toggle-off"}"></i> ${w.masteryName}
+             </button>`
+          : ""}
+        <button type="button" class="btn btn-secondary btn-sm weapon-slot-remove" data-slot="${i}" title="Remover esta arma">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>`;
+  }).join("") || '<p class="feat-empty-msg">Nenhuma arma equipada. Use "Adicionar arma".</p>';
+
+  const ativas = (character.activeMasteries || []).filter(id => character.weapons.includes(id));
   const ajuda = document.getElementById("weaponMasteryHelp");
   if (ajuda) {
     ajuda.textContent = limite === 0
@@ -1147,20 +1313,11 @@ function renderWeaponMasteryButtons() {
       : `Maestria em Arma: ${ativas.length} de ${limite} ativa(s). Trocar de arma é livre a cada Descanso Longo.`;
     ajuda.classList.toggle("is-off", limite === 0);
   }
+}
 
-  document.querySelectorAll(".weapon-mastery-btn").forEach(btn => {
-    const slot = Number(btn.getAttribute("data-mastery-slot"));
-    const wId = character.weapons[slot];
-    const w = wId && wId !== "none" ? DND5E_DATA.weapons.find(x => x.id === wId) : null;
-    if (!w || limite === 0) { btn.hidden = true; return; }
-    const on = isMasteryActive(w.id);
-    btn.hidden = false;
-    btn.classList.toggle("is-on", on);
-    btn.innerHTML = `<i class="fa-solid ${on ? "fa-toggle-on" : "fa-toggle-off"}"></i> ${w.masteryName}`;
-    btn.title = on
-      ? `Maestria ativa. ${masteryDesc(w.mastery)}`
-      : `Ativar a maestria desta arma. ${masteryDesc(w.mastery)}`;
-  });
+/* Nome antigo, mantido porque o resto do app ainda chama por ele */
+function renderWeaponMasteryButtons() {
+  renderWeaponSlots();
 }
 
 function masteryDesc(id) {
@@ -2872,6 +3029,10 @@ function syncSheetWeaponRows(ctx) {
     });
   });
 
+  // Magias que entram na tabela de ataques: truques de dano, magias com jogada
+  // de ataque e as que exigem salvaguarda (aí vale a CD no lugar do bônus).
+  spellAttackRows(finalMods, pb).forEach(r => auto.push(r));
+
   character.customItems.filter(i => i.equipped && (i.type === "weapon" || i.damage)).forEach(item => {
     const atkAbility = dexMod > finalMods["str"] ? "dex" : "str";
     const atkMod = finalMods[atkAbility] + pb;
@@ -3838,25 +3999,47 @@ function bindEvents() {
     recalculateCharacter();
   });
 
-  ["selectWeapon1", "selectWeapon2", "selectWeapon3"].forEach((id, slot) => {
-    document.getElementById(id).addEventListener("change", (e) => {
-      const anterior = character.weapons[slot];
-      character.weapons[slot] = e.target.value;
+  const listaArmas = document.getElementById("weaponSlots");
+  if (listaArmas) {
+    listaArmas.addEventListener("change", (e) => {
+      const sel = e.target.closest(".weapon-slot-select");
+      if (!sel) return;
+      const i = Number(sel.getAttribute("data-slot"));
+      const anterior = character.weapons[i];
+      character.weapons[i] = sel.value;
       // trocar a arma do espaço solta a maestria que estava presa a ela
-      if (anterior && anterior !== e.target.value) {
-        character.activeMasteries = (character.activeMasteries || [])
-          .filter(w => w !== anterior || character.weapons.includes(anterior));
+      if (anterior && anterior !== sel.value && !character.weapons.includes(anterior)) {
+        character.activeMasteries = (character.activeMasteries || []).filter(w => w !== anterior);
       }
-      renderWeaponMasteryButtons();
+      renderWeaponSlots();
       recalculateCharacter();
     });
-  });
 
-  document.querySelectorAll(".weapon-mastery-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const slot = Number(btn.getAttribute("data-mastery-slot"));
-      toggleWeaponMastery(character.weapons[slot]);
+    listaArmas.addEventListener("click", (e) => {
+      const btnMaestria = e.target.closest(".weapon-mastery-btn");
+      if (btnMaestria) {
+        toggleWeaponMastery(character.weapons[Number(btnMaestria.getAttribute("data-slot"))]);
+        return;
+      }
+      const btnRemover = e.target.closest(".weapon-slot-remove");
+      if (btnRemover) {
+        const i = Number(btnRemover.getAttribute("data-slot"));
+        const saiu = character.weapons[i];
+        character.weapons.splice(i, 1);
+        if (saiu && !character.weapons.includes(saiu)) {
+          character.activeMasteries = (character.activeMasteries || []).filter(w => w !== saiu);
+        }
+        renderWeaponSlots();
+        recalculateCharacter();
+      }
     });
+  }
+
+  const btnAddArma = document.getElementById("btnAddWeaponSlot");
+  if (btnAddArma) btnAddArma.addEventListener("click", () => {
+    character.weapons.push("none");
+    renderWeaponSlots();
+    recalculateCharacter();
   });
 
   document.getElementById("textInventory").addEventListener("input", (e) => {

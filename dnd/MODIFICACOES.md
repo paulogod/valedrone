@@ -1177,6 +1177,37 @@ download. Carregar a pdf-lib por `require()` põe os `Uint8Array` em realms
 diferentes e ela rejeita o próprio buffer que recebeu — erro do teste, não do
 app, e que custou um diagnóstico errado antes.
 
+### 9.20 Armas sem limite e magias na tabela de ataques
+
+Os três espaços fixos de arma viraram uma **lista livre**: cada linha tem o
+select, o botão de maestria e o de remover, e "Adicionar arma" acrescenta
+quantas o jogador quiser. A ficha oficial continua avisando quando passam das
+seis linhas que cabem no papel.
+
+As magias que o personagem tem — escolhidas ou concedidas — passaram a gerar
+linhas na mesma tabela, que na ficha oficial se chama "ARMAS & TRUQUES DE DANO":
+
+- magia com **jogada de ataque** entra com o modificador de ataque mágico;
+- magia com **salvaguarda** entra com a **CD** (8 + modificador de conjuração +
+  bônus de proficiência) e o atributo da salvaguarda;
+- magia sem ataque nem salvaguarda fica de fora — é utilidade, não ataque.
+
+O que a magia pede é lido da descrição, que o livro escreve em prosa. Por isso o
+resultado é apoio de mesa, não regra fechada: vale conferir uma magia incomum
+antes de usar o número.
+
+**Magias que modificam arma** não têm ataque nem salvaguarda na descrição e
+escapariam dessa leitura, justamente sendo as que mais precisam de
+acompanhamento. `SPELL_WEAPON_BUFFS` trata cada uma pelo que ela faz:
+
+| Magia | Linha gerada |
+|---|---|
+| Bordão Místico | Dado do nível (1d8 → 1d10 no 5 → 1d12 no 11 → 2d6 no 17), ataque e dano pelo atributo de conjuração, e o nome do Cajado ou Clava equipado |
+| Arma Mágica | +1, +2 ou +3 conforme o maior círculo de espaço disponível |
+
+O maior círculo sai da tabela de espaços de magia, não do DOM — assim o cálculo
+vale mesmo com a tela não renderizada, e é testável.
+
 ---
 
 ## 10. Como o código da ficha funciona

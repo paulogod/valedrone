@@ -1322,32 +1322,39 @@ select.form-control option {
 /* ==========================================================================
    LISTA DE TALENTOS (formato lista + botão "i" de informações)
    ========================================================================== */
-/* Os três espaços de arma ficam sempre lado a lado a partir do celular grande.
-   Com a .form-grid-3 genérica eles viravam duas colunas entre 640px e 1024px, e
-   a Arma 3 caía sozinha para a linha de baixo. */
-.weapons-grid {
+/* Lista de armas equipadas: uma linha por arma, com o select ocupando o espaço
+   que sobra e os botões de maestria e remover ao lado. */
+.weapon-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.weapon-slot {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.75rem;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "arma remover" "maestria maestria";
+  gap: 0.35rem;
+  align-items: center;
 }
 
-@media (min-width: 560px) {
-  .weapons-grid { grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+@media (min-width: 760px) {
+  .weapon-slot {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas: "arma maestria remover";
+  }
 }
 
-@media (min-width: 1024px) {
-  .weapons-grid { gap: 1rem; }
-}
-
-/* O nome da arma é longo ("Espada Grande (Montante) [2d6 Cortante] • …"), então
-   o select precisa poder encolher dentro da coluna em vez de esticá-la. */
-.weapons-grid .form-control { min-width: 0; }
+.weapon-slot-select { grid-area: arma; min-width: 0; }
+.weapon-slot .weapon-mastery-btn { grid-area: maestria; }
+.weapon-slot-remove { grid-area: remover; padding: 0.4rem 0.6rem; }
+.weapon-slot-remove:hover { color: #f87171; }
 
 /* Botão de maestria de cada arma equipada */
 .weapon-mastery-btn {
-  width: 100%;
-  margin-top: 0.3rem;
   font-size: 0.72rem;
+  max-width: 14rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
