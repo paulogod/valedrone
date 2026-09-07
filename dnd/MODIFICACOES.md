@@ -3,10 +3,10 @@
 Documento de referência das mudanças feitas no projeto e de como o código funciona
 depois delas. Escrito para quem for mexer no projeto daqui pra frente.
 
-- **Data:** 04/09/2026 (rodadas 1 e 2) · 05/09/2026 (rodadas 3 a 7)
-- **Arquivos alterados:** `app.js`, `index.html`, `sheet.css`, `style.css`
+- **Data:** 04/09/2026 (rodadas 1 e 2) · 05/09/2026 (rodadas 3 a 7) · 07/09/2026 (rodada 8)
+- **Arquivos alterados:** `app.js`, `index.html`, `sheet.css`, `style.css`, `pdf-export.js`, `data.js`
 - **Arquivos novos (rodada 6):** `pdf-export.js`, `bio-random.js`, `pdf-lib.min.js` (biblioteca)
-- **Arquivo não alterado:** `data.js` (base de dados de classes, espécies, antecedentes, perícias, talentos, magias, armas, ferramentas — só é lida)
+- **Arquivos novos (rodada 8):** `ficha-oficial-embed.js`, `tools/gerar-ficha-embed.py`, `servir.bat`, `SERVIR.md`
 - **Backups do estado anterior:** `app.js.bak`, `index.html.bak`, `sheet.css.bak`, `style.css.bak`
 
 O trabalho aconteceu em cinco rodadas: a **Rodada 1** corrigiu os cinco defeitos
@@ -32,11 +32,12 @@ biografia; a **Rodada 7** adaptou a página inteira ao celular, no modelo
 6. [Rodada 5 — antecedente personalizado com nome](#6-rodada-5--antecedente-personalizado-com-nome)
 7. [Rodada 6 — PDF oficial, ficha em branco e dados da biografia](#7-rodada-6--pdf-oficial-ficha-em-branco-e-dados-da-biografia)
 8. [Rodada 7 — adaptação para celular (mobile first)](#8-rodada-7--adaptação-para-celular-mobile-first)
-9. [Como o código da ficha funciona](#9-como-o-código-da-ficha-funciona)
-10. [Referência: chaves de `character.sheet`](#10-referência-chaves-de-charactersheet)
-11. [Impressão e escala](#11-impressão-e-escala)
-12. [Persistência e migração](#12-persistência-e-migração)
-13. [Pontos em aberto](#13-pontos-em-aberto)
+9. [Rodada 8 — ficha oficial embutida e catálogo completo de magias](#9-rodada-8--ficha-oficial-embutida-e-catálogo-completo-de-magias)
+10. [Como o código da ficha funciona](#10-como-o-código-da-ficha-funciona)
+11. [Referência: chaves de `character.sheet`](#11-referência-chaves-de-charactersheet)
+12. [Impressão e escala](#12-impressão-e-escala)
+13. [Persistência e migração](#13-persistência-e-migração)
+14. [Pontos em aberto](#14-pontos-em-aberto)
 
 ---
 
@@ -53,6 +54,7 @@ O app é HTML/CSS/JS puro, sem build e sem framework. São quatro arquivos de c�
 | `pdf-export.js` | Transferência da ficha para o PDF oficial editável (Rodada 6). |
 | `bio-random.js` | Tabelas e sorteio dos campos da Biografia (Rodada 6). |
 | `pdf-lib.min.js` | Biblioteca de manipulação de PDF, servida do próprio diretório. |
+| `ficha-oficial-embed.js` | Ficha oficial em branco em Base64, carregada sob demanda (Rodada 8). |
 
 ### O objeto `character`
 
@@ -817,7 +819,102 @@ de tela conferidas a olho em 320, 390, 820 e 1600px:
 
 ---
 
-## 9. Como o código da ficha funciona
+## 9. Rodada 8 — ficha oficial embutida e catálogo completo de magias
+
+### 9.1 Imprimir e salvar já saem na ficha oficial
+
+Antes, **Imprimir / PDF** chamava `window.print()` e imprimia o HTML da tela, e
+**Ficha PDF Oficial** só funcionava se o jogador importasse
+`D&D 5.5 - Ficha editável.pdf` à mão — porque `fetch()` do arquivo ao lado do app
+é bloqueado quando o `index.html` é aberto por `file://`.
+
+Agora os dois botões produzem o mesmo PDF, o oficial preenchido:
+
+| Botão | O que faz |
+|---|---|
+| **Imprimir / PDF** | Preenche a ficha oficial e abre a caixa de impressão dela (dá para salvar em PDF por ali). |
+| **Ficha PDF Oficial** | Preenche a mesma ficha e baixa o arquivo. |
+
+`exportToOfficialPdf(forcePick, mode)` (`pdf-export.js`) é o fluxo único; o `mode`
+só decide o fim — `printPdfBytes()` ou `downloadPdfBytes()`. A impressão monta um
+`<iframe>` invisível com o blob do PDF e chama `print()` nele. O
+`addEventListener` de `btnPrintSheet` saiu do `app.js` e mora em `pdf-export.js`,
+junto do outro.
+
+**Imprimir exige http.** Aberto por `file://`, o app não tem origem: o blob vira
+`blob:null/...` e o Chrome se recusa a montar o visualizador de PDF nele — dá
+página em branco. `canPrintPdfInPlace()` checa o protocolo e, fora de
+`http`/`https`, `printPdfBytes()` devolve `false` sem tentar; aí o botão baixa a
+ficha e avisa para imprimir a partir do arquivo. `servir.bat` sobe um
+`python -m http.server` na pasta e `SERVIR.md` explica o resto.
+
+### 9.2 A ficha oficial em branco vem embutida
+
+`ficha-oficial-embed.js` guarda os bytes do PDF oficial em Base64 (≈16 MB) e
+define `window.FICHA_OFICIAL_B64`. Ele **não** está no `index.html`: só é baixado
+quando realmente faz falta, por `loadEmbeddedFicha()`, do mesmo jeito que a
+`pdf-lib`. `getOfficialPdfBytes()` tenta, nesta ordem:
+
+1. `fetch()` do PDF ao lado do app (`OFFICIAL_PDF_URLS`) — servido por http é o
+   caminho normal, e não pesa nada para quem nunca exporta a ficha;
+2. a cópia embutida — só entra quando o `fetch` é bloqueado, ou seja, abrindo o
+   `index.html` por `file://`;
+3. o seletor de arquivo (também no `Shift` + clique, para usar outro PDF de origem).
+
+A ordem é essa de propósito: no site publicado ninguém baixa os 16 MB, e o app
+aberto direto do disco continua funcionando sem importar nada.
+
+`OFFICIAL_PDF_URLS` tenta **`ficha-oficial.pdf`** antes de
+`D&D 5.5 - Ficha editável.pdf` — o nome original tem `&`, espaço e acento, que
+nem toda hospedagem serve direito. É essa cópia de nome ASCII que vai para o ar.
+
+Para regerar o arquivo depois de trocar o PDF:
+
+```
+python3 tools/gerar-ficha-embed.py
+```
+
+### 9.3 Catálogo de magias completo, conferido com o livro
+
+O `data.js` tinha **147** magias; o capítulo 7 do Livro do Jogador tem **391**.
+O array `spells` foi refeito a partir do texto do próprio livro — nome, círculo,
+escola, tempo de conjuração, alcance, componentes, duração, classes e a descrição
+completa —, ordenado por círculo e depois por nome:
+
+| | Antes | Depois |
+|---|---|---|
+| Magias | 147 | 391 |
+| Mago / Feiticeiro / Bardo | 87 / 76 / 52 | 242 / 150 / 140 |
+| Druida / Clérigo / Bruxo | 42 / 50 / 39 | 135 / 117 / 91 |
+| Guardião / Paladino | 10 / 18 | 61 / 51 |
+
+As 147 antigas continuam com o `id` e o nome bilíngue que já tinham (`fire_bolt`,
+"Raio de Fogo (Fire Bolt)"), então nada que apontava para elas quebrou; as novas
+recebem `id` derivado do nome em português. As listas por classe foram conferidas
+contra as tabelas "Lista de Magias de ..." do capítulo 3: toda magia que aparece
+na lista de uma classe existe no capítulo 7 e está marcada para aquela classe.
+
+O texto passou por uma limpeza de caracteres: a extração do PDF trazia
+marcadores de lista como *bullet* + BOM de UTF-16 + `NUL` (`•þÿ\u0000`), que
+viraram `- `. Travessão, aspas curvas, reticências, sinal de menos, `×` e espaço
+inseparável viraram os equivalentes ASCII — é o mesmo conjunto que
+`pdfSafeText()` teria de converter na hora de escrever no PDF oficial, que só
+aceita WinAnsi. Hoje o `data.js` não tem nenhum caractere de controle nem
+pontuação tipográfica.
+
+Dois efeitos colaterais dessa conferência:
+
+- **34 magias concedidas por subclasse estavam apontando para o vazio** —
+  `barkskin`, `fire_shield`, `hunger_of_hadar` e outras 31 eram citadas em
+  `bonusSpells` mas não existiam no catálogo. Agora existem, e os `id` delas
+  usam exatamente os nomes referenciados.
+- **Magia Selvagem (Feiticeiro) não concede magia nenhuma** no livro de 2024; o
+  `bonusSpells: ["chaos_bolt"]` apontava para uma magia que não está no PHB e
+  virou lista vazia.
+
+---
+
+## 10. Como o código da ficha funciona
 
 Toda a ficha vive no bloco marcado em `app.js` como
 `FICHA OFICIAL EDITÁVEL (2 PÁGINAS)` (a partir da linha ~1520).
@@ -1022,7 +1119,7 @@ arma e anotações digitados pelo jogador não conseguem quebrar a marcação.
 
 ---
 
-## 10. Referência: chaves de `character.sheet`
+## 11. Referência: chaves de `character.sheet`
 
 Todo campo com override guarda o valor digitado sob uma dessas chaves. Chave
 ausente significa "ainda automático".
@@ -1050,7 +1147,7 @@ ausente significa "ainda automático".
 
 ---
 
-## 11. Impressão e escala
+## 12. Impressão e escala
 
 ### Escala na tela
 
@@ -1089,7 +1186,7 @@ Resultado verificado: exatamente 2 páginas A4, uma por folha da ficha.
 
 ---
 
-## 12. Persistência e migração
+## 13. Persistência e migração
 
 `saveToLocalStorage()` (`app.js:3771`) grava em duas chaves: `dnd55_active_character`
 (o personagem atual) e `dnd55_saved_characters` (a lista, com upsert por `character.id`).
@@ -1119,7 +1216,7 @@ rodar de novo.
 
 ---
 
-## 13. Pontos em aberto
+## 14. Pontos em aberto
 
 - **Modais órfãos:** "Ataque Personalizado" e "Característica Personalizada"
   ficaram sem uso — agora se adiciona linha direto na tabela pelo botão `+`.

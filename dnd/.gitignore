@@ -1,3 +1,5 @@
-# Os PDFs oficiais da Wizards ficam só na máquina: não vão para o repositório
-# nem para o site. O botão "Ficha PDF Oficial" pede o arquivo ao jogador.
-*.pdf
+# O Livro do Jogador (43 MB) fica só na máquina: o app não usa o arquivo.
+D&D 5.5 - Livro do Jogador.pdf
+# A ficha oficial em branco é publicada como ficha-oficial.pdf, de nome ASCII;
+# a cópia com o nome original fica de fora.
+D&D 5.5 - Ficha editável.pdf

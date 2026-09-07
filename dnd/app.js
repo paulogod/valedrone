@@ -3439,7 +3439,8 @@ function bindEvents() {
   document.getElementById("btnRandomChar").addEventListener("click", generateRandomCharacter);
   document.getElementById("btnExportJson").addEventListener("click", exportCharacterJson);
   document.getElementById("inputImportJson").addEventListener("change", importCharacterJson);
-  document.getElementById("btnPrintSheet").addEventListener("click", () => window.print());
+  // "Imprimir / PDF" é ligado em pdf-export.js: ele gera a ficha oficial preenchida
+  // e abre a impressão dela, em vez de imprimir o HTML da tela.
   document.getElementById("btnQuickRollD20").addEventListener("click", () => rollDiceCheck("D20 Rápido", 0));
   
   const btnGlobalRoll = document.getElementById("btnGlobalRollD20");
