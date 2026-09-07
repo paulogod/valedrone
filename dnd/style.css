@@ -830,14 +830,21 @@ select.form-control option {
 @media (min-width: 768px) {
   .sheet-toolbar {
     flex-direction: row;
+    flex-wrap: wrap;          /* sem isto quem quebra é a caixa de ações lá
+                                 dentro: ela vira duas linhas e, centralizada
+                                 contra as abas, sobra para cima e para baixo,
+                                 parecendo texto solto no meio da página */
     justify-content: space-between;
     align-items: center;
+    row-gap: 0.5rem;
     padding: 0.5rem 0.75rem;
   }
 }
 
 .sheet-page-tabs {
   display: flex;
+  flex: 0 0 auto;             /* as abas não encolhem: quem cede espaço são as
+                                 ações, que sabem cair para a linha de baixo */
   gap: 0.35rem;
 }
 
@@ -897,7 +904,10 @@ select.form-control option {
 .sheet-quick-actions {
   display: flex;
   flex-wrap: wrap;
+  flex: 1 1 auto;
   align-items: center;
+  justify-content: flex-end;  /* encostadas à direita quando cabem na linha das
+                                 abas; ocupando a linha inteira quando não */
   gap: 0.35rem;
 }
 
@@ -939,10 +949,12 @@ select.form-control option {
 
 .sheet-zoom-label:hover { color: #c084fc; }
 
-/* A etiqueta "Sincronização Ativa" é informação secundária: some no celular */
+/* A etiqueta "Sincronização Ativa" é informação secundária: só aparece quando
+   sobra largura de verdade. Em 1024px ela cabia na conta mas empurrava os
+   botões para uma segunda linha, que era o efeito feio da barra. */
 .sheet-sync-status { display: none; }
 
-@media (min-width: 1024px) {
+@media (min-width: 1400px) {
   .sheet-sync-status { display: inline-flex; }
 }
 
