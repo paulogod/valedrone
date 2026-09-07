@@ -1322,6 +1322,27 @@ select.form-control option {
 /* ==========================================================================
    LISTA DE TALENTOS (formato lista + botão "i" de informações)
    ========================================================================== */
+/* Os três espaços de arma ficam sempre lado a lado a partir do celular grande.
+   Com a .form-grid-3 genérica eles viravam duas colunas entre 640px e 1024px, e
+   a Arma 3 caía sozinha para a linha de baixo. */
+.weapons-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 560px) {
+  .weapons-grid { grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+}
+
+@media (min-width: 1024px) {
+  .weapons-grid { gap: 1rem; }
+}
+
+/* O nome da arma é longo ("Espada Grande (Montante) [2d6 Cortante] • …"), então
+   o select precisa poder encolher dentro da coluna em vez de esticá-la. */
+.weapons-grid .form-control { min-width: 0; }
+
 /* Botão de maestria de cada arma equipada */
 .weapon-mastery-btn {
   width: 100%;

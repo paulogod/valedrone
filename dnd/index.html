@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907k";
+    var APP_VERSION = "20260907l";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -536,7 +536,10 @@
             <!-- A maestria não é automática: depende da característica Maestria em
                  Arma da classe e de quantas o personagem pode manter ativas. -->
             <p class="weapon-mastery-help" id="weaponMasteryHelp"></p>
-            <div class="form-grid-3">
+            <!-- Grade própria: a .form-grid-3 vira duas colunas entre 640px e
+                 1024px, e as três armas ficavam quebradas com a Arma 3 sozinha
+                 na linha de baixo. -->
+            <div class="weapons-grid">
               <div class="form-group">
                 <label class="form-label" for="selectWeapon1">Arma 1</label>
                 <select class="form-control" id="selectWeapon1"></select>
