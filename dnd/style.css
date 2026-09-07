@@ -1322,6 +1322,30 @@ select.form-control option {
 /* ==========================================================================
    LISTA DE TALENTOS (formato lista + botão "i" de informações)
    ========================================================================== */
+/* Botão de maestria de cada arma equipada */
+.weapon-mastery-btn {
+  width: 100%;
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weapon-mastery-btn.is-on {
+  background: rgba(251, 191, 36, 0.22);
+  border-color: rgba(251, 191, 36, 0.55);
+  color: #fde68a;
+}
+
+.weapon-mastery-help {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.45rem;
+}
+
+.weapon-mastery-help.is-off { opacity: 0.75; font-style: italic; }
+
 /* ---------- Passo 3: vagas, filtros e grupos de talentos ---------- */
 
 /* asiLevels já existia no data.js e não era mostrado em lugar nenhum: o jogador

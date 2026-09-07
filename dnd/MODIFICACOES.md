@@ -1128,6 +1128,33 @@ dado de vida, nível da subclasse, níveis de talento e os níveis em que cada
 tabela de magia de subclasse entrega. Tudo bate — inclusive as exceções do
 Guerreiro (talento extra nos níveis 6 e 14) e do Ladino (nível 10).
 
+### 9.18 Armas completas e maestria com botão
+
+O app tinha **19 das 38 armas** do capítulo 6. A tabela foi lida inteira e agora
+são 10 simples corpo a corpo, 4 simples à distância, 18 marciais corpo a corpo e
+6 marciais à distância — faltavam Espada Curta, Mangual, Maça Estrela,
+Zarabatana, Glaive, Lança Longa, Picareta de Guerra, Mosquete, Pistola e outras.
+Os ids das 19 que já existiam foram preservados, então nada que apontava para
+elas quebrou.
+
+As **armaduras já estavam completas**: as 12 do livro, com traduções diferentes
+("Camisa de Cota de Malha" para "Cota de Malha Parcial", "Peitoral de Aço" para
+"Couraça Peitoral"). Os nomes de maestria foram alinhados ao livro: *Irritar*
+virou **Afligir**, *Corte Ágil* virou **Ágil**, *Debilitar* virou **Drenar**,
+*Abrandar* virou **Lentidão** e *Arranhão* virou **Garantido**.
+
+**A maestria deixou de ser automática.** O app escrevia "Maestria: X" na ficha
+para toda arma equipada, inclusive de um Mago — mas ela depende da característica
+Maestria em Arma e de um número limitado de armas. Cada espaço de arma ganhou um
+botão que liga e desliga a maestria daquela arma, e a ficha só cita a maestria
+quando ela está ativa. O limite vem da coluna "Maestria em Arma" das tabelas de
+Bárbaro (2 → 3 no nível 4 → 4 no 10) e Guerreiro (3 → 4 no 4 → 5 no 10 → 6 no
+16); Paladino, Guardião e Ladino têm dois tipos fixos, e as demais classes não
+têm a característica. Em multiclasse vale o maior dos dois, não a soma.
+
+`tools/checar-equipamento.js` cobre as contagens do livro, os limites por classe
+e nível, e o comportamento de ligar, desligar e recusar acima do limite.
+
 ---
 
 ## 10. Como o código da ficha funciona

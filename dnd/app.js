@@ -74,6 +74,10 @@ function createBlankCharacter() {
     spellsKnown: [],
     spellSlotsExpended: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 },
 
+    // Armas cuja propriedade de maestria está ativa (ids). A maestria não é
+    // automática: a classe define quantas o personagem consegue manter.
+    activeMasteries: [],
+
     // Equipamentos, Armaduras & Itens Customizados
     equippedArmor: "none",
     equippedShield: "none",
@@ -262,7 +266,7 @@ function initUI() {
     DND5E_DATA.weapons.forEach(w => {
       const opt = document.createElement("option");
       opt.value = w.id;
-      opt.textContent = `${w.name} [${w.damage} ${w.damageType}] • Maestria: ${w.masteryName}`;
+      opt.textContent = `${w.name} [${w.damage} ${w.damageType}] • ${w.category} ${w.type} • Maestria: ${w.masteryName}`;
       el.appendChild(opt);
     });
   });
@@ -270,6 +274,7 @@ function initUI() {
   renderAbilityInputs();
   renderSpellsCatalog();
   renderCustomItemsList();
+  renderWeaponMasteryButtons();
 }
 
 /**
@@ -347,6 +352,7 @@ function applyLoadedCharacter(data) {
   renderSpellsCatalog();
   renderCustomItemsList();
   renderDeathSaves();
+  renderWeaponMasteryButtons();
   recalculateCharacter();    // ficha oficial + todos os derivados
 }
 
@@ -1081,6 +1087,86 @@ function updateSkillsSelector() {
 /* Filtros da lista de talentos. Ficam fora do `character` de propósito: são
    estado da tela, não escolha do personagem, e não devem ir para a ficha salva. */
 let _featFilterState = { busca: "", tipo: "all", soMeus: false };
+
+/**
+ * Quantas armas o personagem pode manter com a propriedade de maestria ativa.
+ *
+ * Vem da coluna "Maestria em Arma" das tabelas de Bárbaro e Guerreiro e do texto
+ * da característica no Paladino, Guardião e Ladino (dois tipos, fixo). Quem não
+ * tem a característica não usa maestria nenhuma — antes o app mostrava a
+ * maestria de toda arma equipada, como se fosse sempre válida.
+ */
+function getWeaponMasteryLimit() {
+  const conta = (classId, nivel) => {
+    const c = DND5E_DATA.classes.find(x => x.id === classId);
+    if (!c || !c.weaponMasteryByLevel || nivel < 1) return 0;
+    return c.weaponMasteryByLevel[nivel] || 0;
+  };
+  // Em multiclasse vale a maior das duas, não a soma: a característica é a mesma.
+  return Math.max(conta(character.class1, character.level1),
+                  conta(character.class2, character.level2));
+}
+
+function isMasteryActive(weaponId) {
+  return (character.activeMasteries || []).includes(weaponId);
+}
+
+/**
+ * Liga ou desliga a maestria de uma arma, respeitando o limite da classe.
+ */
+function toggleWeaponMastery(weaponId) {
+  if (!weaponId || weaponId === "none") return;
+  character.activeMasteries = character.activeMasteries || [];
+  const i = character.activeMasteries.indexOf(weaponId);
+  if (i >= 0) {
+    character.activeMasteries.splice(i, 1);
+  } else {
+    const limite = getWeaponMasteryLimit();
+    if (character.activeMasteries.length >= limite) {
+      showToast(limite === 0
+        ? "Esta classe não tem a característica Maestria em Arma."
+        : `Você já usa ${limite} maestria(s) — desative uma antes.`);
+      return;
+    }
+    character.activeMasteries.push(weaponId);
+  }
+  renderWeaponMasteryButtons();
+  recalculateCharacter();
+  saveToLocalStorage();
+}
+
+/** Botão de maestria de cada uma das três armas equipadas */
+function renderWeaponMasteryButtons() {
+  const limite = getWeaponMasteryLimit();
+  const ativas = (character.activeMasteries || []).filter(id =>
+    character.weapons.includes(id));
+  const ajuda = document.getElementById("weaponMasteryHelp");
+  if (ajuda) {
+    ajuda.textContent = limite === 0
+      ? "Esta classe não tem a característica Maestria em Arma — nenhuma propriedade de maestria se aplica."
+      : `Maestria em Arma: ${ativas.length} de ${limite} ativa(s). Trocar de arma é livre a cada Descanso Longo.`;
+    ajuda.classList.toggle("is-off", limite === 0);
+  }
+
+  document.querySelectorAll(".weapon-mastery-btn").forEach(btn => {
+    const slot = Number(btn.getAttribute("data-mastery-slot"));
+    const wId = character.weapons[slot];
+    const w = wId && wId !== "none" ? DND5E_DATA.weapons.find(x => x.id === wId) : null;
+    if (!w || limite === 0) { btn.hidden = true; return; }
+    const on = isMasteryActive(w.id);
+    btn.hidden = false;
+    btn.classList.toggle("is-on", on);
+    btn.innerHTML = `<i class="fa-solid ${on ? "fa-toggle-on" : "fa-toggle-off"}"></i> ${w.masteryName}`;
+    btn.title = on
+      ? `Maestria ativa. ${masteryDesc(w.mastery)}`
+      : `Ativar a maestria desta arma. ${masteryDesc(w.mastery)}`;
+  });
+}
+
+function masteryDesc(id) {
+  const m = DND5E_DATA.weaponMasteries.find(x => x.id === id);
+  return m ? m.desc : "";
+}
 
 /**
  * Quantas escolhas de talento o personagem tem até o nível atual.
@@ -2781,7 +2867,8 @@ function syncSheetWeaponRows(ctx) {
       name: w.name,
       atk: `${atkMod >= 0 ? '+' : ''}${atkMod}`,
       damage: `${w.damage}${dmgMod !== 0 ? (dmgMod > 0 ? ' +' + dmgMod : ' ' + dmgMod) : ''} ${w.damageType}`,
-      notes: [`Maestria: ${w.masteryName}`, ...style.notes].join(" • ")
+      notes: [isMasteryActive(w.id) ? `Maestria: ${w.masteryName}` : null, ...style.notes]
+        .filter(Boolean).join(" • ")
     });
   });
 
@@ -3751,17 +3838,25 @@ function bindEvents() {
     recalculateCharacter();
   });
 
-  document.getElementById("selectWeapon1").addEventListener("change", (e) => {
-    character.weapons[0] = e.target.value;
-    recalculateCharacter();
+  ["selectWeapon1", "selectWeapon2", "selectWeapon3"].forEach((id, slot) => {
+    document.getElementById(id).addEventListener("change", (e) => {
+      const anterior = character.weapons[slot];
+      character.weapons[slot] = e.target.value;
+      // trocar a arma do espaço solta a maestria que estava presa a ela
+      if (anterior && anterior !== e.target.value) {
+        character.activeMasteries = (character.activeMasteries || [])
+          .filter(w => w !== anterior || character.weapons.includes(anterior));
+      }
+      renderWeaponMasteryButtons();
+      recalculateCharacter();
+    });
   });
-  document.getElementById("selectWeapon2").addEventListener("change", (e) => {
-    character.weapons[1] = e.target.value;
-    recalculateCharacter();
-  });
-  document.getElementById("selectWeapon3").addEventListener("change", (e) => {
-    character.weapons[2] = e.target.value;
-    recalculateCharacter();
+
+  document.querySelectorAll(".weapon-mastery-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const slot = Number(btn.getAttribute("data-mastery-slot"));
+      toggleWeaponMastery(character.weapons[slot]);
+    });
   });
 
   document.getElementById("textInventory").addEventListener("input", (e) => {

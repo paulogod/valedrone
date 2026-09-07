@@ -546,7 +546,29 @@ const DND5E_DATA = {
           "name": "Caminho do Zelote (Path of the Zealot)",
           "desc": "Abraçado pelo furor divino de uma divindade guerreira, causando dano radiante/necrótico e desafiando a morte."
         }
-      ]
+      ],
+      "weaponMasteryByLevel": {
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 3,
+        "8": 3,
+        "9": 3,
+        "10": 4,
+        "11": 4,
+        "12": 4,
+        "13": 4,
+        "14": 4,
+        "15": 4,
+        "16": 4,
+        "17": 4,
+        "18": 4,
+        "19": 4,
+        "20": 4
+      }
     },
     {
       "id": "bard",
@@ -1366,7 +1388,29 @@ const DND5E_DATA = {
           "name": "Guerreiro Psiônico (Psi Warrior)",
           "desc": "Canaliza a energia psíquica para impulsionar seus golpes, erguer barreiras telecinéticas e movimentar objetos."
         }
-      ]
+      ],
+      "weaponMasteryByLevel": {
+        "1": 3,
+        "2": 3,
+        "3": 3,
+        "4": 4,
+        "5": 4,
+        "6": 4,
+        "7": 4,
+        "8": 4,
+        "9": 4,
+        "10": 5,
+        "11": 5,
+        "12": 5,
+        "13": 5,
+        "14": 5,
+        "15": 5,
+        "16": 6,
+        "17": 6,
+        "18": 6,
+        "19": 6,
+        "20": 6
+      }
     },
     {
       "id": "monk",
@@ -1761,7 +1805,29 @@ const DND5E_DATA = {
             ]
           }
         }
-      ]
+      ],
+      "weaponMasteryByLevel": {
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 2,
+        "16": 2,
+        "17": 2,
+        "18": 2,
+        "19": 2,
+        "20": 2
+      }
     },
     {
       "id": "ranger",
@@ -1974,7 +2040,29 @@ const DND5E_DATA = {
             ]
           }
         }
-      ]
+      ],
+      "weaponMasteryByLevel": {
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 2,
+        "16": 2,
+        "17": 2,
+        "18": 2,
+        "19": 2,
+        "20": 2
+      }
     },
     {
       "id": "rogue",
@@ -2112,7 +2200,29 @@ const DND5E_DATA = {
           "name": "Lâmina Psíquica (Soulknife)",
           "desc": "Materializa adagas psíquicas de energia mental para atacar à distância e telepatia silenciosa com aliados."
         }
-      ]
+      ],
+      "weaponMasteryByLevel": {
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 2,
+        "16": 2,
+        "17": 2,
+        "18": 2,
+        "19": 2,
+        "20": 2
+      }
     },
     {
       "id": "sorcerer",
@@ -3836,12 +3946,12 @@ const DND5E_DATA = {
   "weaponMasteries": [
     {
       "id": "vex",
-      "name": "Irritar (Vex)",
+      "name": "Afligir (Vex)",
       "desc": "Se você atingir uma criatura e causar dano com esta arma, você ganha Vantagem na sua próxima jogada de ataque contra essa mesma criatura antes do final do seu próximo turno."
     },
     {
       "id": "nick",
-      "name": "Corte Ágil (Nick)",
+      "name": "Ágil (Nick)",
       "desc": "Permite que o ataque adicional do Combate com Duas Armas seja feito como parte da ação de Ataque em vez de gastar uma Ação Bônus (1 vez por turno)."
     },
     {
@@ -3856,17 +3966,17 @@ const DND5E_DATA = {
     },
     {
       "id": "sap",
-      "name": "Debilitar (Sap)",
+      "name": "Drenar (Sap)",
       "desc": "Se você atingir uma criatura, ela tem Desvantagem na próxima jogada de ataque que fizer antes do início do seu próximo turno."
     },
     {
       "id": "slow",
-      "name": "Abrandar (Slow)",
+      "name": "Lentidão (Slow)",
       "desc": "Se você atingir uma criatura e causar dano, o deslocamento dela é reduzido em 3 metros (10 pés) até o início do seu próximo turno."
     },
     {
       "id": "graze",
-      "name": "Arranhão (Graze)",
+      "name": "Garantido (Graze)",
       "desc": "Se você errar uma jogada de ataque contra uma criatura, você ainda causa dano igual ao modificador de habilidade usado no ataque."
     },
     {
@@ -3885,13 +3995,28 @@ const DND5E_DATA = {
       "damage": "1d4",
       "damageType": "Perfurante",
       "mastery": "nick",
-      "masteryName": "Corte Ágil (Nick)",
+      "masteryName": "Ágil (Nick)",
       "properties": [
         "Acuidade",
-        "Leve",
-        "Arremesso (alcance 6/18m)"
+        "Arremesso (Alcance 6/18)",
+        "Leve"
       ],
       "weight": 0.5
+    },
+    {
+      "id": "azagaia",
+      "name": "Azagaia",
+      "category": "Simples",
+      "type": "Corpo a Corpo",
+      "cost": "5 PP",
+      "damage": "1d6",
+      "damageType": "Perfurante",
+      "mastery": "slow",
+      "masteryName": "Lentidão (Slow)",
+      "properties": [
+        "Arremesso (Alcance 9/36)"
+      ],
+      "weight": 1.0
     },
     {
       "id": "quarterstaff",
@@ -3906,7 +4031,52 @@ const DND5E_DATA = {
       "properties": [
         "Versátil (1d8)"
       ],
-      "weight": 2
+      "weight": 2.0
+    },
+    {
+      "id": "clava",
+      "name": "Clava",
+      "category": "Simples",
+      "type": "Corpo a Corpo",
+      "cost": "1 PP",
+      "damage": "1d4",
+      "damageType": "Contundente",
+      "mastery": "slow",
+      "masteryName": "Lentidão (Slow)",
+      "properties": [
+        "Leve"
+      ],
+      "weight": 1.0
+    },
+    {
+      "id": "clava_grande",
+      "name": "Clava Grande",
+      "category": "Simples",
+      "type": "Corpo a Corpo",
+      "cost": "2 PP",
+      "damage": "1d8",
+      "damageType": "Contundente",
+      "mastery": "push",
+      "masteryName": "Empurrar (Push)",
+      "properties": [
+        "Duas Mãos"
+      ],
+      "weight": 5.0
+    },
+    {
+      "id": "foice",
+      "name": "Foice",
+      "category": "Simples",
+      "type": "Corpo a Corpo",
+      "cost": "1 PO",
+      "damage": "1d4",
+      "damageType": "Cortante",
+      "mastery": "nick",
+      "masteryName": "Ágil (Nick)",
+      "properties": [
+        "Leve"
+      ],
+      "weight": 1.0
     },
     {
       "id": "spear",
@@ -3917,9 +4087,9 @@ const DND5E_DATA = {
       "damage": "1d6",
       "damageType": "Perfurante",
       "mastery": "sap",
-      "masteryName": "Debilitar (Sap)",
+      "masteryName": "Drenar (Sap)",
       "properties": [
-        "Arremesso (alcance 6/18m)",
+        "Arremesso (Alcance 6/18)",
         "Versátil (1d8)"
       ],
       "weight": 1.5
@@ -3933,9 +4103,9 @@ const DND5E_DATA = {
       "damage": "1d6",
       "damageType": "Contundente",
       "mastery": "sap",
-      "masteryName": "Debilitar (Sap)",
+      "masteryName": "Drenar (Sap)",
       "properties": [],
-      "weight": 2
+      "weight": 2.0
     },
     {
       "id": "handaxe",
@@ -3946,107 +4116,125 @@ const DND5E_DATA = {
       "damage": "1d6",
       "damageType": "Cortante",
       "mastery": "vex",
-      "masteryName": "Irritar (Vex)",
+      "masteryName": "Afligir (Vex)",
       "properties": [
-        "Leve",
-        "Arremesso (alcance 6/18m)"
+        "Arremesso (Alcance 6/18)",
+        "Leve"
       ],
-      "weight": 1
+      "weight": 1.0
     },
     {
-      "id": "light_crossbow",
-      "name": "Besta Leve",
+      "id": "martelo_leve",
+      "name": "Martelo Leve",
       "category": "Simples",
-      "type": "Distância",
-      "cost": "25 PO",
-      "damage": "1d8",
-      "damageType": "Perfurante",
-      "mastery": "slow",
-      "masteryName": "Abrandar (Slow)",
+      "type": "Corpo a Corpo",
+      "cost": "2 PO",
+      "damage": "1d4",
+      "damageType": "Contundente",
+      "mastery": "nick",
+      "masteryName": "Ágil (Nick)",
       "properties": [
-        "Munição (alcance 24/96m)",
-        "Recarga",
-        "Duas Mãos"
+        "Arremesso (Alcance 6/18)",
+        "Leve"
       ],
-      "weight": 2.5
+      "weight": 1.0
     },
     {
       "id": "shortbow",
       "name": "Arco Curto",
       "category": "Simples",
-      "type": "Distância",
+      "type": "À Distância",
       "cost": "25 PO",
       "damage": "1d6",
       "damageType": "Perfurante",
       "mastery": "vex",
-      "masteryName": "Irritar (Vex)",
+      "masteryName": "Afligir (Vex)",
       "properties": [
-        "Munição (alcance 24/96m)",
-        "Duas Mãos"
+        "Duas Mãos",
+        "Munição (Alcance 24/96; Flecha)"
       ],
-      "weight": 1
+      "weight": 1.0
     },
     {
-      "id": "greatsword",
-      "name": "Espada Grande (Montante)",
-      "category": "Marcial",
-      "type": "Corpo a Corpo",
-      "cost": "50 PO",
-      "damage": "2d6",
-      "damageType": "Cortante",
-      "mastery": "graze",
-      "masteryName": "Arranhão (Graze)",
-      "properties": [
-        "Pesada",
-        "Duas Mãos"
-      ],
-      "weight": 3
-    },
-    {
-      "id": "longsword",
-      "name": "Espada Longa",
-      "category": "Marcial",
-      "type": "Corpo a Corpo",
-      "cost": "15 PO",
-      "damage": "1d8",
-      "damageType": "Cortante",
-      "mastery": "sap",
-      "masteryName": "Debilitar (Sap)",
-      "properties": [
-        "Versátil (1d10)"
-      ],
-      "weight": 1.5
-    },
-    {
-      "id": "rapier",
-      "name": "Rapieira",
-      "category": "Marcial",
-      "type": "Corpo a Corpo",
+      "id": "light_crossbow",
+      "name": "Besta Leve",
+      "category": "Simples",
+      "type": "À Distância",
       "cost": "25 PO",
       "damage": "1d8",
       "damageType": "Perfurante",
-      "mastery": "vex",
-      "masteryName": "Irritar (Vex)",
+      "mastery": "slow",
+      "masteryName": "Lentidão (Slow)",
       "properties": [
-        "Acuidade"
+        "Duas Mãos",
+        "Munição (Alcance 24/96; Virote)",
+        "Recarga"
       ],
-      "weight": 1
+      "weight": 2.5
     },
     {
-      "id": "shortsword",
-      "name": "Espada Curta",
-      "category": "Marcial",
-      "type": "Corpo a Corpo",
-      "cost": "10 PO",
-      "damage": "1d6",
+      "id": "dardo",
+      "name": "Dardo",
+      "category": "Simples",
+      "type": "À Distância",
+      "cost": "5 PC",
+      "damage": "1d4",
       "damageType": "Perfurante",
       "mastery": "vex",
-      "masteryName": "Irritar (Vex)",
+      "masteryName": "Afligir (Vex)",
       "properties": [
         "Acuidade",
-        "Leve"
+        "Arremesso (Alcance 6/18)"
       ],
-      "weight": 1
+      "weight": 0.15
+    },
+    {
+      "id": "funda",
+      "name": "Funda",
+      "category": "Simples",
+      "type": "À Distância",
+      "cost": "1 PP",
+      "damage": "1d4",
+      "damageType": "Contundente",
+      "mastery": "slow",
+      "masteryName": "Lentidão (Slow)",
+      "properties": [
+        "Munição (Alcance 9/36; Bala)"
+      ],
+      "weight": 0
+    },
+    {
+      "id": "halberd",
+      "name": "Alabarda",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "20 PO",
+      "damage": "1d10",
+      "damageType": "Cortante",
+      "mastery": "cleave",
+      "masteryName": "Trespassar (Cleave)",
+      "properties": [
+        "Duas Mãos",
+        "Extensão",
+        "Pesada"
+      ],
+      "weight": 3.0
+    },
+    {
+      "id": "chicote",
+      "name": "Chicote",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "2 PO",
+      "damage": "1d4",
+      "damageType": "Cortante",
+      "mastery": "slow",
+      "masteryName": "Lentidão (Slow)",
+      "properties": [
+        "Acuidade",
+        "Extensão"
+      ],
+      "weight": 1.5
     },
     {
       "id": "scimitar",
@@ -4057,7 +4245,7 @@ const DND5E_DATA = {
       "damage": "1d6",
       "damageType": "Cortante",
       "mastery": "nick",
-      "masteryName": "Corte Ágil (Nick)",
+      "masteryName": "Ágil (Nick)",
       "properties": [
         "Acuidade",
         "Leve"
@@ -4065,20 +4253,115 @@ const DND5E_DATA = {
       "weight": 1.5
     },
     {
-      "id": "greataxe",
-      "name": "Machado Grande",
+      "id": "shortsword",
+      "name": "Espada Curta",
       "category": "Marcial",
       "type": "Corpo a Corpo",
-      "cost": "30 PO",
-      "damage": "1d12",
-      "damageType": "Cortante",
-      "mastery": "cleave",
-      "masteryName": "Trespassar (Cleave)",
+      "cost": "10 PO",
+      "damage": "1d6",
+      "damageType": "Perfurante",
+      "mastery": "vex",
+      "masteryName": "Afligir (Vex)",
       "properties": [
-        "Pesada",
-        "Duas Mãos"
+        "Acuidade",
+        "Leve"
       ],
-      "weight": 3.5
+      "weight": 1.0
+    },
+    {
+      "id": "greatsword",
+      "name": "Espada Grande (Montante)",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "50 PO",
+      "damage": "2d6",
+      "damageType": "Cortante",
+      "mastery": "graze",
+      "masteryName": "Garantido (Graze)",
+      "properties": [
+        "Duas Mãos",
+        "Pesada"
+      ],
+      "weight": 3.0
+    },
+    {
+      "id": "longsword",
+      "name": "Espada Longa",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "15 PO",
+      "damage": "1d8",
+      "damageType": "Cortante",
+      "mastery": "sap",
+      "masteryName": "Drenar (Sap)",
+      "properties": [
+        "Versátil (1d10)"
+      ],
+      "weight": 1.5
+    },
+    {
+      "id": "glaive",
+      "name": "Glaive",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "20 PO",
+      "damage": "1d10",
+      "damageType": "Cortante",
+      "mastery": "graze",
+      "masteryName": "Garantido (Graze)",
+      "properties": [
+        "Duas Mãos",
+        "Extensão",
+        "Pesada"
+      ],
+      "weight": 3.0
+    },
+    {
+      "id": "lanca_de_montaria",
+      "name": "Lança de Montaria",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "10 PO",
+      "damage": "1d10",
+      "damageType": "Perfurante",
+      "mastery": "topple",
+      "masteryName": "Derrubar (Topple)",
+      "properties": [
+        "Duas Mãos (a menos que montado)",
+        "Extensão",
+        "Pesada"
+      ],
+      "weight": 3.0
+    },
+    {
+      "id": "lanca_longa",
+      "name": "Lança Longa",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "5 PO",
+      "damage": "1d10",
+      "damageType": "Perfurante",
+      "mastery": "push",
+      "masteryName": "Empurrar (Push)",
+      "properties": [
+        "Duas Mãos",
+        "Extensão",
+        "Pesada"
+      ],
+      "weight": 9.0
+    },
+    {
+      "id": "maca_estrela",
+      "name": "Maça Estrela",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "15 PO",
+      "damage": "1d8",
+      "damageType": "Perfurante",
+      "mastery": "sap",
+      "masteryName": "Drenar (Sap)",
+      "properties": [],
+      "weight": 2.0
     },
     {
       "id": "battleaxe",
@@ -4093,24 +4376,23 @@ const DND5E_DATA = {
       "properties": [
         "Versátil (1d10)"
       ],
-      "weight": 2
+      "weight": 2.5
     },
     {
-      "id": "halberd",
-      "name": "Alabarda",
+      "id": "greataxe",
+      "name": "Machado Grande",
       "category": "Marcial",
       "type": "Corpo a Corpo",
-      "cost": "20 PO",
-      "damage": "1d10",
+      "cost": "30 PO",
+      "damage": "1d12",
       "damageType": "Cortante",
       "mastery": "cleave",
       "masteryName": "Trespassar (Cleave)",
       "properties": [
-        "Pesada",
-        "Alcance",
-        "Duas Mãos"
+        "Duas Mãos",
+        "Pesada"
       ],
-      "weight": 3
+      "weight": 3.5
     },
     {
       "id": "maul",
@@ -4123,10 +4405,23 @@ const DND5E_DATA = {
       "mastery": "topple",
       "masteryName": "Derrubar (Topple)",
       "properties": [
-        "Pesada",
-        "Duas Mãos"
+        "Duas Mãos",
+        "Pesada"
       ],
-      "weight": 4.5
+      "weight": 5.0
+    },
+    {
+      "id": "mangual",
+      "name": "Mangual",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "10 PO",
+      "damage": "1d8",
+      "damageType": "Contundente",
+      "mastery": "sap",
+      "masteryName": "Drenar (Sap)",
+      "properties": [],
+      "weight": 1.0
     },
     {
       "id": "warhammer",
@@ -4141,42 +4436,154 @@ const DND5E_DATA = {
       "properties": [
         "Versátil (1d10)"
       ],
-      "weight": 2
+      "weight": 1.0
+    },
+    {
+      "id": "picareta_de_guerra",
+      "name": "Picareta de Guerra",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "5 PO",
+      "damage": "1d8",
+      "damageType": "Perfurante",
+      "mastery": "sap",
+      "masteryName": "Drenar (Sap)",
+      "properties": [
+        "Versátil (1d10)"
+      ],
+      "weight": 1.0
+    },
+    {
+      "id": "rapier",
+      "name": "Rapieira",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "25 PO",
+      "damage": "1d8",
+      "damageType": "Perfurante",
+      "mastery": "vex",
+      "masteryName": "Afligir (Vex)",
+      "properties": [
+        "Acuidade"
+      ],
+      "weight": 1.0
+    },
+    {
+      "id": "tridente",
+      "name": "Tridente",
+      "category": "Marcial",
+      "type": "Corpo a Corpo",
+      "cost": "5 PO",
+      "damage": "1d8",
+      "damageType": "Perfurante",
+      "mastery": "topple",
+      "masteryName": "Derrubar (Topple)",
+      "properties": [
+        "Arremesso (Alcance 6/18)",
+        "Versátil (1d10)"
+      ],
+      "weight": 2.0
     },
     {
       "id": "longbow",
       "name": "Arco Longo",
       "category": "Marcial",
-      "type": "Distância",
+      "type": "À Distância",
       "cost": "50 PO",
       "damage": "1d8",
       "damageType": "Perfurante",
       "mastery": "slow",
-      "masteryName": "Abrandar (Slow)",
+      "masteryName": "Lentidão (Slow)",
       "properties": [
-        "Munição (alcance 45/180m)",
-        "Pesada",
-        "Duas Mãos"
+        "Duas Mãos",
+        "Munição (Alcance 45/180; Flecha)",
+        "Pesada"
       ],
-      "weight": 1
+      "weight": 1.0
+    },
+    {
+      "id": "besta_de_mao",
+      "name": "Besta de Mão",
+      "category": "Marcial",
+      "type": "À Distância",
+      "cost": "75 PO",
+      "damage": "1d6",
+      "damageType": "Perfurante",
+      "mastery": "vex",
+      "masteryName": "Afligir (Vex)",
+      "properties": [
+        "Leve",
+        "Munição (Alcance 9/36; Virote)",
+        "Recarga"
+      ],
+      "weight": 1.5
     },
     {
       "id": "heavy_crossbow",
       "name": "Besta Pesada",
       "category": "Marcial",
-      "type": "Distância",
+      "type": "À Distância",
       "cost": "50 PO",
       "damage": "1d10",
       "damageType": "Perfurante",
       "mastery": "push",
       "masteryName": "Empurrar (Push)",
       "properties": [
-        "Munição (alcance 30/120m)",
+        "Duas Mãos",
+        "Munição (Alcance 30/120; Virote)",
         "Pesada",
-        "Recarga",
-        "Duas Mãos"
+        "Recarga"
       ],
-      "weight": 4
+      "weight": 9.0
+    },
+    {
+      "id": "mosquete",
+      "name": "Mosquete",
+      "category": "Marcial",
+      "type": "À Distância",
+      "cost": "500 PO",
+      "damage": "1d12",
+      "damageType": "Perfurante",
+      "mastery": "slow",
+      "masteryName": "Lentidão (Slow)",
+      "properties": [
+        "Duas Mãos",
+        "Munição (Alcance 12/36; Bala)",
+        "Recarga"
+      ],
+      "weight": 5.0
+    },
+    {
+      "id": "pistola",
+      "name": "Pistola",
+      "category": "Marcial",
+      "type": "À Distância",
+      "cost": "250 PO",
+      "damage": "1d10",
+      "damageType": "Perfurante",
+      "mastery": "vex",
+      "masteryName": "Afligir (Vex)",
+      "properties": [
+        "Munição (Alcance 9/27; Bala)",
+        "Recarga"
+      ],
+      "weight": 1.5
+    },
+    {
+      "id": "zarabatana",
+      "name": "Zarabatana",
+      "category": "Marcial",
+      "type": "À Distância",
+      "cost": "10 PO",
+      "damage": "1",
+      "damageType": "Perfurante",
+      "mastery": "vex",
+      "masteryName": "Afligir (Vex)",
+      "properties": [
+        "Munição (Alcance 7,5/30; Agulha)",
+        "Recarga"
+      ],
+      "weight": 0.5
     }
   ],
   "armors": [

@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907i";
+    var APP_VERSION = "20260907j";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -532,19 +532,25 @@
 
           <!-- Armas Equipadas -->
           <div class="form-group">
-            <label class="form-label">Armas Principais para Combate (Até 3 armas com Maestria 2024)</label>
+            <label class="form-label">Armas Principais para Combate (até 3)</label>
+            <!-- A maestria não é automática: depende da característica Maestria em
+                 Arma da classe e de quantas o personagem pode manter ativas. -->
+            <p class="weapon-mastery-help" id="weaponMasteryHelp"></p>
             <div class="form-grid-3">
               <div class="form-group">
                 <label class="form-label" for="selectWeapon1">Arma 1</label>
                 <select class="form-control" id="selectWeapon1"></select>
+                <button type="button" class="btn btn-secondary btn-sm weapon-mastery-btn" data-mastery-slot="0" hidden></button>
               </div>
               <div class="form-group">
                 <label class="form-label" for="selectWeapon2">Arma 2</label>
                 <select class="form-control" id="selectWeapon2"></select>
+                <button type="button" class="btn btn-secondary btn-sm weapon-mastery-btn" data-mastery-slot="1" hidden></button>
               </div>
               <div class="form-group">
                 <label class="form-label" for="selectWeapon3">Arma 3</label>
                 <select class="form-control" id="selectWeapon3"></select>
+                <button type="button" class="btn btn-secondary btn-sm weapon-mastery-btn" data-mastery-slot="2" hidden></button>
               </div>
             </div>
           </div>
