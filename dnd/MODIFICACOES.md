@@ -1155,6 +1155,28 @@ têm a característica. Em multiclasse vale o maior dos dois, não a soma.
 `tools/checar-equipamento.js` cobre as contagens do livro, os limites por classe
 e nível, e o comportamento de ligar, desligar e recusar acima do limite.
 
+### 9.19 Imprimir passou a abrir uma aba
+
+O botão **Imprimir / PDF** gerava o arquivo certo e não imprimia nada. A causa
+era a estratégia: montar um `<iframe>` escondido com o blob do PDF e chamar
+`print()` nele. No Chrome isso não funciona com PDF — o visualizador é uma
+extensão, o `onload` do iframe muitas vezes não dispara e o `print()` é ignorado
+**sem erro nenhum**, então o botão parecia morto mesmo com tudo funcionando
+atrás dele.
+
+Agora o clique abre uma aba **antes** de gerar o arquivo. A ordem importa:
+carregar a pdf-lib, buscar a ficha e preencher leva alguns segundos, e se a aba
+só fosse aberta no fim o gesto do usuário já teria expirado e o navegador a
+bloquearia. A aba mostra "Preparando a ficha oficial…", recebe o PDF quando ele
+fica pronto e tenta `print()`; se o visualizador recusar, o arquivo está lá com
+o botão de imprimir dele. Aba bloqueada cai para o download, como em `file://`.
+
+`tools/checar-pdf.js` roda a pdf-lib dentro do mesmo contexto do app, preenche a
+ficha de verdade e confere a ordem (aba antes da geração) e a queda para o
+download. Carregar a pdf-lib por `require()` põe os `Uint8Array` em realms
+diferentes e ela rejeita o próprio buffer que recebeu — erro do teste, não do
+app, e que custou um diagnóstico errado antes.
+
 ---
 
 ## 10. Como o código da ficha funciona

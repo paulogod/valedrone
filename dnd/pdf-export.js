@@ -571,45 +571,64 @@ function officialPdfFilename() {
 
 /**
  * Aberto por file://, o app não tem origem: o blob vira "blob:null/..." e o
- * Chrome se recusa a abrir o visualizador de PDF nele (dá página em branco).
+ * navegador se recusa a abrir o visualizador de PDF nele (dá página em branco).
  * Nesse caso não há como imprimir de dentro do navegador — o jeito é baixar.
  */
 function canPrintPdfInPlace() {
   return location.protocol === "http:" || location.protocol === "https:";
 }
 
-/** Monta o PDF num iframe escondido e manda imprimir; devolve false se não der */
-function printPdfBytes(bytes, filename) {
-  if (!canPrintPdfInPlace()) return false;
-  const blob = new Blob([bytes], { type: "application/pdf" });
-  const url = URL.createObjectURL(blob);
-  const frame = document.createElement("iframe");
-  frame.style.position = "fixed";
-  frame.style.right = "0";
-  frame.style.bottom = "0";
-  frame.style.width = "0";
-  frame.style.height = "0";
-  frame.style.border = "0";
-  frame.src = url;
-  frame.onload = () => {
-    // O visualizador de PDF só aceita print() depois de montar; se mesmo assim
-    // ele recusar, baixa o arquivo em vez de abrir uma aba que ficaria vazia.
+/**
+ * Abre uma aba em branco AGORA, ainda dentro do clique.
+ *
+ * Gerar o PDF leva alguns segundos (carregar a pdf-lib, buscar a ficha,
+ * preencher). Se a aba só fosse aberta no fim, o gesto do usuário já teria
+ * expirado e o navegador bloquearia a janela. Abrindo antes, a aba é legítima e
+ * só recebe o endereço quando o arquivo fica pronto.
+ */
+function openPrintTab() {
+  if (!canPrintPdfInPlace()) return null;
+  try {
+    const aba = window.open("", "_blank");
+    if (aba && aba.document) {
+      aba.document.write(
+        '<!doctype html><meta charset="utf-8"><title>Gerando a ficha…</title>' +
+        '<body style="font:16px system-ui;background:#0f172a;color:#e2e8f0;' +
+        'display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
+        'Preparando a ficha oficial para impressão…</body>');
+      aba.document.close();
+    }
+    return aba;
+  } catch (err) {
+    return null;
+  }
+}
+
+/**
+ * Manda o PDF para a aba aberta no clique e pede a impressão.
+ *
+ * A tentativa anterior era montar um <iframe> escondido com o blob e chamar
+ * print() nele. No Chrome isso não funciona com PDF: o visualizador é uma
+ * extensão, o onload do iframe muitas vezes não dispara e o print() é ignorado
+ * sem erro nenhum — o botão parecia morto. Numa aba de verdade o visualizador
+ * abre com o próprio botão de imprimir, e o print() automático ainda é tentado.
+ */
+function printPdfBytes(bytes, filename, aba) {
+  if (!canPrintPdfInPlace() || !aba) return false;
+  const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+  try {
+    aba.location.href = url;
+    // O visualizador de PDF leva um instante para montar; se ele recusar o
+    // print(), a aba fica aberta com o arquivo e o botão de imprimir dele.
     setTimeout(() => {
-      try {
-        frame.contentWindow.focus();
-        frame.contentWindow.print();
-      } catch (err) {
-        console.warn("Impressão direta recusada, baixando o PDF:", err);
-        downloadPdfBytes(bytes, filename);
-        showPdfToast("📄 O navegador não abriu a impressão — a ficha foi baixada.");
-      }
-    }, 400);
-  };
-  document.body.appendChild(frame);
-  setTimeout(() => {
-    frame.remove();
+      try { aba.focus(); aba.print(); } catch (err) { /* o usuário imprime pela aba */ }
+    }, 1200);
+  } catch (err) {
+    console.warn("Não foi possível enviar o PDF para a aba:", err);
     URL.revokeObjectURL(url);
-  }, 120000);
+    return false;
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
   return true;
 }
 
@@ -622,6 +641,8 @@ async function exportToOfficialPdf(forcePick, mode) {
   const btnId = mode === "print" ? "btnPrintSheet" : "btnExportOfficialPdf";
   const btn = document.getElementById(btnId);
   const originalHtml = btn ? btn.innerHTML : "";
+  // Precisa ser a primeira coisa: depois do await o gesto do clique já passou.
+  const aba = mode === "print" ? openPrintTab() : null;
   try {
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...'; }
     await loadPdfLibrary();
@@ -629,13 +650,16 @@ async function exportToOfficialPdf(forcePick, mode) {
     const payload = collectOfficialPdfPayload();
     const { bytes, filled } = await fillOfficialPdf(srcBytes, payload);
     const filename = officialPdfFilename();
-    if (mode === "print" && printPdfBytes(bytes, filename)) {
-      showPdfToast(`🖨️ Ficha oficial pronta — ${filled} campos preenchidos.`);
+    if (mode === "print" && printPdfBytes(bytes, filename, aba)) {
+      showPdfToast(`🖨️ Ficha aberta em outra aba — ${filled} campos preenchidos. Se a impressão não abrir sozinha, use Ctrl+P por lá.`);
     } else if (mode === "print") {
-      // file://: sem origem, o navegador não exibe o PDF gerado. Baixa e explica.
+      // Sem aba (bloqueada pelo navegador) ou em file://, onde o blob não tem
+      // origem e o visualizador de PDF não abre. Baixa e explica.
       downloadPdfBytes(bytes, filename);
       showPdfToast(`📄 Ficha oficial baixada — ${filled} campos preenchidos.`);
-      showPdfToast("🖨️ Abra o arquivo baixado para imprimir. Para imprimir direto daqui, sirva a pasta por http (veja SERVIR.md).");
+      showPdfToast(canPrintPdfInPlace()
+        ? "🖨️ O navegador bloqueou a aba nova. Abra o arquivo baixado para imprimir, ou libere janelas para este site."
+        : "🖨️ Abra o arquivo baixado para imprimir. Para imprimir direto daqui, sirva a pasta por http (veja SERVIR.md).");
     } else {
       downloadPdfBytes(bytes, filename);
       showPdfToast(`📄 Ficha oficial gerada — ${filled} campos preenchidos.`);
@@ -644,6 +668,7 @@ async function exportToOfficialPdf(forcePick, mode) {
   } catch (err) {
     console.error("Falha ao exportar para o PDF oficial:", err);
     showPdfToast(`⚠️ Não deu para gerar o PDF: ${err.message}`);
+    if (aba) { try { aba.close(); } catch (e) { /* já fechada */ } }
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
   }
