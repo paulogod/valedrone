@@ -984,6 +984,37 @@ A versão agora é declarada só no `index.html`; o `pdf-export.js` a lê de
 velho é cosmético e passa em minutos, enquanto errar o carregamento delas deixa
 a página inteira sem estilo.
 
+### 9.8 A página volta a abrir em branco
+
+O app gravava o personagem em edição em `dnd55_active_character` e o restaurava
+no carregamento, então quem abrisse o site de novo encontrava a ficha da sessão
+anterior — não a ficha em branco que o `createBlankCharacter()` promete. A chave
+deixou de ser lida e de ser gravada; `discardActiveCharacter()` ainda a remove,
+para limpar quem já tinha uma salva.
+
+Junto veio o outro lado do mesmo problema: `saveToLocalStorage()` empurrava o
+personagem para `dnd55_saved_characters` **a cada tecla digitada**, enchendo o
+Salvos de rascunhos sem nome. O parâmetro `forceSlot` já existia na assinatura e
+não era usado; agora é ele que separa as duas coisas. Só os botões "Salvar
+Ficha" criam entrada nova; uma ficha que já está na lista continua sendo
+atualizada a cada mudança.
+
+`tools/checar-persistencia.js` roda essas regras num navegador simulado que já
+tem uma ficha antiga gravada.
+
+### 9.9 A barra da ficha quebrando em cima das abas
+
+A `.sheet-toolbar` virava linha em 768px sem `flex-wrap`, então quem quebrava
+era a `.sheet-quick-actions` lá dentro: virava duas linhas e, centralizada
+contra as abas de página, sobrava para cima e para baixo. Na tela isso lia como
+"Sincronização Ativa", "−", "Ajustar" e "+" soltos ao lado das abas, com cara de
+página sem estilo.
+
+Agora a barra inteira quebra como bloco, as abas não encolhem e as ações ficam
+encostadas à direita. A etiqueta "Sincronização Ativa" só aparece a partir de
+1400px — em 1024px ela cabia, mas era ela que empurrava os botões para a
+segunda linha.
+
 ---
 
 ## 10. Como o código da ficha funciona

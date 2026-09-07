@@ -133,7 +133,7 @@ let _ofBlank = true;
 document.addEventListener("DOMContentLoaded", () => {
   initUI();
   bindEvents();
-  loadFromLocalStorage();
+  discardActiveCharacter();
   syncWizardControls();
   populateDropdowns();
   recalculateCharacter();
@@ -3807,18 +3807,27 @@ function importCharacterJson(e) {
 }
 
 /**
- * Persistência no LocalStorage
+ * Persistência no LocalStorage.
+ *
+ * `forceSlot` é o que separa salvar de digitar: só os botões "Salvar Ficha"
+ * criam uma entrada nova na lista de fichas salvas. Sem isso, cada tecla
+ * digitada empurrava mais um rascunho sem nome para dentro de Salvos.
+ * Uma ficha que já está na lista continua sendo atualizada a cada mudança —
+ * quem já salvou não precisa salvar de novo a cada campo.
+ *
+ * Não existe mais "personagem ativo" gravado: a página abre sempre em branco,
+ * então guardá-lo só deixaria lixo no navegador. Veja discardActiveCharacter().
  */
 function saveToLocalStorage(forceSlot = false) {
   try {
-    localStorage.setItem("dnd55_active_character", JSON.stringify(character));
-    
-    let savedList = JSON.parse(localStorage.getItem("dnd55_saved_characters") || "[]");
+    const savedList = JSON.parse(localStorage.getItem("dnd55_saved_characters") || "[]");
     const existingIndex = savedList.findIndex(c => c.id === character.id);
     if (existingIndex >= 0) {
       savedList[existingIndex] = character;
-    } else {
+    } else if (forceSlot) {
       savedList.push(character);
+    } else {
+      return;                       // rascunho ainda não salvo: não vira entrada
     }
     localStorage.setItem("dnd55_saved_characters", JSON.stringify(savedList));
   } catch (err) {
@@ -3847,18 +3856,20 @@ function migrateLegacyCharacter(parsed) {
   character.schemaVersion = 2;
 }
 
-function loadFromLocalStorage() {
+/**
+ * A página abre sempre em branco.
+ *
+ * O app guardava o personagem em edição em "dnd55_active_character" e o
+ * restaurava ao carregar, o que fazia a ficha de outra sessão reaparecer para
+ * quem só queria começar do zero. A chave é descartada aqui; as fichas que o
+ * jogador salvou de propósito continuam em "dnd55_saved_characters" e são
+ * abertas pelo botão Salvos.
+ */
+function discardActiveCharacter() {
   try {
-    const saved = localStorage.getItem("dnd55_active_character");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Só o estado: quem repinta a tela é a sequência do DOMContentLoaded logo
-      // abaixo (syncWizardControls + populateDropdowns + recalculateCharacter).
-      character = mergeIntoBlankCharacter(parsed);
-      migrateLegacyCharacter(parsed);
-    }
+    localStorage.removeItem("dnd55_active_character");
   } catch (err) {
-    console.error("Erro ao carregar do LocalStorage:", err);
+    console.error("Erro ao limpar o LocalStorage:", err);
   }
 }
 
