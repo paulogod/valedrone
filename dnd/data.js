@@ -11582,105 +11582,342 @@ const DND5E_DATA = {
       "name": "Amedrontado (Frightened)",
       "icon": "fa-face-scream",
       "levels": 0,
-      "desc": "Enquanto tem a condição Amedrontado, você sofre os seguintes efeitos. Testes de Atributo e Ataques Afetados. Você tem Desvantagem em testes de atributo e jogadas de ataque enquanto a fonte do medo estiver dentro da linha de visão. Não Pode Se Aproximar. Você não pode se aproximar voluntariamente da fonte do medo."
+      "desc": "Enquanto tem a condição Amedrontado, você sofre os seguintes efeitos. Testes de Atributo e Ataques Afetados. Você tem Desvantagem em testes de atributo e jogadas de ataque enquanto a fonte do medo estiver dentro da linha de visão. Não Pode Se Aproximar. Você não pode se aproximar voluntariamente da fonte do medo.",
+      "intro": "Enquanto tem a condição Amedrontado, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Testes de Atributo e Ataques Afetados",
+          "text": "Você tem Desvantagem em testes de atributo e jogadas de ataque enquanto a fonte do medo estiver dentro da linha de visão."
+        },
+        {
+          "title": "Não Pode Se Aproximar",
+          "text": "Você não pode se aproximar voluntariamente da fonte do medo."
+        }
+      ]
     },
     {
       "id": "atordoado",
       "name": "Atordoado (Stunned)",
       "icon": "fa-star",
       "levels": 0,
-      "desc": "Enquanto tem a condição Atordoado, você sofre os seguintes efeitos. Incapacitado. Você tem a condição Incapacitado. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza. Ataques Afetados. Jogadas de ataque contra você têm Vantagem."
+      "desc": "Enquanto tem a condição Atordoado, você sofre os seguintes efeitos. Incapacitado. Você tem a condição Incapacitado. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza. Ataques Afetados. Jogadas de ataque contra você têm Vantagem.",
+      "intro": "Enquanto tem a condição Atordoado, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Incapacitado",
+          "text": "Você tem a condição Incapacitado."
+        },
+        {
+          "title": "Salvaguardas Afetadas",
+          "text": "Você falha automaticamente em salvaguardas de Força e Destreza."
+        },
+        {
+          "title": "Ataques Afetados",
+          "text": "Jogadas de ataque contra você têm Vantagem."
+        }
+      ]
     },
     {
       "id": "caido",
       "name": "Caído (Prone)",
       "icon": "fa-person-falling",
       "levels": 0,
-      "desc": "Enquanto tem a condição Caído, você sofre os seguintes efeitos. Movimento Restrito. Suas únicas opções de movimento são rastejar ou gastar uma quantidade de movimento equivalente à metade do seu Deslocamento (arredondado para baixo) para se levantar e, assim, encerrar a condição. Se seu Deslocamento for 0, você não consegue se levantar. Ataques Afetados. Você tem Desvantagem em jogadas de ataque. Uma jogada de ataque contra você tem Vantagem se o atacante estiver a até 1,5 metro de você. Caso contrário, essa jogada de ataque tem Desvantagem."
+      "desc": "Enquanto tem a condição Caído, você sofre os seguintes efeitos. Movimento Restrito. Suas únicas opções de movimento são rastejar ou gastar uma quantidade de movimento equivalente à metade do seu Deslocamento (arredondado para baixo) para se levantar e, assim, encerrar a condição. Se seu Deslocamento for 0, você não consegue se levantar. Ataques Afetados. Você tem Desvantagem em jogadas de ataque. Uma jogada de ataque contra você tem Vantagem se o atacante estiver a até 1,5 metro de você. Caso contrário, essa jogada de ataque tem Desvantagem.",
+      "intro": "Enquanto tem a condição Caído, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Movimento Restrito",
+          "text": "Suas únicas opções de movimento são rastejar ou gastar uma quantidade de movimento equivalente à metade do seu Deslocamento (arredondado para baixo) para se levantar e, assim, encerrar a condição. Se seu Deslocamento for 0, você não consegue se levantar."
+        },
+        {
+          "title": "Ataques Afetados",
+          "text": "Você tem Desvantagem em jogadas de ataque. Uma jogada de ataque contra você tem Vantagem se o atacante estiver a até 1,5 metro de você. Caso contrário, essa jogada de ataque tem Desvantagem."
+        }
+      ]
     },
     {
       "id": "cego",
       "name": "Cego (Blinded)",
       "icon": "fa-eye-slash",
       "levels": 0,
-      "desc": "Enquanto tem a condição Cego, você sofre os seguintes efeitos. Não Pode Ver. Você não consegue ver e falha automaticamente em qualquer teste de atributo que dependa da visão. Ataques Afetados. Jogadas de ataque contra você têm Vantagem, enquanto suas jogadas de ataque têm Desvantagem."
+      "desc": "Enquanto tem a condição Cego, você sofre os seguintes efeitos. Não Pode Ver. Você não consegue ver e falha automaticamente em qualquer teste de atributo que dependa da visão. Ataques Afetados. Jogadas de ataque contra você têm Vantagem, enquanto suas jogadas de ataque têm Desvantagem.",
+      "intro": "Enquanto tem a condição Cego, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Não Pode Ver",
+          "text": "Você não consegue ver e falha automaticamente em qualquer teste de atributo que dependa da visão."
+        },
+        {
+          "title": "Ataques Afetados",
+          "text": "Jogadas de ataque contra você têm Vantagem, enquanto suas jogadas de ataque têm Desvantagem."
+        }
+      ]
     },
     {
       "id": "contido",
       "name": "Contido (Restrained)",
       "icon": "fa-link",
       "levels": 0,
-      "desc": "Enquanto tem a condição Contido, você sofre os seguintes efeitos. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Jogadas de ataque contra você têm Vantagem e suas jogadas de ataque têm Desvantagem. Salvaguardas Afetadas. Você tem Desvantagem em salvaguardas de Destreza."
+      "desc": "Enquanto tem a condição Contido, você sofre os seguintes efeitos. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Jogadas de ataque contra você têm Vantagem e suas jogadas de ataque têm Desvantagem. Salvaguardas Afetadas. Você tem Desvantagem em salvaguardas de Destreza.",
+      "intro": "Enquanto tem a condição Contido, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Deslocamento 0",
+          "text": "Seu Deslocamento é 0 e não pode aumentar."
+        },
+        {
+          "title": "Ataques Afetados",
+          "text": "Jogadas de ataque contra você têm Vantagem e suas jogadas de ataque têm Desvantagem."
+        },
+        {
+          "title": "Salvaguardas Afetadas",
+          "text": "Você tem Desvantagem em salvaguardas de Destreza."
+        }
+      ]
     },
     {
       "id": "enfeiticado",
       "name": "Enfeitiçado (Charmed)",
       "icon": "fa-heart",
       "levels": 0,
-      "desc": "Enquanto tem a condição Enfeitiçado, você sofre os seguintes efeitos: Não Pode Atacar Quem o Enfeitiçou. Você não pode atacar quem o enfeitiçou nem o ter como alvo de ataques que utilizem atributos ou efeitos mágicos. Vantagem Social. Quem o enfeitiçou tem Vantagem em qualquer teste de atributo para interações sociais com você."
+      "desc": "Enquanto tem a condição Enfeitiçado, você sofre os seguintes efeitos: Não Pode Atacar Quem o Enfeitiçou. Você não pode atacar quem o enfeitiçou nem o ter como alvo de ataques que utilizem atributos ou efeitos mágicos. Vantagem Social. Quem o enfeitiçou tem Vantagem em qualquer teste de atributo para interações sociais com você.",
+      "intro": "Enquanto tem a condição Enfeitiçado, você sofre os seguintes efeitos:",
+      "effects": [
+        {
+          "title": "Não Pode Atacar Quem o Enfeitiçou",
+          "text": "Você não pode atacar quem o enfeitiçou nem o ter como alvo de ataques que utilizem atributos ou efeitos mágicos."
+        },
+        {
+          "title": "Vantagem Social",
+          "text": "Quem o enfeitiçou tem Vantagem em qualquer teste de atributo para interações sociais com você."
+        }
+      ]
     },
     {
       "id": "envenenado",
       "name": "Envenenado (Poisoned)",
       "icon": "fa-skull-crossbones",
       "levels": 0,
-      "desc": "Enquanto tem a condição Envenenado, você sofre os seguintes efeitos. Testes de Atributo e Ataques Afetados. Você tem Desvantagem em jogadas de ataque e testes de atributo."
+      "desc": "Enquanto tem a condição Envenenado, você sofre os seguintes efeitos. Testes de Atributo e Ataques Afetados. Você tem Desvantagem em jogadas de ataque e testes de atributo.",
+      "intro": "Enquanto tem a condição Envenenado, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Testes de Atributo e Ataques Afetados",
+          "text": "Você tem Desvantagem em jogadas de ataque e testes de atributo."
+        }
+      ]
     },
     {
       "id": "exaustao",
       "name": "Exaustão (Exhaustion)",
       "icon": "fa-battery-quarter",
       "levels": 6,
-      "desc": "Enquanto tem a condição Exaustão, você sofre os seguintes efeitos. Níveis de Exaustão. Essa condição é acumulativa. Cada vez que você a adquire, recebe 1 nível de Exaustão. Você morre se seu nível de Exaustão atingir 6. Testes de D20 Afetados. Ao realizar um Teste de D20, o resultado é reduzido em 2 vezes o seu nível de Exaustão. Deslocamento Reduzido. Seu Deslocamento é reduzido por uma quantidade de metros igual a 1,5 vezes o seu nível de Exaustão. Remoção de Níveis de Exaustão. Completar um Descanso Longo remove 1 dos seus níveis de Exaustão. Quando seu nível de Exaustão chega a 0 a condição encerra."
+      "desc": "Enquanto tem a condição Exaustão, você sofre os seguintes efeitos. Níveis de Exaustão. Essa condição é acumulativa. Cada vez que você a adquire, recebe 1 nível de Exaustão. Você morre se seu nível de Exaustão atingir 6. Testes de D20 Afetados. Ao realizar um Teste de D20, o resultado é reduzido em 2 vezes o seu nível de Exaustão. Deslocamento Reduzido. Seu Deslocamento é reduzido por uma quantidade de metros igual a 1,5 vezes o seu nível de Exaustão. Remoção de Níveis de Exaustão. Completar um Descanso Longo remove 1 dos seus níveis de Exaustão. Quando seu nível de Exaustão chega a 0 a condição encerra.",
+      "intro": "Enquanto tem a condição Exaustão, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Níveis de Exaustão",
+          "text": "Essa condição é acumulativa. Cada vez que você a adquire, recebe 1 nível de Exaustão. Você morre se seu nível de Exaustão atingir 6."
+        },
+        {
+          "title": "Testes de D20 Afetados",
+          "text": "Ao realizar um Teste de D20, o resultado é reduzido em 2 vezes o seu nível de Exaustão."
+        },
+        {
+          "title": "Deslocamento Reduzido",
+          "text": "Seu Deslocamento é reduzido por uma quantidade de metros igual a 1,5 vezes o seu nível de Exaustão."
+        },
+        {
+          "title": "Remoção de Níveis de Exaustão",
+          "text": "Completar um Descanso Longo remove 1 dos seus níveis de Exaustão. Quando seu nível de Exaustão chega a 0 a condição encerra."
+        }
+      ]
     },
     {
       "id": "imobilizado",
       "name": "Imobilizado (Grappled)",
       "icon": "fa-hand-fist",
       "levels": 0,
-      "desc": "Enquanto tem a condição Imobilizado, você sofre os seguintes efeitos. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Você tem Desvantagem em jogadas de ataque contra qualquer alvo que não seja o imobilizador. Móvel. O imobilizador pode arrastá-lo ou carregá-lo consigo, mas cada metro de movimento custa 1 metro adicional, a menos que você seja Minúsculo ou dois ou mais tamanhos menores que ele."
+      "desc": "Enquanto tem a condição Imobilizado, você sofre os seguintes efeitos. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Você tem Desvantagem em jogadas de ataque contra qualquer alvo que não seja o imobilizador. Móvel. O imobilizador pode arrastá-lo ou carregá-lo consigo, mas cada metro de movimento custa 1 metro adicional, a menos que você seja Minúsculo ou dois ou mais tamanhos menores que ele.",
+      "intro": "Enquanto tem a condição Imobilizado, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Deslocamento 0",
+          "text": "Seu Deslocamento é 0 e não pode aumentar."
+        },
+        {
+          "title": "Ataques Afetados",
+          "text": "Você tem Desvantagem em jogadas de ataque contra qualquer alvo que não seja o imobilizador."
+        },
+        {
+          "title": "Móvel",
+          "text": "O imobilizador pode arrastá-lo ou carregá-lo consigo, mas cada metro de movimento custa 1 metro adicional, a menos que você seja Minúsculo ou dois ou mais tamanhos menores que ele."
+        }
+      ]
     },
     {
       "id": "incapacitado",
       "name": "Incapacitado (Incapacitated)",
       "icon": "fa-ban",
       "levels": 0,
-      "desc": "Enquanto tem a condição Incapacitado, você sofre os seguintes efeitos. Inativo. Você não pode executar nenhuma ação, Ação Bônus ou Reação. Sem Concentração. Sua Concentração é interrompida. Sem Fala. Você não pode falar. Surpresa. Se você está Incapacitado quando joga Iniciativa, você tem Desvantagem na jogada."
+      "desc": "Enquanto tem a condição Incapacitado, você sofre os seguintes efeitos. Inativo. Você não pode executar nenhuma ação, Ação Bônus ou Reação. Sem Concentração. Sua Concentração é interrompida. Sem Fala. Você não pode falar. Surpresa. Se você está Incapacitado quando joga Iniciativa, você tem Desvantagem na jogada.",
+      "intro": "Enquanto tem a condição Incapacitado, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Inativo",
+          "text": "Você não pode executar nenhuma ação, Ação Bônus ou Reação."
+        },
+        {
+          "title": "Sem Concentração",
+          "text": "Sua Concentração é interrompida."
+        },
+        {
+          "title": "Sem Fala",
+          "text": "Você não pode falar."
+        },
+        {
+          "title": "Surpresa",
+          "text": "Se você está Incapacitado quando joga Iniciativa, você tem Desvantagem na jogada."
+        }
+      ]
     },
     {
       "id": "inconsciente",
       "name": "Inconsciente (Unconscious)",
       "icon": "fa-bed",
       "levels": 0,
-      "desc": "Enquanto tem a condição Inconsciente, você sofre os seguintes efeitos. Inerte. Você tem as condições Caído e Incapacitado e solta qualquer coisa que estiver segurando. Quando esta condição se encerra, você continua Caído. Deslocamento 0. Seu Deslocamento é 0 e não pode ser aumentado. Ataques Afetados. Jogadas de ataque contra você têm Vantagem. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza. Acertos Críticos Automáticos. Qualquer jogada de ataque que o atinge é um Acerto Crítico se o atacante estiver a até 1,5 metro de você. Alheio. Você não está ciente do que está ao seu redor."
+      "desc": "Enquanto tem a condição Inconsciente, você sofre os seguintes efeitos. Inerte. Você tem as condições Caído e Incapacitado e solta qualquer coisa que estiver segurando. Quando esta condição se encerra, você continua Caído. Deslocamento 0. Seu Deslocamento é 0 e não pode ser aumentado. Ataques Afetados. Jogadas de ataque contra você têm Vantagem. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza. Acertos Críticos Automáticos. Qualquer jogada de ataque que o atinge é um Acerto Crítico se o atacante estiver a até 1,5 metro de você. Alheio. Você não está ciente do que está ao seu redor.",
+      "intro": "Enquanto tem a condição Inconsciente, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Inerte",
+          "text": "Você tem as condições Caído e Incapacitado e solta qualquer coisa que estiver segurando. Quando esta condição se encerra, você continua Caído."
+        },
+        {
+          "title": "Deslocamento 0",
+          "text": "Seu Deslocamento é 0 e não pode ser aumentado."
+        },
+        {
+          "title": "Ataques Afetados",
+          "text": "Jogadas de ataque contra você têm Vantagem."
+        },
+        {
+          "title": "Salvaguardas Afetadas",
+          "text": "Você falha automaticamente em salvaguardas de Força e Destreza."
+        },
+        {
+          "title": "Acertos Críticos Automáticos",
+          "text": "Qualquer jogada de ataque que o atinge é um Acerto Crítico se o atacante estiver a até 1,5 metro de você."
+        },
+        {
+          "title": "Alheio",
+          "text": "Você não está ciente do que está ao seu redor."
+        }
+      ]
     },
     {
       "id": "invisivel",
       "name": "Invisível (Invisible)",
       "icon": "fa-ghost",
       "levels": 0,
-      "desc": "Enquanto tem a condição Invisível, você sofre os seguintes efeitos. Surpresa. Se você está Invisível quando joga Iniciativa, tem Vantagem na jogada. Oculto. Você não é afetado por nenhum efeito que exija que seu alvo seja visto, a menos que o criador do efeito possa vê-lo de alguma forma. Qualquer equipamento que você estiver vestindo ou carregando também está oculto. Ataques Afetados. Jogadas de ataque contra você têm Desvantagem, enquanto suas jogadas de ataque têm Vantagem. Se uma criatura puder vê-lo de alguma forma, você não recebe esse benefício contra ela."
+      "desc": "Enquanto tem a condição Invisível, você sofre os seguintes efeitos. Surpresa. Se você está Invisível quando joga Iniciativa, tem Vantagem na jogada. Oculto. Você não é afetado por nenhum efeito que exija que seu alvo seja visto, a menos que o criador do efeito possa vê-lo de alguma forma. Qualquer equipamento que você estiver vestindo ou carregando também está oculto. Ataques Afetados. Jogadas de ataque contra você têm Desvantagem, enquanto suas jogadas de ataque têm Vantagem. Se uma criatura puder vê-lo de alguma forma, você não recebe esse benefício contra ela.",
+      "intro": "Enquanto tem a condição Invisível, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Surpresa",
+          "text": "Se você está Invisível quando joga Iniciativa, tem Vantagem na jogada."
+        },
+        {
+          "title": "Oculto",
+          "text": "Você não é afetado por nenhum efeito que exija que seu alvo seja visto, a menos que o criador do efeito possa vê-lo de alguma forma. Qualquer equipamento que você estiver vestindo ou carregando também está oculto."
+        },
+        {
+          "title": "Ataques Afetados",
+          "text": "Jogadas de ataque contra você têm Desvantagem, enquanto suas jogadas de ataque têm Vantagem. Se uma criatura puder vê-lo de alguma forma, você não recebe esse benefício contra ela."
+        }
+      ]
     },
     {
       "id": "paralisado",
       "name": "Paralisado (Paralyzed)",
       "icon": "fa-bolt",
       "levels": 0,
-      "desc": "Enquanto tem a condição Paralisado, você sofre os seguintes efeitos. Incapacitado. Você adquire a condição Incapacitado. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Jogadas de ataque contra você têm Vantagem. Acertos Críticos Automáticos. Qualquer jogada de ataque que o atinge é um Acerto Crítico se o atacante estiver a até 1,5 metro de você. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza."
+      "desc": "Enquanto tem a condição Paralisado, você sofre os seguintes efeitos. Incapacitado. Você adquire a condição Incapacitado. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Jogadas de ataque contra você têm Vantagem. Acertos Críticos Automáticos. Qualquer jogada de ataque que o atinge é um Acerto Crítico se o atacante estiver a até 1,5 metro de você. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza.",
+      "intro": "Enquanto tem a condição Paralisado, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Incapacitado",
+          "text": "Você adquire a condição Incapacitado."
+        },
+        {
+          "title": "Deslocamento 0",
+          "text": "Seu Deslocamento é 0 e não pode aumentar."
+        },
+        {
+          "title": "Ataques Afetados",
+          "text": "Jogadas de ataque contra você têm Vantagem."
+        },
+        {
+          "title": "Acertos Críticos Automáticos",
+          "text": "Qualquer jogada de ataque que o atinge é um Acerto Crítico se o atacante estiver a até 1,5 metro de você."
+        },
+        {
+          "title": "Salvaguardas Afetadas",
+          "text": "Você falha automaticamente em salvaguardas de Força e Destreza."
+        }
+      ]
     },
     {
       "id": "petrificado",
       "name": "Petrificado (Petrified)",
       "icon": "fa-gem",
       "levels": 0,
-      "desc": "Enquanto tem a condição Petrificado, você sofre os seguintes efeitos. Transformado em Substância Inanimada. Você é transformado, juntamente com qualquer objeto não mágico que esteja vestindo ou carregando, em uma substância sólida e inanimada (geralmente pedra). Seu peso aumenta em dez vezes e você para de envelhecer. Incapacitado. Você adquire a condição Incapacitado. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Jogadas de ataque contra você têm Vantagem. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza. Resistência a Dano. Você tem Resistência a todos os danos. Imunidade a Veneno. Você tem Imunidade à condição Envenenado."
+      "desc": "Enquanto tem a condição Petrificado, você sofre os seguintes efeitos. Transformado em Substância Inanimada. Você é transformado, juntamente com qualquer objeto não mágico que esteja vestindo ou carregando, em uma substância sólida e inanimada (geralmente pedra). Seu peso aumenta em dez vezes e você para de envelhecer. Incapacitado. Você adquire a condição Incapacitado. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Jogadas de ataque contra você têm Vantagem. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza. Resistência a Dano. Você tem Resistência a todos os danos. Imunidade a Veneno. Você tem Imunidade à condição Envenenado.",
+      "intro": "Enquanto tem a condição Petrificado, você sofre os seguintes efeitos.",
+      "effects": [
+        {
+          "title": "Transformado em Substância Inanimada",
+          "text": "Você é transformado, juntamente com qualquer objeto não mágico que esteja vestindo ou carregando, em uma substância sólida e inanimada (geralmente pedra). Seu peso aumenta em dez vezes e você para de envelhecer."
+        },
+        {
+          "title": "Incapacitado",
+          "text": "Você adquire a condição Incapacitado."
+        },
+        {
+          "title": "Deslocamento 0",
+          "text": "Seu Deslocamento é 0 e não pode aumentar."
+        },
+        {
+          "title": "Ataques Afetados",
+          "text": "Jogadas de ataque contra você têm Vantagem."
+        },
+        {
+          "title": "Salvaguardas Afetadas",
+          "text": "Você falha automaticamente em salvaguardas de Força e Destreza."
+        },
+        {
+          "title": "Resistência a Dano",
+          "text": "Você tem Resistência a todos os danos."
+        },
+        {
+          "title": "Imunidade a Veneno",
+          "text": "Você tem Imunidade à condição Envenenado."
+        }
+      ]
     },
     {
       "id": "surdo",
       "name": "Surdo (Deafened)",
       "icon": "fa-ear-deaf",
       "levels": 0,
-      "desc": "Enquanto estiver na condição Surdo, você sofre o seguinte efeito. Não Pode Ouvir. Você não pode ouvir e falha automaticamente em qualquer teste de atributo que dependa da audição."
+      "desc": "Enquanto estiver na condição Surdo, você sofre o seguinte efeito. Não Pode Ouvir. Você não pode ouvir e falha automaticamente em qualquer teste de atributo que dependa da audição.",
+      "intro": "Enquanto estiver na condição Surdo, você sofre o seguinte efeito.",
+      "effects": [
+        {
+          "title": "Não Pode Ouvir",
+          "text": "Você não pode ouvir e falha automaticamente em qualquer teste de atributo que dependa da audição."
+        }
+      ]
     }
   ]
 };

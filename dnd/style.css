@@ -1497,8 +1497,14 @@ select.form-control option {
   line-height: 1.45;
 }
 
-.cond-detalhe strong { color: #fbbf24; }
-.cond-detalhe p { margin-top: 0.25rem; color: var(--text-muted); }
+.cond-titulo { color: #fbbf24; }
+.cond-intro { margin-top: 0.25rem; color: var(--text-muted); }
+
+/* Um item por efeito, como o livro apresenta */
+.cond-efeitos { margin: 0.35rem 0 0; padding-left: 1rem; list-style: disc; }
+.cond-efeitos li { margin-bottom: 0.3rem; color: var(--text-muted); }
+.cond-efeitos li:last-child { margin-bottom: 0; }
+.cond-efeitos strong { color: #e2e8f0; }
 
 /* ---------- Controle de Pontos de Vida (jogo) ---------- */
 

@@ -1287,6 +1287,19 @@ function renderSpellSlots() {
 
 /* ------------------------------------------------------------- CONDIÇÕES */
 
+/**
+ * Texto da condição na forma do livro: a frase de abertura e, abaixo, um item
+ * por efeito com o título em destaque. O parágrafo corrido de antes escondia
+ * exatamente a parte que se consulta no meio do turno.
+ */
+function conditionHtml(c) {
+  const itens = (c.effects || []).map(e =>
+    `<li><strong>${e.title}.</strong> ${e.text}</li>`).join("");
+  return `<strong class="cond-titulo">${c.name}</strong>
+    <p class="cond-intro">${c.intro || ""}</p>
+    ${itens ? `<ul class="cond-efeitos">${itens}</ul>` : `<p>${c.desc}</p>`}`;
+}
+
 function hasCondition(id) {
   return (character.conditions || []).includes(id);
 }
@@ -4699,7 +4712,7 @@ function bindEvents() {
         const jaAberta = !box.hidden && box.dataset.cond === c.id;
         box.hidden = jaAberta;
         box.dataset.cond = c.id;
-        box.innerHTML = `<strong>${c.name}</strong><p>${c.desc}</p>`;
+        box.innerHTML = conditionHtml(c);
       }
       return;
     }

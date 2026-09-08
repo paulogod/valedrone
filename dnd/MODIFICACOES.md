@@ -1369,6 +1369,26 @@ Espaços de magia são da classe: subclasse, espécie, talento e antecedente nã
 dão espaços, dão magias. Por isso as duas coisas aparecem em blocos separados em
 vez de somadas.
 
+### 9.29 Condições na forma do livro
+
+O texto das condições vinha como um parágrafo corrido, que é como a extração do
+PDF entrega. No livro cada condição é uma frase de abertura seguida de **efeitos
+nomeados** — "Não Pode Ver. Você não consegue ver…" —, e era justamente essa
+estrutura que se consulta no meio do turno.
+
+O extrator passou a separar as duas partes: `intro` e uma lista de `effects` com
+título e texto. O painel exibe abertura e depois um item por efeito, com o
+título em destaque.
+
+A conferência que importa: para as 15 condições, juntar a abertura com os
+efeitos reproduz **exatamente** o texto original extraído, caractere por
+caractere — nada foi perdido nem inventado ao separar. São de 1 efeito (Surdo,
+Envenenado) a 7 (Petrificado).
+
+Dois detalhes do formato do livro que o extrator precisou aprender: títulos com
+número ("Deslocamento 0.") e aberturas que terminam em dois-pontos, como a de
+Enfeitiçado.
+
 ---
 
 ## 10. Como o código da ficha funciona
