@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260908j";
+    var APP_VERSION = "20260908k";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -1007,11 +1007,20 @@
                     </div>
                   </div>
 
-                  <!-- Armas & Truques de Dano -->
+                  <!-- Armas e Magias de Ataque.
+                       Só entra aqui o que precisa acertar: jogada de ataque.
+                       Magia de salvaguarda pura não é ataque e saiu da tabela. -->
                   <div class="of-box">
                     <div class="of-box-title of-box-title-row">
-                      <span>Armas &amp; Truques de Dano</span>
+                      <span>Armas e Magias de Ataque</span>
                       <button type="button" class="of-mini-btn" id="btnAddSheetWeaponRow" title="Adicionar linha"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <!-- Aparece só quando as magias não cabem no que sobrou das
+                         armas. As armas têm preferência; as magias, o jogador
+                         escolhe. -->
+                    <div class="of-aviso-magias" id="avisoMagiasAtaque" hidden>
+                      <span id="avisoMagiasTexto"></span>
+                      <button type="button" class="of-mini-btn" id="btnEscolherMagiasAtaque">Escolher</button>
                     </div>
                     <table class="of-table of-weapons-table">
                       <thead>
@@ -1372,6 +1381,22 @@
           <button type="submit" class="btn btn-primary">Adicionar à Ficha</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ESCOLHER AS MAGIAS DE ATAQUE QUE ENTRAM NA FICHA -->
+  <div class="modal-overlay" id="spellAttackPickModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Magias de Ataque na Ficha</h3>
+        <button class="modal-close-btn" id="closeSpellAttackPickModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="section-desc" id="spellAttackPickAjuda"></p>
+      <div class="skills-selector-grid" id="spellAttackPickLista"></div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+        <button type="button" class="btn btn-secondary" id="btnSpellAttackPickAuto">Deixar o app escolher</button>
+        <button type="button" class="btn btn-primary" id="btnSpellAttackPickOk">Aplicar à ficha</button>
+      </div>
     </div>
   </div>
 

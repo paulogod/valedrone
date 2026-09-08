@@ -2911,3 +2911,26 @@ img, table, pre { max-width: 100%; }
 }
 
 .origem-extra-linha .btn { flex: 0 0 auto; }
+
+/* ---------------------------------------------------------------------------
+   AVISO DE MAGIAS QUE NÃO COUBERAM NA TABELA DE ATAQUES DA FICHA
+   A ficha oficial tem oito linhas e elas não esticam. Quando as armas as
+   ocupam, o aviso diz o que ficou de fora e abre a escolha. Fica dentro da
+   página A4, por isso as medidas em px acompanham a escala da folha.
+--------------------------------------------------------------------------- */
+.of-aviso-magias {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin: 2px 0 3px;
+  padding: 2px 4px;
+  border: 1px solid #c98a2e;
+  border-radius: 3px;
+  background: rgba(251, 191, 36, 0.16);
+  color: #7a4a06;
+  font-size: 7.5px;
+  line-height: 1.25;
+}
+
+.of-aviso-magias .of-mini-btn { flex-shrink: 0; }

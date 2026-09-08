@@ -2087,9 +2087,27 @@ function spellcastingAbilityOf() {
  * dos dois. O livro escreve isso em prosa, então a leitura é por padrão de
  * texto — o resultado vai para a ficha como apoio, não como regra fechada.
  */
+/**
+ * Uma magia exige jogada de ataque de QUEM CONJURA?
+ *
+ * Procurar só "jogada de ataque" no texto pega errado quase metade dos casos:
+ * Bênção soma 1d4 "à jogada de ataque" do aliado, Marca do Caçador dá dano
+ * extra "sempre que o acertar com uma jogada de ataque", Santuário fala da
+ * jogada de ataque do inimigo. Nenhuma delas se rola para acertar, e todas
+ * ocupavam linha na tabela de ataques da ficha.
+ *
+ * O que separa é o sujeito e o modo do verbo: a magia de ataque manda VOCÊ
+ * rolar ("Realize um ataque mágico à distância", "você realiza um ataque
+ * mágico corpo a corpo"), enquanto as outras descrevem a jogada de outra
+ * pessoa ou uma condição. De 43 magias que a regra antiga chamava de ataque,
+ * 25 são ataque de verdade.
+ */
+const RE_ATAQUE_DE_MAGIA =
+  /\b(?:realize|faça|você realiza|você faz|pode realizar|pode fazer)\s+(?:imediatamente\s+)?(?:um ataque mágico|uma jogada de ataque|um ataque corpo a corpo com magia|um ataque à distância com magia)/i;
+
 function spellCombatInfo(sp) {
   const desc = sp.desc || "";
-  const ataque = /jogada de ataque|ataque mágico|ataque corpo a corpo com magia/i.test(desc);
+  const ataque = RE_ATAQUE_DE_MAGIA.test(desc);
   const mSalva = desc.match(/salvaguarda de (Força|Destreza|Constituição|Inteligência|Sabedoria|Carisma)/i);
   const mDano = desc.match(/(\d+d\d+)[^.]{0,40}?dano (?:de )?(\wÁ-ú+|[A-ZÀ-Ú][a-zà-ú]+)/);
   const dado = desc.match(/\d+d\d+/);
@@ -2193,8 +2211,13 @@ function spellAttackRows(finalMods, pb) {
       return { srcId: "spell:" + sp.id, name: sp.name.split(" (")[0], ...r };
     }
 
+    // Esta tabela é de ATAQUE: entra o que precisa acertar. Magia de
+    // salvaguarda pura (Bola de Fogo, Onda Trovejante) não tem jogada de
+    // ataque — ficava aqui com "CD 15 Des" na coluna de bônus, misturando
+    // duas mecânicas diferentes na mesma linha e enchendo as oito linhas da
+    // ficha impressa com o que não se rola para acertar.
     const info = spellCombatInfo(sp);
-    if (!info.ataque && !info.salvaguarda) return null;
+    if (!info.ataque) return null;
     const notas = [
       formatSpellLevel(sp.level),
       sp.time,
@@ -2204,9 +2227,7 @@ function spellAttackRows(finalMods, pb) {
     return {
       srcId: "spell:" + sp.id,
       name: sp.name.split(" (")[0],
-      atk: info.ataque
-        ? `${atkMagico >= 0 ? "+" : ""}${atkMagico}`
-        : `CD ${cd} ${ATRIBUTO_CURTO[info.salvaguarda] || ""}`.trim(),
+      atk: `${atkMagico >= 0 ? "+" : ""}${atkMagico}`,
       damage: info.dano,
       notes: notas
     };
@@ -2312,6 +2333,25 @@ function renderWeaponSlots() {
 /* Nome antigo, mantido porque o resto do app ainda chama por ele */
 function renderWeaponMasteryButtons() {
   renderWeaponSlots();
+}
+
+/**
+ * CD da salvaguarda que a maestria da arma impõe, quando ela impõe alguma.
+ *
+ * O texto da maestria é a fonte: procura "salvaguarda de <Atributo>" na
+ * descrição em vez de manter uma lista à parte, que sairia do lugar assim que
+ * o data.js mudasse. Hoje só Derrubar (Topple) cai aqui; a fórmula é a do
+ * livro, 8 + bônus de proficiência + o modificador do atributo do ataque.
+ */
+function masterySaveDC(w, atkAbilityMod, pb) {
+  if (!w || !w.mastery) return null;
+  const m = DND5E_DATA.weaponMasteries.find(x => x.id === w.mastery);
+  if (!m) return null;
+  const achou = String(m.desc || "")
+    .match(/salvaguarda de (Força|Destreza|Constituição|Inteligência|Sabedoria|Carisma)/i);
+  if (!achou) return null;
+  const nome = achou[1].charAt(0).toUpperCase() + achou[1].slice(1).toLowerCase();
+  return { cd: 8 + pb + atkAbilityMod, atributo: ATRIBUTO_CURTO[nome] || nome.slice(0, 3) };
 }
 
 function masteryDesc(id) {
@@ -4344,10 +4384,16 @@ function syncSheetWeaponRows(ctx) {
     const style = getWeaponStyleMods(w);
     const atkMod = finalMods[atkAbility] + pb + style.atk;
     const dmgMod = finalMods[atkAbility] + style.dmg;
+
+    // Maestria que faz o alvo rolar salvaguarda (hoje só Derrubar) precisa da
+    // CD na ficha: sem ela o jogador acerta o golpe e para a mesa para
+    // recalcular 8 + PB + atributo no meio do turno.
+    const cdMaestria = isMasteryActive(w.id) ? masterySaveDC(w, finalMods[atkAbility], pb) : null;
+
     auto.push({
       srcId: "weapon:" + w.id,
       name: w.name,
-      atk: `${atkMod >= 0 ? '+' : ''}${atkMod}`,
+      atk: `${atkMod >= 0 ? '+' : ''}${atkMod}` + (cdMaestria ? ` / CD ${cdMaestria.cd} ${cdMaestria.atributo}` : ""),
       damage: `${w.damage}${dmgMod !== 0 ? (dmgMod > 0 ? ' +' + dmgMod : ' ' + dmgMod) : ''} ${w.damageType}`,
       notes: [isMasteryActive(w.id) ? `Maestria: ${w.masteryName}` : null, ...style.notes]
         .filter(Boolean).join(" • ")
@@ -4361,10 +4407,6 @@ function syncSheetWeaponRows(ctx) {
     const punho = DND5E_DATA.weapons.find(w => w.id === "unarmed");
     if (punho) auto.push(linhaDeAtaqueSemArma(punho, finalMods, pb));
   }
-
-  // Magias que entram na tabela de ataques: truques de dano, magias com jogada
-  // de ataque e as que exigem salvaguarda (aí vale a CD no lugar do bônus).
-  spellAttackRows(finalMods, pb).forEach(r => auto.push(r));
 
   character.customItems.filter(i => i.equipped && (i.type === "weapon" || i.damage)).forEach(item => {
     const atkAbility = dexMod > finalMods["str"] ? "dex" : "str";
@@ -4382,8 +4424,25 @@ function syncSheetWeaponRows(ctx) {
     auto.push({ srcId: "atk:" + ca.id, name: ca.name, atk: ca.bonus || "", damage: ca.damage || "", notes: "" });
   });
 
+  // Tudo acima é arma; as magias vêm à parte porque disputam as mesmas linhas e
+  // perdem a disputa. Uma arma equipada é escolha já feita pelo jogador; uma
+  // magia de ataque ele pode conjurar sem estar na folha.
+  const armas = auto.slice();
+  const magiasTodas = spellAttackRows(finalMods, pb);
+
+  const vagas = Math.max(0, OF_WEAPON_MIN_ROWS - armas.length);
+  const magias = escolherMagiasDeAtaque(magiasTodas, vagas);
+  _magiasDeAtaqueDeFora = magiasTodas.length - magias.length;
+
+  // O modal de escolha precisa refazer as linhas das magias para mostrá-las
+  // com bônus e dano; guardamos o contexto do último cálculo em vez de
+  // recalcular a ficha inteira só para abrir uma janela.
+  _ultimosCtxAtaque = { finalMods, pb };
+  _vagasParaMagias = vagas;
+
   // Insere as novas, atualiza as que o jogador não editou, remove as que saíram
-  auto.forEach(a => {
+  const linhas = [...armas, ...magias];
+  linhas.forEach(a => {
     const existing = ov.weaponRows.find(r => r.srcId === a.srcId);
     if (!existing) {
       ov.weaponRows.push({ uid: newRowUid(), edited: false, ...a });
@@ -4391,10 +4450,122 @@ function syncSheetWeaponRows(ctx) {
       Object.assign(existing, a);
     }
   });
-  const autoIds = auto.map(a => a.srcId);
+  const autoIds = linhas.map(a => a.srcId);
   ov.weaponRows = ov.weaponRows.filter(r => !r.srcId || autoIds.includes(r.srcId));
 
   padSheetRows(ov.weaponRows, OF_WEAPON_MIN_ROWS, () => ({ uid: newRowUid(), name: "", atk: "", damage: "", notes: "" }));
+  ordenarLinhasDeAtaque(ov.weaponRows);
+  atualizarAvisoDeMagias();
+}
+
+/* ---------------------------------------------- ORDEM DA TABELA DE ATAQUES */
+
+/** Quantas magias de ataque não couberam na ficha */
+let _magiasDeAtaqueDeFora = 0;
+/** Vagas que sobraram para magias depois das armas, no último cálculo */
+let _vagasParaMagias = 0;
+/** Modificadores e bônus de proficiência do último cálculo da ficha */
+let _ultimosCtxAtaque = null;
+
+/**
+ * Quais magias de ataque entram, quando não cabem todas.
+ *
+ * A escolha do jogador (`sheet.spellAttackPicks`) manda; o que ela não
+ * preencher é completado na ordem em que as magias aparecem, para a ficha
+ * nunca ficar com linha vazia sobrando enquanto há magia de fora.
+ */
+function escolherMagiasDeAtaque(magias, vagas) {
+  if (vagas <= 0) return [];
+  if (magias.length <= vagas) return magias;
+
+  const escolhidas = sheetOv().spellAttackPicks || [];
+  const preferidas = magias.filter(m => escolhidas.includes(m.srcId));
+  const resto = magias.filter(m => !escolhidas.includes(m.srcId));
+  return [...preferidas, ...resto].slice(0, vagas);
+}
+
+/**
+ * Põe as armas encostadas no topo e as magias encostadas na base, com as
+ * linhas livres no meio.
+ *
+ * Numa ficha impressa isso importa: quem procura um ataque de arma olha para o
+ * começo do bloco e quem procura magia olha para o fim, sem varrer a lista
+ * inteira. As linhas que o jogador digitou à mão ficam logo depois das armas,
+ * que é onde ele as escreveu.
+ */
+function ordenarLinhasDeAtaque(rows) {
+  const ehMagia = r => String(r.srcId || "").startsWith("spell:");
+  const ehVazia = r => !r.srcId && !(r.name || "").trim() && !(r.atk || "").trim() &&
+                       !(r.damage || "").trim() && !(r.notes || "").trim();
+
+  const armas = rows.filter(r => r.srcId && !ehMagia(r));
+  const magias = rows.filter(ehMagia);
+  const aMao = rows.filter(r => !r.srcId && !ehVazia(r));
+  const vazias = rows.filter(ehVazia);
+
+  // As linhas em branco ficam no meio, e o padSheetRows só sabe aparar as do
+  // FIM — que agora são magia. Sem cortar aqui, cada troca de arma ou de
+  // classe deixava mais um vazio encalhado no meio e a tabela crescia sem
+  // parar. O tamanho é o das oito linhas da folha, ou o que o conteúdo exigir.
+  const ocupadas = armas.length + aMao.length + magias.length;
+  const brancosNecessarios = Math.max(0, OF_WEAPON_MIN_ROWS - ocupadas);
+
+  rows.length = 0;
+  rows.push(...armas, ...aMao, ...vazias.slice(0, brancosNecessarios), ...magias);
+}
+
+/**
+ * Monta o modal de escolha das magias de ataque que entram na ficha.
+ *
+ * Mostra todas as magias de ataque do personagem e quantas vagas sobraram
+ * depois das armas. Marcar além do limite não é bloqueado no clique — o
+ * excedente é cortado ao aplicar, na ordem da lista, e o contador avisa antes.
+ */
+function abrirEscolhaDeMagiasDeAtaque() {
+  const modal = document.getElementById("spellAttackPickModal");
+  const lista = document.getElementById("spellAttackPickLista");
+  const ajuda = document.getElementById("spellAttackPickAjuda");
+  if (!modal || !lista) return;
+
+  const ctx = _ultimosCtxAtaque || {};
+  const magias = spellAttackRows(ctx.finalMods || _ultimosMods || {}, ctx.pb || 2);
+  const vagas = _vagasParaMagias;
+  const escolhidas = new Set(sheetOv().spellAttackPicks || []);
+
+  if (ajuda) {
+    ajuda.textContent = vagas > 0
+      ? `As armas ocupam o resto das oito linhas da ficha. Sobraram ${vagas} vaga(s) para magias — escolha quais entram.`
+      : "As armas ocupam as oito linhas da ficha. Para pôr uma magia ali, remova uma arma no Passo 5 ou use o + da tabela para abrir outra linha.";
+  }
+
+  lista.innerHTML = magias.map(m => `
+    <label class="skill-select-item">
+      <input type="checkbox" data-pick="${m.srcId}"${escolhidas.has(m.srcId) ? " checked" : ""}${vagas > 0 ? "" : " disabled"}>
+      <span>${m.name} <small style="color:#94a3b8">${m.atk} • ${m.damage || "—"}</small></span>
+    </label>`).join("") ||
+    '<p class="feat-empty-msg">Nenhuma magia de ataque na ficha ainda.</p>';
+
+  modal.classList.add("active");
+}
+
+/**
+ * Avisa quando sobrou magia de fora e oferece a escolha.
+ *
+ * A ficha oficial tem oito linhas e elas não esticam: se as armas as ocupam,
+ * as magias ficam de fora, e o jogador precisa saber disso e decidir quais
+ * quer ali — não é decisão do app.
+ */
+function atualizarAvisoDeMagias() {
+  const caixa = document.getElementById("avisoMagiasAtaque");
+  const texto = document.getElementById("avisoMagiasTexto");
+  if (!caixa || !texto) return;
+
+  caixa.hidden = _magiasDeAtaqueDeFora <= 0;
+  if (caixa.hidden) return;
+
+  texto.textContent = _magiasDeAtaqueDeFora === 1
+    ? "1 magia de ataque não coube: as armas têm preferência."
+    : `${_magiasDeAtaqueDeFora} magias de ataque não couberam: as armas têm preferência.`;
 }
 
 /** Mantém a tabela com o número de linhas em branco da ficha impressa */
@@ -5611,6 +5782,40 @@ function bindEvents() {
 
   // Caneta do painel de vida. O botão mora dentro do <summary>, então precisa
   // barrar o clique: sem isso, abrir a edição fecharia o painel junto.
+  // ---- Escolha das magias de ataque que entram na ficha ----
+  const btnEscolherMagias = document.getElementById("btnEscolherMagiasAtaque");
+  const modalMagias = document.getElementById("spellAttackPickModal");
+  if (btnEscolherMagias && modalMagias) {
+    btnEscolherMagias.addEventListener("click", abrirEscolhaDeMagiasDeAtaque);
+
+    const fechar = () => modalMagias.classList.remove("active");
+    document.getElementById("closeSpellAttackPickModal").addEventListener("click", fechar);
+
+    document.getElementById("btnSpellAttackPickOk").addEventListener("click", () => {
+      const marcadas = [...modalMagias.querySelectorAll("[data-pick]:checked")]
+        .map(c => c.getAttribute("data-pick"));
+      // Guarda a escolha inteira, mesmo além das vagas: se o jogador remover
+      // uma arma depois, as magias que ele já tinha marcado entram sozinhas.
+      sheetOv().spellAttackPicks = marcadas;
+      fechar();
+      recalculateCharacter();
+      saveToLocalStorage();
+      showToast(marcadas.length
+        ? `✨ ${marcadas.length} magia(s) de ataque priorizada(s) na ficha.`
+        : "Escolha limpa: o app volta a preencher as vagas na ordem da lista.");
+    });
+
+    document.getElementById("btnSpellAttackPickAuto").addEventListener("click", () => {
+      sheetOv().spellAttackPicks = [];
+      fechar();
+      recalculateCharacter();
+      saveToLocalStorage();
+      showToast("O app volta a preencher as vagas na ordem da lista.");
+    });
+
+    modalMagias.addEventListener("click", (e) => { if (e.target === modalMagias) fechar(); });
+  }
+
   const btnHpEditar = document.getElementById("btnHpEditar");
   if (btnHpEditar) {
     btnHpEditar.addEventListener("click", (e) => {
