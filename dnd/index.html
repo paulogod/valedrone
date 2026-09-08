@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907t";
+    var APP_VERSION = "20260907u";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -669,10 +669,14 @@
         <!-- BARRA DE FERRAMENTAS DA FICHA -->
         <div class="sheet-toolbar">
           <div class="sheet-page-tabs">
-            <button class="page-tab-btn active" data-page="1">
+            <!-- Os dois botões ligam e desligam a página, não trocam entre elas:
+                 as duas ficam abertas, uma embaixo da outra. -->
+            <button class="page-tab-btn active" data-page="1" aria-pressed="true" title="Mostrar ou esconder a Página 1">
+              <i class="fa-solid fa-eye page-tab-olho"></i>
               <i class="fa-solid fa-shield-halved"></i> Página 1<span class="tab-long-label">: Personagem & Combate</span>
             </button>
-            <button class="page-tab-btn" data-page="2">
+            <button class="page-tab-btn active" data-page="2" aria-pressed="true" title="Mostrar ou esconder a Página 2">
+              <i class="fa-solid fa-eye page-tab-olho"></i>
               <i class="fa-solid fa-hat-wizard"></i> Página 2<span class="tab-long-label">: Magias & História</span>
             </button>
           </div>
@@ -979,7 +983,7 @@
             <!-- ==================================================================== -->
             <!-- PÁGINA 2 — MAGIAS, APARÊNCIA, HISTÓRIA, EQUIPAMENTO E MOEDAS         -->
             <!-- ==================================================================== -->
-            <div class="sheet-page" id="sheetPage2">
+            <div class="sheet-page active-page" id="sheetPage2">
               <div class="of-body of-body-p2">
 
                 <!-- ===== COLUNA ESQUERDA: CONJURAÇÃO ===== -->

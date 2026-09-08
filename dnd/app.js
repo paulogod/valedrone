@@ -382,6 +382,11 @@ function sheetFitScale() {
   return Math.min(1, available / pageWidth);
 }
 
+/**
+ * Com as duas páginas abertas, o ajuste continua sendo pela largura: a altura
+ * cresce e o painel rola, que é o comportamento esperado de uma ficha de duas
+ * folhas empilhadas.
+ */
 function fitSheetToViewport() {
   const container = document.getElementById("sheetContainer");
   if (!container) return;
@@ -4252,17 +4257,30 @@ function bindEvents() {
     if (currentStep < 6) setWizardStep(currentStep + 1);
   });
 
-  // Navegação das Páginas da Ficha
+  // As duas páginas ficam abertas, uma embaixo da outra. Os botões deixaram de
+  // trocar de página e passaram a ligar e desligar cada uma — dá para ver as
+  // duas ao mesmo tempo ou esconder a que não interessa agora.
   const pageTabs = document.querySelectorAll(".page-tab-btn");
   pageTabs.forEach(btn => {
     btn.addEventListener("click", () => {
-      pageTabs.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-
       const page = btn.getAttribute("data-page");
-      document.querySelectorAll(".sheet-page").forEach(p => p.classList.remove("active-page"));
-      document.getElementById(`sheetPage${page}`).classList.add("active-page");
+      const alvo = document.getElementById(`sheetPage${page}`);
+      if (!alvo) return;
+
+      const visiveis = [...document.querySelectorAll(".sheet-page.active-page")];
+      const ligada = alvo.classList.contains("active-page");
+      // esconder a última visível deixaria o painel vazio sem motivo
+      if (ligada && visiveis.length === 1) {
+        showToast("Deixe ao menos uma página visível.");
+        return;
+      }
+
+      alvo.classList.toggle("active-page", !ligada);
+      btn.classList.toggle("active", !ligada);
+      btn.setAttribute("aria-pressed", String(!ligada));
+      fitSheetToViewport();
     });
+    btn.setAttribute("aria-pressed", String(btn.classList.contains("active")));
   });
 
   // Ficha oficial editável (2 páginas): todos os campos, tabelas e marcações

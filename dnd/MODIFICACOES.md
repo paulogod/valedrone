@@ -1336,6 +1336,21 @@ antes de virar HTML, porque vem de campo livre.
 As condições subiram para logo abaixo dos botões de dano e cura — são o que mais
 muda a rolagem do turno, e ficavam atrás do histórico.
 
+### 9.27 As duas páginas abertas, com botões que ligam e desligam
+
+A ficha mostrava uma página por vez e os botões da barra trocavam entre elas.
+Agora as duas ficam abertas, empilhadas — Página 1 em cima, Página 2 embaixo — e
+os botões viraram interruptores: cada um mostra ou esconde a sua página, com um
+ícone de olho dizendo o estado e o rótulo riscado quando desligada.
+
+Esconder a última página visível é recusado, porque deixaria o painel vazio sem
+motivo. O ajuste de zoom continua sendo pela largura: a altura cresce e o painel
+rola, que é o esperado de duas folhas empilhadas.
+
+`tools/checar-paginas.js` garante que as duas começam visíveis, que o clique
+alterna em vez de trocar, e que a regra antiga — apagar `active-page` de todas as
+páginas antes de marcar uma — não voltou.
+
 ---
 
 ## 10. Como o código da ficha funciona

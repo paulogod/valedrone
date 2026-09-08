@@ -879,6 +879,17 @@ select.form-control option {
   border-color: #8b2515;
 }
 
+/* O olho diz se a página está visível; desligada, o botão fica apagado */
+.page-tab-olho { opacity: 0.85; margin-right: 0.1rem; }
+
+.page-tab-btn:not(.active) {
+  opacity: 0.6;
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 255, 255, 0.35);
+}
+
+.page-tab-btn:not(.active) .page-tab-olho::before { content: "\f070"; }   /* fa-eye-slash */
+
 /* Container de Rolagem e Zoom da Ficha */
 .sheet-render-viewport {
   width: 100%;
