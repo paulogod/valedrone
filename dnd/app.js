@@ -2203,7 +2203,8 @@ function renderWeaponSlots() {
   const opcoes = (selecionado) => ['<option value="none">Nenhuma arma</option>']
     .concat(DND5E_DATA.weapons.map(w =>
       `<option value="${w.id}"${w.id === selecionado ? " selected" : ""}>` +
-      `${w.name} [${w.damage} ${w.damageType}] • ${w.category} ${w.type} • Maestria: ${w.masteryName}` +
+      `${w.name} [${w.damage} ${w.damageType}] • ${w.category} ${w.type}` +
+      (w.mastery ? ` • Maestria: ${w.masteryName}` : "") +
       `</option>`)).join("");
 
   container.innerHTML = character.weapons.map((wId, i) => {
@@ -2212,7 +2213,7 @@ function renderWeaponSlots() {
     return `
       <div class="weapon-slot">
         <select class="form-control weapon-slot-select" data-slot="${i}" aria-label="Arma ${i + 1}">${opcoes(wId)}</select>
-        ${w && limite > 0
+        ${w && w.mastery && limite > 0
           ? `<button type="button" class="btn btn-secondary btn-sm weapon-mastery-btn${on ? " is-on" : ""}" data-slot="${i}"
                title="${on ? "Maestria ativa" : "Ativar a maestria desta arma"}. ${masteryDesc(w.mastery).replace(/"/g, "&quot;")}">
                <i class="fa-solid ${on ? "fa-toggle-on" : "fa-toggle-off"}"></i> ${w.masteryName}
@@ -3038,6 +3039,75 @@ function getActiveFightingStyles() {
 }
 
 /** Uma arma tem a propriedade? (compara pelo prefixo, pois há "Arremesso (alcance 6/18m)") */
+/**
+ * Dado de Artes Marciais do Monge no nível de monge informado (d6 → d12).
+ *
+ * Fica no data.js, junto da classe, porque é tabela de regra e não conta.
+ * Devolve null para quem não é monge — é isso que separa o ataque desarmado do
+ * monge (dado que cresce, atributo à escolha) do de todo mundo (1 de dano).
+ */
+function getMartialArtsDie(classId, nivel) {
+  const c = DND5E_DATA.classes.find(x => x.id === classId);
+  if (!c || !c.martialArtsByLevel || nivel < 1) return null;
+  return c.martialArtsByLevel[Math.min(20, nivel)] || null;
+}
+
+/** O melhor dado de Artes Marciais entre as duas classes do personagem */
+function getMonkMartialArtsDie() {
+  const d1 = getMartialArtsDie(character.class1, character.level1 || 0);
+  const d2 = getMartialArtsDie(character.class2, character.level2 || 0);
+  if (!d1) return d2;
+  if (!d2) return d1;
+  const faces = (d) => parseInt(String(d).split("d")[1], 10) || 0;
+  return faces(d1) >= faces(d2) ? d1 : d2;
+}
+
+/**
+ * Linha de ataque desarmado ou de arma improvisada, que não seguem a conta das
+ * armas comuns.
+ *
+ * Desarmado (Livro do Jogador 2024): 1 de dano Contundente mais o modificador
+ * de Força, e todo personagem é proficiente. O Monge troca esse 1 pelo dado de
+ * Artes Marciais e pode usar Destreza no lugar de Força — o app já entrega os
+ * dois com o maior dos dois modificadores somado.
+ *
+ * Improvisada: 1d4 e SEM bônus de proficiência, salvo quando o objeto lembra
+ * uma arma que o personagem sabe usar. Como isso depende do objeto na mão, a
+ * linha sai sem o bônus e diz o motivo nas observações, em vez de somar um
+ * número que pode estar errado na mesa.
+ */
+function linhaDeAtaqueSemArma(w, finalMods, pb) {
+  const strMod = finalMods["str"] || 0;
+  const dexMod = finalMods["dex"] || 0;
+
+  if (w.id === "improvised") {
+    const atkMod = strMod;
+    return {
+      srcId: "weapon:" + w.id,
+      name: w.name,
+      atk: `${atkMod >= 0 ? "+" : ""}${atkMod}`,
+      damage: `1d4${strMod !== 0 ? (strMod > 0 ? " +" + strMod : " " + strMod) : ""} ${w.damageType}`,
+      notes: "Sem proficiência (some o bônus se o objeto lembrar uma arma que você usa)"
+    };
+  }
+
+  const dadoMonge = getMonkMartialArtsDie();
+  const usaDex = !!dadoMonge && dexMod > strMod;
+  const mod = usaDex ? dexMod : strMod;
+  const atkMod = mod + pb;
+  const dano = dadoMonge || "1";
+
+  return {
+    srcId: "weapon:" + w.id,
+    name: dadoMonge ? "Ataque Desarmado (Artes Marciais)" : w.name,
+    atk: `${atkMod >= 0 ? "+" : ""}${atkMod}`,
+    damage: `${dano}${mod !== 0 ? (mod > 0 ? " +" + mod : " " + mod) : ""} ${w.damageType}`,
+    notes: dadoMonge
+      ? `Artes Marciais ${dadoMonge} • usa ${usaDex ? "Destreza" : "Força"} (o maior dos dois)`
+      : "Proficiente"
+  };
+}
+
 function weaponHasProp(w, prop) {
   return (w.properties || []).some(p => String(p).toLowerCase().startsWith(prop.toLowerCase()));
 }
@@ -4101,6 +4171,13 @@ function syncSheetWeaponRows(ctx) {
     if (!wId || wId === "none") return;
     const w = DND5E_DATA.weapons.find(wep => wep.id === wId);
     if (!w) return;
+
+    // Desarmado e improvisada têm conta própria e saem por outro caminho.
+    if (w.id === "unarmed" || w.id === "improvised") {
+      auto.push(linhaDeAtaqueSemArma(w, finalMods, pb));
+      return;
+    }
+
     const isFinesse = weaponHasProp(w, "Acuidade");
     const atkAbility = isRangedWeapon(w) || (isFinesse && dexMod > finalMods["str"]) ? "dex" : "str";
     const style = getWeaponStyleMods(w);
@@ -4115,6 +4192,14 @@ function syncSheetWeaponRows(ctx) {
         .filter(Boolean).join(" • ")
     });
   });
+
+  // O Monge sempre luta desarmado: a linha entra sozinha, sem ele precisar
+  // "equipar" um punho na lista de armas. Se ele já tiver escolhido o Ataque
+  // Desarmado na lista, o laço acima já a criou e esta não se repete.
+  if (getMonkMartialArtsDie() && !character.weapons.includes("unarmed")) {
+    const punho = DND5E_DATA.weapons.find(w => w.id === "unarmed");
+    if (punho) auto.push(linhaDeAtaqueSemArma(punho, finalMods, pb));
+  }
 
   // Magias que entram na tabela de ataques: truques de dano, magias com jogada
   // de ataque e as que exigem salvaguarda (aí vale a CD no lugar do bônus).

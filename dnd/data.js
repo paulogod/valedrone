@@ -1524,6 +1524,12 @@ const DND5E_DATA = {
       "id": "monk",
       "name": "Monge (Monk)",
       "hitDie": 8,
+      "martialArtsByLevel": {
+        "1": "1d6", "2": "1d6", "3": "1d6", "4": "1d6",
+        "5": "1d8", "6": "1d8", "7": "1d8", "8": "1d8", "9": "1d8", "10": "1d8",
+        "11": "1d10", "12": "1d10", "13": "1d10", "14": "1d10", "15": "1d10", "16": "1d10",
+        "17": "1d12", "18": "1d12", "19": "1d12", "20": "1d12"
+      },
       "primaryAbility": [
         "dex",
         "wis"
@@ -4202,6 +4208,36 @@ const DND5E_DATA = {
     }
   ],
   "weapons": [
+    {
+      "id": "unarmed",
+      "foraDaTabela": true,
+      "name": "Ataque Desarmado",
+      "category": "Sem Arma",
+      "type": "Corpo a Corpo",
+      "cost": "—",
+      "damage": "1",
+      "damageType": "Contundente",
+      "mastery": null,
+      "masteryName": "",
+      "properties": [],
+      "weight": 0
+    },
+    {
+      "id": "improvised",
+      "foraDaTabela": true,
+      "name": "Arma Improvisada",
+      "category": "Improvisada",
+      "type": "Corpo a Corpo",
+      "cost": "—",
+      "damage": "1d4",
+      "damageType": "Contundente",
+      "mastery": null,
+      "masteryName": "",
+      "properties": [
+        "Arremesso (Alcance 6/18)"
+      ],
+      "weight": 0
+    },
     {
       "id": "dagger",
       "name": "Adaga",
