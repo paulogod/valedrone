@@ -1236,6 +1236,30 @@ ocioso depois do carregamento da página, de modo que o clique aproveite o que j
 está em memória. Só vale por http: em `file://` a ficha vem do arquivo embutido
 de 16 MB, que não faz sentido carregar sem necessidade.
 
+### 9.23 Duas fichas: leve para imprimir, completa para guardar
+
+Depois de três tentativas de mandar o PDF para a impressora pelo navegador — o
+`<iframe>` escondido, a aba com `print()` e a aba sem `print()` —, os dois botões
+voltaram a simplesmente **baixar o arquivo**, que é o que funciona. O que muda é
+qual ficha cada um usa:
+
+| Botão | Ficha | Tamanho |
+|---|---|---|
+| **Imprimir / PDF** | leve, sem o fundo decorativo | 499 KB |
+| **Ficha PDF Oficial** | oficial completa, com o pergaminho | 11,9 MB |
+
+`ficha-oficial-leve.pdf` sai de `tools/gerar-ficha-leve.js`. Quase 11 dos 11,9 MB
+da ficha da Wizards são três imagens de fundo — o pergaminho em JPEG (523 KB) e
+duas texturas em tons de cinza de 2448×3161 (5,5 MB e 5,3 MB). As legendas, as
+molduras e os 411 campos do formulário são vetoriais e não dependem delas:
+trocando as três por um pixel branco, o arquivo cai **95,8%** e a ficha continua
+inteira. Conferido: as duas versões têm 2 páginas, 411 campos e exatamente os
+mesmos 1754 caracteres de texto. Para imprimir é uma vantagem dupla — baixa
+rápido e gasta muito menos tinta.
+
+O prefetch em segundo plano passou a buscar só a leve: adiantar 11,9 MB para
+quem talvez nem exporte custaria mais do que economiza.
+
 ---
 
 ## 10. Como o código da ficha funciona

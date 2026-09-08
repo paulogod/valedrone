@@ -15,10 +15,16 @@
  * ========================================================================== */
 
 const OFFICIAL_PDF_FILE = "D&D 5.5 - Ficha editável.pdf";
-/* Onde procurar a ficha em branco servida por http. O nome ASCII vem primeiro:
-   "D&D 5.5 - Ficha editável.pdf" tem &, espaço e acento, que nem toda
-   hospedagem serve direito. */
+/* Onde procurar cada ficha em branco servida por http. O nome ASCII vem
+   primeiro: "D&D 5.5 - Ficha editável.pdf" tem &, espaço e acento, que nem toda
+   hospedagem serve direito.
+
+   A versão leve é a mesma ficha sem as três imagens de fundo — 499 KB no lugar
+   de 11,9 MB, com as legendas, as molduras e os 411 campos intactos. Ela é o
+   padrão do botão Imprimir / PDF: baixa rápido e gasta muito menos tinta.
+   Veja tools/gerar-ficha-leve.js. */
 const OFFICIAL_PDF_URLS = ["ficha-oficial.pdf", OFFICIAL_PDF_FILE];
+const LIGHT_PDF_URLS = ["ficha-oficial-leve.pdf"];
 const PDF_LIB_FILE = "pdf-lib.min.js";
 const FICHA_EMBED_FILE = "ficha-oficial-embed.js";
 /* A versão é declarada uma única vez, no index.html (var APP_VERSION). Declarar
@@ -30,6 +36,7 @@ function appVersion() {
 
 /* Cache da sessão: bytes do PDF em branco e promessas de carga dos scripts */
 let _officialPdfBytes = null;
+let _lightPdfBytes = null;
 let _pdfLibPromise = null;
 let _fichaEmbedPromise = null;
 
@@ -506,30 +513,42 @@ function pickOfficialPdf() {
 }
 
 /**
- * Bytes da ficha oficial em branco. A ordem importa para o peso da página:
+ * Bytes de uma ficha em branco. A ordem importa para o peso da página:
  *
- *   1. fetch do PDF ao lado do app (OFFICIAL_PDF_URLS) — servido por http, é o
- *      caminho normal e não custa nada a quem nunca exporta;
+ *   1. fetch do arquivo ao lado do app — servido por http, é o caminho normal e
+ *      não custa nada a quem nunca exporta;
  *   2. a cópia embutida em ficha-oficial-embed.js (~16 MB) — só entra quando o
  *      fetch é bloqueado, ou seja, abrindo o index.html por file://;
  *   3. o seletor de arquivo, se as duas falharem.
  *
- * O resultado fica em cache pela sessão.
+ * O resultado fica em cache pela sessão, um cache por versão.
  */
+async function fetchFirstAvailable(urls) {
+  for (const url of urls) {
+    try {
+      const resp = await fetch(encodeURI(url));
+      if (resp.ok) return new Uint8Array(await resp.arrayBuffer());
+    } catch (err) {
+      /* file:// bloqueia fetch — quem chama decide o que fazer */
+    }
+  }
+  return null;
+}
+
+/** Ficha leve: sem as imagens de fundo, 499 KB. Cai para a oficial se faltar. */
+async function getLightPdfBytes() {
+  if (_lightPdfBytes) return _lightPdfBytes;
+  const bytes = await fetchFirstAvailable(LIGHT_PDF_URLS);
+  if (bytes) { _lightPdfBytes = bytes; return _lightPdfBytes; }
+  return getOfficialPdfBytes(false);
+}
+
+/** Ficha oficial completa, com o pergaminho. */
 async function getOfficialPdfBytes(forcePick) {
   if (_officialPdfBytes && !forcePick) return _officialPdfBytes;
   if (!forcePick) {
-    for (const url of OFFICIAL_PDF_URLS) {
-      try {
-        const resp = await fetch(encodeURI(url));
-        if (resp.ok) {
-          _officialPdfBytes = new Uint8Array(await resp.arrayBuffer());
-          return _officialPdfBytes;
-        }
-      } catch (err) {
-        /* file:// bloqueia fetch — cai na cópia embutida */
-      }
-    }
+    const bytes = await fetchFirstAvailable(OFFICIAL_PDF_URLS);
+    if (bytes) { _officialPdfBytes = bytes; return _officialPdfBytes; }
     try {
       _officialPdfBytes = base64ToBytes(await loadEmbeddedFicha());
       return _officialPdfBytes;
@@ -562,79 +581,23 @@ function downloadPdfBytes(bytes, filename) {
 }
 
 /** Nome do arquivo de saída, a partir do nome do personagem */
-function officialPdfFilename() {
+function officialPdfFilename(mode) {
   const name = (ofVal("sheetCharName") || character.name || "Personagem")
     .replace(/[\\/:*?"<>|]/g, "")
     .trim() || "Personagem";
-  return `Ficha D&D 5.5 - ${name}.pdf`;
+  return `Ficha D&D 5.5 - ${name}${mode === "print" ? " (leve)" : ""}.pdf`;
 }
 
 /**
- * Aberto por file://, o app não tem origem: o blob vira "blob:null/..." e o
- * navegador se recusa a abrir o visualizador de PDF nele (dá página em branco).
- * Nesse caso não há como imprimir de dentro do navegador — o jeito é baixar.
- */
-function canPrintPdfInPlace() {
-  return location.protocol === "http:" || location.protocol === "https:";
-}
-
-/**
- * Abre uma aba em branco AGORA, ainda dentro do clique.
+ * Baixa os bytes como arquivo, com o nome do personagem.
  *
- * Gerar o PDF leva alguns segundos (carregar a pdf-lib, buscar a ficha,
- * preencher). Se a aba só fosse aberta no fim, o gesto do usuário já teria
- * expirado e o navegador bloquearia a janela. Abrindo antes, a aba é legítima e
- * só recebe o endereço quando o arquivo fica pronto.
+ * Os dois botões terminam aqui. Já tentei três formas de mandar direto para a
+ * impressora — <iframe> escondido, aba com print() automático e aba sem
+ * print() — e nenhuma imprimiu a ficha: o Chrome ignora o print() de PDF em
+ * silêncio ou imprime antes de o visualizador montar os quase 12 MB, saindo uma
+ * folha só com o cabeçalho do navegador. Baixar o arquivo e imprimir por ele é
+ * o caminho que funciona, e é o que o jogador pediu de volta.
  */
-function openPrintTab() {
-  if (!canPrintPdfInPlace()) return null;
-  try {
-    const aba = window.open("", "_blank");
-    if (aba && aba.document) {
-      aba.document.write(
-        '<!doctype html><meta charset="utf-8"><title>Gerando a ficha…</title>' +
-        '<body style="font:16px system-ui;background:#0f172a;color:#e2e8f0;' +
-        'display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
-        'Preparando a ficha oficial para impressão…</body>');
-      aba.document.close();
-    }
-    return aba;
-  } catch (err) {
-    return null;
-  }
-}
-
-/**
- * Manda o PDF para a aba aberta no clique.
- *
- * Não chamamos print() aqui de propósito. Já tentamos duas vezes: no <iframe>
- * escondido o Chrome ignora o print() de PDF em silêncio, e na aba o print()
- * dispara antes de o visualizador terminar de montar os quase 12 MB — o
- * resultado era uma folha com apenas o cabeçalho e o rodapé do navegador
- * (a data e o endereço), sem nada da ficha.
- *
- * A aba abre com o PDF pronto; imprimir a partir do visualizador dele funciona
- * e sai correto.
- */
-function showPdfInTab(bytes, filename, aba) {
-  if (!canPrintPdfInPlace() || !aba) return false;
-  // File em vez de Blob: alguns navegadores usam o nome dele ao salvar; com
-  // Blob puro o arquivo sai com o identificador interno ("446546e8-….pdf").
-  const arquivo = typeof File === "function"
-    ? new File([bytes], filename, { type: "application/pdf" })
-    : new Blob([bytes], { type: "application/pdf" });
-  const url = URL.createObjectURL(arquivo);
-  try {
-    aba.location.href = url;
-  } catch (err) {
-    console.warn("Não foi possível enviar o PDF para a aba:", err);
-    URL.revokeObjectURL(url);
-    return false;
-  }
-  setTimeout(() => URL.revokeObjectURL(url), 300000);
-  return true;
-}
-
 /**
  * Fluxo completo: carrega a lib, pega a ficha oficial em branco, preenche com
  * o que está na tela e entrega — baixando o arquivo ("download") ou abrindo a
@@ -644,36 +607,27 @@ async function exportToOfficialPdf(forcePick, mode) {
   const btnId = mode === "print" ? "btnPrintSheet" : "btnExportOfficialPdf";
   const btn = document.getElementById(btnId);
   const originalHtml = btn ? btn.innerHTML : "";
-  // Precisa ser a primeira coisa: depois do await o gesto do clique já passou.
-  const aba = mode === "print" ? openPrintTab() : null;
   try {
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...'; }
     // Em paralelo: a ficha em branco tem quase 12 MB e a pdf-lib mais 500 KB.
     // Em série, um esperava o outro sem precisar.
-    const [, srcBytes] = await Promise.all([loadPdfLibrary(), getOfficialPdfBytes(forcePick)]);
+    // "print" usa a ficha leve (499 KB, sem o pergaminho); "download" usa a
+    // oficial completa. Em paralelo com a pdf-lib: em série, um esperava o
+    // outro sem precisar.
+    const [, srcBytes] = await Promise.all([
+      loadPdfLibrary(),
+      mode === "print" && !forcePick ? getLightPdfBytes() : getOfficialPdfBytes(forcePick)
+    ]);
     const payload = collectOfficialPdfPayload();
     const { bytes, filled } = await fillOfficialPdf(srcBytes, payload);
-    const filename = officialPdfFilename();
-    if (mode === "print" && showPdfInTab(bytes, filename, aba)) {
-      showPdfToast(`🖨️ Ficha aberta em outra aba — ${filled} campos preenchidos. Imprima pelo botão do visualizador (ou Ctrl+P na aba).`);
-      showPdfToast(`💾 Para salvar o arquivo já com o nome "${filename}", use o botão Ficha PDF Oficial.`);
-    } else if (mode === "print") {
-      // Sem aba (bloqueada pelo navegador) ou em file://, onde o blob não tem
-      // origem e o visualizador de PDF não abre. Baixa e explica.
-      downloadPdfBytes(bytes, filename);
-      showPdfToast(`📄 Ficha oficial baixada — ${filled} campos preenchidos.`);
-      showPdfToast(canPrintPdfInPlace()
-        ? "🖨️ O navegador bloqueou a aba nova. Abra o arquivo baixado para imprimir, ou libere janelas para este site."
-        : "🖨️ Abra o arquivo baixado para imprimir. Para imprimir direto daqui, sirva a pasta por http (veja SERVIR.md).");
-    } else {
-      downloadPdfBytes(bytes, filename);
-      showPdfToast(`📄 Ficha oficial gerada — ${filled} campos preenchidos.`);
-    }
+    const filename = officialPdfFilename(mode);
+    downloadPdfBytes(bytes, filename);
+    showPdfToast(`📄 Ficha salva como "${filename}" — ${filled} campos preenchidos.`);
+    if (mode === "print") showPdfToast("🖨️ Versão leve, sem o fundo decorativo: abra o arquivo e imprima por ele.");
     payload.warnings.forEach(w => showPdfToast(`⚠️ ${w}`));
   } catch (err) {
     console.error("Falha ao exportar para o PDF oficial:", err);
     showPdfToast(`⚠️ Não deu para gerar o PDF: ${err.message}`);
-    if (aba) { try { aba.close(); } catch (e) { /* já fechada */ } }
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
   }
@@ -688,11 +642,14 @@ async function exportToOfficialPdf(forcePick, mode) {
  * embutido, que é grande e não faz sentido carregar sem necessidade.
  */
 function prefetchPdfResources() {
-  if (!canPrintPdfInPlace()) return;
+  const porHttp = location.protocol === "http:" || location.protocol === "https:";
+  if (!porHttp) return;   // em file:// a ficha vem do arquivo embutido de 16 MB
   const ocioso = window.requestIdleCallback || ((fn) => setTimeout(fn, 3000));
   ocioso(() => {
     loadPdfLibrary().catch(() => { /* tenta de novo no clique */ });
-    getOfficialPdfBytes(false).catch(() => { /* idem */ });
+    // só a leve: baixar 11,9 MB por antecipação, para quem talvez nem exporte,
+    // custaria mais do que economiza.
+    getLightPdfBytes().catch(() => { /* idem */ });
   });
 }
 

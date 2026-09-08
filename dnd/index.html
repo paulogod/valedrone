@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907n";
+    var APP_VERSION = "20260907o";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -51,7 +51,7 @@
         </div>
         <div class="brand-titles">
           <h1>Criador de Fichas D&D 5.5</h1>
-          <p class="brand-subtitle">Dungeons & Dragons 2024 • Livro do Jogador (PT-BR) • Ficha Oficial Editável</p>
+          <p class="brand-subtitle">Dungeons & Dragons 2024 • Livro do Jogador (PT-BR)</p>
         </div>
       </div>
 
@@ -77,10 +77,10 @@
           <i class="fa-solid fa-file-import"></i> Importar
           <input type="file" id="inputImportJson" accept=".json" style="display: none;">
         </label>
-        <button class="btn btn-gold btn-sm" id="btnPrintSheet" title="Abre a ficha oficial preenchida em outra aba, para imprimir pelo visualizador">
+        <button class="btn btn-gold btn-sm" id="btnPrintSheet" title="Baixa a ficha preenchida na versão leve (499 KB, sem o fundo decorativo), pronta para imprimir">
           <i class="fa-solid fa-print"></i> Imprimir / PDF
         </button>
-        <button class="btn btn-gold btn-sm" id="btnExportOfficialPdf" title="Baixar a ficha oficial editável preenchida (Shift + clique para usar outro PDF de origem)">
+        <button class="btn btn-gold btn-sm" id="btnExportOfficialPdf" title="Baixa a ficha oficial completa, com o fundo original (11,9 MB) — Shift + clique para usar outro PDF de origem">
           <i class="fa-solid fa-file-pdf"></i> Ficha PDF Oficial
         </button>
         <input type="file" id="inputOfficialPdf" accept="application/pdf,.pdf" style="display: none;">
