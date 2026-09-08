@@ -1391,6 +1391,7 @@ select.form-control option {
 }
 
 .magia-conta-tipo { color: #c084fc; font-weight: 600; }
+.magia-conta.is-alerta .magia-conta-num { color: #f87171; font-weight: 700; }
 .magia-conta-num { font-family: var(--font-mono); color: var(--text-muted); }
 
 /* Magias que vêm de fora da lista da classe, agrupadas pela origem */

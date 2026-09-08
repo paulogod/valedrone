@@ -1397,17 +1397,30 @@ concedê-la. O resultado era a magia contada duas vezes contra o limite da
 classe. Agora as concedidas são descontadas da conta: elas vêm de fora da lista
 da classe e não gastam a capacidade dela.
 
-O bloco de espaços de magia ganhou as **contas por origem**:
+Faltava ainda o outro lado: **talento que dá magia estava sendo cobrado da
+classe**. Um Paladino com Iniciado em Magia (vindo do antecedente Acólito)
+aparecia com "2 / 0 truques" — os dois truques do talento contra uma classe que
+não tem truque nenhum.
+
+Agora cada caixa de escolha de talento que ficou em branco vira **folga na
+capacidade**, para o jogador poder escolher pelo catálogo; o que ele escolheu
+dentro do talento chega como concedido e não gasta nada. As duas rotas dão o
+mesmo resultado, que é o ponto.
+
+O bloco de espaços de magia mostra isso separado por origem:
 
 ```
 Magias por origem
-  Classe        1 / 4 truques · 1 / 9 preparadas
-  Subclasse     6 concedida(s)
-  Espécie       1 concedida(s)
+  Classe      0 truques · 6 preparadas de capacidade
+  Talento     Tocado pelo Reino Feérico: 1 magia(s) para escolher
+  Talento     Iniciado em Magia: 2 truque(s) · 1 magia(s) para escolher
+  Escolhidas  2 / 2 truques · 6 / 8 preparadas
+  Subclasse   4 concedida(s), fora do limite
+  Talento     1 concedida(s), fora do limite
 ```
 
-A linha da Classe é o limite que se gasta escolhendo; as outras são concedidas e
-ficam fora dele. Origem sem nada não aparece.
+Capacidade e concessão são coisas diferentes e aparecem separadas. A linha
+"Escolhidas" fica vermelha quando passa do limite. Origem sem nada não aparece.
 
 ---
 

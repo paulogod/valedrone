@@ -1275,28 +1275,45 @@ function renderSpellSlots() {
   const grupos = getGrantedSpellsBySource();
   const ordem = ["Subclasse", "Espécie", "Talento", "Antecedente"];
 
-  // Conta por origem: a da classe é a capacidade que se gasta escolhendo; as
-  // outras são concedidas e não entram nesse limite.
-  const escolhidas = (character.spellsKnown || []).filter(id =>
-    !getGrantedSpellEntries().some(g => g.id === id));
-  const truquesEscolhidos = escolhidas.filter(id => {
+  // Uma linha por origem. Capacidade (o que dá para escolher) e concessão (o que
+  // já vem pronto) são coisas diferentes e aparecem separadas: um Paladino com
+  // Iniciado em Magia tem truques pelo talento, não pela classe.
+  const cap = getSpellCapacityInfo(_ultimosMods || {});
+  const idsConcedidos = new Set(cap.grantedSpells.map(g => g.id));
+  const escolhidas = (character.spellsKnown || []).filter(id => !idsConcedidos.has(id));
+  const ehTruque = (id) => {
     const sp = DND5E_DATA.spells.find(x => x.id === id);
     return sp && sp.level === 0;
-  }).length;
+  };
+  const truquesEscolhidos = escolhidas.filter(ehTruque).length;
   const magiasEscolhidas = escolhidas.length - truquesEscolhidos;
-  const cap = getSpellCapacityInfo(_ultimosMods || {});
 
-  const contas = [
-    `<div class="magia-conta">
-       <span class="magia-conta-tipo">Classe</span>
-       <span class="magia-conta-num">${truquesEscolhidos} / ${cap.maxCantrips} truques · ${magiasEscolhidas} / ${cap.maxPrepared} preparadas</span>
-     </div>`,
-    ...ordem.filter(k => grupos[k]).map(k =>
-      `<div class="magia-conta">
-         <span class="magia-conta-tipo">${k}</span>
-         <span class="magia-conta-num">${grupos[k].length} concedida(s)</span>
-       </div>`)
-  ].join("");
+  // O que sobra de capacidade vem sempre da classe; o talento entra como folga
+  const capClasse = cap.breakdown.filter(b => b.detalhe !== "talento");
+  const capTalento = cap.breakdown.filter(b => b.detalhe === "talento");
+  const somaT = (arr, campo) => arr.reduce((a, b) => a + b[campo], 0);
+
+  const linhaConta = (tipo, texto, alerta) =>
+    `<div class="magia-conta${alerta ? " is-alerta" : ""}">
+       <span class="magia-conta-tipo">${tipo}</span>
+       <span class="magia-conta-num">${texto}</span>
+     </div>`;
+
+  const contas = [];
+  if (capClasse.length) {
+    contas.push(linhaConta("Classe",
+      `${somaT(capClasse, "truques")} truques · ${somaT(capClasse, "preparadas")} preparadas de capacidade`));
+  }
+  capTalento.forEach(b => {
+    contas.push(linhaConta("Talento",
+      `${b.fonte}: ${b.truques ? `${b.truques} truque(s)` : ""}${b.truques && b.preparadas ? " · " : ""}${b.preparadas ? `${b.preparadas} magia(s)` : ""} para escolher`));
+  });
+  contas.push(linhaConta("Escolhidas",
+    `${truquesEscolhidos} / ${cap.maxCantrips} truques · ${magiasEscolhidas} / ${cap.maxPrepared} preparadas`,
+    truquesEscolhidos > cap.maxCantrips || magiasEscolhidas > cap.maxPrepared));
+  ordem.filter(k => grupos[k]).forEach(k => {
+    contas.push(linhaConta(k, `${grupos[k].length} concedida(s), fora do limite`));
+  });
 
   const concedidas = ordem.filter(k => grupos[k]).map(k => {
     const itens = grupos[k].map(g =>
@@ -1309,7 +1326,7 @@ function renderSpellSlots() {
   }).join("");
 
   box.innerHTML = (temAlgum ? linhas : '<p class="hp-dado-vazio">Esta classe não tem espaços de magia neste nível.</p>')
-    + `<div class="magia-contas"><div class="cond-cabeca"><span>Magias por origem</span></div>${contas}</div>`
+    + `<div class="magia-contas"><div class="cond-cabeca"><span>Magias por origem</span></div>${contas.join("")}</div>`
     + (concedidas ? `<div class="magia-fontes">${concedidas}</div>` : "");
 }
 
@@ -2846,11 +2863,26 @@ function getSpellCapacityInfo(finalMods) {
     soma("Alto Elfo", 1, 0, "linhagem");
   }
 
-  // O talento Iniciado em Magia NÃO entra aqui: as magias dele são escolhidas
-  // dentro do próprio talento e chegam à ficha como concedidas, sem gastar a
-  // capacidade da classe. Somá-las de novo dava ao jogador dois truques e uma
-  // magia a mais do que ele tem direito.
   const grantedSpells = getGrantedSpellEntries();
+
+  // Talentos que dão magia (Iniciado em Magia, Tocado pelas Fadas…) têm caixas
+  // próprias de escolha. O que o jogador escolheu ali chega como concedido e não
+  // gasta nada. O que ele deixou em branco vira folga na capacidade, para poder
+  // escolher pelo catálogo — sem isso, um Paladino com Iniciado em Magia ficava
+  // com "2 / 0 truques", já que a classe dele não tem truques nenhum.
+  getActiveFeatIds().forEach(fid => {
+    const feat = DND5E_DATA.feats.find(f => f.id === fid);
+    if (!feat) return;
+    const spec = getFeatChoiceSpec(feat);
+    if (!spec.spells.length) return;
+    const escolhas = featChoicesFor(fid).spells || {};
+    let truques = 0, preparadas = 0;
+    spec.spells.forEach(slot => {
+      if (escolhas[slot.key]) return;              // já veio como concedida
+      if (slot.level === 0) truques++; else preparadas++;
+    });
+    soma(feat.name.split(" (")[0], truques, preparadas, "talento");
+  });
 
   // Magia concedida por subclasse, espécie ou talento não ocupa a capacidade da
   // classe. Uma ficha antiga pode ter a mesma magia nas duas listas — escolhida
