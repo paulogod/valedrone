@@ -132,6 +132,41 @@
     });
   }
 
+  // Verificação de integridade e ativação do botão de Previsão de Voo
+  function checkFlightForecastAvailability() {
+    var forecastLink = document.getElementById('nav-forecast');
+    if (!forecastLink) return;
+
+    var targetUrl = forecastLink.getAttribute('href');
+    if (!targetUrl) return;
+
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var signal = controller ? controller.signal : null;
+    var timeoutId = controller ? setTimeout(function () { controller.abort(); }, 5000) : null;
+
+    fetch(targetUrl, {
+      method: 'GET',
+      mode: 'cors',
+      cache: 'no-store',
+      signal: signal
+    })
+      .then(function (response) {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (response.ok) {
+          forecastLink.style.display = '';
+        }
+      })
+      .catch(function () {
+        if (timeoutId) clearTimeout(timeoutId);
+      });
+  }
+
   setupTourTabs();
   setupResponsiveLandscapeVideos();
+
+  if (document.readyState === 'complete') {
+    checkFlightForecastAvailability();
+  } else {
+    window.addEventListener('load', checkFlightForecastAvailability);
+  }
 })();
