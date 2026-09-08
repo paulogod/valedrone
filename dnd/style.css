@@ -1338,6 +1338,123 @@ select.form-control option {
   text-align: center;
 }
 
+/* ---------- Usos de característica ---------- */
+.uso-bloco { border-top: 1px solid rgba(255, 255, 255, 0.07); padding-top: 0.45rem; }
+
+.uso-linha {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  font-size: 0.8rem;
+}
+
+.uso-nome { color: #e2e8f0; }
+.uso-nome small { display: block; font-size: 0.68rem; color: var(--text-muted); }
+
+/* Bolinhas em vez de "2/3": dá para ver quantos restam sem ler número */
+.uso-pontos { display: inline-flex; gap: 0.15rem; }
+
+.uso-ponto {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  border: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+.uso-ponto.is-cheio { background: #fbbf24; }
+
+.uso-botoes { display: inline-flex; gap: 0.15rem; }
+
+.uso-btn {
+  min-width: 1.6rem;
+  min-height: 1.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.7);
+  color: #e2e8f0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.uso-btn:hover:not(:disabled) { background: rgba(139, 92, 246, 0.25); }
+.uso-btn:disabled { opacity: 0.35; cursor: default; }
+
+/* ---------- Condições (dentro do painel de jogo) ---------- */
+.cond-bloco { border-top: 1px solid rgba(255, 255, 255, 0.07); padding-top: 0.45rem; }
+
+.cond-cabeca {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.3rem;
+}
+
+.cond-resumo { text-transform: none; letter-spacing: 0; }
+
+.cond-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.cond-item {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.6);
+  overflow: hidden;
+}
+
+/* Condição ativa salta aos olhos: é para ser vista de longe no meio do turno */
+.cond-item.is-on {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(248, 113, 113, 0.55);
+}
+
+.cond-btn,
+.cond-info,
+.cond-nivel {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.74rem;
+  padding: 0.3rem 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.cond-item.is-on .cond-btn { color: #fecaca; font-weight: 600; }
+.cond-btn:hover,
+.cond-info:hover,
+.cond-nivel:hover { color: #fff; }
+
+.cond-niveis { display: inline-flex; border-left: 1px solid rgba(255, 255, 255, 0.1); }
+.cond-nivel { padding: 0.3rem 0.4rem; font-family: var(--font-mono); font-weight: 700; }
+.cond-info { border-left: 1px solid rgba(255, 255, 255, 0.1); }
+
+.cond-detalhe {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.cond-detalhe strong { color: #fbbf24; }
+.cond-detalhe p { margin-top: 0.25rem; color: var(--text-muted); }
+
 /* ---------- Controle de Pontos de Vida (jogo) ---------- */
 
 /* Fica acima da ficha porque é o que mais se mexe durante a sessão; os campos
@@ -1373,6 +1490,14 @@ select.form-control option {
 }
 
 .hp-temp-tag { background: rgba(56, 189, 248, 0.18); color: #7dd3fc; }
+.hp-cond-tag {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.12rem 0.35rem;
+  border-radius: 3px;
+}
 .hp-caido-tag { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
 
 .hp-tracker-corpo {

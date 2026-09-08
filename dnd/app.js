@@ -94,6 +94,14 @@ function createBlankCharacter() {
     // porque o multiclasse mistura dados diferentes e cada um se gasta e se
     // recupera por conta.
     hitDiceSpent: {},
+    // Condições ativas: ids das que estão marcadas. A Exaustão é a única com
+    // níveis, guardada à parte porque vai de 1 a 6.
+    conditions: [],
+    exhaustionLevel: 0,
+
+    // Usos gastos de característica, por id ("fighter_uses": 1)
+    featureUses: {},
+
     // Últimos acontecimentos de vida (dano, cura, temporários, descansos).
     // Serve para reconstruir o que houve na sessão — "levei 12, curei 7" é o
     // que se esquece primeiro quando a mesa acelera.
@@ -1085,11 +1093,172 @@ function updateSkillsSelector() {
    estado da tela, não escolha do personagem, e não devem ir para a ficha salva. */
 let _featFilterState = { busca: "", tipo: "all", soMeus: false };
 
+/* ------------------------------------------- USOS DE CARACTERÍSTICA */
+
+/**
+ * Características de uso limitado que a classe concede no nível atual.
+ *
+ * Os números saem da coluna própria de cada tabela de classe (Fúrias,
+ * Recuperar Fôlego, Canalizar Divindade, Inimigo Favorito, Forma Selvagem,
+ * Pontos de Foco, Pontos de Feitiçaria) e a recuperação vem do texto da
+ * característica: umas voltam no Descanso Curto, outras só no Longo.
+ */
+function getLimitedUses() {
+  const lista = [];
+  const daClasse = (classId, nivel) => {
+    const c = DND5E_DATA.classes.find(x => x.id === classId);
+    if (!c || !c.limitedUse || nivel < 1) return;
+    const max = c.limitedUse.byLevel[nivel] || 0;
+    if (!max) return;
+    lista.push({
+      id: c.limitedUse.id,
+      name: c.limitedUse.name,
+      classe: c.name.split(" (")[0],
+      max,
+      recovery: c.limitedUse.recovery,
+      gastos: (character.featureUses && character.featureUses[c.limitedUse.id]) || 0
+    });
+  };
+  daClasse(character.class1, character.level1);
+  if (character.class2 && character.class2 !== "none") daClasse(character.class2, character.level2);
+  return lista;
+}
+
+/** Gasta ou devolve um uso, sem passar dos limites. */
+function changeFeatureUse(id, delta) {
+  const item = getLimitedUses().find(u => u.id === id);
+  if (!item) return;
+  const novo = Math.max(0, Math.min(item.max, item.gastos + delta));
+  if (novo === item.gastos) {
+    if (delta > 0) showToast(`Sem usos de ${item.name.split(" (")[0]} disponíveis.`);
+    return;
+  }
+  character.featureUses = character.featureUses || {};
+  character.featureUses[id] = novo;
+  logHpEvent("uso", `${item.name.split(" (")[0]}: ${item.max - novo} de ${item.max}`,
+             character.currentHp || 0);
+}
+
+/** Devolve os usos que recuperam no descanso indicado ("curto" ou "longo"). */
+function recoverFeatureUses(tipo) {
+  const devolvidos = [];
+  getLimitedUses().forEach(u => {
+    // o que volta no Descanso Curto também volta no Longo
+    const volta = u.recovery === "curto" || tipo === "longo";
+    if (!volta || !u.gastos) return;
+    character.featureUses[u.id] = 0;
+    devolvidos.push(u.name.split(" (")[0]);
+  });
+  return devolvidos;
+}
+
+function renderFeatureUses() {
+  const box = document.getElementById("featureUsesList");
+  if (!box) return;
+  const lista = getLimitedUses();
+  box.innerHTML = lista.length
+    ? lista.map(u => {
+        const restam = u.max - u.gastos;
+        const bolinhas = Array.from({ length: u.max }, (_, i) =>
+          `<span class="uso-ponto${i < restam ? " is-cheio" : ""}"></span>`).join("");
+        return `<div class="uso-linha">
+          <span class="uso-nome">${u.name.split(" (")[0]}
+            <small>${u.classe} • volta no Descanso ${u.recovery === "curto" ? "Curto" : "Longo"}</small>
+          </span>
+          <span class="uso-pontos" title="${restam} de ${u.max}">${bolinhas}</span>
+          <span class="uso-botoes">
+            <button type="button" class="uso-btn" data-uso="${u.id}" data-delta="1"
+                    ${restam <= 0 ? "disabled" : ""} title="Gastar um uso">−</button>
+            <button type="button" class="uso-btn" data-uso="${u.id}" data-delta="-1"
+                    ${u.gastos <= 0 ? "disabled" : ""} title="Devolver um uso">+</button>
+          </span>
+        </div>`;
+      }).join("")
+    : '<p class="hp-dado-vazio">Esta classe não tem característica de uso limitado com contador.</p>';
+}
+
+/* ------------------------------------------------------------- CONDIÇÕES */
+
+function hasCondition(id) {
+  return (character.conditions || []).includes(id);
+}
+
+/**
+ * Liga ou desliga uma condição. A Exaustão é diferente: em vez de ligar e
+ * desligar, ela sobe de nível (1 a 6, e no 6 o personagem morre), então os
+ * botões dela mexem no nível.
+ */
+function toggleCondition(id) {
+  if (!Array.isArray(character.conditions)) character.conditions = [];
+  const cond = DND5E_DATA.conditions.find(c => c.id === id);
+  if (!cond) return;
+  const i = character.conditions.indexOf(id);
+  if (i >= 0) {
+    character.conditions.splice(i, 1);
+    if (id === "exaustao") character.exhaustionLevel = 0;
+    logHpEvent("condicao", `Saiu de ${cond.name.split(" (")[0]}`, character.currentHp || 0);
+  } else {
+    character.conditions.push(id);
+    if (id === "exaustao" && !character.exhaustionLevel) character.exhaustionLevel = 1;
+    logHpEvent("condicao", `Ficou ${cond.name.split(" (")[0]}`, character.currentHp || 0);
+  }
+}
+
+/** Sobe ou desce o nível de Exaustão, entre 0 e 6. */
+function changeExhaustion(delta) {
+  const antes = character.exhaustionLevel || 0;
+  const novo = Math.max(0, Math.min(6, antes + delta));
+  if (novo === antes) return;
+  character.exhaustionLevel = novo;
+  character.conditions = character.conditions || [];
+  const marcada = character.conditions.includes("exaustao");
+  if (novo > 0 && !marcada) character.conditions.push("exaustao");
+  if (novo === 0 && marcada) character.conditions = character.conditions.filter(c => c !== "exaustao");
+  logHpEvent("condicao", `Exaustão nível ${novo}`, character.currentHp || 0);
+  if (novo === 6) showToast("💀 Exaustão nível 6: o personagem morre.");
+}
+
+/**
+ * Painel de condições: uma etiqueta por condição, com o texto do livro no
+ * clique do "i". As condições mudam rolagem e movimento, e ficar lembrando
+ * quais estão ativas de cabeça é o que mais atrasa o turno.
+ */
+function renderConditions() {
+  const box = document.getElementById("conditionsList");
+  if (!box) return;
+  box.innerHTML = (DND5E_DATA.conditions || []).map(c => {
+    const on = hasCondition(c.id);
+    const nivel = c.id === "exaustao" ? (character.exhaustionLevel || 0) : 0;
+    return `
+      <div class="cond-item${on ? " is-on" : ""}">
+        <button type="button" class="cond-btn" data-cond="${c.id}" title="${c.name}">
+          <i class="fa-solid ${c.icon}"></i>
+          <span>${c.name.split(" (")[0]}${c.id === "exaustao" && nivel ? ` ${nivel}` : ""}</span>
+        </button>
+        ${c.id === "exaustao" ? `
+          <span class="cond-niveis">
+            <button type="button" class="cond-nivel" data-exaustao="-1" title="Baixar um nível">−</button>
+            <button type="button" class="cond-nivel" data-exaustao="1" title="Subir um nível">+</button>
+          </span>` : ""}
+        <button type="button" class="cond-info" data-cond-info="${c.id}" title="O que diz o livro">
+          <i class="fa-solid fa-circle-info"></i>
+        </button>
+      </div>`;
+  }).join("");
+
+  const ativas = (character.conditions || []).length;
+  const resumo = document.getElementById("conditionsResumo");
+  if (resumo) {
+    resumo.textContent = ativas ? `${ativas} ativa(s)` : "nenhuma ativa";
+  }
+}
+
 /* ---------------------------------------------- CONTROLE DE PONTOS DE VIDA */
 
 const HP_LOG_ICONE = {
   dano: "fa-burst", cura: "fa-kit-medical", temp: "fa-shield-halved",
-  dado: "fa-dice-d6", descanso: "fa-moon"
+  dado: "fa-dice-d6", descanso: "fa-moon", condicao: "fa-triangle-exclamation",
+  rolagem: "fa-dice-d20", uso: "fa-bolt-lightning"
 };
 
 /** Últimos acontecimentos de vida, do mais recente para o mais antigo. */
@@ -1221,8 +1390,10 @@ function spendHitDie(chave, maxHp, conMod) {
  * um combate do outro na leitura do histórico.
  */
 function shortRest() {
-  logHpEvent("descanso", "Descanso Curto", character.currentHp || 0);
-  showToast("☕ Descanso Curto anotado — gaste Dados de Vida para recuperar Pontos de Vida.");
+  const devolvidos = recoverFeatureUses("curto");
+  logHpEvent("descanso", `Descanso Curto${devolvidos.length ? ` — ${devolvidos.join(", ")} de volta` : ""}`,
+             character.currentHp || 0);
+  showToast(`☕ Descanso Curto${devolvidos.length ? ` — ${devolvidos.join(", ")} recuperado(s)` : ""}. Gaste Dados de Vida para recuperar Pontos de Vida.`);
 }
 
 /**
@@ -1242,6 +1413,9 @@ function longRest(maxHp) {
     recuperados.push(`${gastos - novo} ${b.chave}`);
   });
   character.deathSaves = { succ1: false, succ2: false, succ3: false, fail1: false, fail2: false, fail3: false };
+  // "Completar um Descanso Longo remove 1 dos seus níveis de Exaustão."
+  if (character.exhaustionLevel > 0) changeExhaustion(-1);
+  recoverFeatureUses("longo");
   logHpEvent("descanso", `Descanso Longo${recuperados.length ? ` — ${recuperados.join(" e ")} de volta` : ""}`, maxHp);
   showToast(`🌙 Descanso Longo — ${maxHp} PV${recuperados.length ? `, ${recuperados.join(" e ")} de volta` : ""}`);
 }
@@ -1260,11 +1434,25 @@ function renderHpTracker() {
     ? character.currentHp : maxHp;
   const temp = character.tempHp || 0;
 
+  // O resumo é o que se vê com o painel recolhido: vida, temporários e as
+  // condições ativas, que são o que muda a rolagem do turno.
+  const nomesCond = (character.conditions || []).map(id => {
+    const c = DND5E_DATA.conditions.find(x => x.id === id);
+    if (!c) return null;
+    const curto = c.name.split(" (")[0];
+    return id === "exaustao" && character.exhaustionLevel
+      ? `${curto} ${character.exhaustionLevel}`
+      : curto;
+  }).filter(Boolean);
+
   resumo.innerHTML = `<strong>${atual}</strong> / ${maxHp} PV` +
     (temp ? ` <span class="hp-temp-tag">+${temp} temp</span>` : "") +
-    (atual === 0 ? ' <span class="hp-caido-tag">caído</span>' : "");
+    (atual === 0 ? ' <span class="hp-caido-tag">caído</span>' : "") +
+    nomesCond.map(n => ` <span class="hp-cond-tag">${n}</span>`).join("");
 
   renderHpLog();
+  renderConditions();
+  renderFeatureUses();
 
   const blocos = getHitDicePools();
   dados.innerHTML = blocos.length
@@ -4322,6 +4510,43 @@ function bindEvents() {
   const btnTemp = document.getElementById("btnHpTemp");
   if (btnTemp) btnTemp.addEventListener("click", () => { applyTempHp(hpValor()); hpDepois(); });
 
+  // ---- usos de característica ----
+  const listaUsos = document.getElementById("featureUsesList");
+  if (listaUsos) listaUsos.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-uso]");
+    if (!btn) return;
+    changeFeatureUse(btn.getAttribute("data-uso"), Number(btn.getAttribute("data-delta")));
+    renderFeatureUses(); renderHpLog(); recalculateCharacter(); saveToLocalStorage();
+  });
+
+  // ---- condições ----
+  const listaCond = document.getElementById("conditionsList");
+  if (listaCond) listaCond.addEventListener("click", (e) => {
+    const nivel = e.target.closest("[data-exaustao]");
+    if (nivel) {
+      changeExhaustion(Number(nivel.getAttribute("data-exaustao")));
+      renderConditions(); recalculateCharacter(); saveToLocalStorage();
+      return;
+    }
+    const info = e.target.closest("[data-cond-info]");
+    if (info) {
+      const c = DND5E_DATA.conditions.find(x => x.id === info.getAttribute("data-cond-info"));
+      const box = document.getElementById("conditionsDetalhe");
+      if (c && box) {
+        const jaAberta = !box.hidden && box.dataset.cond === c.id;
+        box.hidden = jaAberta;
+        box.dataset.cond = c.id;
+        box.innerHTML = `<strong>${c.name}</strong><p>${c.desc}</p>`;
+      }
+      return;
+    }
+    const btn = e.target.closest("[data-cond]");
+    if (btn) {
+      toggleCondition(btn.getAttribute("data-cond"));
+      renderConditions(); renderHpLog(); recalculateCharacter(); saveToLocalStorage();
+    }
+  });
+
   const btnCurto = document.getElementById("btnDescansoCurto");
   if (btnCurto) btnCurto.addEventListener("click", () => { shortRest(); hpDepois(); });
 
@@ -4407,6 +4632,13 @@ function bindEvents() {
       showToast(`⚠️ Não entendi "${texto}". Use algo como 2d6+3, d20 ou 1d8-1.`);
       return;
     }
+    // O texto vem do campo, então é escapado antes de virar HTML no histórico
+    const expEscapada = texto.replace(/[&<>"]/g, ch =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+    logHpEvent("rolagem", `${expEscapada}: ${r.detalhe} = <strong>${r.total}</strong>${r.tag}`,
+               character.currentHp || 0);
+    renderHpLog();
+    saveToLocalStorage();
     showToast(`🎲 <strong>${texto}:</strong> ${r.detalhe} = <strong>${r.total}</strong>${r.tag}`);
   };
   ["diceInputSheet", "diceInputGlobal"].forEach(id => {

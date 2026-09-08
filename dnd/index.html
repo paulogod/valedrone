@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907q";
+    var APP_VERSION = "20260907s";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -701,7 +701,7 @@
         <!-- Controle de jogo: dano, cura, temporários e Dados de Vida.
              Os campos da ficha continuam editáveis à mão; isto é o atalho para
              o que mais se mexe durante a sessão. -->
-        <details class="hp-tracker" id="hpTracker">
+        <details class="hp-tracker" id="hpTracker" open>
           <summary>
             <i class="fa-solid fa-heart-pulse"></i>
             <span class="hp-tracker-resumo" id="hpTrackerResumo">Pontos de Vida</span>
@@ -729,8 +729,25 @@
               </button>
             </div>
 
-            <!-- Histórico: o que aconteceu com a vida, do mais recente para o
-                 mais antigo. Guarda os últimos 30 acontecimentos. -->
+            <!-- Usos de característica: quantos restam e quando voltam. -->
+            <div class="uso-bloco">
+              <div class="cond-cabeca"><span>Usos de característica</span></div>
+              <div class="uso-lista" id="featureUsesList"></div>
+            </div>
+
+            <!-- Condições ativas, no mesmo painel: elas mudam rolagem e
+                 movimento, e o "i" abre o texto do livro. -->
+            <div class="cond-bloco">
+              <div class="cond-cabeca">
+                <span>Condições</span>
+                <span class="cond-resumo" id="conditionsResumo">nenhuma ativa</span>
+              </div>
+              <div class="cond-lista" id="conditionsList"></div>
+              <div class="cond-detalhe" id="conditionsDetalhe" hidden></div>
+            </div>
+
+            <!-- Histórico: o que aconteceu na sessão — vida, descansos,
+                 condições e rolagens. Guarda os últimos 30 acontecimentos. -->
             <div class="hp-log">
               <div class="hp-log-cabeca">
                 <span>Histórico</span>

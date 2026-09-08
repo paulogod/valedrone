@@ -1298,6 +1298,38 @@ total não deixa ninguém conferir a rolagem na mesa. Um `d20` sozinho continua
 marcando crítico e falha crítica. Expressão que não faz sentido é recusada com
 um aviso, em vez de rolar qualquer coisa.
 
+### 9.26 Condições e usos de característica
+
+Tudo no mesmo painel de jogo, que agora abre por padrão. Recolhido, ele mostra
+o essencial: `32 / 44 PV`, os temporários e as condições ativas — que é o que se
+precisa ver no meio do turno sem abrir nada.
+
+**As 15 condições** do Apêndice C entraram com o texto do livro e o nome em
+inglês: Amedrontado, Atordoado, Caído, Cego, Contido, Enfeitiçado, Envenenado,
+Exaustão, Imobilizado, Incapacitado, Inconsciente, Invisível, Paralisado,
+Petrificado e Surdo. Cada uma tem ícone e um "i" que abre o texto. A Exaustão é
+a única com níveis (1 a 6, morte no 6), com botões de `−` e `+`; o Descanso
+Longo tira um nível, como manda o livro.
+
+**Usos de característica** com contador em bolinhas e recuperação por descanso.
+Os números saem da coluna própria de cada tabela de classe:
+
+| Classe | Característica | Volta no |
+|---|---|---|
+| Bárbaro | Fúrias | Descanso Longo |
+| Guerreiro | Recuperar Fôlego | Descanso Curto |
+| Clérigo e Paladino | Canalizar Divindade | Descanso Curto |
+| Guardião | Inimigo Favorito | Descanso Longo |
+| Druida | Forma Selvagem | Descanso Curto |
+| Monge | Pontos de Foco | Descanso Curto |
+| Feiticeiro | Pontos de Feitiçaria | Descanso Longo |
+
+O que volta no Curto também volta no Longo, e os descansos anotam no histórico o
+que recuperaram.
+
+**Rolagens entram no histórico** junto com dano, cura e descansos — a expressão
+digitada é escapada antes de virar HTML, porque vem de campo livre.
+
 ---
 
 ## 10. Como o código da ficha funciona

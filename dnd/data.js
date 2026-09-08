@@ -568,6 +568,33 @@ const DND5E_DATA = {
         "18": 4,
         "19": 4,
         "20": 4
+      },
+      "limitedUse": {
+        "id": "barbarian_uses",
+        "name": "Fúrias (Rages)",
+        "recovery": "longo",
+        "byLevel": {
+          "1": 2,
+          "2": 2,
+          "3": 3,
+          "4": 3,
+          "5": 3,
+          "6": 4,
+          "7": 4,
+          "8": 4,
+          "9": 4,
+          "10": 4,
+          "11": 4,
+          "12": 5,
+          "13": 5,
+          "14": 5,
+          "15": 5,
+          "16": 5,
+          "17": 6,
+          "18": 6,
+          "19": 6,
+          "20": 6
+        }
       }
     },
     {
@@ -979,7 +1006,34 @@ const DND5E_DATA = {
             ]
           }
         }
-      ]
+      ],
+      "limitedUse": {
+        "id": "cleric_uses",
+        "name": "Canalizar Divindade (Channel Divinity)",
+        "recovery": "curto",
+        "byLevel": {
+          "1": 0,
+          "2": 2,
+          "3": 2,
+          "4": 2,
+          "5": 2,
+          "6": 3,
+          "7": 3,
+          "8": 3,
+          "9": 3,
+          "10": 3,
+          "11": 3,
+          "12": 3,
+          "13": 3,
+          "14": 3,
+          "15": 3,
+          "16": 3,
+          "17": 3,
+          "18": 4,
+          "19": 4,
+          "20": 4
+        }
+      }
     },
     {
       "id": "druid",
@@ -1249,7 +1303,34 @@ const DND5E_DATA = {
           "name": "Círculo das Estrelas (Circle of Stars)",
           "desc": "Mapeiam as constelações celestes em um mapa estelar, assumindo formas estelares (Arqueiro, Cálice, Dragão)."
         }
-      ]
+      ],
+      "limitedUse": {
+        "id": "druid_uses",
+        "name": "Forma Selvagem (Wild Shape)",
+        "recovery": "curto",
+        "byLevel": {
+          "1": 0,
+          "2": 2,
+          "3": 2,
+          "4": 2,
+          "5": 2,
+          "6": 3,
+          "7": 3,
+          "8": 3,
+          "9": 3,
+          "10": 3,
+          "11": 3,
+          "12": 3,
+          "13": 3,
+          "14": 3,
+          "15": 3,
+          "16": 3,
+          "17": 4,
+          "18": 4,
+          "19": 4,
+          "20": 4
+        }
+      }
     },
     {
       "id": "fighter",
@@ -1410,6 +1491,33 @@ const DND5E_DATA = {
         "18": 6,
         "19": 6,
         "20": 6
+      },
+      "limitedUse": {
+        "id": "fighter_uses",
+        "name": "Recuperar Fôlego (Second Wind)",
+        "recovery": "curto",
+        "byLevel": {
+          "1": 2,
+          "2": 2,
+          "3": 2,
+          "4": 3,
+          "5": 3,
+          "6": 3,
+          "7": 3,
+          "8": 3,
+          "9": 3,
+          "10": 4,
+          "11": 4,
+          "12": 4,
+          "13": 4,
+          "14": 4,
+          "15": 4,
+          "16": 4,
+          "17": 4,
+          "18": 4,
+          "19": 4,
+          "20": 4
+        }
       }
     },
     {
@@ -1543,7 +1651,34 @@ const DND5E_DATA = {
           "name": "Caminho da Misericórdia (Warrior of Mercy)",
           "desc": "Manipuladores da força vital para curar ferimentos de aliados ou infligir toques necróticos debilitantes."
         }
-      ]
+      ],
+      "limitedUse": {
+        "id": "monk_uses",
+        "name": "Pontos de Foco (Focus Points)",
+        "recovery": "curto",
+        "byLevel": {
+          "1": 0,
+          "2": 2,
+          "3": 3,
+          "4": 4,
+          "5": 5,
+          "6": 6,
+          "7": 7,
+          "8": 8,
+          "9": 9,
+          "10": 10,
+          "11": 11,
+          "12": 12,
+          "13": 13,
+          "14": 14,
+          "15": 15,
+          "16": 16,
+          "17": 17,
+          "18": 18,
+          "19": 19,
+          "20": 20
+        }
+      }
     },
     {
       "id": "paladin",
@@ -1827,6 +1962,33 @@ const DND5E_DATA = {
         "18": 2,
         "19": 2,
         "20": 2
+      },
+      "limitedUse": {
+        "id": "paladin_uses",
+        "name": "Canalizar Divindade (Channel Divinity)",
+        "recovery": "curto",
+        "byLevel": {
+          "1": 0,
+          "2": 0,
+          "3": 2,
+          "4": 2,
+          "5": 2,
+          "6": 2,
+          "7": 2,
+          "8": 2,
+          "9": 2,
+          "10": 2,
+          "11": 3,
+          "12": 3,
+          "13": 3,
+          "14": 3,
+          "15": 3,
+          "16": 3,
+          "17": 3,
+          "18": 3,
+          "19": 3,
+          "20": 3
+        }
       }
     },
     {
@@ -2062,6 +2224,33 @@ const DND5E_DATA = {
         "18": 2,
         "19": 2,
         "20": 2
+      },
+      "limitedUse": {
+        "id": "ranger_uses",
+        "name": "Inimigo Favorito (Favored Enemy)",
+        "recovery": "longo",
+        "byLevel": {
+          "1": 2,
+          "2": 2,
+          "3": 2,
+          "4": 2,
+          "5": 3,
+          "6": 3,
+          "7": 3,
+          "8": 3,
+          "9": 4,
+          "10": 4,
+          "11": 4,
+          "12": 4,
+          "13": 5,
+          "14": 5,
+          "15": 5,
+          "16": 5,
+          "17": 6,
+          "18": 6,
+          "19": 6,
+          "20": 6
+        }
       }
     },
     {
@@ -2442,7 +2631,34 @@ const DND5E_DATA = {
             ]
           }
         }
-      ]
+      ],
+      "limitedUse": {
+        "id": "sorcerer_uses",
+        "name": "Pontos de Feitiçaria (Sorcery Points)",
+        "recovery": "longo",
+        "byLevel": {
+          "1": 0,
+          "2": 2,
+          "3": 3,
+          "4": 4,
+          "5": 5,
+          "6": 6,
+          "7": 7,
+          "8": 8,
+          "9": 9,
+          "10": 10,
+          "11": 11,
+          "12": 12,
+          "13": 13,
+          "14": 14,
+          "15": 15,
+          "16": 16,
+          "17": 17,
+          "18": 18,
+          "19": 19,
+          "20": 20
+        }
+      }
     },
     {
       "id": "warlock",
@@ -11358,6 +11574,113 @@ const DND5E_DATA = {
         "druid"
       ],
       "desc": "Uma nuvem de tempestade agitada se forma, centrada pela duração em um ponto no alcance da magia, se espalhando para um raio de 90 metros. Cada criatura sob a nuvem quando ela aparecer deve ser bem-sucedida em uma salvaguarda de Constituição ou sofre 2d6 pontos de dano Trovejante e tem a condição Surdo pela duração da magia. No início de cada um dos seus turnos posteriores, a tempestade produz efeitos diferentes, conforme detalhado abaixo: Turno 2: Chuva ácida cai. Cada criatura e objeto sob a nuvem sofre 4d6 pontos de dano Ácido. Turno 3: Você convoca seis relâmpagos da nuvem para atingir seis criaturas ou objetos diferentes abaixo dela. Cada alvo realiza uma salvaguarda de Destreza, sofrendo 10d6 pontos de dano Elétrico se falhar ou metade desse dano em caso de sucesso. Turno 4: Chuva de pedras de granizo. Cada criatura sob a nuvem sofre 2d6 pontos de dano Contundente. Turnos 5-10: Rajadas de vento e chuva gelada surgem sob a nuvem. Cada criatura na área sofre 1d6 pontos de dano Gélido. Até que a magia termine, a área é Terreno Difícil e está Totalmente Obscurecida, ataques à distância com armas são impossíveis nela e ventos fortes sopram por toda a área."
+    }
+  ],
+  "conditions": [
+    {
+      "id": "amedrontado",
+      "name": "Amedrontado (Frightened)",
+      "icon": "fa-face-scream",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Amedrontado, você sofre os seguintes efeitos. Testes de Atributo e Ataques Afetados. Você tem Desvantagem em testes de atributo e jogadas de ataque enquanto a fonte do medo estiver dentro da linha de visão. Não Pode Se Aproximar. Você não pode se aproximar voluntariamente da fonte do medo."
+    },
+    {
+      "id": "atordoado",
+      "name": "Atordoado (Stunned)",
+      "icon": "fa-star",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Atordoado, você sofre os seguintes efeitos. Incapacitado. Você tem a condição Incapacitado. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza. Ataques Afetados. Jogadas de ataque contra você têm Vantagem."
+    },
+    {
+      "id": "caido",
+      "name": "Caído (Prone)",
+      "icon": "fa-person-falling",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Caído, você sofre os seguintes efeitos. Movimento Restrito. Suas únicas opções de movimento são rastejar ou gastar uma quantidade de movimento equivalente à metade do seu Deslocamento (arredondado para baixo) para se levantar e, assim, encerrar a condição. Se seu Deslocamento for 0, você não consegue se levantar. Ataques Afetados. Você tem Desvantagem em jogadas de ataque. Uma jogada de ataque contra você tem Vantagem se o atacante estiver a até 1,5 metro de você. Caso contrário, essa jogada de ataque tem Desvantagem."
+    },
+    {
+      "id": "cego",
+      "name": "Cego (Blinded)",
+      "icon": "fa-eye-slash",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Cego, você sofre os seguintes efeitos. Não Pode Ver. Você não consegue ver e falha automaticamente em qualquer teste de atributo que dependa da visão. Ataques Afetados. Jogadas de ataque contra você têm Vantagem, enquanto suas jogadas de ataque têm Desvantagem."
+    },
+    {
+      "id": "contido",
+      "name": "Contido (Restrained)",
+      "icon": "fa-link",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Contido, você sofre os seguintes efeitos. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Jogadas de ataque contra você têm Vantagem e suas jogadas de ataque têm Desvantagem. Salvaguardas Afetadas. Você tem Desvantagem em salvaguardas de Destreza."
+    },
+    {
+      "id": "enfeiticado",
+      "name": "Enfeitiçado (Charmed)",
+      "icon": "fa-heart",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Enfeitiçado, você sofre os seguintes efeitos: Não Pode Atacar Quem o Enfeitiçou. Você não pode atacar quem o enfeitiçou nem o ter como alvo de ataques que utilizem atributos ou efeitos mágicos. Vantagem Social. Quem o enfeitiçou tem Vantagem em qualquer teste de atributo para interações sociais com você."
+    },
+    {
+      "id": "envenenado",
+      "name": "Envenenado (Poisoned)",
+      "icon": "fa-skull-crossbones",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Envenenado, você sofre os seguintes efeitos. Testes de Atributo e Ataques Afetados. Você tem Desvantagem em jogadas de ataque e testes de atributo."
+    },
+    {
+      "id": "exaustao",
+      "name": "Exaustão (Exhaustion)",
+      "icon": "fa-battery-quarter",
+      "levels": 6,
+      "desc": "Enquanto tem a condição Exaustão, você sofre os seguintes efeitos. Níveis de Exaustão. Essa condição é acumulativa. Cada vez que você a adquire, recebe 1 nível de Exaustão. Você morre se seu nível de Exaustão atingir 6. Testes de D20 Afetados. Ao realizar um Teste de D20, o resultado é reduzido em 2 vezes o seu nível de Exaustão. Deslocamento Reduzido. Seu Deslocamento é reduzido por uma quantidade de metros igual a 1,5 vezes o seu nível de Exaustão. Remoção de Níveis de Exaustão. Completar um Descanso Longo remove 1 dos seus níveis de Exaustão. Quando seu nível de Exaustão chega a 0 a condição encerra."
+    },
+    {
+      "id": "imobilizado",
+      "name": "Imobilizado (Grappled)",
+      "icon": "fa-hand-fist",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Imobilizado, você sofre os seguintes efeitos. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Você tem Desvantagem em jogadas de ataque contra qualquer alvo que não seja o imobilizador. Móvel. O imobilizador pode arrastá-lo ou carregá-lo consigo, mas cada metro de movimento custa 1 metro adicional, a menos que você seja Minúsculo ou dois ou mais tamanhos menores que ele."
+    },
+    {
+      "id": "incapacitado",
+      "name": "Incapacitado (Incapacitated)",
+      "icon": "fa-ban",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Incapacitado, você sofre os seguintes efeitos. Inativo. Você não pode executar nenhuma ação, Ação Bônus ou Reação. Sem Concentração. Sua Concentração é interrompida. Sem Fala. Você não pode falar. Surpresa. Se você está Incapacitado quando joga Iniciativa, você tem Desvantagem na jogada."
+    },
+    {
+      "id": "inconsciente",
+      "name": "Inconsciente (Unconscious)",
+      "icon": "fa-bed",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Inconsciente, você sofre os seguintes efeitos. Inerte. Você tem as condições Caído e Incapacitado e solta qualquer coisa que estiver segurando. Quando esta condição se encerra, você continua Caído. Deslocamento 0. Seu Deslocamento é 0 e não pode ser aumentado. Ataques Afetados. Jogadas de ataque contra você têm Vantagem. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza. Acertos Críticos Automáticos. Qualquer jogada de ataque que o atinge é um Acerto Crítico se o atacante estiver a até 1,5 metro de você. Alheio. Você não está ciente do que está ao seu redor."
+    },
+    {
+      "id": "invisivel",
+      "name": "Invisível (Invisible)",
+      "icon": "fa-ghost",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Invisível, você sofre os seguintes efeitos. Surpresa. Se você está Invisível quando joga Iniciativa, tem Vantagem na jogada. Oculto. Você não é afetado por nenhum efeito que exija que seu alvo seja visto, a menos que o criador do efeito possa vê-lo de alguma forma. Qualquer equipamento que você estiver vestindo ou carregando também está oculto. Ataques Afetados. Jogadas de ataque contra você têm Desvantagem, enquanto suas jogadas de ataque têm Vantagem. Se uma criatura puder vê-lo de alguma forma, você não recebe esse benefício contra ela."
+    },
+    {
+      "id": "paralisado",
+      "name": "Paralisado (Paralyzed)",
+      "icon": "fa-bolt",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Paralisado, você sofre os seguintes efeitos. Incapacitado. Você adquire a condição Incapacitado. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Jogadas de ataque contra você têm Vantagem. Acertos Críticos Automáticos. Qualquer jogada de ataque que o atinge é um Acerto Crítico se o atacante estiver a até 1,5 metro de você. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza."
+    },
+    {
+      "id": "petrificado",
+      "name": "Petrificado (Petrified)",
+      "icon": "fa-gem",
+      "levels": 0,
+      "desc": "Enquanto tem a condição Petrificado, você sofre os seguintes efeitos. Transformado em Substância Inanimada. Você é transformado, juntamente com qualquer objeto não mágico que esteja vestindo ou carregando, em uma substância sólida e inanimada (geralmente pedra). Seu peso aumenta em dez vezes e você para de envelhecer. Incapacitado. Você adquire a condição Incapacitado. Deslocamento 0. Seu Deslocamento é 0 e não pode aumentar. Ataques Afetados. Jogadas de ataque contra você têm Vantagem. Salvaguardas Afetadas. Você falha automaticamente em salvaguardas de Força e Destreza. Resistência a Dano. Você tem Resistência a todos os danos. Imunidade a Veneno. Você tem Imunidade à condição Envenenado."
+    },
+    {
+      "id": "surdo",
+      "name": "Surdo (Deafened)",
+      "icon": "fa-ear-deaf",
+      "levels": 0,
+      "desc": "Enquanto estiver na condição Surdo, você sofre o seguinte efeito. Não Pode Ouvir. Você não pode ouvir e falha automaticamente em qualquer teste de atributo que dependa da audição."
     }
   ]
 };
