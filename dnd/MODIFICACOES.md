@@ -1208,6 +1208,34 @@ acompanhamento. `SPELL_WEAPON_BUFFS` trata cada uma pelo que ela faz:
 O maior círculo sai da tabela de espaços de magia, não do DOM — assim o cálculo
 vale mesmo com a tela não renderizada, e é testável.
 
+### 9.21 O print() automático imprimia uma folha em branco
+
+O arquivo que saía do botão **Imprimir / PDF** tinha 22 KB, sem formulário, e o
+texto dele era só o cabeçalho e o rodapé do navegador — a data e o endereço.
+Nada da ficha. O `print()` disparava 1,2 s depois de mandar o PDF para a aba, e
+o visualizador ainda não tinha terminado de montar os quase 12 MB.
+
+Foi a terceira tentativa nesse botão: o `<iframe>` escondido, a aba com
+`print()` automático e agora **sem `print()` nenhum**. A aba abre com o PDF
+pronto e a impressão sai pelo visualizador, que é o único caminho que funciona.
+O verificador passou a exigir que `aba.print()` não exista no arquivo.
+
+O nome do arquivo salvo saía como `446546e8-….pdf`, o identificador interno do
+blob. O PDF agora é embrulhado num `File` com o nome certo, o que ajuda em parte
+dos navegadores; para garantir o nome, o botão **Ficha PDF Oficial** baixa o
+arquivo como `Ficha D&D 5.5 - <personagem>.pdf`, e o aviso na tela diz isso.
+
+### 9.22 A espera de 12 MB no clique
+
+A ficha em branco tem 11,9 MB e a pdf-lib mais 525 KB, e eram buscadas **em
+série** no clique — uma esperando a outra sem precisar. Agora vão juntas, num
+`Promise.all`.
+
+Além disso, `prefetchPdfResources()` busca as duas assim que o navegador fica
+ocioso depois do carregamento da página, de modo que o clique aproveite o que já
+está em memória. Só vale por http: em `file://` a ficha vem do arquivo embutido
+de 16 MB, que não faz sentido carregar sem necessidade.
+
 ---
 
 ## 10. Como o código da ficha funciona

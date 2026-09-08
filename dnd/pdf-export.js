@@ -605,30 +605,33 @@ function openPrintTab() {
 }
 
 /**
- * Manda o PDF para a aba aberta no clique e pede a impressão.
+ * Manda o PDF para a aba aberta no clique.
  *
- * A tentativa anterior era montar um <iframe> escondido com o blob e chamar
- * print() nele. No Chrome isso não funciona com PDF: o visualizador é uma
- * extensão, o onload do iframe muitas vezes não dispara e o print() é ignorado
- * sem erro nenhum — o botão parecia morto. Numa aba de verdade o visualizador
- * abre com o próprio botão de imprimir, e o print() automático ainda é tentado.
+ * Não chamamos print() aqui de propósito. Já tentamos duas vezes: no <iframe>
+ * escondido o Chrome ignora o print() de PDF em silêncio, e na aba o print()
+ * dispara antes de o visualizador terminar de montar os quase 12 MB — o
+ * resultado era uma folha com apenas o cabeçalho e o rodapé do navegador
+ * (a data e o endereço), sem nada da ficha.
+ *
+ * A aba abre com o PDF pronto; imprimir a partir do visualizador dele funciona
+ * e sai correto.
  */
-function printPdfBytes(bytes, filename, aba) {
+function showPdfInTab(bytes, filename, aba) {
   if (!canPrintPdfInPlace() || !aba) return false;
-  const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+  // File em vez de Blob: alguns navegadores usam o nome dele ao salvar; com
+  // Blob puro o arquivo sai com o identificador interno ("446546e8-….pdf").
+  const arquivo = typeof File === "function"
+    ? new File([bytes], filename, { type: "application/pdf" })
+    : new Blob([bytes], { type: "application/pdf" });
+  const url = URL.createObjectURL(arquivo);
   try {
     aba.location.href = url;
-    // O visualizador de PDF leva um instante para montar; se ele recusar o
-    // print(), a aba fica aberta com o arquivo e o botão de imprimir dele.
-    setTimeout(() => {
-      try { aba.focus(); aba.print(); } catch (err) { /* o usuário imprime pela aba */ }
-    }, 1200);
   } catch (err) {
     console.warn("Não foi possível enviar o PDF para a aba:", err);
     URL.revokeObjectURL(url);
     return false;
   }
-  setTimeout(() => URL.revokeObjectURL(url), 120000);
+  setTimeout(() => URL.revokeObjectURL(url), 300000);
   return true;
 }
 
@@ -645,13 +648,15 @@ async function exportToOfficialPdf(forcePick, mode) {
   const aba = mode === "print" ? openPrintTab() : null;
   try {
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...'; }
-    await loadPdfLibrary();
-    const srcBytes = await getOfficialPdfBytes(forcePick);
+    // Em paralelo: a ficha em branco tem quase 12 MB e a pdf-lib mais 500 KB.
+    // Em série, um esperava o outro sem precisar.
+    const [, srcBytes] = await Promise.all([loadPdfLibrary(), getOfficialPdfBytes(forcePick)]);
     const payload = collectOfficialPdfPayload();
     const { bytes, filled } = await fillOfficialPdf(srcBytes, payload);
     const filename = officialPdfFilename();
-    if (mode === "print" && printPdfBytes(bytes, filename, aba)) {
-      showPdfToast(`🖨️ Ficha aberta em outra aba — ${filled} campos preenchidos. Se a impressão não abrir sozinha, use Ctrl+P por lá.`);
+    if (mode === "print" && showPdfInTab(bytes, filename, aba)) {
+      showPdfToast(`🖨️ Ficha aberta em outra aba — ${filled} campos preenchidos. Imprima pelo botão do visualizador (ou Ctrl+P na aba).`);
+      showPdfToast(`💾 Para salvar o arquivo já com o nome "${filename}", use o botão Ficha PDF Oficial.`);
     } else if (mode === "print") {
       // Sem aba (bloqueada pelo navegador) ou em file://, onde o blob não tem
       // origem e o visualizador de PDF não abre. Baixa e explica.
@@ -674,6 +679,23 @@ async function exportToOfficialPdf(forcePick, mode) {
   }
 }
 
+/**
+ * Baixa a ficha em branco e a pdf-lib assim que o navegador fica ocioso.
+ *
+ * São quase 12,5 MB somados. Buscando só no clique, o jogador esperava tudo
+ * isso de uma vez com a tela parada; buscando antes, o clique aproveita o que
+ * já está em memória. Só vale por http — em file:// a ficha vem do arquivo
+ * embutido, que é grande e não faz sentido carregar sem necessidade.
+ */
+function prefetchPdfResources() {
+  if (!canPrintPdfInPlace()) return;
+  const ocioso = window.requestIdleCallback || ((fn) => setTimeout(fn, 3000));
+  ocioso(() => {
+    loadPdfLibrary().catch(() => { /* tenta de novo no clique */ });
+    getOfficialPdfBytes(false).catch(() => { /* idem */ });
+  });
+}
+
 function initOfficialPdfExport() {
   const btnDownload = document.getElementById("btnExportOfficialPdf");
   if (btnDownload) {
@@ -688,4 +710,7 @@ function initOfficialPdfExport() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", initOfficialPdfExport);
+document.addEventListener("DOMContentLoaded", () => {
+  initOfficialPdfExport();
+  prefetchPdfResources();
+});
