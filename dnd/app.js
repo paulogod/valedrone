@@ -1312,7 +1312,7 @@ function renderSpellSlots() {
     `${truquesEscolhidos} / ${cap.maxCantrips} truques · ${magiasEscolhidas} / ${cap.maxPrepared} preparadas`,
     truquesEscolhidos > cap.maxCantrips || magiasEscolhidas > cap.maxPrepared));
   ordem.filter(k => grupos[k]).forEach(k => {
-    contas.push(linhaConta(k, `${grupos[k].length} concedida(s), fora do limite`));
+    contas.push(linhaConta(k, `${grupos[k].length} concedida(s)`));
   });
 
   const concedidas = ordem.filter(k => grupos[k]).map(k => {

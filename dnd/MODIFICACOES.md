@@ -1415,8 +1415,8 @@ Magias por origem
   Talento     Tocado pelo Reino Feérico: 1 magia(s) para escolher
   Talento     Iniciado em Magia: 2 truque(s) · 1 magia(s) para escolher
   Escolhidas  2 / 2 truques · 6 / 8 preparadas
-  Subclasse   4 concedida(s), fora do limite
-  Talento     1 concedida(s), fora do limite
+  Subclasse   4 concedida(s)
+  Talento     1 concedida(s)
 ```
 
 Capacidade e concessão são coisas diferentes e aparecem separadas. A linha
