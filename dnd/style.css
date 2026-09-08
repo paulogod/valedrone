@@ -1564,7 +1564,7 @@ select.form-control option {
 
 .hp-log-limpar:hover { color: #f87171; }
 
-.hp-log-lista { max-height: 11rem; overflow-y: auto; }
+.hp-log-lista { max-height: 13rem; overflow-y: auto; }
 
 .hp-log-linha {
   display: grid;
@@ -1582,6 +1582,12 @@ select.form-control option {
 .hp-log-linha.is-dado i { color: #86efac; }
 .hp-log-linha.is-temp i { color: #7dd3fc; }
 .hp-log-linha.is-descanso i { color: #fbbf24; }
+.hp-log-linha.is-rolagem i { color: #c084fc; }
+.hp-log-linha.is-condicao i { color: #fca5a5; }
+.hp-log-linha.is-uso i { color: #fcd34d; }
+.hp-log-linha.is-magia i { color: #d8b4fe; }
+.hp-log-linha.is-arma i { color: #94a3b8; }
+.hp-log-linha.is-talento i { color: #86efac; }
 
 .hp-log-texto { color: #e2e8f0; }
 .hp-log-pv { font-family: var(--font-mono); color: var(--text-muted); }

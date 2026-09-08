@@ -1258,7 +1258,8 @@ function renderConditions() {
 const HP_LOG_ICONE = {
   dano: "fa-burst", cura: "fa-kit-medical", temp: "fa-shield-halved",
   dado: "fa-dice-d6", descanso: "fa-moon", condicao: "fa-triangle-exclamation",
-  rolagem: "fa-dice-d20", uso: "fa-bolt-lightning"
+  rolagem: "fa-dice-d20", uso: "fa-bolt-lightning",
+  magia: "fa-wand-sparkles", arma: "fa-gavel", talento: "fa-star"
 };
 
 /** Últimos acontecimentos de vida, do mais recente para o mais antigo. */
@@ -1659,6 +1660,9 @@ function toggleWeaponMastery(weaponId) {
     }
     character.activeMasteries.push(weaponId);
   }
+  const wm = DND5E_DATA.weapons.find(x => x.id === weaponId);
+  if (wm) logHpEvent("arma", `${i >= 0 ? "Desligou" : "Ligou"} a maestria ${wm.masteryName.split(" (")[0]} (${wm.name.split(" (")[0]})`,
+                     character.currentHp || 0);
   renderWeaponMasteryButtons();
   recalculateCharacter();
   saveToLocalStorage();
@@ -1999,11 +2003,16 @@ function updateFeatsList() {
   container.querySelectorAll(".feat-check").forEach(chk => {
     chk.addEventListener("change", (e) => {
       const fId = e.target.value;
+      const feat = DND5E_DATA.feats.find(f => f.id === fId);
+      const nomeTalento = feat ? feat.name.split(" (")[0] : fId;
       if (e.target.checked) {
         if (!character.selectedFeats.includes(fId)) character.selectedFeats.push(fId);
+        logHpEvent("talento", `Adicionou ${nomeTalento}`, character.currentHp || 0);
       } else {
         character.selectedFeats = character.selectedFeats.filter(f => f !== fId);
+        logHpEvent("talento", `Removeu ${nomeTalento}`, character.currentHp || 0);
       }
+      renderHpLog();
       const row = container.querySelector(`.feat-row[data-row="${fId}"]`);
       if (row) row.classList.toggle("is-selected", e.target.checked);
       const box = container.querySelector(`.feat-choice-box[data-choice-box="${fId}"]`);
@@ -2869,12 +2878,17 @@ function renderSpellsCatalog() {
     const toggleBtn = e.target.closest(".btn-toggle-spell");
     if (toggleBtn) {
       const spId = toggleBtn.getAttribute("data-id");
+      const sp = DND5E_DATA.spells.find(x => x.id === spId);
+      const nomeMagia = sp ? sp.name.split(" (")[0] : spId;
       if (character.spellsKnown.includes(spId)) {
         character.spellsKnown = character.spellsKnown.filter(id => id !== spId);
+        logHpEvent("magia", `Removeu ${nomeMagia}`, character.currentHp || 0);
       } else {
         character.spellsKnown.push(spId);
+        logHpEvent("magia", `Adicionou ${nomeMagia}`, character.currentHp || 0);
       }
       renderSpellsCatalog();
+      renderHpLog();
       recalculateCharacter();
     }
   });
@@ -4463,6 +4477,16 @@ function bindEvents() {
       const i = Number(sel.getAttribute("data-slot"));
       const anterior = character.weapons[i];
       character.weapons[i] = sel.value;
+      const nomeDe = (id) => {
+        const w = DND5E_DATA.weapons.find(x => x.id === id);
+        return w ? w.name.split(" (")[0] : null;
+      };
+      const saiuNome = nomeDe(anterior), entrouNome = nomeDe(sel.value);
+      if (saiuNome !== entrouNome) {
+        logHpEvent("arma", entrouNome
+          ? `Equipou ${entrouNome}${saiuNome ? ` no lugar de ${saiuNome}` : ""}`
+          : `Desequipou ${saiuNome}`, character.currentHp || 0);
+      }
       // trocar a arma do espaço solta a maestria que estava presa a ela
       if (anterior && anterior !== sel.value && !character.weapons.includes(anterior)) {
         character.activeMasteries = (character.activeMasteries || []).filter(w => w !== anterior);
@@ -4481,6 +4505,8 @@ function bindEvents() {
       if (btnRemover) {
         const i = Number(btnRemover.getAttribute("data-slot"));
         const saiu = character.weapons[i];
+        const wSaiu = DND5E_DATA.weapons.find(x => x.id === saiu);
+        if (wSaiu) logHpEvent("arma", `Removeu ${wSaiu.name.split(" (")[0]}`, character.currentHp || 0);
         character.weapons.splice(i, 1);
         if (saiu && !character.weapons.includes(saiu)) {
           character.activeMasteries = (character.activeMasteries || []).filter(w => w !== saiu);

@@ -1327,8 +1327,14 @@ Os números saem da coluna própria de cada tabela de classe:
 O que volta no Curto também volta no Longo, e os descansos anotam no histórico o
 que recuperaram.
 
-**Rolagens entram no histórico** junto com dano, cura e descansos — a expressão
-digitada é escapada antes de virar HTML, porque vem de campo livre.
+**Histórico da sessão.** Um só, no mesmo painel, com tudo que entra e sai:
+dano, cura, temporários, Dados de Vida, descansos, condições, usos de
+característica, rolagens de dado e as mudanças de magia, arma, maestria e
+talento. Cada tipo tem ícone e cor. A expressão de dado digitada é escapada
+antes de virar HTML, porque vem de campo livre.
+
+As condições subiram para logo abaixo dos botões de dano e cura — são o que mais
+muda a rolagem do turno, e ficavam atrás do histórico.
 
 ---
 

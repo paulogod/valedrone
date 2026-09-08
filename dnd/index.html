@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907s";
+    var APP_VERSION = "20260907t";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -97,7 +97,7 @@
           <i class="fa-solid fa-hat-wizard"></i> Assistente<span class="tab-long-label"> Passo a Passo (Wizard)</span>
         </button>
         <button class="app-mode-btn" id="btnModeSheet" data-mode="sheet">
-          <i class="fa-solid fa-file-signature"></i> Ficha Editável<span class="tab-long-label"> Direta (Ficha Oficial)</span>
+          <i class="fa-solid fa-file-signature"></i> Ficha Editável<span class="tab-long-label"> Direta</span>
         </button>
       </div>
 
@@ -719,6 +719,18 @@
                 <i class="fa-solid fa-shield-halved"></i> Temp
               </button>
             </div>
+            <!-- Condições: escolher e adicionar, com as ativas logo abaixo.
+                 Ficam aqui em cima porque mudam rolagem e movimento. -->
+            <div class="cond-bloco">
+              <div class="cond-cabeca">
+                <span>Condições</span>
+                <span class="cond-resumo" id="conditionsResumo">nenhuma ativa</span>
+              </div>
+              <!-- Um clique na etiqueta liga ou desliga; o "i" abre o texto do livro. -->
+              <div class="cond-lista" id="conditionsList"></div>
+              <div class="cond-detalhe" id="conditionsDetalhe" hidden></div>
+            </div>
+
             <div class="hp-tracker-dados" id="hpTrackerDados"></div>
             <div class="hp-tracker-rodape">
               <button type="button" class="btn btn-secondary btn-sm" id="btnDescansoCurto" title="Anota o descanso; quem cura é gastar Dado de Vida">
@@ -735,22 +747,11 @@
               <div class="uso-lista" id="featureUsesList"></div>
             </div>
 
-            <!-- Condições ativas, no mesmo painel: elas mudam rolagem e
-                 movimento, e o "i" abre o texto do livro. -->
-            <div class="cond-bloco">
-              <div class="cond-cabeca">
-                <span>Condições</span>
-                <span class="cond-resumo" id="conditionsResumo">nenhuma ativa</span>
-              </div>
-              <div class="cond-lista" id="conditionsList"></div>
-              <div class="cond-detalhe" id="conditionsDetalhe" hidden></div>
-            </div>
-
             <!-- Histórico: o que aconteceu na sessão — vida, descansos,
                  condições e rolagens. Guarda os últimos 30 acontecimentos. -->
             <div class="hp-log">
               <div class="hp-log-cabeca">
-                <span>Histórico</span>
+                <span>Histórico da sessão</span>
                 <button type="button" class="hp-log-limpar" id="btnHpLogLimpar" title="Apagar o histórico">
                   <i class="fa-solid fa-eraser"></i> Limpar
                 </button>
