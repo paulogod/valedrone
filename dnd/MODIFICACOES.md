@@ -1278,6 +1278,14 @@ substituto.
 - **Descanso Longo** enche os Pontos de Vida, zera os temporários, limpa os
   testes de resistência de morte e devolve **metade** dos Dados de Vida
   (arredondando para baixo, no mínimo 1).
+- **Descanso Curto** só anota: no livro ele não cura por si, quem recupera é
+  gastar Dado de Vida. Anotá-lo separa um combate do outro na leitura.
+
+**Histórico.** Cada acontecimento entra numa lista com o que houve, quantos
+Pontos de Vida sobraram e a hora — do mais recente para o mais antigo, os
+últimos 30. "Levei 12, curei 7, descansei" é o que se esquece primeiro quando a
+mesa acelera, e reconstruir isso de cabeça no fim da sessão nunca dá certo. Cada
+tipo tem cor e ícone próprios, e dá para limpar a lista.
 
 ### 9.25 Rolador de dados no lugar do d20 fixo
 

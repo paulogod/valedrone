@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907p";
+    var APP_VERSION = "20260907q";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -721,9 +721,24 @@
             </div>
             <div class="hp-tracker-dados" id="hpTrackerDados"></div>
             <div class="hp-tracker-rodape">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnDescansoCurto" title="Anota o descanso; quem cura é gastar Dado de Vida">
+                <i class="fa-solid fa-mug-hot"></i> Descanso Curto
+              </button>
               <button type="button" class="btn btn-secondary btn-sm" id="btnDescansoLongo" title="Pontos de Vida cheios, temporários zerados e metade dos Dados de Vida de volta">
                 <i class="fa-solid fa-moon"></i> Descanso Longo
               </button>
+            </div>
+
+            <!-- Histórico: o que aconteceu com a vida, do mais recente para o
+                 mais antigo. Guarda os últimos 30 acontecimentos. -->
+            <div class="hp-log">
+              <div class="hp-log-cabeca">
+                <span>Histórico</span>
+                <button type="button" class="hp-log-limpar" id="btnHpLogLimpar" title="Apagar o histórico">
+                  <i class="fa-solid fa-eraser"></i> Limpar
+                </button>
+              </div>
+              <div class="hp-log-lista" id="hpLogLista"></div>
             </div>
           </div>
         </details>

@@ -94,6 +94,10 @@ function createBlankCharacter() {
     // porque o multiclasse mistura dados diferentes e cada um se gasta e se
     // recupera por conta.
     hitDiceSpent: {},
+    // Últimos acontecimentos de vida (dano, cura, temporários, descansos).
+    // Serve para reconstruir o que houve na sessão — "levei 12, curei 7" é o
+    // que se esquece primeiro quando a mesa acelera.
+    hpLog: [],
     deathSaves: { succ1: false, succ2: false, succ3: false, fail1: false, fail2: false, fail3: false },
 
     // Biografia & Interpretação (em branco; o dado de cada campo sorteia)
@@ -1083,6 +1087,48 @@ let _featFilterState = { busca: "", tipo: "all", soMeus: false };
 
 /* ---------------------------------------------- CONTROLE DE PONTOS DE VIDA */
 
+const HP_LOG_ICONE = {
+  dano: "fa-burst", cura: "fa-kit-medical", temp: "fa-shield-halved",
+  dado: "fa-dice-d6", descanso: "fa-moon"
+};
+
+/** Últimos acontecimentos de vida, do mais recente para o mais antigo. */
+function renderHpLog() {
+  const box = document.getElementById("hpLogLista");
+  if (!box) return;
+  const log = character.hpLog || [];
+  if (!log.length) {
+    box.innerHTML = '<p class="hp-log-vazio">Nada registrado ainda. Dano, cura, temporários e descansos aparecem aqui.</p>';
+    return;
+  }
+  box.innerHTML = log.map(e => `
+    <div class="hp-log-linha is-${e.tipo}">
+      <i class="fa-solid ${HP_LOG_ICONE[e.tipo] || "fa-circle"}"></i>
+      <span class="hp-log-texto">${e.texto}</span>
+      <span class="hp-log-pv">${e.pv} PV</span>
+      <span class="hp-log-hora">${e.hora}</span>
+    </div>`).join("");
+}
+
+/* Quantos acontecimentos ficam guardados. O suficiente para reconstruir um
+   combate sem inchar a ficha salva. */
+const HP_LOG_MAX = 30;
+
+/**
+ * Anota um acontecimento de vida. `pv` é como o personagem ficou depois dele,
+ * para a lista poder ser lida de cima para baixo sem refazer as contas.
+ */
+function logHpEvent(tipo, texto, pv) {
+  if (!Array.isArray(character.hpLog)) character.hpLog = [];
+  character.hpLog.unshift({
+    tipo,
+    texto,
+    pv,
+    hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+  });
+  character.hpLog = character.hpLog.slice(0, HP_LOG_MAX);
+}
+
 /**
  * Dados de Vida do personagem: um bloco por classe, com o dado e o total.
  * Em multiclasse são dois blocos, e cada um se gasta separado.
@@ -1118,6 +1164,7 @@ function applyDamage(valor) {
   character.tempHp = temp - absorvido;
   character.currentHp = Math.max(0, (character.currentHp || 0) - (dano - absorvido));
   const resto = dano - absorvido;
+  logHpEvent("dano", `−${dano}${absorvido ? ` (${absorvido} nos temporários)` : ""}`, character.currentHp);
   showToast(`💥 ${dano} de dano${absorvido ? ` (${absorvido} nos temporários)` : ""} — ${character.currentHp} PV`);
   if (character.currentHp === 0) showToast("💀 Você caiu a 0 PV: comece os testes de resistência de morte.");
   return resto;
@@ -1129,6 +1176,7 @@ function applyHealing(valor, maxHp) {
   if (!cura) return;
   const antes = character.currentHp || 0;
   character.currentHp = Math.min(maxHp, antes + cura);
+  logHpEvent("cura", `+${character.currentHp - antes}`, character.currentHp);
   showToast(`💚 ${character.currentHp - antes} PV recuperados — ${character.currentHp} de ${maxHp}`);
 }
 
@@ -1144,6 +1192,7 @@ function applyTempHp(valor) {
     return;
   }
   character.tempHp = novo;
+  logHpEvent("temp", `${novo} temporários${atual ? ` (no lugar de ${atual})` : ""}`, character.currentHp || 0);
   showToast(`🛡️ ${novo} PV temporários${atual ? ` (substituindo ${atual})` : ""}`);
 }
 
@@ -1162,7 +1211,18 @@ function spendHitDie(chave, maxHp, conMod) {
   const antes = character.currentHp || 0;
   character.currentHp = Math.min(maxHp, antes + cura);
   const modStr = conMod >= 0 ? `+${conMod}` : `${conMod}`;
+  logHpEvent("dado", `Dado de Vida ${chave}(${rolagem}) ${modStr} = +${character.currentHp - antes}`, character.currentHp);
   showToast(`🎲 Dado de Vida ${chave}(${rolagem}) ${modStr} = ${cura} — ${character.currentHp} de ${maxHp} PV`);
+}
+
+/**
+ * Descanso Curto: não cura por si só. Quem recupera Pontos de Vida é gastar
+ * Dado de Vida, e é isso que o registro deixa claro — anotar o descanso separa
+ * um combate do outro na leitura do histórico.
+ */
+function shortRest() {
+  logHpEvent("descanso", "Descanso Curto", character.currentHp || 0);
+  showToast("☕ Descanso Curto anotado — gaste Dados de Vida para recuperar Pontos de Vida.");
 }
 
 /**
@@ -1182,6 +1242,7 @@ function longRest(maxHp) {
     recuperados.push(`${gastos - novo} ${b.chave}`);
   });
   character.deathSaves = { succ1: false, succ2: false, succ3: false, fail1: false, fail2: false, fail3: false };
+  logHpEvent("descanso", `Descanso Longo${recuperados.length ? ` — ${recuperados.join(" e ")} de volta` : ""}`, maxHp);
   showToast(`🌙 Descanso Longo — ${maxHp} PV${recuperados.length ? `, ${recuperados.join(" e ")} de volta` : ""}`);
 }
 
@@ -1202,6 +1263,8 @@ function renderHpTracker() {
   resumo.innerHTML = `<strong>${atual}</strong> / ${maxHp} PV` +
     (temp ? ` <span class="hp-temp-tag">+${temp} temp</span>` : "") +
     (atual === 0 ? ' <span class="hp-caido-tag">caído</span>' : "");
+
+  renderHpLog();
 
   const blocos = getHitDicePools();
   dados.innerHTML = blocos.length
@@ -4258,6 +4321,16 @@ function bindEvents() {
 
   const btnTemp = document.getElementById("btnHpTemp");
   if (btnTemp) btnTemp.addEventListener("click", () => { applyTempHp(hpValor()); hpDepois(); });
+
+  const btnCurto = document.getElementById("btnDescansoCurto");
+  if (btnCurto) btnCurto.addEventListener("click", () => { shortRest(); hpDepois(); });
+
+  const btnLimpar = document.getElementById("btnHpLogLimpar");
+  if (btnLimpar) btnLimpar.addEventListener("click", () => {
+    character.hpLog = [];
+    hpDepois();
+    showToast("Histórico de vida limpo.");
+  });
 
   const btnLongo = document.getElementById("btnDescansoLongo");
   if (btnLongo) btnLongo.addEventListener("click", () => { longRest(hpMaximo()); hpDepois(); });
