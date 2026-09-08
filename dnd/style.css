@@ -1376,6 +1376,40 @@ select.form-control option {
 
 .uso-ponto.is-cheio { background: #fbbf24; }
 
+.uso-ponto.is-magia { background: #a78bfa; border-color: rgba(167, 139, 250, 0.6); }
+
+/* Magias que vêm de fora da lista da classe, agrupadas pela origem */
+.magia-fontes { margin-top: 0.5rem; border-top: 1px dashed rgba(255, 255, 255, 0.07); padding-top: 0.35rem; }
+
+.magia-fonte {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.4rem;
+  align-items: baseline;
+  padding: 0.18rem 0;
+  font-size: 0.76rem;
+}
+
+.magia-fonte-tipo {
+  color: #c084fc;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.magia-fonte-itens { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+.magia-fonte-item {
+  background: rgba(192, 132, 252, 0.12);
+  border: 1px solid rgba(192, 132, 252, 0.25);
+  border-radius: 3px;
+  padding: 0.08rem 0.3rem;
+  color: #e9d5ff;
+}
+
+.magia-fonte-item small { color: var(--text-muted); font-family: var(--font-mono); }
+
 .uso-botoes { display: inline-flex; gap: 0.15rem; }
 
 .uso-btn {

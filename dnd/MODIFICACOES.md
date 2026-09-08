@@ -1351,6 +1351,24 @@ rola, que é o esperado de duas folhas empilhadas.
 alterna em vez de trocar, e que a regra antiga — apagar `active-page` de todas as
 páginas antes de marcar uma — não voltou.
 
+### 9.28 Espaços de magia no painel de jogo
+
+Ao lado dos usos de característica, uma linha por círculo com bolinhas roxas do
+que ainda resta, e `−` / `+` para gastar e devolver. Os totais saem da mesma
+fonte da ficha — a tabela da classe, com o total que o jogador tiver escrito à
+mão por cima —, para painel e ficha nunca discordarem. Círculo sem espaço não
+aparece, e o Descanso Longo devolve todos.
+
+Abaixo, as **magias concedidas separadas pela origem**: Subclasse, Espécie,
+Talento e Antecedente, cada uma com o círculo da magia. O antecedente aparece
+separado do talento comum porque, no livro de 2024, ele concede um talento de
+Origem — e é justamente essa diferença que se quer enxergar. Passar o mouse
+mostra a fonte completa ("Subclasse (Domínio da Vida)").
+
+Espaços de magia são da classe: subclasse, espécie, talento e antecedente não
+dão espaços, dão magias. Por isso as duas coisas aparecem em blocos separados em
+vez de somadas.
+
 ---
 
 ## 10. Como o código da ficha funciona

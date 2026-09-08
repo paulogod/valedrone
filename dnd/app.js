@@ -1182,6 +1182,109 @@ function renderFeatureUses() {
     : '<p class="hp-dado-vazio">Esta classe não tem característica de uso limitado com contador.</p>';
 }
 
+/* ------------------------------------------------- ESPAÇOS DE MAGIA */
+
+/**
+ * Espaços de magia por círculo, do 1º ao 9º.
+ *
+ * Sai da mesma fonte da ficha: a tabela da classe, com o total que o jogador
+ * tiver escrito à mão por cima. Sem isso, o painel e a ficha discordariam.
+ */
+function getSpellSlotRow() {
+  const c1 = DND5E_DATA.classes.find(c => c.id === character.class1);
+  const c2 = character.class2 !== "none" ? DND5E_DATA.classes.find(c => c.id === character.class2) : null;
+  const conj = (c1 && c1.spellcasting) ? c1 : (c2 && c2.spellcasting ? c2 : null);
+  const nivel = (character.level1 || 0) + (c2 ? (character.level2 || 0) : 0);
+  const tipo = conj && conj.spellcasting ? conj.spellcasting.type : "full";
+  const tabela = DND5E_DATA.spellSlotsTable[tipo] || DND5E_DATA.spellSlotsTable.full;
+  const linha = (conj && tabela[nivel]) || [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+  const ov = sheetOv();
+  return linha.map((auto, i) => {
+    const manual = ov.slots && ov.slots[i + 1] ? ov.slots[i + 1].total : undefined;
+    return manual !== undefined && manual !== null ? manual : auto;
+  });
+}
+
+function changeSpellSlot(nivel, delta) {
+  const totais = getSpellSlotRow();
+  const total = totais[nivel - 1] || 0;
+  if (!total) return;
+  const gastos = character.spellSlotsExpended[nivel] || 0;
+  const novo = Math.max(0, Math.min(total, gastos + delta));
+  if (novo === gastos) {
+    if (delta > 0) showToast(`Sem espaços de ${nivel}º círculo disponíveis.`);
+    return;
+  }
+  character.spellSlotsExpended[nivel] = novo;
+  logHpEvent("magia", `Espaço de ${nivel}º círculo: ${total - novo} de ${total}`, character.currentHp || 0);
+}
+
+/**
+ * De onde vem cada magia que o personagem tem sem gastar escolha da classe.
+ * O antecedente aparece separado do talento comum: no livro de 2024 ele concede
+ * um talento de Origem, e é essa a diferença que o jogador quer ver.
+ */
+function getGrantedSpellsBySource() {
+  const origem = getOriginFeatObj();
+  const grupos = {};
+  getGrantedSpellEntries().forEach(g => {
+    const sp = DND5E_DATA.spells.find(x => x.id === g.id);
+    let tipo = "Espécie";
+    if (/^Subclasse/.test(g.source)) tipo = "Subclasse";
+    else if (/^Talento/.test(g.source)) {
+      tipo = origem && g.source.includes(origem.name) ? "Antecedente" : "Talento";
+    }
+    (grupos[tipo] = grupos[tipo] || []).push({
+      nome: sp ? sp.name.split(" (")[0] : g.id,
+      circulo: sp ? sp.level : 0,
+      fonte: g.source
+    });
+  });
+  return grupos;
+}
+
+function renderSpellSlots() {
+  const box = document.getElementById("spellSlotsPanel");
+  if (!box) return;
+  const totais = getSpellSlotRow();
+  const temAlgum = totais.some(t => t > 0);
+
+  const linhas = totais.map((total, i) => {
+    if (!total) return "";
+    const nivel = i + 1;
+    const gastos = character.spellSlotsExpended[nivel] || 0;
+    const restam = total - gastos;
+    const bolinhas = Array.from({ length: total }, (_, k) =>
+      `<span class="uso-ponto${k < restam ? " is-cheio is-magia" : ""}"></span>`).join("");
+    return `<div class="uso-linha">
+      <span class="uso-nome">${nivel}º Círculo <small>${restam} de ${total}</small></span>
+      <span class="uso-pontos" title="${restam} de ${total}">${bolinhas}</span>
+      <span class="uso-botoes">
+        <button type="button" class="uso-btn" data-slot="${nivel}" data-delta="1"
+                ${restam <= 0 ? "disabled" : ""} title="Gastar um espaço">−</button>
+        <button type="button" class="uso-btn" data-slot="${nivel}" data-delta="-1"
+                ${gastos <= 0 ? "disabled" : ""} title="Devolver um espaço">+</button>
+      </span>
+    </div>`;
+  }).join("");
+
+  const grupos = getGrantedSpellsBySource();
+  const ordem = ["Subclasse", "Espécie", "Talento", "Antecedente"];
+  const concedidas = ordem.filter(k => grupos[k]).map(k => {
+    const itens = grupos[k].map(g =>
+      `<span class="magia-fonte-item" title="${g.fonte}">${g.nome} <small>${g.circulo === 0 ? "truque" : g.circulo + "º"}</small></span>`
+    ).join("");
+    return `<div class="magia-fonte">
+      <span class="magia-fonte-tipo">${k}</span>
+      <span class="magia-fonte-itens">${itens}</span>
+    </div>`;
+  }).join("");
+
+  box.innerHTML = (temAlgum ? linhas : '<p class="hp-dado-vazio">Esta classe não tem espaços de magia neste nível.</p>')
+    + (concedidas ? `<div class="magia-fontes"><div class="cond-cabeca"><span>Magias concedidas</span></div>${concedidas}</div>` : "");
+}
+
 /* ------------------------------------------------------------- CONDIÇÕES */
 
 function hasCondition(id) {
@@ -1422,6 +1525,12 @@ function longRest(maxHp) {
   // "Completar um Descanso Longo remove 1 dos seus níveis de Exaustão."
   if (character.exhaustionLevel > 0) changeExhaustion(-1);
   recoverFeatureUses("longo");
+  // "Você recupera todos os espaços de magia gastos" no Descanso Longo
+  const gastosAntes = Object.values(character.spellSlotsExpended || {}).reduce((a, b) => a + b, 0);
+  if (gastosAntes) {
+    for (let n = 1; n <= 9; n++) character.spellSlotsExpended[n] = 0;
+    recuperados.push("todos os espaços de magia");
+  }
   logHpEvent("descanso", `Descanso Longo${recuperados.length ? ` — ${recuperados.join(" e ")} de volta` : ""}`, maxHp);
   showToast(`🌙 Descanso Longo — ${maxHp} PV${recuperados.length ? `, ${recuperados.join(" e ")} de volta` : ""}`);
 }
@@ -1459,6 +1568,7 @@ function renderHpTracker() {
   renderHpLog();
   renderConditions();
   renderFeatureUses();
+  renderSpellSlots();
 
   const blocos = getHitDicePools();
   dados.innerHTML = blocos.length
@@ -4561,6 +4671,15 @@ function bindEvents() {
     if (!btn) return;
     changeFeatureUse(btn.getAttribute("data-uso"), Number(btn.getAttribute("data-delta")));
     renderFeatureUses(); renderHpLog(); recalculateCharacter(); saveToLocalStorage();
+  });
+
+  // ---- espaços de magia ----
+  const painelEspacos = document.getElementById("spellSlotsPanel");
+  if (painelEspacos) painelEspacos.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-slot]");
+    if (!btn) return;
+    changeSpellSlot(Number(btn.getAttribute("data-slot")), Number(btn.getAttribute("data-delta")));
+    renderSpellSlots(); renderHpLog(); recalculateCharacter(); saveToLocalStorage();
   });
 
   // ---- condições ----

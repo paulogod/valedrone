@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907u";
+    var APP_VERSION = "20260908a";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -749,6 +749,13 @@
             <div class="uso-bloco">
               <div class="cond-cabeca"><span>Usos de característica</span></div>
               <div class="uso-lista" id="featureUsesList"></div>
+            </div>
+
+            <!-- Espaços de magia por círculo, e as magias que vêm de fora da
+                 lista da classe, separadas pela origem. -->
+            <div class="uso-bloco">
+              <div class="cond-cabeca"><span>Espaços de magia</span></div>
+              <div class="uso-lista" id="spellSlotsPanel"></div>
             </div>
 
             <!-- Histórico: o que aconteceu na sessão — vida, descansos,
