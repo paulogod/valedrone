@@ -26,6 +26,10 @@ function createBlankCharacter() {
     level2: 1,
     species: "none",
     lineage: "none",
+
+    // Talento de Origem extra do traço Versátil do Humano. Fica em campo
+    // próprio porque não vem do antecedente: o Humano acumula os dois.
+    humanOriginFeat: "none",
     background: "none",
     alignment: "",
     xp: "",
@@ -52,6 +56,14 @@ function createBlankCharacter() {
     // Atributos
     abilityMode: "pointbuy", // 'pointbuy', 'standard', 'roll', 'manual'
     baseScores: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 },
+
+    // Como contar os Pontos de Vida dos níveis a partir do 2º:
+    //   "average" — metade do dado + 1, o padrão do Livro do Jogador
+    //   "max"     — dado cheio a cada nível (mesas que jogam com vida completa)
+    //   "manual"  — o jogador digita o que rolou em cada nível
+    // O 1º nível é sempre o dado cheio nas três: isso é regra, não opção.
+    hpMode: "average",
+    hpRolls: {},
     backgroundBonusMode: "+2/+1",
     backgroundBonuses: { primary: "none", secondary: "none", tertiary: "none" },
 
@@ -321,12 +333,15 @@ function syncWizardControls() {
 
   const mcRow = document.getElementById("multiclassLevelRow");
   if (mcRow) mcRow.style.display = character.class2 && character.class2 !== "none" ? "grid" : "none";
+
+  renderHumanOriginFeat();
+  renderHpPorNivel();
 }
 
 /* Objetos aninhados do personagem: precisam de merge chave a chave para uma
    ficha antiga (sem `customBg.name`, sem `featChoices`...) não chegar capenga */
 const CHARACTER_NESTED_KEYS = ["customBg", "baseScores", "backgroundBonuses", "coins",
-  "bio", "deathSaves", "spellSlotsExpended", "sheet", "featChoices"];
+  "bio", "deathSaves", "spellSlotsExpended", "sheet", "featChoices", "hpRolls"];
 
 /** Ficha carregada de fora (JSON, localStorage, lista de salvos) sobre a base vazia */
 function mergeIntoBlankCharacter(data) {
@@ -400,6 +415,8 @@ function fitSheetToViewport() {
 
   const label = document.getElementById("btnSheetZoomFit");
   if (label) label.textContent = _sheetZoom === null ? "Ajustar" : `${Math.round(scale * 100)}%`;
+
+  ajustarTextoDaFicha();
 }
 
 /** delta em pontos percentuais; null volta para o ajuste automático */
@@ -696,6 +713,66 @@ function getBackgroundLabel(bgObj) {
 }
 
 /**
+ * Lista os níveis do personagem, na ordem, dizendo de qual classe cada um veio.
+ *
+ * O app guarda só quantos níveis o personagem tem em cada classe, não a ordem
+ * em que foram ganhos. A convenção aqui é a mesma que o cálculo de vida já
+ * usava: primeiro todos os da classe principal, depois os da segunda. Serve
+ * tanto para a conta automática quanto para rotular os campos do modo manual.
+ */
+function listarNiveis(class1Obj, class2Obj) {
+  const niveis = [];
+  for (let i = 0; i < (character.level1 || 0); i++) {
+    niveis.push({ classe: class1Obj, dado: class1Obj.hitDie });
+  }
+  if (class2Obj && character.level2 > 0) {
+    for (let i = 0; i < character.level2; i++) {
+      niveis.push({ classe: class2Obj, dado: class2Obj.hitDie });
+    }
+  }
+  return niveis.map((n, i) => ({ ...n, nivel: i + 1 }));
+}
+
+/**
+ * Pontos de Vida máximos, no modo escolhido no Passo 2.
+ *
+ * O 1º nível é sempre o dado cheio — o livro não dá opção ali. Do 2º em diante
+ * é que entra o modo: metade+1 (padrão), dado cheio (vida completa) ou o valor
+ * que o jogador digitou para aquele nível.
+ *
+ * O modificador de Constituição entra em TODOS os níveis, inclusive nos
+ * digitados à mão: o campo manual guarda a rolagem do dado, não o total, senão
+ * mudar a Constituição depois deixaria a ficha errada e calada.
+ */
+function somarPontosDeVida(class1Obj, class2Obj, conMod) {
+  const niveis = listarNiveis(class1Obj, class2Obj);
+  if (!niveis.length) return 0;
+
+  const modo = character.hpMode || "average";
+  let total = 0;
+
+  niveis.forEach((n, i) => {
+    if (!n.dado) return;
+    let dado;
+    if (i === 0) {
+      dado = n.dado;                                  // 1º nível: sempre cheio
+    } else if (modo === "max") {
+      dado = n.dado;
+    } else if (modo === "manual") {
+      const digitado = parseInt((character.hpRolls || {})[n.nivel], 10);
+      dado = Number.isFinite(digitado)
+        ? Math.min(n.dado, Math.max(1, digitado))
+        : Math.floor(n.dado / 2) + 1;                 // ainda não digitado
+    } else {
+      dado = Math.floor(n.dado / 2) + 1;
+    }
+    total += dado + conMod;
+  });
+
+  return Math.max(niveis.length, total);   // nunca menos de 1 PV por nível
+}
+
+/**
  * Retorna o ID do Talento de Origem concedido pelo Antecedente atual
  * (oficial => bg.feat; personalizado => escolha do jogador no painel custom)
  */
@@ -711,6 +788,148 @@ function getOriginFeatId() {
 function getOriginFeatObj() {
   const id = getOriginFeatId();
   return id ? (DND5E_DATA.feats.find(f => f.id === id) || null) : null;
+}
+
+/**
+ * ID do Talento de Origem extra do Humano (traço Versátil), ou null.
+ *
+ * Guardado separado do talento do antecedente porque o Humano fica com os
+ * dois, e trocar de espécie não pode levar junto o talento que veio do
+ * antecedente — nem o contrário.
+ */
+function getHumanOriginFeatId() {
+  if (character.species !== "human") return null;
+  const id = character.humanOriginFeat;
+  if (!id || id === "none") return null;
+  return DND5E_DATA.feats.some(f => f.id === id && f.type === "origin") ? id : null;
+}
+
+function getHumanOriginFeatObj() {
+  const id = getHumanOriginFeatId();
+  return id ? (DND5E_DATA.feats.find(f => f.id === id) || null) : null;
+}
+
+/**
+ * Mostra (ou esconde) o seletor do Talento de Origem extra do Humano e
+ * preenche a lista com os talentos de origem do livro.
+ */
+function renderHumanOriginFeat() {
+  const bloco = document.getElementById("humanFeatGroup");
+  const select = document.getElementById("selectHumanOriginFeat");
+  if (!bloco || !select) return;
+
+  const ehHumano = character.species === "human";
+  bloco.style.display = ehHumano ? "" : "none";
+  if (!ehHumano) return;
+
+  const originFeats = DND5E_DATA.feats.filter(f => f.type === "origin");
+  select.innerHTML = "";
+
+  const vazio = document.createElement("option");
+  vazio.value = "none";
+  vazio.textContent = "— Escolha o talento extra —";
+  select.appendChild(vazio);
+
+  const doAntecedente = getOriginFeatId();
+  originFeats.forEach(f => {
+    const opt = document.createElement("option");
+    opt.value = f.id;
+    // O antecedente já concede um: repetir o mesmo talento não dobra nada,
+    // então ele fica marcado para o jogador não gastar a escolha à toa.
+    opt.textContent = f.id === doAntecedente
+      ? `${f.name} — já vem do antecedente`
+      : f.name;
+    select.appendChild(opt);
+  });
+
+  select.value = character.humanOriginFeat || "none";
+
+  const previa = document.getElementById("humanFeatPreview");
+  if (previa) {
+    const escolhido = getHumanOriginFeatObj();
+    previa.innerHTML = escolhido
+      ? `<strong style="color:#fbbf24;">${escolhido.name}</strong><br>${escolhido.desc}`
+      : "";
+  }
+}
+
+/**
+ * Campos de vida por nível do modo "editável por nível".
+ *
+ * Um campo por nível a partir do 2º, rotulado com o dado daquela classe, para
+ * o jogador digitar o que rolou de verdade na mesa. O 1º fica só como leitura:
+ * é sempre o dado cheio.
+ */
+function renderHpPorNivel() {
+  const grade = document.getElementById("hpPorNivelGrid");
+  const resumo = document.getElementById("hpModeResumo");
+  const select = document.getElementById("selectHpMode");
+  if (!grade) return;
+
+  if (select) select.value = character.hpMode || "average";
+
+  const class1Obj = DND5E_DATA.classes.find(c => c.id === character.class1);
+  const class2Obj = DND5E_DATA.classes.find(c => c.id === character.class2);
+  const niveis = class1Obj ? listarNiveis(class1Obj, class2Obj || null) : [];
+
+  const manual = (character.hpMode || "average") === "manual";
+  grade.style.display = manual && niveis.length ? "" : "none";
+
+  if (!niveis.length) {
+    grade.innerHTML = "";
+    _assinaturaHpPorNivel = null;
+    if (resumo) resumo.textContent = "Escolha a classe no Passo 1 para o app saber o Dado de Vida.";
+    return;
+  }
+
+  // Refazer o HTML a cada tecla tiraria o foco do campo que está sendo
+  // digitado — e recalculateCharacter roda a cada tecla. Só remonta quando a
+  // ESTRUTURA muda: modo, classes ou níveis.
+  const assinatura = [character.hpMode, character.class1, character.level1,
+                      character.class2, character.level2].join("|");
+  if (assinatura === _assinaturaHpPorNivel) {
+    atualizarResumoHp(resumo);
+    return;
+  }
+  _assinaturaHpPorNivel = assinatura;
+
+  if (manual) {
+    grade.innerHTML = niveis.map((n, i) => {
+      const nome = (n.classe.name || "").split(" (")[0];
+      if (i === 0) {
+        return `
+          <label class="hp-nivel-campo is-fixo" title="O 1º nível é sempre o dado cheio">
+            <span class="hp-nivel-rotulo">Nív. 1 · d${n.dado}</span>
+            <input type="number" class="form-control" value="${n.dado}" disabled>
+          </label>`;
+      }
+      const val = (character.hpRolls || {})[n.nivel];
+      return `
+        <label class="hp-nivel-campo" title="${nome} — role 1d${n.dado}">
+          <span class="hp-nivel-rotulo">Nív. ${n.nivel} · d${n.dado}</span>
+          <input type="number" class="form-control hp-nivel-input" data-nivel="${n.nivel}"
+                 min="1" max="${n.dado}" inputmode="numeric" placeholder="${Math.floor(n.dado / 2) + 1}"
+                 value="${val === undefined || val === "" ? "" : val}">
+        </label>`;
+    }).join("");
+  } else {
+    grade.innerHTML = "";
+  }
+
+  atualizarResumoHp(resumo);
+}
+
+/** Assinatura da última grade montada, para não remontar a cada tecla */
+let _assinaturaHpPorNivel = null;
+
+function atualizarResumoHp(resumo) {
+  if (!resumo) return;
+  const porModo = {
+    average: "Cada nível depois do 1º vale metade do Dado de Vida + 1, somado ao seu modificador de Constituição.",
+    max: "Cada nível vale o Dado de Vida cheio. Vida bem mais alta — combine com a mesa antes.",
+    manual: "Digite o resultado do dado de cada nível. O modificador de Constituição continua sendo somado por fora, então mudar Constituição depois já corrige a ficha sozinho. Campo vazio conta como metade + 1."
+  };
+  resumo.textContent = porModo[character.hpMode || "average"];
 }
 
 /**
@@ -1325,6 +1544,27 @@ function renderSpellSlots() {
     </div>`;
   }).join("");
 
+  // Um personagem que não conjura nada não precisa ver "Esta classe não tem
+  // espaços de magia" nem uma linha "Escolhidas 0 / 0 truques · 0 / 0
+  // preparadas": são três avisos dizendo a mesma coisa, e a mesma coisa é
+  // "isto aqui não é para você". O bloco inteiro sai do painel.
+  const temMagia = temAlgum
+    || cap.maxCantrips > 0
+    || cap.maxPrepared > 0
+    || cap.grantedSpells.length > 0
+    || escolhidas.length > 0;
+
+  const bloco = document.getElementById("blocoMagias");
+  if (bloco) bloco.style.display = temMagia ? "" : "none";
+
+  if (!temMagia) {
+    box.innerHTML = "";
+    return;
+  }
+
+  // Aqui já se sabe que o personagem lida com magia de alguma forma. Se ainda
+  // assim não tem espaços (um Bruxo de truque só, um Guerreiro com Iniciado em
+  // Magia), a frase explica a ausência em vez de deixar um vazio sem motivo.
   box.innerHTML = (temAlgum ? linhas : '<p class="hp-dado-vazio">Esta classe não tem espaços de magia neste nível.</p>')
     + `<div class="magia-contas"><div class="cond-cabeca"><span>Magias por origem</span></div>${contas.join("")}</div>`
     + (concedidas ? `<div class="magia-fontes">${concedidas}</div>` : "");
@@ -1425,7 +1665,8 @@ const HP_LOG_ICONE = {
   dano: "fa-burst", cura: "fa-kit-medical", temp: "fa-shield-halved",
   dado: "fa-dice-d6", descanso: "fa-moon", condicao: "fa-triangle-exclamation",
   rolagem: "fa-dice-d20", uso: "fa-bolt-lightning",
-  magia: "fa-wand-sparkles", arma: "fa-gavel", talento: "fa-star"
+  magia: "fa-wand-sparkles", arma: "fa-gavel", talento: "fa-star",
+  edicao: "fa-pen-to-square"
 };
 
 /** Últimos acontecimentos de vida, do mais recente para o mais antigo. */
@@ -1597,6 +1838,83 @@ function longRest(maxHp) {
  * Desenha o painel de vida. Os números vêm da própria ficha, para o painel e a
  * ficha nunca discordarem.
  */
+/* Enquanto verdadeiro, o resumo do painel de vida vira os três campos
+   editáveis. Um de cada vez, e sempre fechado depois de salvar ou cancelar. */
+let _editandoPv = false;
+
+/** Liga os eventos dos campos de edição de PV recém-criados */
+function ligarEdicaoDePv() {
+  const campos = document.getElementById("hpEditCampos");
+  if (!campos) return;
+
+  // O bloco todo mora dentro de um <summary>: qualquer clique que chegue lá
+  // abre ou fecha o painel. Ele para aqui.
+  campos.addEventListener("click", (e) => { e.stopPropagation(); e.preventDefault(); });
+
+  campos.addEventListener("keydown", (e) => {
+    e.stopPropagation();
+    if (e.key === "Enter") { e.preventDefault(); salvarEdicaoDePv(); }
+    if (e.key === "Escape") { e.preventDefault(); fecharEdicaoDePv(); }
+  });
+
+  const ok = document.getElementById("btnHpEditOk");
+  const cancelar = document.getElementById("btnHpEditCancelar");
+  if (ok) ok.addEventListener("click", (e) => { e.stopPropagation(); e.preventDefault(); salvarEdicaoDePv(); });
+  if (cancelar) cancelar.addEventListener("click", (e) => { e.stopPropagation(); e.preventDefault(); fecharEdicaoDePv(); });
+
+  const atual = document.getElementById("hpEditAtual");
+  if (atual) { atual.focus(); atual.select(); }
+}
+
+function fecharEdicaoDePv() {
+  _editandoPv = false;
+  renderHpTracker();
+}
+
+/**
+ * Grava os três números digitados.
+ *
+ * O máximo entra como edição manual da ficha (o mesmo caminho de quem digita
+ * direto no campo da ficha A4), e não como um valor solto: assim ele sobrevive
+ * ao próximo recálculo em vez de ser reescrito pela conta automática.
+ */
+function salvarEdicaoDePv() {
+  const ler = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    const n = parseInt(el.value, 10);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  const campoMax = document.getElementById("sheetHpMax");
+  const maxAntigo = parseInt(campoMax?.value, 10) || 0;
+
+  let novoMax = ler("hpEditMax");
+  if (novoMax === null || novoMax < 1) novoMax = Math.max(1, maxAntigo);
+
+  let novoAtual = ler("hpEditAtual");
+  if (novoAtual === null) novoAtual = novoMax;
+  novoAtual = Math.max(0, Math.min(novoMax, novoAtual));
+
+  let novoTemp = ler("hpEditTemp");
+  novoTemp = novoTemp === null ? 0 : Math.max(0, novoTemp);
+
+  if (campoMax && novoMax !== maxAntigo) {
+    campoMax.value = novoMax;
+    campoMax.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  character.currentHp = novoAtual;
+  character.tempHp = novoTemp;
+
+  _editandoPv = false;
+  logHpEvent("edicao", `Vida ajustada à mão — ${novoAtual} / ${novoMax} PV` +
+    (novoTemp ? ` +${novoTemp} temp` : ""), novoAtual);
+  saveToLocalStorage();
+  renderHpTracker();
+  showToast(`✏️ ${novoAtual} / ${novoMax} PV${novoTemp ? ` +${novoTemp} temp` : ""}`);
+}
+
 function renderHpTracker() {
   const resumo = document.getElementById("hpTrackerResumo");
   const dados = document.getElementById("hpTrackerDados");
@@ -1618,10 +1936,40 @@ function renderHpTracker() {
       : curto;
   }).filter(Boolean);
 
-  resumo.innerHTML = `<strong>${atual}</strong> / ${maxHp} PV` +
-    (temp ? ` <span class="hp-temp-tag">+${temp} temp</span>` : "") +
-    (atual === 0 ? ' <span class="hp-caido-tag">caído</span>' : "") +
-    nomesCond.map(n => ` <span class="hp-cond-tag">${n}</span>`).join("");
+  const botaoCaneta = document.getElementById("btnHpEditar");
+
+  if (_editandoPv) {
+    // Os três números editáveis ocupam o lugar do resumo. Ficam dentro do
+    // <summary>, então tudo aqui precisa impedir a propagação do clique: sem
+    // isso, mexer num campo abriria e fecharia o painel a cada toque.
+    resumo.innerHTML = `
+      <span class="hp-edit-campos" id="hpEditCampos">
+        <input type="number" class="hp-edit-num" id="hpEditAtual" inputmode="numeric"
+               value="${atual}" title="Pontos de Vida atuais" aria-label="Pontos de Vida atuais">
+        <span class="hp-edit-sep">/</span>
+        <input type="number" class="hp-edit-num" id="hpEditMax" inputmode="numeric" min="1"
+               value="${maxHp}" title="Pontos de Vida máximos" aria-label="Pontos de Vida máximos">
+        <span class="hp-edit-rotulo">PV</span>
+        <span class="hp-edit-sep">+</span>
+        <input type="number" class="hp-edit-num is-temp" id="hpEditTemp" inputmode="numeric" min="0"
+               value="${temp}" title="Pontos de Vida Temporários" aria-label="Pontos de Vida Temporários">
+        <span class="hp-edit-rotulo">temp</span>
+        <button type="button" class="hp-edit-btn is-ok" id="btnHpEditOk" title="Salvar (Enter)">
+          <i class="fa-solid fa-check"></i>
+        </button>
+        <button type="button" class="hp-edit-btn" id="btnHpEditCancelar" title="Cancelar (Esc)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </span>`;
+    if (botaoCaneta) botaoCaneta.style.display = "none";
+    ligarEdicaoDePv();
+  } else {
+    if (botaoCaneta) botaoCaneta.style.display = "";
+    resumo.innerHTML = `<strong>${atual}</strong> / ${maxHp} PV` +
+      (temp ? ` <span class="hp-temp-tag">+${temp} temp</span>` : "") +
+      (atual === 0 ? ' <span class="hp-caido-tag">caído</span>' : "") +
+      nomesCond.map(n => ` <span class="hp-cond-tag">${n}</span>`).join("");
+  }
 
   renderHpLog();
   renderConditions();
@@ -1952,7 +2300,13 @@ function updateFeatsList() {
     return f && f.type !== "origin";
   });
 
-  // ---------- 1. Talento de Origem concedido pelo Antecedente ----------
+  // ---------- 1. Talentos de Origem: do Antecedente e, no Humano, o extra ----
+  // O Humano acumula os dois pelo traço Versátil. O extra dele é escolha do
+  // jogador, então aqui ele vem com o próprio seletor em vez do cadeado.
+  const humanFeat = getHumanOriginFeatObj();
+  const ehHumano = character.species === "human";
+  const originFeats = DND5E_DATA.feats.filter(f => f.type === "origin");
+
   const grantedSection = document.createElement("div");
   grantedSection.className = "feat-list-block";
   grantedSection.innerHTML = `
@@ -1969,8 +2323,49 @@ function updateFeatsList() {
         ${buildFeatChoiceBoxHtml(originFeat, true)}
       </div>
     ` : `<p class="feat-empty-msg">Este antecedente ainda não define um talento de origem. Escolha um no painel de Antecedente Personalizado (Passo 1).</p>`}
+
+    ${ehHumano ? `
+      <h4 class="feat-block-title" style="color: #fbbf24; margin-top: 0.9rem;">
+        Talento de Origem Extra (Versátil, do Humano)
+      </h4>
+      <div class="feat-choice-box">
+        <div class="feat-choice-title"><i class="fa-solid fa-award"></i> Escolha o talento extra</div>
+        <select class="form-control" id="selectHumanOriginFeatStep3">
+          <option value="none">— Escolha o talento extra —</option>
+          ${originFeats.map(f => `
+            <option value="${f.id}"${f.id === (character.humanOriginFeat || "none") ? " selected" : ""}>
+              ${f.id === getOriginFeatId() ? `${f.name} — já vem do antecedente` : f.name}
+            </option>`).join("")}
+        </select>
+      </div>
+      ${humanFeat ? `
+        <div class="feat-list">
+          <div class="feat-row is-granted">
+            <span class="feat-row-lock" title="Concedido pelo traço Versátil do Humano"><i class="fa-solid fa-award"></i></span>
+            <span class="feat-row-name">${humanFeat.name}</span>
+            <span class="feat-row-tag tag-origin">Origem • Humano</span>
+            <button type="button" class="feat-info-btn" data-info="${humanFeat.id}" title="Mais informações"><i class="fa-solid fa-info"></i></button>
+          </div>
+          <div class="feat-info-panel" data-panel="${humanFeat.id}" hidden>${buildFeatInfoHtml(humanFeat)}</div>
+          ${buildFeatChoiceBoxHtml(humanFeat, true)}
+        </div>
+      ` : ""}
+    ` : ""}
   `;
   container.appendChild(grantedSection);
+
+  // O seletor do Passo 3 é o mesmo campo do Passo 1: escreve no mesmo lugar e
+  // manda os dois se redesenharem, para não existirem duas verdades.
+  const selStep3 = grantedSection.querySelector("#selectHumanOriginFeatStep3");
+  if (selStep3) {
+    selStep3.addEventListener("change", (e) => {
+      character.humanOriginFeat = e.target.value;
+      renderHumanOriginFeat();
+      updateFeatsList();
+      renderSpellsCatalog();
+      recalculateCharacter();
+    });
+  }
 
   // ---------- 2. Demais talentos (lista + botão "i") ----------
   const selectable = DND5E_DATA.feats.filter(f => f.type !== "origin");
@@ -2315,11 +2710,18 @@ function featChoicesFor(featId) {
   return c;
 }
 
-/** Talentos que estão realmente valendo: os marcados + o de Origem do antecedente */
+/**
+ * Talentos que estão realmente valendo: os marcados, o de Origem do
+ * antecedente e o extra do Humano.
+ *
+ * É por aqui que passam magias concedidas, escolhas de talento e os efeitos
+ * mecânicos — quem entra nesta lista vale para tudo.
+ */
 function getActiveFeatIds() {
   const ids = (character.selectedFeats || []).slice();
-  const origin = getOriginFeatId();
-  if (origin && !ids.includes(origin)) ids.push(origin);
+  [getOriginFeatId(), getHumanOriginFeatId()].forEach(id => {
+    if (id && !ids.includes(id)) ids.push(id);
+  });
   return ids;
 }
 
@@ -3205,6 +3607,10 @@ function recalculateCharacter() {
   const displayTotalLevel = document.getElementById("displayTotalLevel");
   if (displayTotalLevel) displayTotalLevel.value = totalLevel;
 
+  // Mudou nível ou classe: a grade do modo manual ganha ou perde linhas, e o
+  // dado de cada linha pode ter mudado junto.
+  renderHpPorNivel();
+
   // 2. Atributos Finais
   const finalScores = {};
   const finalMods = {};
@@ -3272,20 +3678,10 @@ function recalculateCharacter() {
 
   // 4. Pontos de Vida (HP)
   const conMod = finalMods["con"];
-  let maxHp = class1Obj.hitDie + conMod;
-  
-  if (character.level1 > 1) {
-    const avgDie1 = Math.floor(class1Obj.hitDie / 2) + 1;
-    maxHp += (character.level1 - 1) * (avgDie1 + conMod);
-  }
-
-  if (class2Obj && character.level2 > 0) {
-    const avgDie2 = Math.floor(class2Obj.hitDie / 2) + 1;
-    maxHp += character.level2 * (avgDie2 + conMod);
-  }
+  let maxHp = somarPontosDeVida(class1Obj, class2Obj, conMod);
 
   if (character.species === "dwarf") maxHp += totalLevel;
-  if (character.selectedFeats.includes("tough") || getOriginFeatId() === "tough") {
+  if (getActiveFeatIds().includes("tough")) {
     maxHp += totalLevel * 2;
   }
 
@@ -3320,7 +3716,7 @@ function recalculateCharacter() {
 
   // 6. Iniciativa & Deslocamento
   let init = dexMod;
-  if (character.selectedFeats.includes("alert") || getOriginFeatId() === "alert") {
+  if (getActiveFeatIds().includes("alert")) {
     init += pb;
   }
 
@@ -3439,6 +3835,90 @@ function newRowUid() {
 /**
  * Ponto de entrada: repinta as duas páginas da ficha oficial
  */
+/* Menor letra tolerada num campo da ficha, em fração do tamanho de projeto.
+   Abaixo disso o texto cabe mas não se lê, o que não é ganho nenhum. */
+const FICHA_LETRA_MIN = 0.62;
+
+/**
+ * Encolhe a letra dos campos da ficha cujo valor não cabe na largura do papel.
+ *
+ * A ficha é uma réplica do A4 oficial: as larguras vêm da folha impressa e não
+ * podem crescer. Quando o texto passa, o navegador simplesmente esconde o
+ * excedente — "Escola de Abjuração (School of Abjuration)" virava "Escola de
+ * Abjuraçã" na tela e no PDF, sem nenhum sinal de que havia mais.
+ *
+ * São duas passadas porque a relação entre tamanho da letra e largura do texto
+ * não é exatamente linear: a primeira chega perto, a segunda fecha a conta.
+ */
+function ajustarTextoDeUmCampo(campo) {
+  campo.style.fontSize = "";
+  if (!campo.value) return;
+
+  for (let passada = 0; passada < 2; passada++) {
+    const cabe = campo.clientWidth;
+    const precisa = campo.scrollWidth;
+    if (!cabe || precisa <= cabe + 1) return;
+
+    const atual = parseFloat(getComputedStyle(campo).fontSize);
+    const base = parseFloat(campo.dataset.letraBase || atual);
+    const alvo = Math.max(base * FICHA_LETRA_MIN, atual * (cabe / precisa));
+    if (alvo >= atual - 0.05) return;
+
+    campo.dataset.letraBase = base;
+    campo.style.fontSize = alvo.toFixed(2) + "px";
+  }
+}
+
+/* Largura da ficha na última vez que o ajuste rodou: enquanto ela não muda,
+   refazer a conta dá o mesmo resultado e só custa layout. */
+let _larguraDoUltimoAjuste = null;
+
+function ajustarTextoDaFicha() {
+  const pagina = document.querySelector(".sheet-page.active-page");
+  if (!pagina) return;
+
+  const largura = pagina.clientWidth;
+  if (!largura) return;                       // painel escondido: nada a medir
+  if (largura === _larguraDoUltimoAjuste) return;
+  _larguraDoUltimoAjuste = largura;
+
+  const campos = document.querySelectorAll(".sheet-page .of-input");
+
+  campos.forEach(campo => { campo.style.fontSize = ""; });
+
+  // Ler e escrever em blocos separados: intercalar as duas coisas obriga o
+  // navegador a recalcular o layout a cada campo, e são mais de cem.
+  for (let passada = 0; passada < 2; passada++) {
+    const ajustes = [];
+
+    campos.forEach(campo => {
+      if (!campo.value) return;
+      const cabe = campo.clientWidth;
+      const precisa = campo.scrollWidth;
+      if (!cabe || precisa <= cabe + 1) return;
+
+      const atual = parseFloat(getComputedStyle(campo).fontSize);
+      const base = parseFloat(campo.dataset.letraBase || atual);
+      const alvo = Math.max(base * FICHA_LETRA_MIN, atual * (cabe / precisa));
+      if (alvo < atual - 0.05) ajustes.push([campo, base, alvo]);
+    });
+
+    if (!ajustes.length) break;
+    ajustes.forEach(([campo, base, alvo]) => {
+      campo.dataset.letraBase = base;
+      campo.style.fontSize = alvo.toFixed(2) + "px";
+    });
+  }
+
+  // O que continua sem caber no menor tamanho legível leva o texto inteiro na
+  // dica: cortado na tela, mas nunca perdido.
+  campos.forEach(campo => {
+    const cortado = campo.value && campo.scrollWidth > campo.clientWidth + 1;
+    if (cortado) campo.title = campo.value;
+    else if (campo.title === campo.value) campo.removeAttribute("title");
+  });
+}
+
 function renderOfficialSheet(ctx) {
   renderOfSheetHeader(ctx);
   renderOfAbilities(ctx);
@@ -3452,6 +3932,8 @@ function renderOfficialSheet(ctx) {
   syncSheetSpellRows();
   renderOfSpellsTable();
   renderOfSideColumn(ctx);
+  _larguraDoUltimoAjuste = null;   // valores novos: refazer mesmo sem redimensionar
+  ajustarTextoDaFicha();
 }
 
 /* ---------------------------------------------------------------- CABEÇALHO */
@@ -3743,6 +4225,9 @@ function renderOfFeatureAreas(ctx) {
   const featLines = [];
   const originFeat = getOriginFeatObj();
   if (originFeat) featLines.push(`[Origem] ${originFeat.name}: ${originFeat.desc}${describeFeatChoices(originFeat)}`);
+
+  const humanFeat = getHumanOriginFeatObj();
+  if (humanFeat) featLines.push(`[Origem • Humano] ${humanFeat.name}: ${humanFeat.desc}${describeFeatChoices(humanFeat)}`);
   character.selectedFeats.forEach(fId => {
     const f = DND5E_DATA.feats.find(x => x.id === fId);
     if (f) featLines.push(`${f.name}: ${f.desc}${describeFeatChoices(f)}`);
@@ -3975,6 +4460,16 @@ function bindOfficialSheetEvents() {
   const page1 = document.getElementById("sheetPage1");
   const page2 = document.getElementById("sheetPage2");
   if (!page1 || !page2) return;
+
+  // Texto digitado à mão na ficha também encolhe para caber: sem isto o ajuste
+  // só valeria para o que vem do criador. Um campo por vez, que é o que mudou.
+  [page1, page2].forEach(pagina => {
+    pagina.addEventListener("input", (e) => {
+      const campo = e.target;
+      if (!campo.classList || !campo.classList.contains("of-input")) return;
+      ajustarTextoDeUmCampo(campo);
+    });
+  });
 
   // ---- Campos simples com override (id -> chave em character.sheet) ----
   const OVERRIDABLE = {
@@ -4503,6 +4998,30 @@ function bindEvents() {
     recalculateCharacter();
   });
 
+  // Botões "+" e "−" de nível. Reaproveitam o próprio <select>: mudam o valor
+  // e disparam o "change" que já existe, para não haver dois caminhos
+  // diferentes para a mesma mudança.
+  document.querySelectorAll(".level-step-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const passo = parseInt(btn.getAttribute("data-level-step"), 10);
+      const alvo = btn.getAttribute("data-level-target");
+      const select = document.getElementById(`selectLevel${alvo}`);
+      if (!select) return;
+
+      const atual = parseInt(select.value, 10) || 1;
+      const novo = atual + passo;
+      const existe = [...select.options].some(o => parseInt(o.value, 10) === novo);
+      if (!existe) {
+        showToast(passo > 0 ? "Já está no nível máximo (20)." : "O nível mínimo é 1.");
+        return;
+      }
+
+      select.value = String(novo);
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      showToast(passo > 0 ? `⬆️ Nível ${novo}` : `Nível ${novo}`);
+    });
+  });
+
   document.getElementById("selectMulticlass").addEventListener("change", (e) => {
     character.class2 = e.target.value;
     const row = document.getElementById("multiclassLevelRow");
@@ -4519,9 +5038,54 @@ function bindEvents() {
 
   document.getElementById("selectSpecies").addEventListener("change", (e) => {
     character.species = e.target.value;
+    // Sair do Humano descarta o talento extra: ele vem do traço Versátil e não
+    // teria de onde vir em outra espécie.
+    if (character.species !== "human") character.humanOriginFeat = "none";
     updateLineagesDropdown();
+    renderHumanOriginFeat();
+    updateFeatsList();
     recalculateCharacter();
   });
+
+  const selHumanFeat = document.getElementById("selectHumanOriginFeat");
+  if (selHumanFeat) {
+    selHumanFeat.addEventListener("change", (e) => {
+      character.humanOriginFeat = e.target.value;
+      renderHumanOriginFeat();
+      updateFeatsList();
+      renderSpellsCatalog();
+      recalculateCharacter();
+    });
+  }
+
+  // ---- Modo de Pontos de Vida (Passo 2) ----
+  const selHpMode = document.getElementById("selectHpMode");
+  if (selHpMode) {
+    selHpMode.addEventListener("change", (e) => {
+      character.hpMode = e.target.value;
+      renderHpPorNivel();
+      recalculateCharacter();
+    });
+  }
+
+  const gradeHp = document.getElementById("hpPorNivelGrid");
+  if (gradeHp) {
+    gradeHp.addEventListener("input", (e) => {
+      const campo = e.target;
+      if (!campo.classList || !campo.classList.contains("hp-nivel-input")) return;
+
+      const nivel = campo.getAttribute("data-nivel");
+      const bruto = campo.value.trim();
+      if (!character.hpRolls) character.hpRolls = {};
+
+      if (bruto === "") delete character.hpRolls[nivel];
+      else {
+        const teto = parseInt(campo.getAttribute("max"), 10) || 12;
+        character.hpRolls[nivel] = Math.min(teto, Math.max(1, parseInt(bruto, 10) || 1));
+      }
+      recalculateCharacter();
+    });
+  }
 
   document.getElementById("selectLineage").addEventListener("change", (e) => {
     character.lineage = e.target.value;
@@ -4535,6 +5099,7 @@ function bindEvents() {
     updateBackgroundBonusSelectors();
     renderSpeciesBackgroundSummary();
     updateSkillsSelector();
+    renderHumanOriginFeat();
     updateFeatsList();
     recalculateCharacter();
   });
@@ -4793,6 +5358,20 @@ function bindEvents() {
 
   const btnCurto = document.getElementById("btnDescansoCurto");
   if (btnCurto) btnCurto.addEventListener("click", () => { shortRest(); hpDepois(); });
+
+  // Caneta do painel de vida. O botão mora dentro do <summary>, então precisa
+  // barrar o clique: sem isso, abrir a edição fecharia o painel junto.
+  const btnHpEditar = document.getElementById("btnHpEditar");
+  if (btnHpEditar) {
+    btnHpEditar.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const painel = document.getElementById("hpTracker");
+      if (painel) painel.open = true;   // editar de painel fechado seria às cegas
+      _editandoPv = true;
+      renderHpTracker();
+    });
+  }
 
   const btnLimpar = document.getElementById("btnHpLogLimpar");
   if (btnLimpar) btnLimpar.addEventListener("click", () => {

@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260908e";
+    var APP_VERSION = "20260908g";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -171,7 +171,16 @@
             </div>
             <div class="form-group">
               <label class="form-label" for="selectLevel1">Nível da Classe 1</label>
-              <select class="form-control" id="selectLevel1"></select>
+              <!-- O select continua servindo para pular direto para o nível que
+                   se quiser; os botões são para a mesa em andamento, onde subir
+                   de nível é um clique só. -->
+              <div class="level-stepper">
+                <button type="button" class="btn btn-secondary level-step-btn" data-level-step="-1" data-level-target="1"
+                        title="Descer um nível" aria-label="Descer um nível da Classe 1">−</button>
+                <select class="form-control" id="selectLevel1"></select>
+                <button type="button" class="btn btn-primary level-step-btn" data-level-step="1" data-level-target="1"
+                        title="Subir um nível" aria-label="Subir um nível da Classe 1">+</button>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label" for="selectMulticlass">Multiclasse (Opcional)</label>
@@ -184,7 +193,13 @@
           <div class="form-grid-2" id="multiclassLevelRow" style="display: none;">
             <div class="form-group">
               <label class="form-label" for="selectLevel2">Nível da Classe 2</label>
-              <select class="form-control" id="selectLevel2"></select>
+              <div class="level-stepper">
+                <button type="button" class="btn btn-secondary level-step-btn" data-level-step="-1" data-level-target="2"
+                        title="Descer um nível" aria-label="Descer um nível da Classe 2">−</button>
+                <select class="form-control" id="selectLevel2"></select>
+                <button type="button" class="btn btn-primary level-step-btn" data-level-step="1" data-level-target="2"
+                        title="Subir um nível" aria-label="Subir um nível da Classe 2">+</button>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">Nível Total de Personagem</label>
@@ -202,6 +217,20 @@
               <label class="form-label" for="selectLineage">Linhagem / Sub-raça</label>
               <select class="form-control" id="selectLineage"></select>
             </div>
+          </div>
+
+          <!-- O traço Versátil do Humano dá um Talento de Origem além do que
+               vem do antecedente. Aparece logo abaixo da espécie porque é ali
+               que a escolha nasce; a lista completa também está no Passo 3. -->
+          <div class="custom-bg-section" id="humanFeatGroup" style="display: none;">
+            <div class="custom-bg-section-title">
+              <i class="fa-solid fa-award"></i> Versátil (Humano): Talento de Origem Extra
+            </div>
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label class="form-label" for="selectHumanOriginFeat">Talento de Origem à sua escolha</label>
+              <select class="form-control" id="selectHumanOriginFeat"></select>
+            </div>
+            <div class="feature-preview-box" id="humanFeatPreview"></div>
           </div>
 
           <!-- Antecedente & Tendência -->
@@ -389,6 +418,24 @@
             <h4><i class="fa-solid fa-angles-up"></i> Bônus de Atributos do Antecedente 2024</h4>
             <div class="form-grid-3" id="backgroundBonusSelectors"></div>
           </div>
+
+          <!-- Modo de Pontos de Vida.
+               Fica no Passo 2 porque o total depende de Constituição, que é
+               onde o jogador está mexendo. O 1º nível é sempre o dado cheio
+               nos três modos: isso é regra do livro, não escolha de mesa. -->
+          <div class="info-selection-card" style="margin-top: 1rem;">
+            <h4><i class="fa-solid fa-heart-pulse"></i> Pontos de Vida por Nível</h4>
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label class="form-label" for="selectHpMode">Como contar a vida de cada nível</label>
+              <select class="form-control" id="selectHpMode">
+                <option value="average">Metade do dado + 1 (padrão do livro)</option>
+                <option value="max">Vida completa (dado cheio a cada nível)</option>
+                <option value="manual">Editável por nível (digite o que rolou)</option>
+              </select>
+            </div>
+            <div class="hp-por-nivel" id="hpPorNivelGrid"></div>
+            <div class="feature-preview-box" id="hpModeResumo"></div>
+          </div>
         </div>
 
         <!-- ==================== PASSO 3: SUBCLASSE & TALENTOS ==================== -->
@@ -507,7 +554,12 @@
                 <i class="fa-solid fa-list-check"></i> Selecionadas<span class="spell-selected-count"></span>
               </button>
             </div>
-            <div class="form-group" style="margin-bottom: 0; flex: 1.5;">
+            <!-- A largura base de 16rem é o que impede a busca de sumir. O
+                 atalho `flex: 1.5` vira `flex: 1.5 1 0%`: a caixa parte do
+                 zero e só recebe o que sobrar da linha depois dos três selects
+                 e do botão. Em 1920px sobravam 36px — o campo mais usado do
+                 catálogo de 391 magias virava um risco na tela. -->
+            <div class="form-group" style="margin-bottom: 0; flex: 1.5 1 16rem;">
               <label class="form-label" for="spellSearchInput">Buscar Magia</label>
               <input type="text" class="form-control" id="spellSearchInput" placeholder="Ex: Bola de Fogo, Escudo, Curar Ferimentos...">
             </div>
@@ -709,6 +761,14 @@
           <summary>
             <i class="fa-solid fa-heart-pulse"></i>
             <span class="hp-tracker-resumo" id="hpTrackerResumo">Pontos de Vida</span>
+            <!-- Corrigir a vida na mão é comum no meio da sessão (o Mestre
+                 anuncia um efeito que o app não calcula). A caneta abre os três
+                 números ali mesmo, sem precisar caçar o campo na ficha A4. -->
+            <button type="button" class="hp-editar" id="btnHpEditar"
+                    title="Editar Pontos de Vida atuais, máximos e temporários"
+                    aria-label="Editar Pontos de Vida">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
           </summary>
           <div class="hp-tracker-corpo">
             <div class="hp-tracker-acoes">
@@ -753,7 +813,11 @@
 
             <!-- Espaços de magia por círculo, e as magias que vêm de fora da
                  lista da classe, separadas pela origem. -->
-            <div class="uso-bloco">
+            <!-- O bloco inteiro some quando o personagem não conjura nada:
+                 ver "Esta classe não tem espaços de magia" e "0 / 0 truques"
+                 num Bárbaro é ruído, não informação. Quem liga e desliga é o
+                 renderSpellSlots. -->
+            <div class="uso-bloco" id="blocoMagias">
               <div class="cond-cabeca"><span>Espaços de magia</span></div>
               <div class="uso-lista" id="spellSlotsPanel"></div>
             </div>

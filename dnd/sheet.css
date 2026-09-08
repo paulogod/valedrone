@@ -245,7 +245,7 @@
   margin-top: 2px;
 }
 
-.of-death-dots { display: inline-flex; gap: 4px; }
+.of-death-dots { display: inline-flex; gap: 3px; flex: 0 0 auto; }
 .of-dot.succ { accent-color: #15803d; }
 .of-dot.fail { accent-color: #b91c1c; }
 
@@ -464,8 +464,15 @@
 .of-spells-table .s-notes { width: 20%; }
 .of-spells-table .s-del { width: 12px; }
 
-.of-crm-cell { text-align: center; white-space: nowrap; }
-.of-crm-cell input { margin: 0 1px; }
+.of-crm-cell {
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+}
+
+.of-crm-cell input { margin: 0; }
 
 .of-two-areas { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; flex: 1; }
 .of-two-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -515,19 +522,17 @@
 .of-coins-grid .of-label { text-align: center; }
 
 /* ---------- BARRA DE FERRAMENTAS ---------- */
-/* No celular a barra já está apertada: o selo de sincronização é informação
-   secundária e só aparece quando há largura sobrando. */
+/* Só a aparência do selo mora aqui. QUANDO ele aparece é decisão do style.css
+   (a partir de 1400px). Esta folha carrega depois; enquanto ela repetia um
+   `display: flex` em 1024px, era essa regra que valia, o selo voltava cedo
+   demais e empurrava os botões da barra para uma segunda linha — exatamente o
+   que o style.css tenta evitar. */
 .sheet-sync-status {
-  display: none;
   font-size: 0.76rem;
   color: #10b981;
   font-weight: 600;
   align-items: center;
   gap: 0.35rem;
-}
-
-@media (min-width: 1024px) {
-  .sheet-sync-status { display: flex; }
 }
 
 /* ==========================================================================

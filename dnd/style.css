@@ -29,10 +29,18 @@
   --font-mono: 'JetBrains Mono', monospace;
 }
 
+/* A base de 15px é a do celular, onde cada pixel de largura conta. Da tabuleta
+   para cima sobra espaço e o texto pode crescer: 0.8rem de rótulo a 15px são
+   12px, pequenos demais numa tela de 27 polegadas vista de longe. Só o corpo
+   raiz muda — todos os tamanhos em rem acompanham juntos, sem reflow de
+   layout, porque os pontos de quebra continuam em px. */
 html {
   font-size: 15px;
   scroll-behavior: smooth;
 }
+
+@media (min-width: 1024px) { html { font-size: 16px; } }
+@media (min-width: 1600px) { html { font-size: 17px; } }
 
 body {
   font-family: var(--font-body);
@@ -41,6 +49,10 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   overflow-x: hidden;
+  /* Nome de magia, item customizado ou texto colado pelo jogador não pode
+     esticar a caixa que o contém: sem isto uma palavra sem espaços fura o
+     cartão e some atrás do overflow-x: hidden da página. */
+  overflow-wrap: break-word;
 }
 
 /* ---------- APP CONTAINER & LAYOUT SPLIT ----------
@@ -397,26 +409,31 @@ body {
 .form-grid-3,
 .form-grid-4 {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
 }
+
+.form-grid-2 > *,
+.form-grid-3 > *,
+.form-grid-4 > * { min-width: 0; }
 
 @media (min-width: 640px) {
   .form-grid-2,
   .form-grid-3,
-  .form-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .form-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 1024px) {
-  .form-grid-2 { grid-template-columns: 1fr 1fr; gap: 1rem; }
-  .form-grid-3 { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-  .form-grid-4 { grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+  .form-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .form-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .form-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  min-width: 0;
   margin-bottom: 0.9rem;
 }
 
@@ -425,6 +442,10 @@ body {
   font-weight: 600;
   color: #cbd5e1;
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
   justify-content: space-between;
 }
 
@@ -550,19 +571,28 @@ select.form-control option {
   font-family: var(--font-mono);
 }
 
-/* Três atributos por linha no celular (duas linhas), seis no desktop.
-   O seletor cobre os dois nomes de classe usados na marcação. */
+/* Dois atributos por linha nos aparelhos mais estreitos, três no celular
+   comum, seis no desktop. O seletor cobre os dois nomes de classe usados na
+   marcação.
+   A conta de 320px: sobram ~273px úteis dentro do painel; com três colunas
+   cada caixa fica com 86px e o spinner (24 + 32 + 24 mais os vãos) precisa de
+   97px — quebrava. Com duas colunas cada caixa passa de 130px. */
 .attributes-input-grid,
 .ability-inputs-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.45rem;
+}
+
+@media (min-width: 380px) {
+  .attributes-input-grid,
+  .ability-inputs-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (min-width: 900px) {
   .attributes-input-grid,
   .ability-inputs-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 0.6rem;
   }
 }
@@ -585,6 +615,10 @@ select.form-control option {
   box-shadow: 0 0 10px rgba(192, 132, 252, 0.2);
 }
 
+.ability-mod-tag,
+.ability-bonus-sub,
+.ability-name-tag { max-width: 100%; text-align: center; }
+
 .ability-name-tag {
   font-weight: 800;
   font-size: 0.85rem;
@@ -595,12 +629,16 @@ select.form-control option {
 .ability-spinner {
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
   gap: 4px;
 }
 
 .spin-btn {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
   border-radius: 4px;
   background: rgba(51, 65, 85, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -626,7 +664,8 @@ select.form-control option {
   font-weight: 800;
   font-family: var(--font-mono);
   color: #ffffff;
-  width: 32px;
+  flex: 1 1 auto;
+  min-width: 1.8rem;
   text-align: center;
 }
 
@@ -645,7 +684,7 @@ select.form-control option {
 /* ---------- EXPOSIÇÃO TOTAL SEM BARRAS DE ROLAGEM (PERÍCIAS, SUBCLASSES & TALENTOS) ---------- */
 .skills-selector-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
   gap: 0.45rem;
   /* Sem barra de rolagem: todos os itens expostos */
 }
@@ -671,13 +710,13 @@ select.form-control option {
 .skill-select-item input[type="checkbox"] {
   accent-color: #c084fc;
   cursor: pointer;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
 }
 
 .feats-exposed-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   gap: 0.5rem;
   /* Sem barra de rolagem: todos expostos */
 }
@@ -732,7 +771,7 @@ select.form-control option {
 
 .spells-cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 0.6rem;
 }
 
@@ -947,6 +986,7 @@ select.form-control option {
 .sheet-zoom-btn:hover { background: rgba(139, 92, 246, 0.25); color: #fff; }
 
 .sheet-zoom-label {
+  min-height: 34px;
   min-width: 3.2rem;
   text-align: center;
   font-size: 0.75rem;
@@ -1042,6 +1082,10 @@ select.form-control option {
   .modal-window { padding: 1.5rem; max-height: 85vh; }
 }
 
+@media (min-width: 1024px) {
+  .modal-window { max-width: 680px; }
+}
+
 .modal-overlay.active .modal-window {
   transform: scale(1);
 }
@@ -1066,8 +1110,20 @@ select.form-control option {
   border: none;
   color: var(--text-muted);
   font-size: 1.25rem;
+  line-height: 1;
   cursor: pointer;
+  /* Antes era do tamanho exato do glifo (13x21) e errar o toque fechava
+     nada — ou pior, tocava no que estivesse atrás. */
+  min-width: 40px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
 }
+
+.modal-close-btn:hover { background: rgba(255, 255, 255, 0.08); }
 
 .modal-close-btn:hover {
   color: #fff;
@@ -1138,7 +1194,7 @@ select.form-control option {
 
 .lang-checkbox-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
   gap: 0.4rem;
   max-height: 160px;
   overflow-y: auto;
@@ -1166,8 +1222,9 @@ select.form-control option {
 
 .lang-checkbox-item input[type="checkbox"] {
   accent-color: #38bdf8;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
   cursor: pointer;
 }
 
@@ -1245,6 +1302,9 @@ select.form-control option {
 .app-mode-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
   gap: 0.5rem;
 }
 
@@ -1268,7 +1328,7 @@ select.form-control option {
    ========================================================================== */
 .custom-items-list-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
   gap: 0.6rem;
   margin-top: 0.5rem;
 }
@@ -1333,20 +1393,34 @@ select.form-control option {
 /* ==========================================================================
    LISTA DE TALENTOS (formato lista + botão "i" de informações)
    ========================================================================== */
-/* Rolador de dados: campo de expressão + botão, lado a lado */
+/* Rolador de dados: campo de expressão + botão, lado a lado.
+   A largura do campo é elástica: no celular ele cede espaço para o botão
+   "Rolar" caber na mesma linha, e no desktop para de crescer em 8rem. */
 .dice-input-group {
   display: flex;
   align-items: center;
+  flex: 1 1 12rem;
+  min-width: 0;
   gap: 0.3rem;
 }
 
 .dice-input {
-  width: 6.5rem;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  max-width: 8rem;
   min-height: 34px;
   padding: 0.3rem 0.5rem;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  /* 16px enquanto for celular: abaixo disso o Safari do iPhone dá zoom
+     sozinho ao focar o campo e desalinha a página inteira. */
+  font-size: 16px;
   text-align: center;
+}
+
+@media (min-width: 768px) {
+  .dice-input-group { flex: 0 0 auto; }
+  .dice-input { font-size: 0.8rem; }
 }
 
 /* ---------- Usos de característica ---------- */
@@ -1500,7 +1574,7 @@ select.form-control option {
 .cond-nivel:hover { color: #fff; }
 
 .cond-niveis { display: inline-flex; border-left: 1px solid rgba(255, 255, 255, 0.1); }
-.cond-nivel { padding: 0.3rem 0.4rem; font-family: var(--font-mono); font-weight: 700; }
+.cond-nivel { padding: 0.3rem 0.4rem; min-width: 1.75rem; font-family: var(--font-mono); font-weight: 700; }
 .cond-info { border-left: 1px solid rgba(255, 255, 255, 0.1); }
 
 .cond-detalhe {
@@ -1576,12 +1650,14 @@ select.form-control option {
 
 .hp-tracker-acoes {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.35rem;
 }
 
+.hp-tracker-acoes > * { min-width: 0; }
+
 @media (min-width: 560px) {
-  .hp-tracker-acoes { grid-template-columns: 6rem repeat(3, 1fr); align-items: center; }
+  .hp-tracker-acoes { grid-template-columns: 6rem repeat(3, minmax(0, 1fr)); align-items: center; }
 }
 
 .hp-tracker-acoes .is-dano:hover { background: rgba(239, 68, 68, 0.22); color: #fca5a5; }
@@ -1624,6 +1700,8 @@ select.form-control option {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
+  min-height: 30px;
+  padding: 0 0.35rem;
   font-size: 0.7rem;
   text-transform: none;
   letter-spacing: 0;
@@ -1694,7 +1772,7 @@ select.form-control option {
 /* Botão de maestria de cada arma equipada */
 .weapon-mastery-btn {
   font-size: 0.72rem;
-  max-width: 14rem;
+  max-width: min(14rem, 100%);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1765,13 +1843,15 @@ select.form-control option {
 
 .feat-filter-bar {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.4rem;
   margin-bottom: 0.6rem;
 }
 
+.feat-filter-bar > * { min-width: 0; }
+
 @media (min-width: 700px) {
-  .feat-filter-bar { grid-template-columns: 1.6fr 1fr auto; align-items: center; }
+  .feat-filter-bar { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto; align-items: center; }
 }
 
 .feat-filter-toggle {
@@ -1866,8 +1946,8 @@ select.form-control option {
 .feat-row input[type="checkbox"] {
   accent-color: #c084fc;
   cursor: pointer;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
 }
 
@@ -2110,7 +2190,7 @@ select.form-control option {
 @media (max-width: 899.98px) {
   .spells-table thead th { padding: 0.4rem 0.3rem; }
   .spells-table td { padding: 0.4rem 0.3rem; }
-  .spells-table td.col-name { line-height: 1.2; }
+  .spells-table td.col-name { line-height: 1.2; min-width: 8rem; }
 }
 
 .spells-table thead th {
@@ -2170,7 +2250,7 @@ select.form-control option {
 
 .spell-info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(130px, 100%), 1fr));
   gap: 0.35rem 0.9rem;
   margin-bottom: 0.5rem;
 }
@@ -2225,7 +2305,7 @@ select.form-control option {
 
 .feat-choice-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
   gap: 0.5rem 0.75rem;
 }
 
@@ -2353,21 +2433,66 @@ img, table, pre { max-width: 100%; }
 .sheet-viewer-panel,
 .step-content { min-width: 0; }
 
-/* Caixas de seleção e botões pequenos ganham área de toque no celular */
-@media (max-width: 767.98px) {
+/* Alvos de toque.
+   A condição é o tipo de ponteiro, não a largura: uma tabuleta de 900px é tão
+   tocada com o dedo quanto um celular de 360px, e enquanto isto aqui era um
+   `max-width: 767.98px` ela ficava com os mesmos botões de 21px de altura do
+   desktop. Num mouse nada disso muda. */
+@media (pointer: coarse) {
   .lang-checkbox-item,
   .skill-select-item,
   .feat-row { min-height: 38px; }
 
+  /* A ficha A4 fica deliberadamente de fora: lá as caixinhas são réplicas do
+     papel e quem aproxima é o zoom da barra. Um seletor genérico
+     `input[type=checkbox]` venceria o `.of-dot` da folha da ficha por
+     especificidade e arrebentaria a linha de resistência de morte.
+     Os seletores repetem os já existentes de propósito: as regras de 15px lá
+     em cima têm a mesma especificidade, e media query não acrescenta nenhuma
+     — o que decide é vir depois. */
+  .creator-panel input[type="checkbox"],
+  .modal-window input[type="checkbox"],
+  .hp-tracker input[type="checkbox"],
   .lang-checkbox-item input[type="checkbox"],
   .skill-select-item input[type="checkbox"],
-  .feat-row input[type="checkbox"] { width: 18px; height: 18px; }
+  .feat-row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    /* Dentro de um <label> em flex a caixa é item flexível e o texto ao lado
+       a espremia de volta para 12px de largura — o tamanho maior só vale de
+       verdade com o encolhimento desligado. */
+    flex-shrink: 0;
+  }
 
   .feat-info-btn,
   .spell-info-btn,
   .feat-del-btn,
   .bio-roll { min-width: 32px; min-height: 32px; }
 
+  /* Numa linha de talento quem alterna a caixa é o rótulo com o nome, e ele
+     tinha só a altura do próprio texto (20px) dentro de uma linha de 38px:
+     a faixa mais óbvia para tocar não fazia nada. Esticado, o alvo passa a
+     ser a linha inteira.
+     Mesma história no rótulo de "equipar agora" dos modais. */
+  .feat-row-name,
+  .modal-window label:has(> input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+  }
+
+  /* Botões que ficavam abaixo do dedo: +/- dos atributos, gasto de usos,
+     condições e as ações minúsculas dos cartões. */
+  .spin-btn { width: 32px; height: 32px; }
+  .uso-btn { min-width: 2rem; min-height: 2rem; }
+  .cond-btn,
+  .cond-info,
+  .cond-nivel { min-height: 36px; }
+  .btn-xs { min-height: 32px; padding: 0.3rem 0.55rem; }
+}
+
+/* Só o que depende mesmo de tela pequena continua medido por largura */
+@media (max-width: 767.98px) {
   .section-title { font-size: 1.1rem; }
   .modal-title { font-size: 1.05rem; }
 }
@@ -2383,7 +2508,7 @@ img, table, pre { max-width: 100%; }
 /* Passo 2 — modos de geração de atributos */
 .ability-modes-bar {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.35rem;
   margin-bottom: 0.75rem;
 }
@@ -2425,7 +2550,7 @@ img, table, pre { max-width: 100%; }
 /* Passo 2/3 — idiomas do antecedente personalizado */
 .languages-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
   gap: 0.35rem;
   max-height: 190px;
   overflow-y: auto;
@@ -2585,13 +2710,15 @@ img, table, pre { max-width: 100%; }
 /* Passo 4 — filtros do catálogo */
 .spells-filter-bar {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.5rem;
   margin-bottom: 0.85rem;
 }
 
+.spells-filter-bar > * { min-width: 0; }
+
 @media (min-width: 640px) {
-  .spells-filter-bar { grid-template-columns: 1fr 1fr; }
+  .spells-filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .spells-filter-bar > .form-group:last-child { grid-column: 1 / -1; }
 }
 
@@ -2604,3 +2731,162 @@ img, table, pre { max-width: 100%; }
   }
   .spells-filter-bar > .form-group { flex: 1 1 180px; min-width: 0; }
 }
+
+/* ---------------------------------------------------------------------------
+   CONTROLE DE NÍVEL (PASSO 1)
+   O <select> continua ali para pular direto para qualquer nível; os botões
+   são para a mesa em andamento, onde subir de nível é um clique só. O select
+   fica com min-width: 0 porque, sendo item de flex, o mínimo automático dele é
+   a opção mais comprida — sem isso a linha inteira estouraria a coluna.
+--------------------------------------------------------------------------- */
+.level-stepper {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.level-stepper .form-control {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.level-step-btn {
+  flex: 0 0 auto;
+  min-width: 2.6rem;
+  padding: 0 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   VIDA POR NÍVEL (PASSO 2, MODO "EDITÁVEL POR NÍVEL")
+   Um campo por nível. A grade é fluida: em telas estreitas cabem dois ou três
+   por linha, no desktop a fileira inteira.
+--------------------------------------------------------------------------- */
+.hp-por-nivel {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(5.5rem, 100%), 1fr));
+  gap: 0.4rem;
+  margin: 0.5rem 0 0.6rem;
+}
+
+.hp-nivel-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.hp-nivel-rotulo {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hp-nivel-campo .form-control {
+  padding: 0.4rem 0.45rem;
+  text-align: center;
+  font-family: var(--font-mono);
+}
+
+/* O 1º nível é sempre o dado cheio: mostrado, mas fora de discussão */
+.hp-nivel-campo.is-fixo .form-control {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------------------
+   EDIÇÃO DIRETA DOS PONTOS DE VIDA
+   A caneta fica no resumo do painel; ao clicar, os três números tomam o lugar
+   do texto. Tudo isto vive dentro de um <summary>, por isso os alvos são
+   generosos: errar o toque ali abriria e fecharia o painel.
+--------------------------------------------------------------------------- */
+.hp-editar {
+  margin-left: auto;
+  flex-shrink: 0;
+  min-width: 34px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(192, 132, 252, 0.12);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  border-radius: var(--radius-sm);
+  color: var(--primary-accent);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.hp-editar:hover { background: rgba(192, 132, 252, 0.28); color: #f8fafc; }
+
+.hp-edit-campos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.hp-edit-num {
+  width: 3.4rem;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0.25rem 0.35rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 16px;              /* 16px: abaixo disso o iPhone dá zoom ao focar */
+  font-weight: 700;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(192, 132, 252, 0.45);
+  border-radius: var(--radius-sm);
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.hp-edit-num::-webkit-outer-spin-button,
+.hp-edit-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.hp-edit-num:focus { border-color: #c084fc; box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.25); }
+.hp-edit-num.is-temp { border-color: rgba(56, 189, 248, 0.5); color: #7dd3fc; }
+
+.hp-edit-sep { color: var(--text-muted); font-weight: 700; }
+
+.hp-edit-rotulo {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.hp-edit-btn {
+  min-width: 34px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.8);
+  color: #e2e8f0;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.hp-edit-btn:hover { background: rgba(139, 92, 246, 0.25); color: #fff; }
+.hp-edit-btn.is-ok { background: rgba(34, 197, 94, 0.22); border-color: rgba(34, 197, 94, 0.5); color: #86efac; }
+.hp-edit-btn.is-ok:hover { background: rgba(34, 197, 94, 0.35); color: #fff; }
+
+/* O resumo divide a linha com a caneta: sem isto o texto empurra o botão
+   para fora em telas estreitas. */
+.hp-tracker > summary { flex-wrap: wrap; }
+.hp-tracker-resumo { min-width: 0; }
+.hp-log-linha.is-edicao i { color: #c084fc; }
