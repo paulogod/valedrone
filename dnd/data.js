@@ -423,6 +423,7 @@ const DND5E_DATA = {
     {
       "id": "barbarian",
       "name": "Bárbaro (Barbarian)",
+      "limitedUses": [{"id":"barbarian_uses","name":"Fúrias (Rages)","recovery":"longo","byLevel":{"1":2,"2":2,"3":3,"4":3,"5":3,"6":4,"7":4,"8":4,"9":4,"10":4,"11":4,"12":5,"13":5,"14":5,"15":5,"16":5,"17":6,"18":6,"19":6,"20":6}}],
       "hitDie": 12,
       "primaryAbility": [
         "str"
@@ -600,6 +601,7 @@ const DND5E_DATA = {
     {
       "id": "bard",
       "name": "Bardo (Bard)",
+      "limitedUses": [{"id":"bard_inspiration","name":"Inspiração de Bardo (Bardic Inspiration)","recovery":"curto","perAbilityMod":"cha","min":1}],
       "hitDie": 8,
       "primaryAbility": [
         "cha"
@@ -774,6 +776,7 @@ const DND5E_DATA = {
     {
       "id": "cleric",
       "name": "Clérigo (Cleric)",
+      "limitedUses": [{"id":"cleric_uses","name":"Canalizar Divindade (Channel Divinity)","recovery":"curto","byLevel":{"1":0,"2":2,"3":2,"4":2,"5":2,"6":3,"7":3,"8":3,"9":3,"10":3,"11":3,"12":3,"13":3,"14":3,"15":3,"16":3,"17":3,"18":4,"19":4,"20":4}}],
       "hitDie": 8,
       "primaryAbility": [
         "wis"
@@ -1038,6 +1041,7 @@ const DND5E_DATA = {
     {
       "id": "druid",
       "name": "Druida (Druid)",
+      "limitedUses": [{"id":"druid_uses","name":"Forma Selvagem (Wild Shape)","recovery":"curto","byLevel":{"1":0,"2":2,"3":2,"4":2,"5":2,"6":3,"7":3,"8":3,"9":3,"10":3,"11":3,"12":3,"13":3,"14":3,"15":3,"16":3,"17":4,"18":4,"19":4,"20":4}}],
       "hitDie": 8,
       "primaryAbility": [
         "wis"
@@ -1335,6 +1339,7 @@ const DND5E_DATA = {
     {
       "id": "fighter",
       "name": "Guerreiro (Fighter)",
+      "limitedUses": [{"id":"fighter_uses","name":"Recuperar Fôlego (Second Wind)","recovery":"curto","byLevel":{"1":2,"2":2,"3":2,"4":3,"5":3,"6":3,"7":3,"8":3,"9":3,"10":4,"11":4,"12":4,"13":4,"14":4,"15":4,"16":4,"17":4,"18":4,"19":4,"20":4}},{"id":"fighter_action_surge","name":"Surto de Ação (Action Surge)","recovery":"curto","byLevel":{"1":0,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":2,"18":2,"19":2,"20":2}}],
       "hitDie": 10,
       "primaryAbility": [
         "str",
@@ -1523,6 +1528,7 @@ const DND5E_DATA = {
     {
       "id": "monk",
       "name": "Monge (Monk)",
+      "limitedUses": [{"id":"monk_uses","name":"Pontos de Foco (Focus Points)","recovery":"curto","byLevel":{"1":0,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16,"17":17,"18":18,"19":19,"20":20}}],
       "hitDie": 8,
       "martialArtsByLevel": {
         "1": "1d6", "2": "1d6", "3": "1d6", "4": "1d6",
@@ -1689,6 +1695,11 @@ const DND5E_DATA = {
     {
       "id": "paladin",
       "name": "Paladino (Paladin)",
+      "limitedUses": [{"id":"paladin_uses","name":"Canalizar Divindade (Channel Divinity)","recovery":"curto","byLevel":{"1":0,"2":0,"3":2,"4":2,"5":2,"6":2,"7":2,"8":2,"9":2,"10":2,"11":3,"12":3,"13":3,"14":3,"15":3,"16":3,"17":3,"18":3,"19":3,"20":3}}],
+      "grantedSpells": {
+        "2": [{ "id": "divine_smite", "feature": "Destruição do Paladino" }],
+        "5": [{ "id": "find_steed", "feature": "Montaria Fiel" }]
+      },
       "hitDie": 10,
       "primaryAbility": [
         "str",
@@ -2000,6 +2011,10 @@ const DND5E_DATA = {
     {
       "id": "ranger",
       "name": "Guardião (Ranger)",
+      "limitedUses": [{"id":"ranger_uses","name":"Inimigo Favorito (Favored Enemy)","recovery":"longo","byLevel":{"1":2,"2":2,"3":2,"4":2,"5":3,"6":3,"7":3,"8":3,"9":4,"10":4,"11":4,"12":4,"13":5,"14":5,"15":5,"16":5,"17":6,"18":6,"19":6,"20":6}}],
+      "grantedSpells": {
+        "1": [{ "id": "hunters_mark", "feature": "Inimigo Favorito" }]
+      },
       "hitDie": 10,
       "primaryAbility": [
         "dex",
@@ -2262,6 +2277,7 @@ const DND5E_DATA = {
     {
       "id": "rogue",
       "name": "Ladino (Rogue)",
+      "limitedUses": [{"id":"rogue_stroke_of_luck","name":"Golpe de Sorte (Stroke of Luck)","recovery":"curto","byLevel":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,"20":1}}],
       "hitDie": 8,
       "primaryAbility": [
         "dex"
@@ -2422,6 +2438,7 @@ const DND5E_DATA = {
     {
       "id": "sorcerer",
       "name": "Feiticeiro (Sorcerer)",
+      "limitedUses": [{"id":"sorcerer_uses","name":"Pontos de Feitiçaria (Sorcery Points)","recovery":"longo","byLevel":{"1":0,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16,"17":17,"18":18,"19":19,"20":20}}],
       "hitDie": 6,
       "primaryAbility": [
         "cha"
@@ -2669,6 +2686,10 @@ const DND5E_DATA = {
     {
       "id": "warlock",
       "name": "Bruxo (Warlock)",
+      "limitedUses": [{"id":"warlock_magical_cunning","name":"Astúcia Mágica (Magical Cunning)","recovery":"longo","byLevel":{"1":0,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1}}],
+      "grantedSpells": {
+        "9": [{ "id": "contato_extraplanar", "feature": "Contatar Patrono" }]
+      },
       "hitDie": 8,
       "primaryAbility": [
         "cha"
@@ -2915,6 +2936,7 @@ const DND5E_DATA = {
     {
       "id": "wizard",
       "name": "Mago (Wizard)",
+      "limitedUses": [{"id":"wizard_arcane_recovery","name":"Recuperação Arcana (Arcane Recovery)","recovery":"longo","byLevel":{"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1}}],
       "hitDie": 6,
       "primaryAbility": [
         "int"

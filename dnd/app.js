@@ -1380,18 +1380,36 @@ let _featFilterState = { busca: "", tipo: "all", soMeus: false };
  */
 function getLimitedUses() {
   const lista = [];
+
+  // Uma classe pode ter mais de uma característica contada. O modelo antigo
+  // guardava só uma (`limitedUse`, singular) e por isso o Guerreiro aparecia
+  // com Recuperar Fôlego mas sem Surto de Ação, e Bardo, Ladino, Bruxo e Mago
+  // apareciam sem característica nenhuma. Agora é lista (`limitedUses`); o
+  // campo antigo continua sendo lido para não quebrar uma ficha salva com uma
+  // versão de data.js anterior.
   const daClasse = (classId, nivel) => {
     const c = DND5E_DATA.classes.find(x => x.id === classId);
-    if (!c || !c.limitedUse || nivel < 1) return;
-    const max = c.limitedUse.byLevel[nivel] || 0;
-    if (!max) return;
-    lista.push({
-      id: c.limitedUse.id,
-      name: c.limitedUse.name,
-      classe: c.name.split(" (")[0],
-      max,
-      recovery: c.limitedUse.recovery,
-      gastos: (character.featureUses && character.featureUses[c.limitedUse.id]) || 0
+    if (!c || nivel < 1) return;
+
+    const usos = Array.isArray(c.limitedUses) ? c.limitedUses
+               : (c.limitedUse ? [c.limitedUse] : []);
+
+    usos.forEach(u => {
+      // Inspiração de Bardo e afins não têm tabela por nível: são "tantos
+      // quanto o seu modificador", e mudam quando o atributo muda.
+      const max = u.perAbilityMod
+        ? Math.max(u.min || 1, (_ultimosMods || {})[u.perAbilityMod] || 0)
+        : (u.byLevel && u.byLevel[nivel]) || 0;
+      if (!max) return;
+
+      lista.push({
+        id: u.id,
+        name: u.name,
+        classe: c.name.split(" (")[0],
+        max,
+        recovery: u.recovery,
+        gastos: (character.featureUses && character.featureUses[u.id]) || 0
+      });
     });
   };
   daClasse(character.class1, character.level1);
@@ -1467,7 +1485,17 @@ function getSpellSlotRow() {
   const nivel = (character.level1 || 0) + (c2 ? (character.level2 || 0) : 0);
   const tipo = conj && conj.spellcasting ? conj.spellcasting.type : "full";
   const tabela = DND5E_DATA.spellSlotsTable[tipo] || DND5E_DATA.spellSlotsTable.full;
-  const linha = (conj && tabela[nivel]) || [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const bruta = (conj && tabela[nivel]) || [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+  // A Magia de Pacto do Bruxo não tem uma linha de nove círculos: são N espaços,
+  // todos do mesmo círculo, e a tabela guarda isso como { count, level }. O
+  // código tratava toda tabela como vetor e chamava .map num objeto — qualquer
+  // Bruxo derrubava o painel de espaços com "linha.map is not a function", e
+  // com ele o painel inteiro de jogo. Aqui a forma do pacto vira o mesmo vetor
+  // de nove posições que as outras usam.
+  const linha = Array.isArray(bruta)
+    ? bruta
+    : Array.from({ length: 9 }, (_, i) => (i + 1 === bruta.level ? bruta.count : 0));
 
   const ov = sheetOv();
   return linha.map((auto, i) => {
@@ -1496,15 +1524,10 @@ function changeSpellSlot(nivel, delta) {
  * um talento de Origem, e é essa a diferença que o jogador quer ver.
  */
 function getGrantedSpellsBySource() {
-  const origem = getOriginFeatObj();
   const grupos = {};
   getGrantedSpellEntries().forEach(g => {
     const sp = DND5E_DATA.spells.find(x => x.id === g.id);
-    let tipo = "Espécie";
-    if (/^Subclasse/.test(g.source)) tipo = "Subclasse";
-    else if (/^Talento/.test(g.source)) {
-      tipo = origem && g.source.includes(origem.name) ? "Antecedente" : "Talento";
-    }
+    const tipo = g.tipo || "Espécie";
     (grupos[tipo] = grupos[tipo] || []).push({
       nome: sp ? sp.name.split(" (")[0] : g.id,
       circulo: sp ? sp.level : 0,
@@ -1540,7 +1563,10 @@ function renderSpellSlots() {
   }).join("");
 
   const grupos = getGrantedSpellsBySource();
-  const ordem = ["Subclasse", "Espécie", "Talento", "Antecedente"];
+  // "Classe" entrou junto das outras: sem ela, as magias concedidas pela
+  // própria classe (Destruição Divina, Marca do Caçador...) eram contadas na
+  // capacidade mas não apareciam em nenhuma linha de origem.
+  const ordem = ["Classe", "Subclasse", "Espécie", "Talento", "Antecedente"];
 
   // Uma linha por origem. Capacidade (o que dá para escolher) e concessão (o que
   // já vem pronto) são coisas diferentes e aparecem separadas: um Paladino com
@@ -3074,11 +3100,16 @@ function subclassSpellsUpTo(sub, nivel) {
 
 function getGrantedSpellEntries() {
   const out = [];
-  const push = (id, source, name) => {
+  // `tipo` é o rótulo curto da etiqueta; `source` é a frase completa do tooltip.
+  // Antes só existia `source`, e quem precisava do rótulo o adivinhava com uma
+  // expressão sobre o começo da frase, caindo em "Espécie" para tudo que não
+  // reconhecia — foi assim que a Destruição Divina, concedida pelo Paladino,
+  // apareceu etiquetada como espécie.
+  const push = (id, source, name, tipo) => {
     if (!id) return;
     const found = out.find(e => e.id === id);
     if (found) { if (!found.source.includes(source)) found.source += `, ${source}`; return; }
-    out.push({ id, source, name: name || spellDisplayName(id, name) });
+    out.push({ id, source, tipo: tipo || "Espécie", name: name || spellDisplayName(id, name) });
   };
 
   const class1Obj = DND5E_DATA.classes.find(c => c.id === character.class1);
@@ -3092,29 +3123,53 @@ function getGrantedSpellEntries() {
     if (!classObj || !classObj.subclasses) return;
     const sub = classObj.subclasses.find(x => x.id === subId);
     if (!sub || !sub.bonusSpells) return;
-    subclassSpellsUpTo(sub, nivel).forEach(id => push(id, `Subclasse (${sub.name})`));
+    subclassSpellsUpTo(sub, nivel).forEach(id => push(id, `Subclasse (${sub.name})`, null, "Subclasse"));
   };
   somarSubclasse(class1Obj, character.subclass1, character.level1);
   if (class2Obj) somarSubclasse(class2Obj, character.subclass2, character.level2);
 
+  // Magias que a PRÓPRIA classe concede por característica, sempre preparadas.
+  // Faltava este caminho: só subclasse, espécie e talento concediam. O
+  // Paladino de nível 2 aparecia tendo de preparar a Destruição Divina, quando
+  // ela vem de graça com a Destruição do Paladino — e ainda comia uma vaga do
+  // limite de preparadas. Vale o mesmo para a Montaria Fiel do 5º, a Marca do
+  // Caçador do Guardião e o Contatar Patrono do Bruxo.
+  const somarClasse = (classObj, nivel) => {
+    if (!classObj || !classObj.grantedSpells || nivel < 1) return;
+    Object.keys(classObj.grantedSpells)
+      .map(Number)
+      .filter(n => n <= nivel)
+      .sort((a, b) => a - b)
+      .forEach(n => classObj.grantedSpells[n].forEach(g => {
+        const classe = classObj.name.split(" (")[0];
+        push(g.id, `${classe} (${g.feature})`, null, "Classe");
+      }));
+  };
+  somarClasse(class1Obj, character.level1);
+  if (class2Obj) somarClasse(class2Obj, character.level2);
+
   if (character.species === "elf" && character.lineage === "high_elf") {
-    if (character.level1 >= 3) push("misty_step", "Alto Elfo");
+    if (character.level1 >= 3) push("misty_step", "Alto Elfo", null, "Espécie");
   } else if (character.species === "tiefling") {
-    push("thaumaturgy", "Tiefling");
+    push("thaumaturgy", "Tiefling", null, "Espécie");
   } else if (character.species === "aasimar") {
-    push("light", "Aasimar");
+    push("light", "Aasimar", null, "Espécie");
   } else if (character.species === "gnome" && character.lineage === "forest_gnome") {
-    push("minor_illusion", "Gnomo da Floresta");
+    push("minor_illusion", "Gnomo da Floresta", null, "Espécie");
   }
 
+  // O talento de origem do antecedente aparece como "Antecedente": para o
+  // jogador ele veio da escolha do Passo 1, não de uma escolha de talento.
+  const featOrigem = getOriginFeatObj();
   getActiveFeatIds().forEach(fid => {
     const feat = DND5E_DATA.feats.find(f => f.id === fid);
     if (!feat) return;
+    const tipo = featOrigem && featOrigem.id === fid ? "Antecedente" : "Talento";
     const spec = getFeatChoiceSpec(feat);
     const names = FEAT_EXTRA_CHOICES[fid]?.grantNames || {};
-    spec.grants.forEach(id => push(id, `Talento (${feat.name})`, names[id]));
+    spec.grants.forEach(id => push(id, `Talento (${feat.name})`, names[id], tipo));
     const ch = featChoicesFor(fid);
-    spec.spells.forEach(slot => push(ch.spells[slot.key], `Talento (${feat.name})`));
+    spec.spells.forEach(slot => push(ch.spells[slot.key], `Talento (${feat.name})`, null, tipo));
   });
 
   return out;
@@ -3577,7 +3632,7 @@ function renderSpellsCatalog() {
 
   // De onde veio cada magia concedida, para a etiqueta na linha
   const origemPorId = {};
-  getGrantedSpellEntries().forEach(g => { origemPorId[g.id] = g.source; });
+  getGrantedSpellEntries().forEach(g => { origemPorId[g.id] = { fonte: g.source, tipo: g.tipo }; });
 
   // Agrupado por círculo: 391 linhas corridas não se navegam sem um filtro.
   const porCirculo = new Map();
@@ -3600,7 +3655,7 @@ function renderSpellsCatalog() {
         <td class="col-info"><button type="button" class="spell-info-btn" data-info="${sp.id}" title="Detalhes da magia"><i class="fa-solid fa-info"></i></button></td>
         <td class="col-action">
           ${origem
-            ? `<span class="spell-granted-lock" title="Concedida por ${origem} — já vem na ficha"><i class="fa-solid fa-gift"></i> Concedida</span>`
+            ? `<span class="spell-granted-lock" title="Concedida por ${String(origem.fonte).replace(/"/g, "&quot;")} — já vem na ficha"><i class="fa-solid fa-gift"></i> Concedida</span>`
             : `<button type="button" class="btn btn-sm ${isKnown ? "btn-gold" : "btn-secondary"} btn-toggle-spell" data-id="${sp.id}">
                  <i class="fa-solid ${isKnown ? "fa-check" : "fa-plus"}"></i> ${isKnown ? "Na ficha" : "Adicionar"}
                </button>`}
@@ -3708,7 +3763,7 @@ function spellIsRitual(sp) {
  * enterrados no texto de duração e tempo de conjuração; a origem separa o que o
  * jogador escolheu do que a subclasse, a espécie ou um talento deram.
  */
-function spellTagsHtml(sp, origem) {
+function spellTagsHtml(sp, origem) {   // origem: { fonte, tipo } ou nada
   const tags = [];
   if (spellNeedsConcentration(sp)) {
     tags.push('<span class="spell-tag is-conc" title="Exige Concentração">C</span>');
@@ -3721,12 +3776,9 @@ function spellTagsHtml(sp, origem) {
               String(sp.components).replace(/"/g, "&quot;") + '">M</span>');
   }
   if (origem) {
-    // A origem completa é longa ("Subclasse (Domínio da Vida (Life Domain))") e
+    // A fonte completa é longa ("Subclasse (Domínio da Vida (Life Domain))") e
     // não cabe numa etiqueta: na linha vai só o tipo, o resto fica no tooltip.
-    const curta = /^Subclasse/.test(origem) ? "Subclasse"
-                : /^Talento/.test(origem) ? "Talento"
-                : "Espécie";
-    tags.push(`<span class="spell-tag is-origin" title="Concedida por ${String(origem).replace(/"/g, "&quot;")}">${curta}</span>`);
+    tags.push(`<span class="spell-tag is-origin" title="Concedida por ${String(origem.fonte).replace(/"/g, "&quot;")}">${origem.tipo}</span>`);
   }
   return tags.length ? `<span class="spell-tags">${tags.join("")}</span>` : "";
 }
