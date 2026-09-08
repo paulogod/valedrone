@@ -2154,10 +2154,22 @@ const SPELL_WEAPON_BUFFS = {
       const arma = ctx.armaEquipada
         ? ctx.armaEquipada.name
         : "sem Cajado ou Clava equipado";
+
+      // A CD da maestria é 8 + proficiência + o modificador DO ATAQUE, e sob
+      // Bordão Místico o ataque passa a usar o atributo de conjuração. A linha
+      // da arma normal continua com a CD pela Força, que é a certa quando se
+      // ataca sem a magia: são dois ataques diferentes, cada um com a sua.
+      const cdMaestria = ctx.armaEquipada && isMasteryActive(ctx.armaEquipada.id)
+        ? masterySaveDC(ctx.armaEquipada, ctx.mod, ctx.pb)
+        : null;
+
       return {
-        atk: `${ctx.atkMagico >= 0 ? "+" : ""}${ctx.atkMagico}`,
+        atk: `${ctx.atkMagico >= 0 ? "+" : ""}${ctx.atkMagico}` +
+             (cdMaestria ? ` / CD ${cdMaestria.cd} ${cdMaestria.atributo}` : ""),
         damage: `${dado}${ctx.mod ? (ctx.mod > 0 ? " +" + ctx.mod : " " + ctx.mod) : ""} Energético`,
-        notes: `${arma} • usa o atributo de conjuração no ataque e no dano • dano Energético ou o normal da arma`
+        notes: `${arma} • usa o atributo de conjuração no ataque e no dano` +
+               (cdMaestria ? " (e na CD da maestria)" : "") +
+               ` • dano Energético ou o normal da arma`
       };
     }
   },
@@ -2207,7 +2219,7 @@ function spellAttackRows(finalMods, pb) {
       const armaEquipada = (buff.armas || [])
         .map(wid => DND5E_DATA.weapons.find(w => w.id === wid))
         .find(w => w && character.weapons.includes(w.id));
-      const r = buff.linha({ mod, atkMagico, cd, nivelTotal, maiorCirculo, armaEquipada });
+      const r = buff.linha({ mod, atkMagico, cd, pb, nivelTotal, maiorCirculo, armaEquipada });
       return { srcId: "spell:" + sp.id, name: sp.name.split(" (")[0], ...r };
     }
 
