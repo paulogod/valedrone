@@ -90,6 +90,10 @@ function createBlankCharacter() {
     // Vitals de Combate
     currentHp: 0,
     tempHp: 0,
+    // Dados de Vida já gastos, por tipo de dado ("d10": 2). Guardado assim
+    // porque o multiclasse mistura dados diferentes e cada um se gasta e se
+    // recupera por conta.
+    hitDiceSpent: {},
     deathSaves: { succ1: false, succ2: false, succ3: false, fail1: false, fail2: false, fail3: false },
 
     // Biografia & Interpretação (em branco; o dado de cada campo sorteia)
@@ -1076,6 +1080,145 @@ function updateSkillsSelector() {
 /* Filtros da lista de talentos. Ficam fora do `character` de propósito: são
    estado da tela, não escolha do personagem, e não devem ir para a ficha salva. */
 let _featFilterState = { busca: "", tipo: "all", soMeus: false };
+
+/* ---------------------------------------------- CONTROLE DE PONTOS DE VIDA */
+
+/**
+ * Dados de Vida do personagem: um bloco por classe, com o dado e o total.
+ * Em multiclasse são dois blocos, e cada um se gasta separado.
+ */
+function getHitDicePools() {
+  const blocos = [];
+  const add = (classId, nivel) => {
+    const c = DND5E_DATA.classes.find(x => x.id === classId);
+    if (!c || !c.hitDie || nivel < 1) return;
+    const chave = `d${c.hitDie}`;
+    const existente = blocos.find(b => b.chave === chave);
+    if (existente) existente.total += nivel;
+    else blocos.push({ chave, faces: c.hitDie, total: nivel, classe: c.name.split(" (")[0] });
+  };
+  add(character.class1, character.level1);
+  if (character.class2 && character.class2 !== "none") add(character.class2, character.level2);
+  return blocos;
+}
+
+function hitDiceSpentOf(chave) {
+  return (character.hitDiceSpent && character.hitDiceSpent[chave]) || 0;
+}
+
+/**
+ * Aplica dano. Os Pontos de Vida Temporários absorvem primeiro e não voltam
+ * depois — é assim no livro, e era o erro mais fácil de cometer na mão.
+ */
+function applyDamage(valor) {
+  const dano = Math.max(0, Math.floor(valor) || 0);
+  if (!dano) return;
+  const temp = character.tempHp || 0;
+  const absorvido = Math.min(temp, dano);
+  character.tempHp = temp - absorvido;
+  character.currentHp = Math.max(0, (character.currentHp || 0) - (dano - absorvido));
+  const resto = dano - absorvido;
+  showToast(`💥 ${dano} de dano${absorvido ? ` (${absorvido} nos temporários)` : ""} — ${character.currentHp} PV`);
+  if (character.currentHp === 0) showToast("💀 Você caiu a 0 PV: comece os testes de resistência de morte.");
+  return resto;
+}
+
+/** Cura, sem passar do máximo. Não mexe nos temporários, que são à parte. */
+function applyHealing(valor, maxHp) {
+  const cura = Math.max(0, Math.floor(valor) || 0);
+  if (!cura) return;
+  const antes = character.currentHp || 0;
+  character.currentHp = Math.min(maxHp, antes + cura);
+  showToast(`💚 ${character.currentHp - antes} PV recuperados — ${character.currentHp} de ${maxHp}`);
+}
+
+/**
+ * Pontos de Vida Temporários não somam: o livro manda escolher entre o valor
+ * novo e o que já existe, e ficar com o maior.
+ */
+function applyTempHp(valor) {
+  const novo = Math.max(0, Math.floor(valor) || 0);
+  const atual = character.tempHp || 0;
+  if (novo <= atual) {
+    showToast(`🛡️ Você já tem ${atual} PV temporários — eles não se somam, fica o maior.`);
+    return;
+  }
+  character.tempHp = novo;
+  showToast(`🛡️ ${novo} PV temporários${atual ? ` (substituindo ${atual})` : ""}`);
+}
+
+/** Gasta um Dado de Vida: rola o dado + modificador de Constituição e cura. */
+function spendHitDie(chave, maxHp, conMod) {
+  const bloco = getHitDicePools().find(b => b.chave === chave);
+  if (!bloco) return;
+  if (hitDiceSpentOf(chave) >= bloco.total) {
+    showToast(`Sem Dados de Vida ${chave} disponíveis.`);
+    return;
+  }
+  const rolagem = Math.floor(Math.random() * bloco.faces) + 1;
+  const cura = Math.max(0, rolagem + conMod);
+  character.hitDiceSpent = character.hitDiceSpent || {};
+  character.hitDiceSpent[chave] = hitDiceSpentOf(chave) + 1;
+  const antes = character.currentHp || 0;
+  character.currentHp = Math.min(maxHp, antes + cura);
+  const modStr = conMod >= 0 ? `+${conMod}` : `${conMod}`;
+  showToast(`🎲 Dado de Vida ${chave}(${rolagem}) ${modStr} = ${cura} — ${character.currentHp} de ${maxHp} PV`);
+}
+
+/**
+ * Descanso Longo: PV cheios, temporários zerados e metade dos Dados de Vida de
+ * volta (arredondando para baixo, no mínimo 1), como manda o livro.
+ */
+function longRest(maxHp) {
+  character.currentHp = maxHp;
+  character.tempHp = 0;
+  const recuperados = [];
+  getHitDicePools().forEach(b => {
+    const gastos = hitDiceSpentOf(b.chave);
+    if (!gastos) return;
+    const volta = Math.max(1, Math.floor(b.total / 2));
+    const novo = Math.max(0, gastos - volta);
+    character.hitDiceSpent[b.chave] = novo;
+    recuperados.push(`${gastos - novo} ${b.chave}`);
+  });
+  character.deathSaves = { succ1: false, succ2: false, succ3: false, fail1: false, fail2: false, fail3: false };
+  showToast(`🌙 Descanso Longo — ${maxHp} PV${recuperados.length ? `, ${recuperados.join(" e ")} de volta` : ""}`);
+}
+
+/**
+ * Desenha o painel de vida. Os números vêm da própria ficha, para o painel e a
+ * ficha nunca discordarem.
+ */
+function renderHpTracker() {
+  const resumo = document.getElementById("hpTrackerResumo");
+  const dados = document.getElementById("hpTrackerDados");
+  if (!resumo || !dados) return;
+
+  const maxHp = parseInt(document.getElementById("sheetHpMax")?.value, 10) || 0;
+  const atual = character.currentHp !== null && character.currentHp !== undefined
+    ? character.currentHp : maxHp;
+  const temp = character.tempHp || 0;
+
+  resumo.innerHTML = `<strong>${atual}</strong> / ${maxHp} PV` +
+    (temp ? ` <span class="hp-temp-tag">+${temp} temp</span>` : "") +
+    (atual === 0 ? ' <span class="hp-caido-tag">caído</span>' : "");
+
+  const blocos = getHitDicePools();
+  dados.innerHTML = blocos.length
+    ? blocos.map(b => {
+        const gastos = hitDiceSpentOf(b.chave);
+        const restantes = b.total - gastos;
+        return `<div class="hp-dado-linha">
+          <span class="hp-dado-nome">${b.chave} <small>${b.classe}</small></span>
+          <span class="hp-dado-conta">${restantes} de ${b.total}</span>
+          <button type="button" class="btn btn-secondary btn-sm" data-gastar="${b.chave}"
+                  ${restantes <= 0 ? "disabled" : ""} title="Rolar ${b.chave} + Constituição e curar">
+            <i class="fa-solid fa-dice-d6"></i> Gastar
+          </button>
+        </div>`;
+      }).join("")
+    : '<p class="hp-dado-vazio">Escolha a classe no Passo 1 para o app saber os seus Dados de Vida.</p>';
+}
 
 /* ------------------------------------ MAGIAS NA TABELA DE ATAQUES */
 
@@ -2871,6 +3014,7 @@ function renderOfSheetHeader(ctx) {
     hpEl.value = character.currentHp !== null && character.currentHp !== undefined ? character.currentHp : maxHp;
   }
   syncOfField("sheetHpTemp", character.tempHp || 0);
+  renderHpTracker();
   syncOfField("sheetHpMax", maxHp, "hpMax");
 
   syncOfField("sheetHitDiceSpent", 0, "hitDiceSpent");
@@ -3686,6 +3830,67 @@ function rollDiceCheck(label, modifier) {
   showToast(`🎯 <strong>${label}:</strong> d20(${d20}) ${modStr} = <strong>${total}</strong>${tag}`);
 }
 
+/**
+ * Lê uma expressão de dados: "2d6+3", "d20", "1d8+1d6-2", "4d6 + 2".
+ *
+ * Devolve os termos separados para o resultado poder mostrar cada dado, que é o
+ * que se confere na mesa — só o total não deixa ninguém checar a rolagem.
+ * Devolve null se a expressão não fizer sentido.
+ */
+function parseDiceExpression(texto) {
+  const limpo = String(texto || "").replace(/\s+/g, "").toLowerCase();
+  if (!limpo) return null;
+  // cada termo é "+2d6", "-d8" ou "+3"; o primeiro pode vir sem sinal
+  const termos = limpo.match(/[+-]?(\d*d\d+|\d+)/g);
+  if (!termos || termos.join("") !== limpo) return null;
+
+  const dados = [];
+  let fixo = 0;
+  for (const t of termos) {
+    const sinal = t.startsWith("-") ? -1 : 1;
+    const corpo = t.replace(/^[+-]/, "");
+    const m = corpo.match(/^(\d*)d(\d+)$/);
+    if (m) {
+      const qtd = m[1] === "" ? 1 : parseInt(m[1], 10);
+      const faces = parseInt(m[2], 10);
+      if (qtd < 1 || qtd > 100 || faces < 2 || faces > 1000) return null;
+      dados.push({ qtd, faces, sinal });
+    } else {
+      fixo += sinal * parseInt(corpo, 10);
+    }
+  }
+  if (!dados.length && !fixo) return null;
+  return { dados, fixo };
+}
+
+/**
+ * Rola a expressão e devolve o total com o detalhe de cada dado.
+ */
+function rollDiceExpression(texto) {
+  const exp = parseDiceExpression(texto);
+  if (!exp) return null;
+  let total = exp.fixo;
+  const partes = [];
+  for (const d of exp.dados) {
+    const valores = [];
+    for (let i = 0; i < d.qtd; i++) {
+      const v = Math.floor(Math.random() * d.faces) + 1;
+      valores.push(v);
+      total += d.sinal * v;
+    }
+    partes.push(`${d.sinal < 0 ? "−" : ""}${d.qtd}d${d.faces} [${valores.join(", ")}]`);
+  }
+  if (exp.fixo) partes.push(`${exp.fixo > 0 ? "+" : "−"}${Math.abs(exp.fixo)}`);
+  // d20 sozinho ainda merece o destaque de crítico
+  const soUmD20 = exp.dados.length === 1 && exp.dados[0].qtd === 1 && exp.dados[0].faces === 20;
+  const bruto = soUmD20 ? total - exp.fixo : null;
+  return {
+    total,
+    detalhe: partes.join(" "),
+    tag: bruto === 20 ? " 🌟 CRÍTICO!" : bruto === 1 ? " 💀 FALHA CRÍTICA!" : ""
+  };
+}
+
 function rollAttackAndDamage(weaponName, atkBonus, dmgFormula, dmgBonus, dmgType) {
   const d20 = Math.floor(Math.random() * 20) + 1;
   const atkTotal = d20 + atkBonus;
@@ -4035,6 +4240,41 @@ function bindEvents() {
     });
   }
 
+  // ---- painel de Pontos de Vida ----
+  const hpValor = () => {
+    const el = document.getElementById("hpTrackerValor");
+    const v = parseInt(el?.value, 10) || 0;
+    if (el) el.value = "";
+    return v;
+  };
+  const hpMaximo = () => parseInt(document.getElementById("sheetHpMax")?.value, 10) || 0;
+  const hpDepois = () => { renderHpTracker(); recalculateCharacter(); saveToLocalStorage(); };
+
+  const btnDano = document.getElementById("btnHpDano");
+  if (btnDano) btnDano.addEventListener("click", () => { applyDamage(hpValor()); hpDepois(); });
+
+  const btnCura = document.getElementById("btnHpCura");
+  if (btnCura) btnCura.addEventListener("click", () => { applyHealing(hpValor(), hpMaximo()); hpDepois(); });
+
+  const btnTemp = document.getElementById("btnHpTemp");
+  if (btnTemp) btnTemp.addEventListener("click", () => { applyTempHp(hpValor()); hpDepois(); });
+
+  const btnLongo = document.getElementById("btnDescansoLongo");
+  if (btnLongo) btnLongo.addEventListener("click", () => { longRest(hpMaximo()); hpDepois(); });
+
+  const listaDados = document.getElementById("hpTrackerDados");
+  if (listaDados) listaDados.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-gastar]");
+    if (!btn) return;
+    // O modificador vem da ficha, que já tem os bônus de espécie e talentos —
+    // os baseScores são só o que o jogador digitou na compra por pontos.
+    const conEl = document.querySelector('[data-ability-mod="con"]');
+    const conMod = conEl ? (parseInt(conEl.value, 10) || 0)
+                         : Math.floor(((character.baseScores?.con || 10) - 10) / 2);
+    spendHitDie(btn.getAttribute("data-gastar"), hpMaximo(), conMod);
+    hpDepois();
+  });
+
   const btnAddArma = document.getElementById("btnAddWeaponSlot");
   if (btnAddArma) btnAddArma.addEventListener("click", () => {
     character.weapons.push("none");
@@ -4084,16 +4324,29 @@ function bindEvents() {
   document.getElementById("inputImportJson").addEventListener("change", importCharacterJson);
   // "Imprimir / PDF" é ligado em pdf-export.js: ele gera a ficha oficial preenchida
   // e abre a impressão dela, em vez de imprimir o HTML da tela.
-  document.getElementById("btnQuickRollD20").addEventListener("click", () => rollDiceCheck("D20 Rápido", 0));
-  
-  const btnGlobalRoll = document.getElementById("btnGlobalRollD20");
-  if (btnGlobalRoll) btnGlobalRoll.addEventListener("click", () => rollDiceCheck("D20 Rápido", 0));
-  
-  const btnQuickSave = document.getElementById("btnQuickSave");
-  if (btnQuickSave) btnQuickSave.addEventListener("click", () => {
-    saveToLocalStorage(true);
-    showToast("💾 Ficha salva com sucesso!");
+  // Rolador de expressão: "2d6+3", "d20", "4d6-1". Substituiu os dois botões
+  // de d20 fixo — na mesa se rola de tudo, não só d20.
+  const rolarExpressao = (origem) => {
+    const el = document.getElementById(origem);
+    const texto = (el?.value || "").trim() || "1d20";
+    const r = rollDiceExpression(texto);
+    if (!r) {
+      showToast(`⚠️ Não entendi "${texto}". Use algo como 2d6+3, d20 ou 1d8-1.`);
+      return;
+    }
+    showToast(`🎲 <strong>${texto}:</strong> ${r.detalhe} = <strong>${r.total}</strong>${r.tag}`);
+  };
+  ["diceInputSheet", "diceInputGlobal"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); rolarExpressao(id); }
+    });
   });
+  const btnRolarFicha = document.getElementById("btnRollDiceSheet");
+  if (btnRolarFicha) btnRolarFicha.addEventListener("click", () => rolarExpressao("diceInputSheet"));
+  
+  const btnRolarGlobal = document.getElementById("btnRollDiceGlobal");
+  if (btnRolarGlobal) btnRolarGlobal.addEventListener("click", () => rolarExpressao("diceInputGlobal"));
 
   // Modal: Talento Customizado
   const customFeatModal = document.getElementById("customFeatModal");

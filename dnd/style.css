@@ -1322,6 +1322,97 @@ select.form-control option {
 /* ==========================================================================
    LISTA DE TALENTOS (formato lista + botão "i" de informações)
    ========================================================================== */
+/* Rolador de dados: campo de expressão + botão, lado a lado */
+.dice-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.dice-input {
+  width: 6.5rem;
+  min-height: 34px;
+  padding: 0.3rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* ---------- Controle de Pontos de Vida (jogo) ---------- */
+
+/* Fica acima da ficha porque é o que mais se mexe durante a sessão; os campos
+   da própria ficha continuam editáveis à mão. */
+.hp-tracker {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.hp-tracker > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #f3e8ff;
+  font-size: 0.9rem;
+}
+
+.hp-tracker > summary::-webkit-details-marker { display: none; }
+.hp-tracker > summary i { color: #f87171; }
+.hp-tracker-resumo strong { font-family: var(--font-mono); font-size: 1.05rem; color: #fff; }
+
+.hp-temp-tag,
+.hp-caido-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.12rem 0.35rem;
+  border-radius: 3px;
+}
+
+.hp-temp-tag { background: rgba(56, 189, 248, 0.18); color: #7dd3fc; }
+.hp-caido-tag { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+
+.hp-tracker-corpo {
+  margin-top: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hp-tracker-acoes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+}
+
+@media (min-width: 560px) {
+  .hp-tracker-acoes { grid-template-columns: 6rem repeat(3, 1fr); align-items: center; }
+}
+
+.hp-tracker-acoes .is-dano:hover { background: rgba(239, 68, 68, 0.22); color: #fca5a5; }
+.hp-tracker-acoes .is-cura:hover { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+.hp-tracker-acoes .is-temp:hover { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; }
+
+.hp-dado-linha {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.07);
+  font-size: 0.8rem;
+}
+
+.hp-dado-nome { font-family: var(--font-mono); color: #e2e8f0; }
+.hp-dado-nome small { font-family: var(--font-body, inherit); color: var(--text-muted); margin-left: 0.3rem; }
+.hp-dado-conta { color: var(--text-muted); font-family: var(--font-mono); }
+.hp-dado-vazio { font-size: 0.78rem; color: var(--text-muted); }
+
+.hp-tracker-rodape { display: flex; justify-content: flex-end; }
+
 /* Lista de armas equipadas: uma linha por arma, com o select ocupando o espaço
    que sobra e os botões de maestria e remover ao lado. */
 .weapon-slots {

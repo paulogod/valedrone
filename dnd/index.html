@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260907o";
+    var APP_VERSION = "20260907p";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -102,9 +102,15 @@
       </div>
 
       <div class="app-mode-actions">
-        <button class="btn btn-secondary btn-sm" id="btnGlobalRollD20" title="Rolar D20 Rápido">
-          <i class="fa-solid fa-dice-d20"></i> Rolar D20
-        </button>
+        <!-- Rolador de expressão: x dados de y faces mais c. Enter também rola. -->
+        <div class="dice-input-group">
+          <input type="text" class="form-control dice-input" id="diceInputGlobal"
+                 placeholder="2d6+3" title="Número de dados, tipo do dado e acréscimo. Ex.: 2d6+3, d20, 4d6-1"
+                 autocomplete="off" spellcheck="false">
+          <button class="btn btn-secondary btn-sm" id="btnRollDiceGlobal" title="Rolar a expressão (Enter também rola)">
+            <i class="fa-solid fa-dice-d20"></i> Rolar
+          </button>
+        </div>
         <button class="btn btn-secondary btn-sm" id="btnQuickSave" title="Salvar Ficha Localmente">
           <i class="fa-solid fa-floppy-disk"></i> Salvar
         </button>
@@ -681,11 +687,46 @@
             <button class="btn btn-secondary btn-sm" id="btnResetSheetOverrides" title="Descarta as edições manuais e volta a preencher os campos a partir do criador">
               <i class="fa-solid fa-rotate-left"></i> Recalcular Campos
             </button>
-            <button class="btn btn-secondary btn-sm" id="btnQuickRollD20" title="Rolar D20 Rápido">
-              <i class="fa-solid fa-dice-d20"></i> D20
-            </button>
+            <div class="dice-input-group">
+              <input type="text" class="form-control dice-input" id="diceInputSheet"
+                     placeholder="2d6+3" title="Número de dados, tipo do dado e acréscimo. Ex.: 2d6+3, d20, 4d6-1"
+                     autocomplete="off" spellcheck="false">
+              <button class="btn btn-secondary btn-sm" id="btnRollDiceSheet" title="Rolar a expressão (Enter também rola)">
+                <i class="fa-solid fa-dice-d20"></i> Rolar
+              </button>
+            </div>
           </div>
         </div>
+
+        <!-- Controle de jogo: dano, cura, temporários e Dados de Vida.
+             Os campos da ficha continuam editáveis à mão; isto é o atalho para
+             o que mais se mexe durante a sessão. -->
+        <details class="hp-tracker" id="hpTracker">
+          <summary>
+            <i class="fa-solid fa-heart-pulse"></i>
+            <span class="hp-tracker-resumo" id="hpTrackerResumo">Pontos de Vida</span>
+          </summary>
+          <div class="hp-tracker-corpo">
+            <div class="hp-tracker-acoes">
+              <input type="number" class="form-control" id="hpTrackerValor" min="0" placeholder="Valor" inputmode="numeric">
+              <button type="button" class="btn btn-secondary btn-sm is-dano" id="btnHpDano" title="Tirar dos temporários primeiro, depois dos Pontos de Vida">
+                <i class="fa-solid fa-burst"></i> Dano
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm is-cura" id="btnHpCura" title="Recuperar Pontos de Vida, sem passar do máximo">
+                <i class="fa-solid fa-kit-medical"></i> Cura
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm is-temp" id="btnHpTemp" title="Pontos de Vida Temporários não se somam: fica o maior">
+                <i class="fa-solid fa-shield-halved"></i> Temp
+              </button>
+            </div>
+            <div class="hp-tracker-dados" id="hpTrackerDados"></div>
+            <div class="hp-tracker-rodape">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnDescansoLongo" title="Pontos de Vida cheios, temporários zerados e metade dos Dados de Vida de volta">
+                <i class="fa-solid fa-moon"></i> Descanso Longo
+              </button>
+            </div>
+          </div>
+        </details>
 
         <!-- CONTAINER DA FICHA OFICIAL D&D 2024 (2 PÁGINAS, IDÊNTICA À FICHA EDITÁVEL) -->
         <div class="sheet-render-viewport">

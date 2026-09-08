@@ -1260,6 +1260,36 @@ rápido e gasta muito menos tinta.
 O prefetch em segundo plano passou a buscar só a leve: adiantar 11,9 MB para
 quem talvez nem exporte custaria mais do que economiza.
 
+### 9.24 Controle de Pontos de Vida
+
+Um painel acima da ficha, recolhível, com o que mais se mexe durante a sessão.
+Os campos da própria ficha continuam editáveis à mão — o painel é atalho, não
+substituto.
+
+- **Dano** tira dos Pontos de Vida Temporários primeiro e só depois dos normais,
+  e os temporários não voltam. É a regra que mais se erra na mão.
+- **Cura** soma sem passar do máximo.
+- **Temp** não acumula: o livro manda ficar com o maior entre o valor novo e o
+  que já existe, e o painel avisa quando o novo é menor.
+- **Dados de Vida** aparecem por tipo, com quantos restam. Multiclasse tem um
+  bloco para cada dado, porque cada um se gasta e se recupera por conta.
+  "Gastar" rola o dado mais o modificador de Constituição — que vem da ficha, já
+  com os bônus de espécie e talentos, e não dos valores digitados.
+- **Descanso Longo** enche os Pontos de Vida, zera os temporários, limpa os
+  testes de resistência de morte e devolve **metade** dos Dados de Vida
+  (arredondando para baixo, no mínimo 1).
+
+### 9.25 Rolador de dados no lugar do d20 fixo
+
+Os dois botões "Rolar D20" viraram um campo de expressão: **`XdY+C`** — número
+de dados, tipo do dado e acréscimo. Aceita `2d6+3`, `d20`, `4d6-1`, `1d8+1d6+2`,
+espaços e maiúsculas; `Enter` também rola.
+
+O resultado mostra **cada dado separado** (`3d6 [3, 6, 5] +2 = 16`), porque só o
+total não deixa ninguém conferir a rolagem na mesa. Um `d20` sozinho continua
+marcando crítico e falha crítica. Expressão que não faz sentido é recusada com
+um aviso, em vez de rolar qualquer coisa.
+
 ---
 
 ## 10. Como o código da ficha funciona
