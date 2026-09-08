@@ -2890,3 +2890,24 @@ img, table, pre { max-width: 100%; }
 .hp-tracker > summary { flex-wrap: wrap; }
 .hp-tracker-resumo { min-width: 0; }
 .hp-log-linha.is-edicao i { color: #c084fc; }
+
+/* ---------------------------------------------------------------------------
+   ADICIONAR TALENTO DE ORIGEM EXTRA (PASSO 3)
+   Seletor e botão na mesma linha quando cabe, empilhados no celular. O select
+   leva min-width: 0 porque, como item de flex, o mínimo automático dele é a
+   opção mais comprida — sem isso a linha estoura a coluna.
+--------------------------------------------------------------------------- */
+.origem-extra-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.origem-extra-linha .form-control {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.origem-extra-linha .btn { flex: 0 0 auto; }

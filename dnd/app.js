@@ -30,6 +30,12 @@ function createBlankCharacter() {
     // Talento de Origem extra do traço Versátil do Humano. Fica em campo
     // próprio porque não vem do antecedente: o Humano acumula os dois.
     humanOriginFeat: "none",
+
+    // Talentos de Origem avulsos, adicionados à mão. Nem toda origem de
+    // talento cabe nas duas regras acima: variantes de mesa, prêmios de
+    // aventura e o Mestre que simplesmente concede um. Lista, e não campo
+    // único, porque não há limite fixo para quantos podem vir.
+    extraOriginFeats: [],
     background: "none",
     alignment: "",
     xp: "",
@@ -807,6 +813,48 @@ function getHumanOriginFeatId() {
 function getHumanOriginFeatObj() {
   const id = getHumanOriginFeatId();
   return id ? (DND5E_DATA.feats.find(f => f.id === id) || null) : null;
+}
+
+/** Talentos de Origem adicionados à mão, já resolvidos em objeto */
+function getExtraOriginFeatObjs() {
+  return (character.extraOriginFeats || [])
+    .map(id => DND5E_DATA.feats.find(f => f.id === id && f.type === "origin"))
+    .filter(Boolean);
+}
+
+/**
+ * Adiciona um Talento de Origem avulso.
+ *
+ * Recusa o que já está valendo por outro caminho — o do antecedente, o do
+ * Humano ou um já adicionado: repetir o mesmo talento não dobra efeito nenhum,
+ * e a lista ficaria dizendo uma coisa que a ficha não faz.
+ */
+function addExtraOriginFeat(id) {
+  const f = DND5E_DATA.feats.find(x => x.id === id && x.type === "origin");
+  if (!f) return;
+
+  if (getActiveFeatIds().includes(id)) {
+    showToast(`${f.name} já está valendo nesta ficha.`);
+    return;
+  }
+
+  if (!Array.isArray(character.extraOriginFeats)) character.extraOriginFeats = [];
+  character.extraOriginFeats.push(id);
+
+  renderHumanOriginFeat();
+  updateFeatsList();
+  renderSpellsCatalog();
+  recalculateCharacter();
+  saveToLocalStorage();
+  showToast(`✨ ${f.name} adicionado como Talento de Origem.`);
+}
+
+function removeExtraOriginFeat(id) {
+  character.extraOriginFeats = (character.extraOriginFeats || []).filter(x => x !== id);
+  updateFeatsList();
+  renderSpellsCatalog();
+  recalculateCharacter();
+  saveToLocalStorage();
 }
 
 /**
@@ -2308,6 +2356,13 @@ function updateFeatsList() {
   const ehHumano = character.species === "human";
   const originFeats = DND5E_DATA.feats.filter(f => f.type === "origin");
 
+  // O seletor de adicionar só oferece o que ainda não está valendo: repetir um
+  // talento não dobra efeito nenhum, e a lista passaria a prometer o que a
+  // ficha não faz.
+  const extraFeats = getExtraOriginFeatObjs();
+  const jaValendo = new Set(getActiveFeatIds());
+  const disponiveis = originFeats.filter(f => !jaValendo.has(f.id));
+
   const grantedSection = document.createElement("div");
   grantedSection.className = "feat-list-block";
   grantedSection.innerHTML = `
@@ -2352,8 +2407,61 @@ function updateFeatsList() {
         </div>
       ` : ""}
     ` : ""}
+
+    <h4 class="feat-block-title" style="color: #fbbf24; margin-top: 0.9rem;">
+      Talentos de Origem Extras (à mão)
+    </h4>
+    <p class="feat-slots-note">
+      Para o que não vem do antecedente nem do traço do Humano: variante de mesa,
+      prêmio de aventura ou concessão do Mestre. Não gasta vaga de talento.
+    </p>
+    ${extraFeats.length ? `
+      <div class="feat-list">
+        ${extraFeats.map(f => `
+          <div class="feat-row is-granted">
+            <span class="feat-row-lock" title="Talento de Origem adicionado à mão"><i class="fa-solid fa-plus"></i></span>
+            <span class="feat-row-name">${f.name}</span>
+            <span class="feat-row-tag tag-origin">Origem • Extra</span>
+            <button type="button" class="feat-info-btn" data-info="${f.id}" title="Mais informações"><i class="fa-solid fa-info"></i></button>
+            <button type="button" class="feat-del-btn" data-remove-extra-origin="${f.id}" title="Remover este talento de origem">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="feat-info-panel" data-panel="${f.id}" hidden>${buildFeatInfoHtml(f)}</div>
+          ${buildFeatChoiceBoxHtml(f, true)}
+        `).join("")}
+      </div>
+    ` : ""}
+    <div class="feat-choice-box origem-extra-add">
+      <div class="feat-choice-title"><i class="fa-solid fa-plus"></i> Adicionar Talento de Origem</div>
+      <div class="origem-extra-linha">
+        <select class="form-control" id="selectExtraOriginFeat" aria-label="Talento de origem a adicionar">
+          ${disponiveis.length
+            ? disponiveis.map(f => `<option value="${f.id}">${f.name}</option>`).join("")
+            : '<option value="none">Todos os talentos de origem já estão na ficha</option>'}
+        </select>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnAddExtraOriginFeat"
+                ${disponiveis.length ? "" : "disabled"}>
+          <i class="fa-solid fa-plus"></i> Adicionar
+        </button>
+      </div>
+    </div>
   `;
   container.appendChild(grantedSection);
+
+  const btnAddOrigem = grantedSection.querySelector("#btnAddExtraOriginFeat");
+  if (btnAddOrigem) {
+    btnAddOrigem.addEventListener("click", () => {
+      const sel = grantedSection.querySelector("#selectExtraOriginFeat");
+      if (sel && sel.value && sel.value !== "none") addExtraOriginFeat(sel.value);
+    });
+  }
+
+  grantedSection.querySelectorAll("[data-remove-extra-origin]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      removeExtraOriginFeat(btn.getAttribute("data-remove-extra-origin"));
+    });
+  });
 
   // O seletor do Passo 3 é o mesmo campo do Passo 1: escreve no mesmo lugar e
   // manda os dois se redesenharem, para não existirem duas verdades.
@@ -2720,9 +2828,10 @@ function featChoicesFor(featId) {
  */
 function getActiveFeatIds() {
   const ids = (character.selectedFeats || []).slice();
-  [getOriginFeatId(), getHumanOriginFeatId()].forEach(id => {
-    if (id && !ids.includes(id)) ids.push(id);
-  });
+  [getOriginFeatId(), getHumanOriginFeatId(), ...(character.extraOriginFeats || [])]
+    .forEach(id => {
+      if (id && !ids.includes(id)) ids.push(id);
+    });
   return ids;
 }
 
@@ -4313,6 +4422,10 @@ function renderOfFeatureAreas(ctx) {
 
   const humanFeat = getHumanOriginFeatObj();
   if (humanFeat) featLines.push(`[Origem • Humano] ${humanFeat.name}: ${humanFeat.desc}${describeFeatChoices(humanFeat)}`);
+
+  getExtraOriginFeatObjs().forEach(f => {
+    featLines.push(`[Origem • Extra] ${f.name}: ${f.desc}${describeFeatChoices(f)}`);
+  });
   character.selectedFeats.forEach(fId => {
     const f = DND5E_DATA.feats.find(x => x.id === fId);
     if (f) featLines.push(`${f.name}: ${f.desc}${describeFeatChoices(f)}`);
