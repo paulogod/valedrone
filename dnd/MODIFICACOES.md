@@ -1389,6 +1389,26 @@ Dois detalhes do formato do livro que o extrator precisou aprender: títulos com
 número ("Deslocamento 0.") e aberturas que terminam em dois-pontos, como a de
 Enfeitiçado.
 
+### 9.30 Preparadas deixaram de somar com as concedidas
+
+A contagem de magias preparadas olhava só `spellsKnown`, e uma ficha antiga pode
+ter a mesma magia nas duas listas — escolhida antes de a subclasse passar a
+concedê-la. O resultado era a magia contada duas vezes contra o limite da
+classe. Agora as concedidas são descontadas da conta: elas vêm de fora da lista
+da classe e não gastam a capacidade dela.
+
+O bloco de espaços de magia ganhou as **contas por origem**:
+
+```
+Magias por origem
+  Classe        1 / 4 truques · 1 / 9 preparadas
+  Subclasse     6 concedida(s)
+  Espécie       1 concedida(s)
+```
+
+A linha da Classe é o limite que se gasta escolhendo; as outras são concedidas e
+ficam fora dele. Origem sem nada não aparece.
+
 ---
 
 ## 10. Como o código da ficha funciona

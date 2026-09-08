@@ -1378,8 +1378,23 @@ select.form-control option {
 
 .uso-ponto.is-magia { background: #a78bfa; border-color: rgba(167, 139, 250, 0.6); }
 
+/* Contas por origem: a da classe é limite, as outras são concedidas */
+.magia-contas { margin-top: 0.5rem; border-top: 1px dashed rgba(255, 255, 255, 0.07); padding-top: 0.35rem; }
+
+.magia-conta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.76rem;
+  padding: 0.16rem 0;
+}
+
+.magia-conta-tipo { color: #c084fc; font-weight: 600; }
+.magia-conta-num { font-family: var(--font-mono); color: var(--text-muted); }
+
 /* Magias que vêm de fora da lista da classe, agrupadas pela origem */
-.magia-fontes { margin-top: 0.5rem; border-top: 1px dashed rgba(255, 255, 255, 0.07); padding-top: 0.35rem; }
+.magia-fontes { margin-top: 0.35rem; }
 
 .magia-fonte {
   display: grid;

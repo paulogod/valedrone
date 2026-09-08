@@ -149,6 +149,9 @@ function isBlankSheet() {
 /* Ligado por recalculateCharacter(); lido por syncOfField/syncOfCheck */
 let _ofBlank = true;
 
+/* Modificadores finais da última conta, para o painel de jogo reaproveitar */
+let _ultimosMods = {};
+
 // Inicialização ao carregar o DOM
 document.addEventListener("DOMContentLoaded", () => {
   initUI();
@@ -1271,6 +1274,30 @@ function renderSpellSlots() {
 
   const grupos = getGrantedSpellsBySource();
   const ordem = ["Subclasse", "Espécie", "Talento", "Antecedente"];
+
+  // Conta por origem: a da classe é a capacidade que se gasta escolhendo; as
+  // outras são concedidas e não entram nesse limite.
+  const escolhidas = (character.spellsKnown || []).filter(id =>
+    !getGrantedSpellEntries().some(g => g.id === id));
+  const truquesEscolhidos = escolhidas.filter(id => {
+    const sp = DND5E_DATA.spells.find(x => x.id === id);
+    return sp && sp.level === 0;
+  }).length;
+  const magiasEscolhidas = escolhidas.length - truquesEscolhidos;
+  const cap = getSpellCapacityInfo(_ultimosMods || {});
+
+  const contas = [
+    `<div class="magia-conta">
+       <span class="magia-conta-tipo">Classe</span>
+       <span class="magia-conta-num">${truquesEscolhidos} / ${cap.maxCantrips} truques · ${magiasEscolhidas} / ${cap.maxPrepared} preparadas</span>
+     </div>`,
+    ...ordem.filter(k => grupos[k]).map(k =>
+      `<div class="magia-conta">
+         <span class="magia-conta-tipo">${k}</span>
+         <span class="magia-conta-num">${grupos[k].length} concedida(s)</span>
+       </div>`)
+  ].join("");
+
   const concedidas = ordem.filter(k => grupos[k]).map(k => {
     const itens = grupos[k].map(g =>
       `<span class="magia-fonte-item" title="${g.fonte}">${g.nome} <small>${g.circulo === 0 ? "truque" : g.circulo + "º"}</small></span>`
@@ -1282,7 +1309,8 @@ function renderSpellSlots() {
   }).join("");
 
   box.innerHTML = (temAlgum ? linhas : '<p class="hp-dado-vazio">Esta classe não tem espaços de magia neste nível.</p>')
-    + (concedidas ? `<div class="magia-fontes"><div class="cond-cabeca"><span>Magias concedidas</span></div>${concedidas}</div>` : "");
+    + `<div class="magia-contas"><div class="cond-cabeca"><span>Magias por origem</span></div>${contas}</div>`
+    + (concedidas ? `<div class="magia-fontes">${concedidas}</div>` : "");
 }
 
 /* ------------------------------------------------------------- CONDIÇÕES */
@@ -2824,7 +2852,12 @@ function getSpellCapacityInfo(finalMods) {
   // magia a mais do que ele tem direito.
   const grantedSpells = getGrantedSpellEntries();
 
+  // Magia concedida por subclasse, espécie ou talento não ocupa a capacidade da
+  // classe. Uma ficha antiga pode ter a mesma magia nas duas listas — escolhida
+  // antes de a subclasse concedê-la —, e aí ela era contada duas vezes.
+  const idsConcedidos = new Set(grantedSpells.map(g => g.id));
   const contaPorNivel = (querTruque) => character.spellsKnown.filter(id => {
+    if (idsConcedidos.has(id)) return false;
     const sp = DND5E_DATA.spells.find(s => s.id === id);
     return sp && (querTruque ? sp.level === 0 : sp.level > 0);
   }).length;
@@ -3176,6 +3209,9 @@ function recalculateCharacter() {
   });
 
   // 3. Capacidade de Magias
+  // Guardado para o painel de jogo poder recalcular a capacidade sem refazer a
+  // conta de atributos inteira.
+  _ultimosMods = finalMods;
   const capInfo = getSpellCapacityInfo(finalMods);
   const cantripsCountEl = document.getElementById("cantripsCapacityCount");
   const preparedCountEl = document.getElementById("preparedCapacityCount");
