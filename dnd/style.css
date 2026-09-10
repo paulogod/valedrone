@@ -2934,3 +2934,107 @@ img, table, pre { max-width: 100%; }
 }
 
 .of-aviso-magias .of-mini-btn { flex-shrink: 0; }
+
+
+/* Sugestões de preenchimento (classe/espécie personalizadas, magia própria).
+   O chip escreve um exemplo pronto no campo — a página em branco é o que
+   trava quem está criando material da própria mesa. */
+.custom-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+
+.custom-suggestions:empty { display: none; }
+
+.suggestion-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-right: 0.15rem;
+}
+
+.suggestion-chip {
+  font: inherit;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  max-width: 100%;
+  padding: 0.22rem 0.55rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-chip:hover {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fde68a;
+}
+
+
+/* Habilidades por nível da classe/espécie personalizada: nível, nome, efeito e
+   o botão de remover, tudo numa linha só para a lista caber na tela. */
+.custom-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.4rem;
+}
+
+.custom-row {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(7rem, 1fr) minmax(9rem, 2fr) auto;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .custom-row {
+    grid-template-columns: 6.5rem 1fr auto;
+  }
+  .custom-row .custom-row-desc { grid-column: 1 / -1; }
+}
+
+.custom-row .form-control {
+  margin-bottom: 0;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.82rem;
+}
+
+.custom-row-del {
+  background: none;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: #f87171;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  line-height: 1;
+}
+
+.custom-row-del:hover { background: rgba(248, 113, 113, 0.15); }
+
+.custom-rows-empty {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin: 0 0 0.4rem;
+}
+
+.custom-rows-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.field-hint {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 0.3rem;
+}
+
+.field-hint:empty { display: none; }

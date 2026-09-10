@@ -190,6 +190,75 @@
             </div>
           </div>
 
+
+          <!-- Classe Primária Personalizada -->
+          <div class="custom-bg-section" id="customClass1Panel" style="display: none;">
+            <div class="custom-bg-section-title">
+              <i class="fa-solid fa-sliders"></i> Classe Primária Personalizada
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label class="form-label" for="inputCustomClass1Name">Nome</label>
+              <input type="text" class="form-control" id="inputCustomClass1Name" maxlength="60" placeholder="Ex: Feiticeiro de Sangue">
+              <div class="custom-suggestions" id="inputCustomClass1NameSuggestions"></div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label class="form-label" for="textCustomClass1About">Sobre</label>
+              <textarea class="form-control" id="textCustomClass1About" rows="3" placeholder="O conceito da classe, de onde vem o poder, como ela joga na mesa..."></textarea>
+              <div class="custom-suggestions" id="textCustomClass1AboutSuggestions"></div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="selectCustomClass1HitDie">Pontos de Vida — Dado de Vida</label>
+                <select class="form-control" id="selectCustomClass1HitDie">
+                  <option value="6">d6 (4 PV/nível em média)</option>
+                  <option value="8" selected>d8 (5 PV/nível em média)</option>
+                  <option value="10">d10 (6 PV/nível em média)</option>
+                  <option value="12">d12 (7 PV/nível em média)</option>
+                </select>
+                <div class="field-hint" id="customclass1HpHint"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="selectCustomClass1Caster">Tabela de Magias</label>
+                <select class="form-control" id="selectCustomClass1Caster">
+                  <option value="none" selected>Não conjura magias</option>
+                  <option value="full">Conjurador Completo (como Mago/Clérigo)</option>
+                  <option value="half">Meio-Conjurador (como Paladino/Patrulheiro)</option>
+                  <option value="pact">Magia de Pacto (como Bruxo)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" id="groupCustomClass1Ability" style="display: none;">
+              <label class="form-label" for="selectCustomClass1Ability">Atributo de Conjuração</label>
+              <select class="form-control" id="selectCustomClass1Ability">
+                <option value="int">Inteligência</option>
+                <option value="wis">Sabedoria</option>
+                <option value="cha" selected>Carisma</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="groupCustomClass1SpellLists" style="display: none;">
+              <label class="form-label">Quais magias pode selecionar (listas de origem)</label>
+              <div class="languages-grid" id="customclass1SpellListsGrid"></div>
+              <div class="field-hint">No Passo 4, o filtro <strong>⭐ Lista da Classe Personalizada</strong> mostra só as magias destas listas.</div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Habilidades por Nível</label>
+              <div class="custom-rows" id="customclass1FeaturesRows"></div>
+              <div class="custom-rows-actions">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnAddCustomClass1Feature">
+                  <i class="fa-solid fa-plus"></i> Adicionar habilidade
+                </button>
+                <div class="custom-suggestions" id="customclass1FeatureSuggestions"></div>
+              </div>
+              <div class="field-hint">Cada habilidade entra na ficha quando o personagem chega ao nível indicado.</div>
+            </div>
+          </div>
+
           <div class="form-grid-2" id="multiclassLevelRow" style="display: none;">
             <div class="form-group">
               <label class="form-label" for="selectLevel2">Nível da Classe 2</label>
@@ -207,6 +276,75 @@
             </div>
           </div>
 
+
+          <!-- Multiclasse Personalizada -->
+          <div class="custom-bg-section" id="customClass2Panel" style="display: none;">
+            <div class="custom-bg-section-title">
+              <i class="fa-solid fa-sliders"></i> Multiclasse Personalizada
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label class="form-label" for="inputCustomClass2Name">Nome</label>
+              <input type="text" class="form-control" id="inputCustomClass2Name" maxlength="60" placeholder="Ex: Feiticeiro de Sangue">
+              <div class="custom-suggestions" id="inputCustomClass2NameSuggestions"></div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label class="form-label" for="textCustomClass2About">Sobre</label>
+              <textarea class="form-control" id="textCustomClass2About" rows="3" placeholder="O conceito da classe, de onde vem o poder, como ela joga na mesa..."></textarea>
+              <div class="custom-suggestions" id="textCustomClass2AboutSuggestions"></div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="selectCustomClass2HitDie">Pontos de Vida — Dado de Vida</label>
+                <select class="form-control" id="selectCustomClass2HitDie">
+                  <option value="6">d6 (4 PV/nível em média)</option>
+                  <option value="8" selected>d8 (5 PV/nível em média)</option>
+                  <option value="10">d10 (6 PV/nível em média)</option>
+                  <option value="12">d12 (7 PV/nível em média)</option>
+                </select>
+                <div class="field-hint" id="customclass2HpHint"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="selectCustomClass2Caster">Tabela de Magias</label>
+                <select class="form-control" id="selectCustomClass2Caster">
+                  <option value="none" selected>Não conjura magias</option>
+                  <option value="full">Conjurador Completo (como Mago/Clérigo)</option>
+                  <option value="half">Meio-Conjurador (como Paladino/Patrulheiro)</option>
+                  <option value="pact">Magia de Pacto (como Bruxo)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" id="groupCustomClass2Ability" style="display: none;">
+              <label class="form-label" for="selectCustomClass2Ability">Atributo de Conjuração</label>
+              <select class="form-control" id="selectCustomClass2Ability">
+                <option value="int">Inteligência</option>
+                <option value="wis">Sabedoria</option>
+                <option value="cha" selected>Carisma</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="groupCustomClass2SpellLists" style="display: none;">
+              <label class="form-label">Quais magias pode selecionar (listas de origem)</label>
+              <div class="languages-grid" id="customclass2SpellListsGrid"></div>
+              <div class="field-hint">No Passo 4, o filtro <strong>⭐ Lista da Classe Personalizada</strong> mostra só as magias destas listas.</div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Habilidades por Nível</label>
+              <div class="custom-rows" id="customclass2FeaturesRows"></div>
+              <div class="custom-rows-actions">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnAddCustomClass2Feature">
+                  <i class="fa-solid fa-plus"></i> Adicionar habilidade
+                </button>
+                <div class="custom-suggestions" id="customclass2FeatureSuggestions"></div>
+              </div>
+              <div class="field-hint">Cada habilidade entra na ficha quando o personagem chega ao nível indicado.</div>
+            </div>
+          </div>
+
           <!-- Espécie & Linhagem -->
           <div class="form-grid-2">
             <div class="form-group">
@@ -216,6 +354,80 @@
             <div class="form-group" id="lineageGroup">
               <label class="form-label" for="selectLineage">Linhagem / Sub-raça</label>
               <select class="form-control" id="selectLineage"></select>
+            </div>
+          </div>
+
+
+          <!-- Espécie Personalizada -->
+          <div class="custom-bg-section" id="customSpeciesPanel" style="display: none;">
+            <div class="custom-bg-section-title">
+              <i class="fa-solid fa-sliders"></i> Espécie Personalizada
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label class="form-label" for="inputCustomSpeciesName">Nome</label>
+              <input type="text" class="form-control" id="inputCustomSpeciesName" maxlength="60" placeholder="Ex: Filho das Marés">
+              <div class="custom-suggestions" id="inputCustomSpeciesNameSuggestions"></div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label class="form-label" for="textCustomSpeciesAbout">Sobre</label>
+              <textarea class="form-control" id="textCustomSpeciesAbout" rows="3" placeholder="Aparência, origem e cultura da espécie..."></textarea>
+              <div class="custom-suggestions" id="textCustomSpeciesAboutSuggestions"></div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label class="form-label" for="selectCustomSpeciesSize">Tamanho</label>
+                <select class="form-control" id="selectCustomSpeciesSize">
+                  <option value="Pequeno">Pequeno</option>
+                  <option value="Médio" selected>Médio</option>
+                  <option value="Grande">Grande</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="inputCustomSpeciesSpeed">Deslocamento (metros)</label>
+                <input type="number" class="form-control" id="inputCustomSpeciesSpeed" min="0" max="30" step="1.5" value="9">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="selectCustomSpeciesDarkvision">Visão no Escuro</label>
+                <select class="form-control" id="selectCustomSpeciesDarkvision">
+                  <option value="0" selected>Nenhuma</option>
+                  <option value="18">18 metros (padrão)</option>
+                  <option value="36">36 metros (Anão/Drow)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label class="form-label" for="inputCustomSpeciesLanguages">Idiomas Concedidos</label>
+              <input type="text" class="form-control" id="inputCustomSpeciesLanguages" placeholder="Ex: Comum, Aquan (separados por vírgula)">
+              <div class="custom-suggestions" id="inputCustomSpeciesLanguagesSuggestions"></div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="inputCustomSpeciesWeaponProfs">Proficiências de Armas e Armaduras</label>
+                <input type="text" class="form-control" id="inputCustomSpeciesWeaponProfs" placeholder="Ex: Armas Simples, Armaduras Leves">
+                <div class="custom-suggestions" id="inputCustomSpeciesWeaponProfsSuggestions"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="inputCustomSpeciesToolProfs">Proficiências de Ferramentas e Perícias</label>
+                <input type="text" class="form-control" id="inputCustomSpeciesToolProfs" placeholder="Ex: Ferramentas de Carpinteiro, Perícia: Natureza">
+                <div class="custom-suggestions" id="inputCustomSpeciesToolProfsSuggestions"></div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Habilidades / Traços por Nível</label>
+              <div class="custom-rows" id="customspeciesTraitsRows"></div>
+              <div class="custom-rows-actions">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnAddCustomSpeciesTrait">
+                  <i class="fa-solid fa-plus"></i> Adicionar traço
+                </button>
+                <div class="custom-suggestions" id="customspeciesTraitSuggestions"></div>
+              </div>
+              <div class="field-hint">Cada traço entra na ficha quando o personagem chega ao nível indicado.</div>
             </div>
           </div>
 
@@ -474,6 +686,9 @@
         <div class="step-content" id="step4">
           <div class="section-header">
             <h2 class="section-title">4. Magias</h2>
+            <button type="button" class="btn btn-gold btn-sm" id="btnAddCustomSpellModalBtn">
+              <i class="fa-solid fa-plus"></i> + Nova Magia Personalizada
+            </button>
           </div>
           <p class="section-desc">Catálogo oficial de magias do Livro do Jogador 2024. Nenhuma magia vem pré-selecionada: use <strong>Adicionar</strong> para levá-la à ficha, onde ela é descrita por completo. O botão <strong>i</strong> abre os detalhes da magia.</p>
 
@@ -507,6 +722,8 @@
               <label class="form-label" for="spellFilterClass">Filtrar por Lista de Classe</label>
               <select class="form-control" id="spellFilterClass">
                 <option value="all">Todas as Classes</option>
+                <option value="__custom__">⭐ Magias Personalizadas</option>
+                <option value="__customclass__">⭐ Lista da Classe Personalizada</option>
                 <option value="bard">Bardo</option>
                 <option value="cleric">Clérigo</option>
                 <option value="druid">Druida</option>
@@ -743,14 +960,6 @@
             <button class="btn btn-secondary btn-sm" id="btnResetSheetOverrides" title="Descarta as edições manuais e volta a preencher os campos a partir do criador">
               <i class="fa-solid fa-rotate-left"></i> Recalcular Campos
             </button>
-            <div class="dice-input-group">
-              <input type="text" class="form-control dice-input" id="diceInputSheet"
-                     placeholder="2d6+3" title="Número de dados, tipo do dado e acréscimo. Ex.: 2d6+3, d20, 4d6-1"
-                     autocomplete="off" spellcheck="false">
-              <button class="btn btn-secondary btn-sm" id="btnRollDiceSheet" title="Rolar a expressão (Enter também rola)">
-                <i class="fa-solid fa-dice-d20"></i> Rolar
-              </button>
-            </div>
           </div>
         </div>
 
@@ -1181,6 +1390,145 @@
 
     </main>
 
+  </div>
+
+  <!-- MODAL: ADICIONAR MAGIA PERSONALIZADA -->
+  <div class="modal-overlay" id="customSpellModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-wand-sparkles"></i> Adicionar Magia Personalizada</h3>
+        <button class="modal-close-btn" id="closeCustomSpellModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="customSpellForm">
+        <p style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.75rem;">
+          Preencha os mesmos campos que as magias oficiais têm. Os campos de texto
+          trazem sugestões: clique na seta ou comece a digitar para escolher uma.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="customSpellName">Nome da Magia</label>
+          <input type="text" class="form-control" id="customSpellName" required placeholder="Ex: Chama do Pacto (Pact Flame)">
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="customSpellLevel">Círculo / Nível</label>
+            <select class="form-control" id="customSpellLevel">
+              <option value="0">Truque (Nível 0)</option>
+              <option value="1" selected>1º Círculo</option>
+              <option value="2">2º Círculo</option>
+              <option value="3">3º Círculo</option>
+              <option value="4">4º Círculo</option>
+              <option value="5">5º Círculo</option>
+              <option value="6">6º Círculo</option>
+              <option value="7">7º Círculo</option>
+              <option value="8">8º Círculo</option>
+              <option value="9">9º Círculo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customSpellSchool">Escola de Magia</label>
+            <select class="form-control" id="customSpellSchool">
+              <option value="Abjuração">Abjuração (Abjuration)</option>
+              <option value="Adivinhação">Adivinhação (Divination)</option>
+              <option value="Encantamento">Encantamento (Enchantment)</option>
+              <option value="Evocação" selected>Evocação (Evocation)</option>
+              <option value="Ilusão">Ilusão (Illusion)</option>
+              <option value="Invocação">Invocação (Conjuration)</option>
+              <option value="Necromancia">Necromancia (Necromancy)</option>
+              <option value="Transmutação">Transmutação (Transmutation)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="customSpellTime">Tempo de Conjuração</label>
+            <input type="text" class="form-control" id="customSpellTime" list="dlSpellTime" required placeholder="Ex: Ação" value="Ação">
+            <datalist id="dlSpellTime">
+              <option value="Ação"></option>
+              <option value="Ação Bônus"></option>
+              <option value="Reação"></option>
+              <option value="Reação, que você usa quando é atingido por um ataque"></option>
+              <option value="1 minuto"></option>
+              <option value="10 minutos"></option>
+              <option value="1 hora"></option>
+              <option value="8 horas"></option>
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customSpellRange">Alcance</label>
+            <input type="text" class="form-control" id="customSpellRange" list="dlSpellRange" required placeholder="Ex: 18 metros" value="18 metros">
+            <datalist id="dlSpellRange">
+              <option value="Pessoal"></option>
+              <option value="Toque"></option>
+              <option value="1,5 metros"></option>
+              <option value="3 metros"></option>
+              <option value="4,5 metros"></option>
+              <option value="9 metros"></option>
+              <option value="18 metros"></option>
+              <option value="27 metros"></option>
+              <option value="36 metros"></option>
+              <option value="45 metros"></option>
+              <option value="90 metros"></option>
+              <option value="1,5 quilômetros"></option>
+              <option value="Ilimitado"></option>
+              <option value="Pessoal (cone de 4,5 metros)"></option>
+              <option value="Pessoal (linha de 9 metros)"></option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="customSpellComponents">Componentes</label>
+            <input type="text" class="form-control" id="customSpellComponents" list="dlSpellComponents" required placeholder="Ex: V, S" value="V, S">
+            <datalist id="dlSpellComponents">
+              <option value="V"></option>
+              <option value="S"></option>
+              <option value="V, S"></option>
+              <option value="V, M (um pouco de enxofre)"></option>
+              <option value="S, M (um componente material)"></option>
+              <option value="V, S, M (um componente material)"></option>
+              <option value="V, S, M (um componente que a magia consome)"></option>
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customSpellDuration">Duração</label>
+            <input type="text" class="form-control" id="customSpellDuration" list="dlSpellDuration" required placeholder="Ex: Instantânea" value="Instantânea">
+            <datalist id="dlSpellDuration">
+              <option value="Instantânea"></option>
+              <option value="1 rodada"></option>
+              <option value="Concentração, até 1 minuto"></option>
+              <option value="Concentração, até 10 minutos"></option>
+              <option value="Concentração, até 1 hora"></option>
+              <option value="1 minuto"></option>
+              <option value="10 minutos"></option>
+              <option value="1 hora"></option>
+              <option value="8 horas"></option>
+              <option value="24 horas"></option>
+              <option value="Até ser dissipada"></option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Listas de Classe (em quais listas a magia aparece)</label>
+          <div class="languages-grid" id="customSpellClassesGrid"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="customSpellDesc">Descrição</label>
+          <textarea class="form-control" id="customSpellDesc" rows="5" required placeholder="Efeito da magia, dano/cura, salvaguarda e o que acontece em cada caso..."></textarea>
+          <div class="custom-suggestions" id="customSpellDescSuggestions"></div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" id="btnCancelCustomSpell">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Magia</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- MODAL: ADICIONAR TALENTO CUSTOMIZADO -->

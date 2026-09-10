@@ -37,6 +37,20 @@ function createBlankCharacter() {
     // único, porque não há limite fixo para quantos podem vir.
     extraOriginFeats: [],
     background: "none",
+
+    // Classe e espécie personalizadas: só nome e um texto livre. O jogador que
+    // usa material caseiro escreve aqui o que a mesa combinou; o app não tenta
+    // adivinhar mecânica nenhuma a partir disso.
+    // Classe personalizada: o que a mesa combinou, nos mesmos termos que o app
+    // já entende — dado de vida vira PV, habilidades entram na ficha no nível
+    // em que forem ganhas e o tipo de conjurador puxa a tabela oficial de
+    // espaços de magia. `spellLists` diz de quais listas ela tira magias.
+    customClass1: { name: "", about: "", hitDie: 8, casterType: "none", casterAbility: "cha", spellLists: [], features: [] },
+    customClass2: { name: "", about: "", hitDie: 8, casterType: "none", casterAbility: "cha", spellLists: [], features: [] },
+    customSpecies: {
+      name: "", about: "", size: "Médio", speed: 9, darkvision: 0,
+      languages: "", weaponProfs: "", toolProfs: "", traits: []
+    },
     alignment: "",
     xp: "",
     heroicInspiration: false,
@@ -101,6 +115,10 @@ function createBlankCharacter() {
     equippedShield: "none",
     weapons: [],
     customItems: [],
+
+    // Magias de regra da casa: mesmos campos das oficiais, guardadas na ficha
+    // (não no catálogo) e reinjetadas em DND5E_DATA.spells a cada carga.
+    customSpells: [],
     customAttacks: [],
     inventory: "",
     coins: { po: 0, pp: 0, pe: 0, pc: 0, pl: 0 },
@@ -184,10 +202,124 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("orientationchange", () => setTimeout(fitSheetToViewport, 150));
 });
 
+/* Classe e espécie "Personalizada" existem como entradas de verdade nas listas
+   do jogo, sem mecânica alguma: assim todo `find(...)` espalhado pelo app acha
+   o objeto e segue reto, em vez de precisar de um caso especial em cada conta.
+   O nome e o texto que o jogador digita entram na hora de exibir, via
+   resolveClassObj()/resolveSpeciesObj(), porque as duas classes (primária e
+   multiclasse) compartilham a mesma entrada da lista. */
+const CUSTOM_CLASS_ENTRY = {
+  id: "custom", name: "⭐ Personalizada (Custom)", isCustom: true,
+  hitDie: 8, primaryAbility: [], savingThrows: [],
+  armorProficiencies: [], weaponProficiencies: [], toolProficiencies: [],
+  skillChoices: { count: 0, list: [] }, spellcasting: null,
+  subclassLevel: 99, asiLevels: [], featuresByLevel: {}, subclasses: []
+};
+const CUSTOM_SPECIES_ENTRY = {
+  id: "custom", name: "⭐ Personalizada (Custom)", isCustom: true,
+  speed: 9, size: "Médio", darkvision: 0, traits: [], lineages: []
+};
+
+function registerCustomOrigins() {
+  if (!DND5E_DATA.classes.some(c => c.id === "custom")) DND5E_DATA.classes.unshift(CUSTOM_CLASS_ENTRY);
+  if (!DND5E_DATA.species.some(s => s.id === "custom")) DND5E_DATA.species.unshift(CUSTOM_SPECIES_ENTRY);
+}
+
+/** Estado da classe personalizada de um slot (1 = primária, 2 = multiclasse) */
+function customClassState(slot) {
+  return (slot === 2 ? character.customClass2 : character.customClass1) || {};
+}
+
+/* As tabelas de truques e magias preparadas do conjurador personalizado são as
+   oficiais: em vez de inventar números, empresta as da primeira classe do livro
+   que conjura daquele mesmo jeito (completo, meio ou pacto). */
+function tabelaOficialDeConjuracao(tipo) {
+  const modelo = DND5E_DATA.classes.find(c => !c.isCustom && c.spellcasting && c.spellcasting.type === tipo);
+  return modelo ? modelo.spellcasting : null;
+}
+
+/** Objeto de classe já com tudo o que o jogador preencheu no painel (slot 1 ou 2) */
+function resolveClassObj(id, slot) {
+  const base = DND5E_DATA.classes.find(c => c.id === id);
+  if (!base || !base.isCustom) return base;
+  const st = customClassState(slot);
+
+  const featuresByLevel = {};
+  (st.features || []).forEach(f => {
+    const nivel = Math.min(20, Math.max(1, parseInt(f.level, 10) || 1));
+    const texto = [f.name, f.desc].filter(t => (t || "").trim()).join(": ");
+    if (!texto) return;
+    if (!featuresByLevel[nivel]) featuresByLevel[nivel] = [];
+    featuresByLevel[nivel].push(texto);
+  });
+
+  let spellcasting = null;
+  if (st.casterType && st.casterType !== "none") {
+    const modelo = tabelaOficialDeConjuracao(st.casterType);
+    spellcasting = {
+      type: st.casterType,
+      ability: st.casterAbility || "cha",
+      cantripsKnown: (modelo && modelo.cantripsKnown) || {},
+      preparedSpells: (modelo && modelo.preparedSpells) || {}
+    };
+  }
+
+  return {
+    ...base,
+    name: (st.name || "").trim() || "Classe Personalizada",
+    about: (st.about || "").trim(),
+    hitDie: parseInt(st.hitDie, 10) || 8,
+    spellLists: st.spellLists || [],
+    featuresByLevel,
+    spellcasting
+  };
+}
+
+/** Idem para a espécie: traços por nível, visão no escuro, idiomas, proficiências */
+function resolveSpeciesObj(id) {
+  const base = DND5E_DATA.species.find(s => s.id === id);
+  if (!base || !base.isCustom) return base;
+  const st = character.customSpecies || {};
+
+  const darkvision = parseInt(st.darkvision, 10) || 0;
+  const traits = [];
+  if (darkvision > 0) {
+    traits.push({ name: "Visão no Escuro", desc: `${darkvision} metros.`, level: 1 });
+  }
+  (st.traits || []).forEach(t => {
+    const nome = (t.name || "").trim();
+    const desc = (t.desc || "").trim();
+    if (!nome && !desc) return;
+    traits.push({ name: nome || "Traço", desc, level: Math.min(20, Math.max(1, parseInt(t.level, 10) || 1)) });
+  });
+
+  const listaDeTexto = (txt) => String(txt || "").split(",").map(x => x.trim()).filter(Boolean);
+
+  return {
+    ...base,
+    name: (st.name || "").trim() || "Espécie Personalizada",
+    about: (st.about || "").trim(),
+    size: st.size || "Médio",
+    speed: parseFloat(st.speed) || 9,
+    darkvision,
+    traits,
+    languages: listaDeTexto(st.languages),
+    weaponProficiencies: listaDeTexto(st.weaponProfs),
+    armorProficiencies: listaDeTexto(st.weaponProfs),
+    toolProficiencies: listaDeTexto(st.toolProfs)
+  };
+}
+
+/** Só os traços da espécie que o personagem já alcançou pelo nível total */
+function traitsDaEspecieNoNivel(speciesObj, nivelTotal) {
+  return (speciesObj.traits || []).filter(t => !t.level || t.level <= nivelTotal);
+}
+
 /**
  * Inicializa a interface e preenche os seletores básicos
  */
 function initUI() {
+  registerCustomOrigins();
   // Preencher seletores de Classes
   const selectClass1 = document.getElementById("selectClass1");
   const selectMulticlass = document.getElementById("selectMulticlass");
@@ -342,11 +474,12 @@ function syncWizardControls() {
 
   renderHumanOriginFeat();
   renderHpPorNivel();
+  updateCustomOriginPanels();
 }
 
 /* Objetos aninhados do personagem: precisam de merge chave a chave para uma
    ficha antiga (sem `customBg.name`, sem `featChoices`...) não chegar capenga */
-const CHARACTER_NESTED_KEYS = ["customBg", "baseScores", "backgroundBonuses", "coins",
+const CHARACTER_NESTED_KEYS = ["customBg", "customClass1", "customClass2", "customSpecies", "baseScores", "backgroundBonuses", "coins",
   "bio", "deathSaves", "spellSlotsExpended", "sheet", "featChoices", "hpRolls"];
 
 /** Ficha carregada de fora (JSON, localStorage, lista de salvos) sobre a base vazia */
@@ -444,6 +577,7 @@ function populateDropdowns() {
   updateSubclassesDropdown();
   updateBackgroundBonusSelectors();
   initCustomBackgroundPanel();
+  updateCustomOriginPanels();
   updateSkillsSelector();
   updateFeatsList();
 }
@@ -536,6 +670,334 @@ function updateSubclassesDropdown() {
       }
     }
   }
+}
+
+/* Painéis de Classe/Multiclasse/Espécie personalizadas: aparecem só quando a
+   opção "Personalizada" está escolhida no seletor correspondente. Cada campo
+   simples é declarado aqui e ligado ao estado por bindCustomOriginPanels();
+   as listas de habilidades por nível têm renderização própria mais abaixo. */
+const CUSTOM_ORIGIN_PANELS = [
+  {
+    chave: "class1", panel: "customClass1Panel", select: "selectClass1",
+    state: () => character.customClass1,
+    campos: [
+      { id: "inputCustomClass1Name", prop: "name" },
+      { id: "textCustomClass1About", prop: "about" },
+      { id: "selectCustomClass1HitDie", prop: "hitDie", tipo: "int" },
+      { id: "selectCustomClass1Caster", prop: "casterType" },
+      { id: "selectCustomClass1Ability", prop: "casterAbility" }
+    ],
+    listas: { grid: "customclass1SpellListsGrid", prop: "spellLists" },
+    linhas: { container: "customclass1FeaturesRows", prop: "features", botao: "btnAddCustomClass1Feature", rotulo: "habilidade" }
+  },
+  {
+    chave: "class2", panel: "customClass2Panel", select: "selectMulticlass",
+    state: () => character.customClass2,
+    campos: [
+      { id: "inputCustomClass2Name", prop: "name" },
+      { id: "textCustomClass2About", prop: "about" },
+      { id: "selectCustomClass2HitDie", prop: "hitDie", tipo: "int" },
+      { id: "selectCustomClass2Caster", prop: "casterType" },
+      { id: "selectCustomClass2Ability", prop: "casterAbility" }
+    ],
+    listas: { grid: "customclass2SpellListsGrid", prop: "spellLists" },
+    linhas: { container: "customclass2FeaturesRows", prop: "features", botao: "btnAddCustomClass2Feature", rotulo: "habilidade" }
+  },
+  {
+    chave: "species", panel: "customSpeciesPanel", select: "selectSpecies",
+    state: () => character.customSpecies,
+    campos: [
+      { id: "inputCustomSpeciesName", prop: "name" },
+      { id: "textCustomSpeciesAbout", prop: "about" },
+      { id: "selectCustomSpeciesSize", prop: "size" },
+      { id: "inputCustomSpeciesSpeed", prop: "speed", tipo: "float" },
+      { id: "selectCustomSpeciesDarkvision", prop: "darkvision", tipo: "int" },
+      { id: "inputCustomSpeciesLanguages", prop: "languages" },
+      { id: "inputCustomSpeciesWeaponProfs", prop: "weaponProfs" },
+      { id: "inputCustomSpeciesToolProfs", prop: "toolProfs" }
+    ],
+    linhas: { container: "customspeciesTraitsRows", prop: "traits", botao: "btnAddCustomSpeciesTrait", rotulo: "traço" }
+  }
+];
+
+/** Mostra/esconde os painéis personalizados e espelha o que já está guardado */
+function updateCustomOriginPanels() {
+  CUSTOM_ORIGIN_PANELS.forEach(cfg => {
+    const panel = document.getElementById(cfg.panel);
+    const select = document.getElementById(cfg.select);
+    if (!panel || !select) return;
+    const ativo = select.value === "custom";
+    panel.style.display = ativo ? "block" : "none";
+    if (!ativo) return;
+
+    const st = cfg.state() || {};
+    cfg.campos.forEach(c => {
+      const el = document.getElementById(c.id);
+      if (el && document.activeElement !== el) el.value = st[c.prop] !== undefined && st[c.prop] !== null ? st[c.prop] : "";
+    });
+
+    // Atributo e listas de magia só fazem sentido se a classe conjura
+    if (cfg.chave !== "species") {
+      const conjura = st.casterType && st.casterType !== "none";
+      const grpAb = document.getElementById(`groupCustomClass${cfg.chave.slice(-1)}Ability`);
+      const grpLi = document.getElementById(`groupCustomClass${cfg.chave.slice(-1)}SpellLists`);
+      if (grpAb) grpAb.style.display = conjura ? "block" : "none";
+      if (grpLi) grpLi.style.display = conjura ? "block" : "none";
+      if (conjura) renderCustomSpellListsGrid(cfg);
+      atualizarDicaDeVida(cfg);
+    }
+
+    renderCustomOriginRows(cfg);
+  });
+}
+
+/** Quanto de PV o dado de vida escolhido rende, para a escolha não ser às cegas */
+function atualizarDicaDeVida(cfg) {
+  const dica = document.getElementById(`customclass${cfg.chave.slice(-1)}HpHint`);
+  if (!dica) return;
+  const st = cfg.state() || {};
+  const d = parseInt(st.hitDie, 10) || 8;
+  const nivel = cfg.chave === "class2" ? character.level2 : character.level1;
+  dica.textContent = `1º nível: ${d} + mod. de Constituição. Cada nível seguinte: ${Math.floor(d / 2) + 1} + mod. (${nivel} nível${nivel > 1 ? "is" : ""} nesta classe).`;
+}
+
+/** Caixas de seleção das listas de magia de origem da classe personalizada */
+function renderCustomSpellListsGrid(cfg) {
+  const grid = document.getElementById(cfg.listas.grid);
+  if (!grid) return;
+  const st = cfg.state() || {};
+  const marcadas = st[cfg.listas.prop] || [];
+
+  const fontes = DND5E_DATA.classes.filter(c => !c.isCustom && c.spellcasting);
+  grid.innerHTML = fontes.map(c => `
+    <label class="lang-checkbox-item">
+      <input type="checkbox" value="${c.id}"${marcadas.includes(c.id) ? " checked" : ""}>
+      <span>${c.name.split(" (")[0]}</span>
+    </label>`).join("") + `
+    <label class="lang-checkbox-item">
+      <input type="checkbox" value="custom"${marcadas.includes("custom") ? " checked" : ""}>
+      <span>⭐ Magias personalizadas</span>
+    </label>`;
+
+  if (grid.dataset.ligado !== "1") {
+    grid.dataset.ligado = "1";
+    grid.addEventListener("change", () => {
+      const st2 = cfg.state();
+      if (!st2) return;
+      st2[cfg.listas.prop] = [...grid.querySelectorAll("input:checked")].map(i => i.value);
+      renderSpellsCatalog();
+      recalculateCharacter();
+    });
+  }
+}
+
+/* Habilidades por nível: nível + nome + descrição, uma linha por habilidade.
+   Redesenha só quando a lista muda de tamanho, para não roubar o cursor de
+   quem está digitando dentro de uma linha. */
+function renderCustomOriginRows(cfg) {
+  const box = document.getElementById(cfg.linhas.container);
+  if (!box) return;
+  const st = cfg.state();
+  if (!st) return;
+  if (!Array.isArray(st[cfg.linhas.prop])) st[cfg.linhas.prop] = [];
+  const lista = st[cfg.linhas.prop];
+
+  if (box.dataset.qtd === String(lista.length) && box.children.length === lista.length) return;
+  box.dataset.qtd = String(lista.length);
+
+  if (lista.length === 0) {
+    box.innerHTML = `<p class="custom-rows-empty">Nenhuma ${cfg.linhas.rotulo} ainda. Use o botão abaixo ou uma sugestão.</p>`;
+    return;
+  }
+
+  box.innerHTML = lista.map((item, i) => `
+    <div class="custom-row" data-i="${i}">
+      <select class="form-control custom-row-level" data-campo="level" title="Nível em que é ganha">
+        ${Array.from({ length: 20 }, (_, n) => `<option value="${n + 1}"${(parseInt(item.level, 10) || 1) === n + 1 ? " selected" : ""}>Nvl ${n + 1}</option>`).join("")}
+      </select>
+      <input type="text" class="form-control custom-row-name" data-campo="name" placeholder="Nome" value="${String(item.name || "").replace(/"/g, "&quot;")}">
+      <input type="text" class="form-control custom-row-desc" data-campo="desc" placeholder="O que faz" value="${String(item.desc || "").replace(/"/g, "&quot;")}">
+      <button type="button" class="of-row-del custom-row-del" title="Remover"><i class="fa-solid fa-xmark"></i></button>
+    </div>`).join("");
+
+  if (box.dataset.ligado !== "1") {
+    box.dataset.ligado = "1";
+
+    const alterou = (e) => {
+      const linha = e.target.closest(".custom-row");
+      if (!linha) return;
+      const i = parseInt(linha.getAttribute("data-i"), 10);
+      const campo = e.target.getAttribute("data-campo");
+      const alvo = (cfg.state() || {})[cfg.linhas.prop];
+      if (!alvo || !alvo[i] || !campo) return;
+      alvo[i][campo] = campo === "level" ? parseInt(e.target.value, 10) : e.target.value;
+      recalculateCharacter();
+    };
+    box.addEventListener("input", alterou);
+    box.addEventListener("change", alterou);
+
+    box.addEventListener("click", (e) => {
+      const del = e.target.closest(".custom-row-del");
+      if (!del) return;
+      const i = parseInt(del.closest(".custom-row").getAttribute("data-i"), 10);
+      const alvo = (cfg.state() || {})[cfg.linhas.prop];
+      if (!alvo) return;
+      alvo.splice(i, 1);
+      renderCustomOriginRows(cfg);
+      recalculateCharacter();
+    });
+  }
+}
+
+/** Acrescenta uma linha vazia (ou já preenchida, vinda de uma sugestão) */
+function addCustomOriginRow(cfg, dados) {
+  const st = cfg.state();
+  if (!st) return;
+  if (!Array.isArray(st[cfg.linhas.prop])) st[cfg.linhas.prop] = [];
+  st[cfg.linhas.prop].push({ level: 1, name: "", desc: "", ...(dados || {}) });
+  renderCustomOriginRows(cfg);
+  recalculateCharacter();
+}
+
+/* Sugestões de preenchimento: a página em branco é o que trava quem cria
+   material próprio. Cada chip escreve um exemplo pronto no campo — nome
+   substitui, texto longo acrescenta uma linha — e dá para editar depois. */
+const SUGESTOES_NOME_CLASSE = ["Feiticeiro de Sangue", "Cavaleiro Rúnico", "Caçador de Sombras", "Alquimista de Guerra", "Guardião das Marés"];
+const SUGESTOES_SOBRE_CLASSE = [
+  "Conceito: guerreiro que canaliza o próprio sangue como fonte de magia.",
+  "Atributo principal: Carisma. Salvaguardas com proficiência: Constituição e Carisma.",
+  "Proficiências: armaduras leves, armas simples e um kit à escolha; 2 perícias da lista da classe.",
+  "Aumentos de Atributo nos níveis 4, 8, 12, 16 e 19; subclasse à escolha no nível 3.",
+  "Equipamento inicial: combinado com o Mestre no lugar da lista oficial."
+];
+const SUGESTOES_HABILIDADE_CLASSE = [
+  { level: 1, name: "Característica de Assinatura", desc: "Efeito principal da classe, utilizável PROF vezes por descanso longo." },
+  { level: 2, name: "Estilo de Combate", desc: "Escolha um Estilo de Combate à sua escolha." },
+  { level: 3, name: "Subclasse", desc: "Escolha uma subclasse; ela concede características nos níveis 3, 6, 10 e 14." },
+  { level: 5, name: "Ataque Extra", desc: "Você ataca duas vezes ao usar a ação de Ataque." },
+  { level: 11, name: "Golpe Aprimorado", desc: "Adicione 1d8 de dano do seu tipo mágico uma vez por turno." }
+];
+const SUGESTOES_NOME_ESPECIE = ["Filho das Marés", "Ferrogrim", "Semi-elemental do Fogo", "Corvino", "Nascido da Bruma"];
+const SUGESTOES_SOBRE_ESPECIE = [
+  "Origem: povo nascido nas cidades submersas, de pele fria e olhos claros.",
+  "Idade: amadurece por volta dos 20 anos e vive cerca de 120.",
+  "Tipo de Criatura: Humanoide.",
+  "Cultura: clãs pequenos, ligados por juramentos de hospitalidade."
+];
+const SUGESTOES_IDIOMAS_ESPECIE = ["Comum, Aquan", "Comum, Anão (Dwarvish)", "Comum, Élfico (Elvish)", "Comum, Infernal", "Comum, Primordial"];
+const SUGESTOES_PROF_ARMAS = ["Armas Simples", "Armas Simples, Armaduras Leves", "Armas Marciais", "Escudos"];
+const SUGESTOES_PROF_FERRAMENTAS = ["Ferramentas de Ferreiro", "Kit de Herborista", "Instrumento Musical à escolha", "Perícia: Percepção", "Perícia: Furtividade"];
+const SUGESTOES_TRACO_ESPECIE = [
+  { level: 1, name: "Resistência Ancestral", desc: "Você tem Resistência a um tipo de dano à sua escolha." },
+  { level: 1, name: "Anfíbio", desc: "Você respira debaixo d'água e tem deslocamento de natação igual ao seu deslocamento." },
+  { level: 1, name: "Talento Racial", desc: "Você tem proficiência em uma perícia à sua escolha." },
+  { level: 3, name: "Dádiva do Sangue", desc: "Você pode conjurar uma magia de 1º círculo à escolha, uma vez por descanso longo." },
+  { level: 5, name: "Sopro Ancestral", desc: "Ação: todas as criaturas em um cone de 4,5 m fazem salvaguarda de Destreza ou sofrem 2d6 de dano." }
+];
+const SUGESTOES_DESC_MAGIA = [
+  "Escolha uma criatura que você possa ver no alcance. Ela deve ser bem-sucedida em uma salvaguarda de Destreza ou sofrerá 3d6 de dano de fogo, ou metade se for bem-sucedida.",
+  "Aprimoramento em Círculo Superior. O dano aumenta em 1d6 para cada círculo acima do 1º usado na conjuração.",
+  "Aprimoramento de Truque. O dano aumenta em 1d8 nos níveis 5, 11 e 17.",
+  "Você ganha 1d4 + seu modificador de conjuração em Pontos de Vida Temporários enquanto a magia durar.",
+  "Um alvo Grande ou menor deve ser bem-sucedido em uma salvaguarda de Força ou ficará com a condição Caído."
+];
+
+/**
+ * Desenha os chips de sugestão de um campo. `modo` diz o que o clique faz:
+ * "substituir" (nomes) ou "acrescentar" (textos que se somam em linhas).
+ */
+function renderSuggestionChips(containerId, targetId, sugestoes, modo = "acrescentar") {
+  const box = document.getElementById(containerId);
+  const alvo = document.getElementById(targetId);
+  if (!box || !alvo || box.dataset.pronto === "1") return;
+  box.dataset.pronto = "1";
+
+  box.innerHTML = `<span class="suggestion-label"><i class="fa-solid fa-lightbulb"></i> Sugestões:</span>` +
+    sugestoes.map((t, i) => {
+      const rotulo = modo === "substituir" ? t : `${t.split(/[:.]/)[0]}…`;
+      return `<button type="button" class="suggestion-chip" data-i="${i}" title="${t.replace(/"/g, "&quot;")}">${rotulo}</button>`;
+    }).join("");
+
+  box.addEventListener("click", (e) => {
+    const chip = e.target.closest(".suggestion-chip");
+    if (!chip) return;
+    const texto = sugestoes[parseInt(chip.getAttribute("data-i"), 10)];
+    if (modo === "substituir") {
+      alvo.value = texto;
+    } else {
+      const atual = alvo.value.trim();
+      if (atual.includes(texto)) return;
+      alvo.value = atual ? `${atual}\n${texto}` : texto;
+    }
+    alvo.dispatchEvent(new Event("input", { bubbles: true }));
+    alvo.focus();
+  });
+}
+
+/** Chips que criam uma linha inteira de habilidade/traço já preenchida */
+function renderRowSuggestionChips(containerId, cfg, sugestoes) {
+  const box = document.getElementById(containerId);
+  if (!box || box.dataset.pronto === "1") return;
+  box.dataset.pronto = "1";
+
+  box.innerHTML = `<span class="suggestion-label"><i class="fa-solid fa-lightbulb"></i> Sugestões:</span>` +
+    sugestoes.map((sug, i) => `<button type="button" class="suggestion-chip" data-i="${i}" title="Nvl ${sug.level} — ${sug.desc.replace(/"/g, "&quot;")}">Nvl ${sug.level} · ${sug.name}</button>`).join("");
+
+  box.addEventListener("click", (e) => {
+    const chip = e.target.closest(".suggestion-chip");
+    if (!chip) return;
+    addCustomOriginRow(cfg, { ...sugestoes[parseInt(chip.getAttribute("data-i"), 10)] });
+  });
+}
+
+/** Liga os campos dos painéis personalizados ao estado */
+function bindCustomOriginPanels() {
+  const porChave = (k) => CUSTOM_ORIGIN_PANELS.find(c => c.chave === k);
+
+  [["class1", 1], ["class2", 2]].forEach(([chave, n]) => {
+    const cfg = porChave(chave);
+    renderSuggestionChips(`inputCustomClass${n}NameSuggestions`, `inputCustomClass${n}Name`, SUGESTOES_NOME_CLASSE, "substituir");
+    renderSuggestionChips(`textCustomClass${n}AboutSuggestions`, `textCustomClass${n}About`, SUGESTOES_SOBRE_CLASSE);
+    renderRowSuggestionChips(`customclass${n}FeatureSuggestions`, cfg, SUGESTOES_HABILIDADE_CLASSE);
+  });
+
+  const cfgEsp = porChave("species");
+  renderSuggestionChips("inputCustomSpeciesNameSuggestions", "inputCustomSpeciesName", SUGESTOES_NOME_ESPECIE, "substituir");
+  renderSuggestionChips("textCustomSpeciesAboutSuggestions", "textCustomSpeciesAbout", SUGESTOES_SOBRE_ESPECIE);
+  renderSuggestionChips("inputCustomSpeciesLanguagesSuggestions", "inputCustomSpeciesLanguages", SUGESTOES_IDIOMAS_ESPECIE, "substituir");
+  renderSuggestionChips("inputCustomSpeciesWeaponProfsSuggestions", "inputCustomSpeciesWeaponProfs", SUGESTOES_PROF_ARMAS, "substituir");
+  renderSuggestionChips("inputCustomSpeciesToolProfsSuggestions", "inputCustomSpeciesToolProfs", SUGESTOES_PROF_FERRAMENTAS, "substituir");
+  renderRowSuggestionChips("customspeciesTraitSuggestions", cfgEsp, SUGESTOES_TRACO_ESPECIE);
+
+  CUSTOM_ORIGIN_PANELS.forEach(cfg => {
+    cfg.campos.forEach(campo => {
+      const el = document.getElementById(campo.id);
+      if (!el) return;
+      const evento = el.tagName === "SELECT" ? "change" : "input";
+      el.addEventListener(evento, (e) => {
+        const st = cfg.state();
+        if (!st) return;
+        st[campo.prop] = campo.tipo === "int" ? (parseInt(e.target.value, 10) || 0)
+          : campo.tipo === "float" ? (parseFloat(e.target.value) || 0)
+          : e.target.value;
+
+        // O nome digitado também rotula a opção "Personalizada" no seletor,
+        // para o jogador reconhecer o que escolheu sem abrir o painel.
+        if (campo.prop === "name") {
+          const opt = document.querySelector(`#${cfg.select} option[value="custom"]`);
+          if (opt) opt.textContent = `⭐ ${(e.target.value || "").trim() || "Personalizada (Custom)"}`;
+        }
+        if (campo.prop === "casterType" || campo.prop === "hitDie") updateCustomOriginPanels();
+        if (campo.prop === "casterType") renderSpellsCatalog();
+
+        renderSpeciesBackgroundSummary();
+        recalculateCharacter();
+      });
+    });
+
+    const btn = cfg.linhas && document.getElementById(cfg.linhas.botao);
+    if (btn) btn.addEventListener("click", () => addCustomOriginRow(cfg));
+  });
 }
 
 /**
@@ -916,8 +1378,8 @@ function renderHpPorNivel() {
 
   if (select) select.value = character.hpMode || "average";
 
-  const class1Obj = DND5E_DATA.classes.find(c => c.id === character.class1);
-  const class2Obj = DND5E_DATA.classes.find(c => c.id === character.class2);
+  const class1Obj = resolveClassObj(character.class1, 1);
+  const class2Obj = resolveClassObj(character.class2, 2);
   const niveis = class1Obj ? listarNiveis(class1Obj, class2Obj || null) : [];
 
   const manual = (character.hpMode || "average") === "manual";
@@ -999,6 +1461,12 @@ function getCustomBgToolName() {
  */
 function getFormattedLanguages() {
   const list = [...character.languages];
+
+  // Idiomas concedidos por uma espécie personalizada entram junto dos demais.
+  const spCustom = resolveSpeciesObj(character.species);
+  if (spCustom && spCustom.isCustom) {
+    (spCustom.languages || []).forEach(l => { if (!list.includes(l)) list.push(l); });
+  }
   // Comum entra de brinde só depois que o jogador marcou algum idioma — numa
   // ficha ainda em branco o campo tem que ficar vazio.
   if (list.length && !list.some(l => l.startsWith("Comum"))) {
@@ -1128,7 +1596,7 @@ function updateBackgroundBonusSelectors() {
  */
 function renderSpeciesBackgroundSummary() {
   const container = document.getElementById("speciesBackgroundSummary");
-  const speciesObj = DND5E_DATA.species.find(s => s.id === character.species);
+  const speciesObj = resolveSpeciesObj(character.species);
   const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background);
 
   // Antes das escolhas o resumo não tem o que mostrar — fica vazio, não velho.
@@ -1136,6 +1604,17 @@ function renderSpeciesBackgroundSummary() {
   if (!speciesObj || !bgObj) { container.innerHTML = ""; return; }
 
   let traitsHtml = speciesObj.traits.map(t => `<strong>${t.name}:</strong> ${t.desc}`).join("<br>");
+
+  // Espécie personalizada não tem traços de tabela: o resumo mostra o texto
+  // que o jogador escreveu, que é tudo o que o app sabe sobre ela.
+  if (speciesObj.isCustom) {
+    const nivelTotal = character.level1 + (character.class2 && character.class2 !== "none" ? character.level2 : 0);
+    const linhas = traitsDaEspecieNoNivel(speciesObj, nivelTotal)
+      .map(t => `<strong>${t.level > 1 ? `[Nvl ${t.level}] ` : ""}${t.name}:</strong> ${t.desc}`);
+    const sobre = (speciesObj.about || "").replace(/\n/g, "<br>");
+    traitsHtml = [sobre, ...linhas].filter(Boolean).join("<br>")
+      || "<em>Descreva a espécie nos campos acima: “Sobre”, visão no escuro, idiomas, proficiências e traços por nível.</em>";
+  }
   
   if (character.lineage && character.lineage !== "none") {
     const linObj = speciesObj.lineages.find(l => l.id === character.lineage);
@@ -1319,7 +1798,7 @@ function roll4d6Stats() {
  */
 function updateSkillsSelector() {
   const container = document.getElementById("skillsSelectorGrid");
-  const classObj = DND5E_DATA.classes.find(c => c.id === character.class1) || EMPTY_CLASS;
+  const classObj = resolveClassObj(character.class1, 1) || EMPTY_CLASS;
   const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background) || EMPTY_BACKGROUND;
 
   if (!container) return;
@@ -3636,7 +4115,49 @@ function renderSpellCapacityBreakdown(capInfo) {
 /**
  * Renderiza o catálogo de magias com filtros
  */
+/* As magias personalizadas moram na ficha, mas o app inteiro procura magia em
+   DND5E_DATA.spells (ficha, ataques, limites por círculo). Em vez de espalhar
+   um "ou nas customizadas" por cada busca, elas são reinjetadas no catálogo. */
+function syncCustomSpellsIntoCatalog() {
+  const lista = character.customSpells || [];
+  const semCustom = DND5E_DATA.spells.filter(sp => !sp.isCustom);
+  DND5E_DATA.spells.length = 0;
+  DND5E_DATA.spells.push(...semCustom, ...lista);
+}
+
+/* Marca em quais listas de classe a magia nova entra. Vem das classes
+   conjuradoras do catálogo, para o filtro do Passo 4 continuar valendo. */
+function renderCustomSpellClassesGrid() {
+  const grid = document.getElementById("customSpellClassesGrid");
+  if (!grid) return;
+
+  // Refeita a cada abertura: a classe personalizada pode ter virado conjuradora
+  // desde a última vez, e aí ela também é uma lista possível.
+  const conjuradoras = DND5E_DATA.classes.filter(c => !c.isCustom && c.spellcasting);
+  const custom1 = resolveClassObj(character.class1, 1);
+  const custom2 = resolveClassObj(character.class2, 2);
+  [custom1, custom2].forEach(c => {
+    if (c && c.isCustom && c.spellcasting && !conjuradoras.some(x => x.id === "custom")) conjuradoras.push(c);
+  });
+  grid.innerHTML = conjuradoras.map(c => `
+    <label class="lang-checkbox-item">
+      <input type="checkbox" value="${c.id}"${c.id === character.class1 || c.id === character.class2 ? " checked" : ""}>
+      <span>${c.name.split(" (")[0]}</span>
+    </label>`).join("");
+}
+
+/** Todas as listas de magia de onde as classes personalizadas do personagem tiram magias */
+function listasDaClassePersonalizada() {
+  const listas = [];
+  [["class1", character.class1], ["class2", character.class2]].forEach(([, id], i) => {
+    if (id !== "custom") return;
+    (customClassState(i + 1).spellLists || []).forEach(l => { if (!listas.includes(l)) listas.push(l); });
+  });
+  return listas;
+}
+
 function renderSpellsCatalog() {
+  syncCustomSpellsIntoCatalog();
   const container = document.getElementById("spellsCatalogList");
   const filterClass = document.getElementById("spellFilterClass") ? document.getElementById("spellFilterClass").value : "all";
   const filterLevel = document.getElementById("spellFilterLevel") ? document.getElementById("spellFilterLevel").value : "all";
@@ -3656,7 +4177,11 @@ function renderSpellsCatalog() {
   container.innerHTML = "";
 
   const filteredSpells = DND5E_DATA.spells.filter(sp => {
-    const matchClass = filterClass === "all" || (sp.classes && sp.classes.includes(filterClass));
+    const matchClass = filterClass === "all"
+      || (filterClass === "__custom__" ? !!sp.isCustom
+      : filterClass === "__customclass__" ? ((sp.classes || []).includes("custom")
+          || listasDaClassePersonalizada().some(l => l === "custom" ? !!sp.isCustom : (sp.classes || []).includes(l)))
+      : (sp.classes && sp.classes.includes(filterClass)));
     const matchLevel = filterLevel === "all" || sp.level.toString() === filterLevel;
     const matchSchool = filterSchool === "all" || sp.school === filterSchool;
     const matchSearch = sp.name.toLowerCase().includes(searchQuery) || sp.desc.toLowerCase().includes(searchQuery);
@@ -3704,7 +4229,10 @@ function renderSpellsCatalog() {
         </td>
         <td class="col-school">${spellSchoolHtml(sp.school)}</td>
         <td class="col-classes">${formatSpellClasses(sp)}</td>
-        <td class="col-info"><button type="button" class="spell-info-btn" data-info="${sp.id}" title="Detalhes da magia"><i class="fa-solid fa-info"></i></button></td>
+        <td class="col-info">
+          <button type="button" class="spell-info-btn" data-info="${sp.id}" title="Detalhes da magia"><i class="fa-solid fa-info"></i></button>
+          ${sp.isCustom ? `<button type="button" class="spell-info-btn btn-del-custom-spell" data-del="${sp.id}" title="Excluir esta magia personalizada"><i class="fa-solid fa-trash"></i></button>` : ""}
+        </td>
         <td class="col-action">
           ${origem
             ? `<span class="spell-granted-lock" title="Concedida por ${String(origem.fonte).replace(/"/g, "&quot;")} — já vem na ficha"><i class="fa-solid fa-gift"></i> Concedida</span>`
@@ -3752,6 +4280,21 @@ function renderSpellsCatalog() {
       if (panel) {
         panel.hidden = !panel.hidden;
         infoBtn.classList.toggle("is-open", !panel.hidden);
+      }
+      return;
+    }
+
+    const delBtn = e.target.closest(".btn-del-custom-spell");
+    if (delBtn) {
+      const id = delBtn.getAttribute("data-del");
+      const alvo = (character.customSpells || []).find(x => x.id === id);
+      if (alvo && confirm(`Excluir a magia personalizada "${alvo.name}"?`)) {
+        character.customSpells = character.customSpells.filter(x => x.id !== id);
+        character.spellsKnown = character.spellsKnown.filter(x => x !== id);
+        syncCustomSpellsIntoCatalog();
+        renderSpellsCatalog();
+        recalculateCharacter();
+        showToast("Magia personalizada removida.");
       }
       return;
     }
@@ -3827,6 +4370,9 @@ function spellTagsHtml(sp, origem) {   // origem: { fonte, tipo } ou nada
     tags.push('<span class="spell-tag is-mat" title="Componente Material específico: ' +
               String(sp.components).replace(/"/g, "&quot;") + '">M</span>');
   }
+  if (sp.isCustom) {
+    tags.push('<span class="spell-tag is-origin" title="Magia personalizada, criada por você">⭐ Personalizada</span>');
+  }
   if (origem) {
     // A fonte completa é longa ("Subclasse (Domínio da Vida (Life Domain))") e
     // não cabe numa etiqueta: na linha vai só o tipo, o resto fica no tooltip.
@@ -3877,10 +4423,11 @@ function buildSpellInfoHtml(sp) {
  */
 function recalculateCharacter() {
   _ofBlank = isBlankSheet();
+  syncCustomSpellsIntoCatalog();
 
-  const class1Obj = DND5E_DATA.classes.find(c => c.id === character.class1) || EMPTY_CLASS;
-  const class2Obj = character.class2 !== "none" ? DND5E_DATA.classes.find(c => c.id === character.class2) : null;
-  const speciesObj = DND5E_DATA.species.find(s => s.id === character.species) || EMPTY_SPECIES;
+  const class1Obj = resolveClassObj(character.class1, 1) || EMPTY_CLASS;
+  const class2Obj = character.class2 !== "none" ? resolveClassObj(character.class2, 2) : null;
+  const speciesObj = resolveSpeciesObj(character.species) || EMPTY_SPECIES;
   const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background) || EMPTY_BACKGROUND;
 
   // 1. Nível Total e Bônus de Proficiência (PB)
@@ -4337,10 +4884,11 @@ function renderOfAbilities(ctx) {
 
 /* --------------------------------------- EQUIPAMENTO, TREINO & PROFICIÊNCIAS */
 function renderOfProficienciesBox(ctx) {
-  const { class1Obj, class2Obj, bgObj } = ctx;
+  const { class1Obj, class2Obj, bgObj, speciesObj } = ctx;
   const armorProfs = [
     ...(class1Obj.armorProficiencies || []),
-    ...(class2Obj ? class2Obj.armorProficiencies || [] : [])
+    ...(class2Obj ? class2Obj.armorProficiencies || [] : []),
+    ...(speciesObj && speciesObj.isCustom ? speciesObj.armorProficiencies || [] : [])
   ].join(" ").toLowerCase();
 
   syncOfCheck("sheetArmorLight", armorProfs.includes("leve"), "armorLight");
@@ -4350,12 +4898,14 @@ function renderOfProficienciesBox(ctx) {
 
   const weaponAuto = [
     ...(class1Obj.weaponProficiencies || []),
-    ...(class2Obj ? class2Obj.weaponProficiencies || [] : [])
+    ...(class2Obj ? class2Obj.weaponProficiencies || [] : []),
+    ...(speciesObj && speciesObj.isCustom ? speciesObj.weaponProficiencies || [] : [])
   ].join(", ");
   syncOfField("sheetWeaponProfs", weaponAuto, "weaponProfs");
 
   const toolAuto = [
     ...(class1Obj.toolProficiencies || []),
+    ...(speciesObj && speciesObj.isCustom ? speciesObj.toolProficiencies || [] : []),
     ...(bgObj.isCustom ? [getCustomBgToolName()] : bgObj.tools || [])
   ].filter(Boolean).join(", ");
   syncOfField("sheetToolProfs", toolAuto, "toolProfs");
@@ -4625,7 +5175,7 @@ function renderOfWeaponsTable() {
 
 /* ------------------------------------------- CARACTERÍSTICAS, RAÇA E TALENTOS */
 function renderOfFeatureAreas(ctx) {
-  const { class1Obj, class2Obj, speciesObj } = ctx;
+  const { class1Obj, class2Obj, speciesObj, totalLevel } = ctx;
 
   const classFeatures = [];
   for (let l = 1; l <= character.level1; l++) {
@@ -4640,6 +5190,11 @@ function renderOfFeatureAreas(ctx) {
       }
     }
   }
+  // O texto livre da classe personalizada entra junto das características:
+  // é o único lugar da ficha onde essa descrição tem onde caber.
+  if (class1Obj.isCustom && class1Obj.about) classFeatures.push(`${class1Obj.name}: ${class1Obj.about}`);
+  if (class2Obj && class2Obj.isCustom && class2Obj.about) classFeatures.push(`${class2Obj.name}: ${class2Obj.about}`);
+
   const subObj = class1Obj.subclasses ? class1Obj.subclasses.find(s => s.id === character.subclass1) : null;
   if (character.level1 >= 3 && subObj) classFeatures.push(`Subclasse — ${subObj.name}: ${subObj.desc}`);
   character.customFeatures.forEach(cf => classFeatures.push(`${cf.title}: ${cf.desc}`));
@@ -4648,7 +5203,12 @@ function renderOfFeatureAreas(ctx) {
   syncOfField("sheetClassFeatures", classFeatures.slice(0, half).join("\n"), "classFeatures");
   syncOfField("sheetClassFeatures2", classFeatures.slice(half).join("\n"), "classFeatures2");
 
-  const traits = (speciesObj.traits || []).map(t => `${t.name}: ${t.desc}`).join("\n");
+  // Traço de espécie com nível só aparece depois que o personagem chega lá —
+  // é o mesmo critério das características de classe, logo acima.
+  const traitLines = traitsDaEspecieNoNivel(speciesObj, totalLevel)
+    .map(t => `${t.level > 1 ? `[Nvl ${t.level}] ` : ""}${t.name}: ${t.desc}`);
+  if (speciesObj.isCustom && speciesObj.about) traitLines.unshift(speciesObj.about);
+  const traits = traitLines.join("\n");
   syncOfField("sheetSpeciesTraits", traits, "speciesTraits");
 
   const featLines = [];
@@ -5418,6 +5978,7 @@ function bindEvents() {
 
   document.getElementById("selectClass1").addEventListener("change", (e) => {
     character.class1 = e.target.value;
+    updateCustomOriginPanels();
     updateSubclassesDropdown();
     updateSkillsSelector();
     renderSpellsCatalog();
@@ -5426,6 +5987,7 @@ function bindEvents() {
 
   document.getElementById("selectLevel1").addEventListener("change", (e) => {
     character.level1 = parseInt(e.target.value);
+    updateCustomOriginPanels();
     updateSubclassesDropdown();
     renderSpellsCatalog();
     recalculateCharacter();
@@ -5459,12 +6021,14 @@ function bindEvents() {
     character.class2 = e.target.value;
     const row = document.getElementById("multiclassLevelRow");
     row.style.display = character.class2 !== "none" ? "grid" : "none";
+    updateCustomOriginPanels();
     renderSpellsCatalog();
     recalculateCharacter();
   });
 
   document.getElementById("selectLevel2").addEventListener("change", (e) => {
     character.level2 = parseInt(e.target.value);
+    updateCustomOriginPanels();
     renderSpellsCatalog();
     recalculateCharacter();
   });
@@ -5474,6 +6038,7 @@ function bindEvents() {
     // Sair do Humano descarta o talento extra: ele vem do traço Versátil e não
     // teria de onde vir em outra espécie.
     if (character.species !== "human") character.humanOriginFeat = "none";
+    updateCustomOriginPanels();
     updateLineagesDropdown();
     renderHumanOriginFeat();
     updateFeatsList();
@@ -5536,6 +6101,8 @@ function bindEvents() {
     updateFeatsList();
     recalculateCharacter();
   });
+
+  bindCustomOriginPanels();
 
   // Painel de Antecedente Personalizado (Passo 1)
   const bindCustomBg = (id, evt, handler) => {
@@ -5931,17 +6498,61 @@ function bindEvents() {
     saveToLocalStorage();
     showToast(`🎲 <strong>${texto}:</strong> ${r.detalhe} = <strong>${r.total}</strong>${r.tag}`);
   };
-  ["diceInputSheet", "diceInputGlobal"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { e.preventDefault(); rolarExpressao(id); }
-    });
+  const inputDados = document.getElementById("diceInputGlobal");
+  if (inputDados) inputDados.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); rolarExpressao("diceInputGlobal"); }
   });
-  const btnRolarFicha = document.getElementById("btnRollDiceSheet");
-  if (btnRolarFicha) btnRolarFicha.addEventListener("click", () => rolarExpressao("diceInputSheet"));
-  
+
   const btnRolarGlobal = document.getElementById("btnRollDiceGlobal");
   if (btnRolarGlobal) btnRolarGlobal.addEventListener("click", () => rolarExpressao("diceInputGlobal"));
+
+  // Modal: Magia Personalizada
+  const customSpellModal = document.getElementById("customSpellModal");
+  const btnAddCustomSpell = document.getElementById("btnAddCustomSpellModalBtn");
+  if (customSpellModal && btnAddCustomSpell) {
+    const fecharMagia = () => customSpellModal.classList.remove("active");
+
+    btnAddCustomSpell.addEventListener("click", () => {
+      renderCustomSpellClassesGrid();
+      renderSuggestionChips("customSpellDescSuggestions", "customSpellDesc", SUGESTOES_DESC_MAGIA);
+      customSpellModal.classList.add("active");
+      document.getElementById("customSpellName").focus();
+    });
+    document.getElementById("closeCustomSpellModal").addEventListener("click", fecharMagia);
+    document.getElementById("btnCancelCustomSpell").addEventListener("click", fecharMagia);
+
+    document.getElementById("customSpellForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const val = (id) => (document.getElementById(id).value || "").trim();
+      const name = val("customSpellName");
+      const desc = val("customSpellDesc");
+      if (!name || !desc) return;
+
+      const classes = [...document.querySelectorAll("#customSpellClassesGrid input:checked")].map(i => i.value);
+
+      character.customSpells.push({
+        id: "customspell_" + Date.now(),
+        isCustom: true,
+        name,
+        level: parseInt(document.getElementById("customSpellLevel").value, 10),
+        school: document.getElementById("customSpellSchool").value,
+        time: val("customSpellTime"),
+        range: val("customSpellRange"),
+        components: val("customSpellComponents"),
+        duration: val("customSpellDuration"),
+        classes,
+        desc
+      });
+
+      fecharMagia();
+      document.getElementById("customSpellForm").reset();
+      document.getElementById("customSpellClassesGrid").innerHTML = "";
+      syncCustomSpellsIntoCatalog();
+      renderSpellsCatalog();
+      recalculateCharacter();
+      showToast(`✨ Magia personalizada "${name}" criada! Use "Adicionar" para levá-la à ficha.`);
+    });
+  }
 
   // Modal: Talento Customizado
   const customFeatModal = document.getElementById("customFeatModal");
