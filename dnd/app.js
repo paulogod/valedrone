@@ -4539,6 +4539,7 @@ function renderSpellsCatalog() {
         character.spellsKnown = character.spellsKnown.filter(x => x !== id);
         syncCustomSpellsIntoCatalog();
         renderSpellsCatalog();
+        updateFeatsList();
         recalculateCharacter();
         showToast("Magia personalizada removida.");
       }
@@ -6805,6 +6806,10 @@ function bindEvents() {
       document.getElementById("customSpellClassesGrid").innerHTML = "";
       syncCustomSpellsIntoCatalog();
       renderSpellsCatalog();
+      // As caixas de escolha de magia dos talentos (Iniciado em Magia, Tocado
+      // pelas Fadas...) montam as opções a partir do catálogo: sem redesenhar,
+      // a magia nova só apareceria lá na próxima vez que a lista fosse montada.
+      updateFeatsList();
       recalculateCharacter();
       showToast(`✨ Magia personalizada "${name}" criada! Use "Adicionar" para levá-la à ficha.`);
     });
