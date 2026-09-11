@@ -708,6 +708,31 @@ O app continua **não travando o máximo de 20** — ele nunca travou, nem para 
 bônus de antecedente, e a ficha é editável de propósito. O limite está escrito
 na descrição do talento.
 
+### 7.1.8 Abrir a ficha em outra aba
+
+Botão **"Abrir a ficha em outra aba"** logo abaixo da ficha editável. Ele abre
+uma cópia da ficha do app (não a folha da Wizards) numa aba só dela, com uma
+barra em cima que chama `window.print()` — de onde o navegador salva em PDF.
+
+`fichaEmHtmlParaAba()` clona o `#sheetContainer` e **transfere os valores para
+atributos**: `innerHTML` não leva o que o jogador digitou, porque `value` é
+propriedade do elemento e não atributo, e uma cópia crua abriria a ficha em
+branco. Inputs viram `value="…"`, textareas recebem o texto dentro da tag e as
+caixas ganham ou perdem `checked`. O `zoom` da tela é limpo, e as duas páginas
+saem sempre — esconder uma é conveniência da tela, quem abre a aba quer a ficha
+inteira.
+
+A aba nova reaproveita as folhas de estilo desta página (`estilosDestaPagina()`
+copia os `<link rel="stylesheet">` já resolvidos e os `<style>` inline), então o
+bloco `@media print` que o `sheet.css` já tinha — o que vira as duas páginas em
+duas folhas A4 — funciona lá sem CSS novo. O que a função acrescenta é a barra
+de cima (escondida na impressão), `pointer-events: none` nos campos (a cópia é
+para ler e imprimir; editar ali não voltaria para o app) e um `zoom: 0.55` até
+820 px, porque a folha tem 210 mm fixos e no celular estouraria a tela.
+
+Se o navegador bloquear o pop-up, o app avisa por *toast* em vez de não fazer
+nada.
+
 ### 7.2 Link do RPG Master
 
 `index.html` — o botão do cabeçalho apontava para `../rpg/` (caminho relativo) e

@@ -3117,3 +3117,29 @@ img, table, pre { max-width: 100%; }
   background: rgba(147, 197, 253, 0.12);
   border: 1px solid rgba(147, 197, 253, 0.3);
 }
+
+/* ---------- BOTÃO "ABRIR A FICHA EM OUTRA ABA" (abaixo da ficha) ---------- */
+.sheet-open-tab {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.9rem 0 0.2rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  background: rgba(139, 92, 246, 0.06);
+}
+
+.sheet-open-tab-nota {
+  flex: 1 1 16rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #94a3b8;
+}
+
+.sheet-open-tab-nota strong { color: #cbd5e1; }
+
+@media print {
+  .sheet-open-tab { display: none !important; }
+}

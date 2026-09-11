@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260911d";
+    var APP_VERSION = "20260911e";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -1384,6 +1384,21 @@
             </div>
 
           </div>
+        </div>
+
+        <!-- A ficha do app numa aba só dela: para ler em tela cheia, mandar
+             para alguém, ou imprimir / salvar em PDF pelo navegador. É a ficha
+             daqui, não a folha da Wizards — essa sai nos dois botões do topo. -->
+        <div class="sheet-open-tab">
+          <button class="btn btn-secondary btn-sm" id="btnOpenSheetTab"
+                  title="Abre uma cópia da ficha preenchida em outra aba, pronta para imprimir ou salvar em PDF">
+            <i class="fa-solid fa-up-right-from-square"></i> Abrir a ficha em outra aba
+          </button>
+          <span class="sheet-open-tab-nota">
+            A aba nova traz o botão de imprimir (ou <strong>Ctrl + P</strong>), e de lá dá para
+            salvar em PDF. É a ficha deste app; a folha oficial da Wizards sai nos
+            dois botões do topo da página.
+          </span>
         </div>
 
       </section>

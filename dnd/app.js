@@ -6279,6 +6279,9 @@ function bindEvents() {
   if (zoomOut) zoomOut.addEventListener("click", () => changeSheetZoom(-0.15));
   if (zoomFit) zoomFit.addEventListener("click", () => changeSheetZoom(null));
 
+  const btnAba = document.getElementById("btnOpenSheetTab");
+  if (btnAba) btnAba.addEventListener("click", abrirFichaEmOutraAba);
+
   // Navegação do Wizard (Passos 1 a 6)
   const wizardTabs = document.querySelectorAll(".step-tab-btn");
   wizardTabs.forEach(btn => {
@@ -7207,6 +7210,139 @@ function generateRandomCharacter() {
 /**
  * Exporta JSON
  */
+/* ------------------------------------------- A FICHA NUMA ABA SÓ DELA */
+
+/**
+ * Copia a ficha da tela para uma aba nova, pronta para ler ou imprimir.
+ *
+ * `innerHTML` não leva o que o jogador digitou: `value` é propriedade do
+ * elemento, não atributo, então uma cópia crua abriria a ficha em branco. Aqui
+ * cada campo é percorrido e o valor vira atributo — `value` nos inputs, texto
+ * dentro da textarea, `checked` nas caixas.
+ */
+function fichaEmHtmlParaAba() {
+  const origem = document.getElementById("sheetContainer");
+  if (!origem) return null;
+
+  const copia = origem.cloneNode(true);
+  copia.style.zoom = "";   // o zoom da tela não vale na folha impressa
+
+  const campos = origem.querySelectorAll("input, textarea, select");
+  const alvos = copia.querySelectorAll("input, textarea, select");
+  campos.forEach((el, i) => {
+    const alvo = alvos[i];
+    if (!alvo) return;
+    if (el.type === "checkbox" || el.type === "radio") {
+      if (el.checked) alvo.setAttribute("checked", "checked");
+      else alvo.removeAttribute("checked");
+    } else if (el.tagName === "TEXTAREA") {
+      alvo.textContent = el.value;
+    } else if (el.tagName === "SELECT") {
+      Array.from(alvo.options).forEach(op => {
+        if (op.value === el.value) op.setAttribute("selected", "selected");
+        else op.removeAttribute("selected");
+      });
+    } else {
+      alvo.setAttribute("value", el.value);
+    }
+  });
+
+  // As duas páginas sempre saem: esconder uma é conveniência da tela, e quem
+  // abre a aba quer a ficha inteira.
+  copia.querySelectorAll(".sheet-page").forEach(p => p.classList.add("active-page"));
+  return copia.outerHTML;
+}
+
+/** As folhas de estilo desta página, para a aba nova ficar igual */
+function estilosDestaPagina() {
+  return Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+    .map(el => (el.tagName === "LINK" ? `<link rel="stylesheet" href="${el.href}">` : el.outerHTML))
+    .join("\n");
+}
+
+/**
+ * Abre a ficha preenchida em outra aba, com um botão de imprimir.
+ *
+ * O `sheet.css` já tem o bloco `@media print` que transforma as duas páginas em
+ * duas folhas A4 — é o mesmo daqui, então a aba nova imprime igual sem CSS
+ * novo. O que esta função acrescenta é só a barra de cima (que some na
+ * impressão) e o travamento dos campos: a cópia é para ler e imprimir, e editar
+ * ali não voltaria para o app.
+ */
+function abrirFichaEmOutraAba() {
+  const ficha = fichaEmHtmlParaAba();
+  if (!ficha) { showToast("⚠️ A ficha ainda não está montada."); return; }
+
+  const aba = window.open("", "_blank");
+  if (!aba) {
+    showToast("⚠️ O navegador bloqueou a aba nova. Libere os pop-ups deste site e tente de novo.");
+    return;
+  }
+
+  const titulo = typeof nomePadraoDeArquivo === "function"
+    ? nomePadraoDeArquivo() : (character.name || "Ficha");
+
+  aba.document.open();
+  aba.document.write(`<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escAttr(titulo)} — Ficha de D&amp;D</title>
+<base href="${location.href}">
+${estilosDestaPagina()}
+<style>
+  body {
+    margin: 0; padding: 16px; background: #0f172a;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+  .aba-barra {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem;
+    width: 100%; max-width: 210mm;
+    padding: 0.7rem 0.9rem; border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(139, 92, 246, 0.1);
+    color: #cbd5e1; font-family: system-ui, sans-serif; font-size: 0.82rem;
+  }
+  .aba-barra button {
+    padding: 0.45rem 0.9rem; border-radius: 8px; cursor: pointer;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: #8b5cf6; color: #fff; font-weight: 700; font-size: 0.82rem;
+  }
+  .sheet-preview-container {
+    zoom: 1 !important; display: flex; flex-direction: column;
+    align-items: center; gap: 16px;
+  }
+  /* cópia para ler e imprimir: mexer aqui não voltaria para o app */
+  .sheet-preview-container input,
+  .sheet-preview-container textarea,
+  .sheet-preview-container button { pointer-events: none; }
+  .of-row-actions, .of-mini-btn, .of-row-del { display: none !important; }
+  /* a folha tem 210 mm fixos: no celular ela encolhe para caber, e a
+     impressão volta ao tamanho real pelo @media print do sheet.css */
+  @media (max-width: 820px) {
+    body { padding: 8px; }
+    .sheet-preview-container { zoom: 0.55 !important; }
+  }
+  @media print {
+    body { padding: 0; background: #fff; gap: 0; display: block; }
+    .aba-barra { display: none !important; }
+    .sheet-preview-container { gap: 0 !important; display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="aba-barra">
+  <button type="button" onclick="window.print()">🖨️ Imprimir / Salvar em PDF</button>
+  <span>Esta é a ficha do app, só para ler e imprimir — as edições continuam na outra aba.
+  Para salvar em PDF, escolha "Salvar como PDF" na janela de impressão.</span>
+</div>
+${ficha}
+</body>
+</html>`);
+  aba.document.close();
+}
+
 /* ------------------------------------------------ NOME DO ARQUIVO EXPORTADO */
 
 /** Tira do nome o que nenhum sistema de arquivos aceita */
