@@ -1452,53 +1452,92 @@ select.form-control option {
 
 .uso-ponto.is-magia { background: #a78bfa; border-color: rgba(167, 139, 250, 0.6); }
 
-/* Contas por origem: a da classe é limite, as outras são concedidas */
+/* Contas por origem: a da classe é limite, as outras são concedidas. Cada
+   linha abre a própria lista de magias no "+", e cada magia abre a descrição
+   no "i" — o painel de jogo é onde se consulta no meio do turno. */
 .magia-contas { margin-top: 0.5rem; border-top: 1px dashed rgba(255, 255, 255, 0.07); padding-top: 0.35rem; }
 
+.magia-contas-dica {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 0 0 0.3rem;
+}
+
 .magia-conta {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1.1rem minmax(6rem, auto) 1fr;
   align-items: baseline;
-  gap: 0.5rem;
+  gap: 0.4rem;
   font-size: 0.76rem;
   padding: 0.16rem 0;
 }
 
 .magia-conta-tipo { color: #c084fc; font-weight: 600; }
 .magia-conta.is-alerta .magia-conta-num { color: #f87171; font-weight: 700; }
-.magia-conta-num { font-family: var(--font-mono); color: var(--text-muted); }
+.magia-conta-num { font-family: var(--font-mono); color: var(--text-muted); text-align: right; }
 
-/* Magias que vêm de fora da lista da classe, agrupadas pela origem */
-.magia-fontes { margin-top: 0.35rem; }
-
-.magia-fonte {
-  display: grid;
-  grid-template-columns: 5.5rem 1fr;
-  gap: 0.4rem;
-  align-items: baseline;
-  padding: 0.18rem 0;
-  font-size: 0.76rem;
-}
-
-.magia-fonte-tipo {
+.magia-conta-exp {
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  line-height: 1;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
   color: #c084fc;
-  font-weight: 600;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.magia-fonte-itens { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-
-.magia-fonte-item {
   background: rgba(192, 132, 252, 0.12);
-  border: 1px solid rgba(192, 132, 252, 0.25);
+  border: 1px solid rgba(192, 132, 252, 0.3);
   border-radius: 3px;
-  padding: 0.08rem 0.3rem;
-  color: #e9d5ff;
 }
 
-.magia-fonte-item small { color: var(--text-muted); font-family: var(--font-mono); }
+.magia-conta-exp:hover { background: rgba(192, 132, 252, 0.25); }
+.magia-conta-exp.is-vazio { background: none; border: none; }
+
+.magia-conta-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.1rem 0 0.35rem 1.5rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid rgba(192, 132, 252, 0.25);
+}
+
+.magia-item { font-size: 0.75rem; }
+
+.magia-item-nome {
+  color: #e9d5ff;
+  margin-right: 0.25rem;
+}
+
+.magia-item-nome small { color: var(--text-muted); font-family: var(--font-mono); }
+
+.magia-item-info {
+  width: 1.05rem;
+  height: 1.05rem;
+  padding: 0;
+  font-size: 0.6rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.12);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.magia-item-info:hover,
+.magia-item-info.is-open { background: rgba(192, 132, 252, 0.3); color: #f5f3ff; }
+
+.magia-item-desc {
+  margin: 0.25rem 0 0.4rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(192, 132, 252, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+.magia-item-desc .spell-info-grid { grid-template-columns: 1fr; gap: 0.15rem; }
+.magia-item-desc .spell-info-desc { font-size: 0.74rem; margin-bottom: 0; }
 
 .uso-botoes { display: inline-flex; gap: 0.15rem; }
 

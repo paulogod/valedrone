@@ -1958,8 +1958,8 @@ function renderFeatureUses() {
  * tiver escrito à mão por cima. Sem isso, o painel e a ficha discordariam.
  */
 function getSpellSlotRow() {
-  const c1 = DND5E_DATA.classes.find(c => c.id === character.class1);
-  const c2 = character.class2 !== "none" ? DND5E_DATA.classes.find(c => c.id === character.class2) : null;
+  const c1 = resolveClassObj(character.class1, 1);
+  const c2 = character.class2 !== "none" ? resolveClassObj(character.class2, 2) : null;
   const conj = (c1 && c1.spellcasting) ? c1 : (c2 && c2.spellcasting ? c2 : null);
   const nivel = (character.level1 || 0) + (c2 ? (character.level2 || 0) : 0);
   const tipo = conj && conj.spellcasting ? conj.spellcasting.type : "full";
@@ -2008,6 +2008,7 @@ function getGrantedSpellsBySource() {
     const sp = DND5E_DATA.spells.find(x => x.id === g.id);
     const tipo = g.tipo || "Espécie";
     (grupos[tipo] = grupos[tipo] || []).push({
+      id: g.id,
       nome: sp ? sp.name.split(" (")[0] : g.id,
       circulo: sp ? sp.level : 0,
       fonte: g.source
@@ -2053,8 +2054,9 @@ function renderSpellSlots() {
   const cap = getSpellCapacityInfo(_ultimosMods || {});
   const idsConcedidos = new Set(cap.grantedSpells.map(g => g.id));
   const escolhidas = (character.spellsKnown || []).filter(id => !idsConcedidos.has(id));
+  const spellDe = (id) => DND5E_DATA.spells.find(x => x.id === id);
   const ehTruque = (id) => {
-    const sp = DND5E_DATA.spells.find(x => x.id === id);
+    const sp = spellDe(id);
     return sp && sp.level === 0;
   };
   const truquesEscolhidos = escolhidas.filter(ehTruque).length;
@@ -2065,37 +2067,70 @@ function renderSpellSlots() {
   const capTalento = cap.breakdown.filter(b => b.detalhe === "talento");
   const somaT = (arr, campo) => arr.reduce((a, b) => a + b[campo], 0);
 
-  const linhaConta = (tipo, texto, alerta) =>
-    `<div class="magia-conta${alerta ? " is-alerta" : ""}">
-       <span class="magia-conta-tipo">${tipo}</span>
-       <span class="magia-conta-num">${texto}</span>
-     </div>`;
+  const porCirculo = (a, b) => (a.circulo - b.circulo) || a.nome.localeCompare(b.nome);
+
+  /* Um item da lista aberta: nome, círculo e o "i" que abre a descrição inteira
+     — a mesma do catálogo, para não haver duas versões do mesmo texto. */
+  const itemHtml = (m) => {
+    const sp = spellDe(m.id);
+    const aberta = _magiaInfoAberta.has(m.id);
+    return `<div class="magia-item">
+      <span class="magia-item-nome"${m.fonte ? ` title="${String(m.fonte).replace(/"/g, "&quot;")}"` : ""}>
+        ${m.nome} <small>${m.circulo === 0 ? "truque" : `${m.circulo}º`}</small>
+      </span>
+      ${sp ? `<button type="button" class="magia-item-info${aberta ? " is-open" : ""}" data-magia-info="${m.id}"
+                      title="Ver a descrição da magia"><i class="fa-solid fa-info"></i></button>` : ""}
+      ${sp ? `<div class="magia-item-desc" data-magia-desc="${m.id}"${aberta ? "" : " hidden"}>${buildSpellInfoHtml(sp)}</div>` : ""}
+    </div>`;
+  };
+
+  /* Uma linha de contagem. Quando há magias por trás do número, ganha o "+"
+     que abre a lista; o estado de aberto/fechado mora fora do render porque o
+     painel se redesenha a cada espaço gasto. */
+  const linhaConta = (chave, tipo, texto, magias, alerta) => {
+    const lista = (magias || []).slice().sort(porCirculo);
+    const temLista = lista.length > 0;
+    const aberto = temLista && _magiaOrigemAberta.has(chave);
+    return `<div class="magia-conta${alerta ? " is-alerta" : ""}">
+         ${temLista
+           ? `<button type="button" class="magia-conta-exp" data-origem="${chave}"
+                      title="${aberto ? "Fechar" : "Ver as magias"}">${aberto ? "−" : "+"}</button>`
+           : `<span class="magia-conta-exp is-vazio"></span>`}
+         <span class="magia-conta-tipo">${tipo}</span>
+         <span class="magia-conta-num">${texto}</span>
+       </div>
+       ${temLista ? `<div class="magia-conta-lista" data-origem-lista="${chave}"${aberto ? "" : " hidden"}>${lista.map(itemHtml).join("")}</div>` : ""}`;
+  };
 
   const contas = [];
   if (capClasse.length) {
-    contas.push(linhaConta("Classe",
-      `${somaT(capClasse, "truques")} truques · ${somaT(capClasse, "preparadas")} preparadas de capacidade`));
+    contas.push(linhaConta("cap-classe", "Classe (capacidade)",
+      `${somaT(capClasse, "truques")} truques · ${somaT(capClasse, "preparadas")} preparadas`));
   }
-  capTalento.forEach(b => {
-    contas.push(linhaConta("Talento",
+  capTalento.forEach((b, i) => {
+    contas.push(linhaConta(`cap-talento-${i}`, `${b.origem || "Talento"} (capacidade)`,
       `${b.fonte}: ${b.truques ? `${b.truques} truque(s)` : ""}${b.truques && b.preparadas ? " · " : ""}${b.preparadas ? `${b.preparadas} magia(s)` : ""} para escolher`));
   });
-  contas.push(linhaConta("Escolhidas",
-    `${truquesEscolhidos} / ${cap.maxCantrips} truques · ${magiasEscolhidas} / ${cap.maxPrepared} preparadas`,
-    truquesEscolhidos > cap.maxCantrips || magiasEscolhidas > cap.maxPrepared));
-  ordem.filter(k => grupos[k]).forEach(k => {
-    contas.push(linhaConta(k, `${grupos[k].length} concedida(s)`));
-  });
 
-  const concedidas = ordem.filter(k => grupos[k]).map(k => {
-    const itens = grupos[k].map(g =>
-      `<span class="magia-fonte-item" title="${g.fonte}">${g.nome} <small>${g.circulo === 0 ? "truque" : g.circulo + "º"}</small></span>`
-    ).join("");
-    return `<div class="magia-fonte">
-      <span class="magia-fonte-tipo">${k}</span>
-      <span class="magia-fonte-itens">${itens}</span>
-    </div>`;
-  }).join("");
+  // As escolhidas são as magias da classe: saem da capacidade dela e é por isso
+  // que aparecem como fração. As concedidas, abaixo, não gastam nada.
+  contas.push(linhaConta("escolhidas", "Classe (escolhidas)",
+    `${truquesEscolhidos} / ${cap.maxCantrips} truques · ${magiasEscolhidas} / ${cap.maxPrepared} preparadas`,
+    escolhidas.map(id => {
+      const sp = spellDe(id);
+      return { id, nome: sp ? sp.name.split(" (")[0] : id, circulo: sp ? sp.level : 0, fonte: "Escolhida no catálogo" };
+    }),
+    truquesEscolhidos > cap.maxCantrips || magiasEscolhidas > cap.maxPrepared));
+
+  ordem.filter(k => grupos[k]).forEach(k => {
+    const truques = grupos[k].filter(m => m.circulo === 0).length;
+    const magias = grupos[k].length - truques;
+    const partes = [];
+    if (truques) partes.push(`${truques} truque(s)`);
+    if (magias) partes.push(`${magias} magia(s)`);
+    contas.push(linhaConta(`concedidas-${k}`, `${k} (concedidas)`,
+      `${partes.join(" · ")} — sempre prontas`, grupos[k]));
+  });
 
   // Um personagem que não conjura nada não precisa ver "Esta classe não tem
   // espaços de magia" nem uma linha "Escolhidas 0 / 0 truques · 0 / 0
@@ -2119,8 +2154,47 @@ function renderSpellSlots() {
   // assim não tem espaços (um Bruxo de truque só, um Guerreiro com Iniciado em
   // Magia), a frase explica a ausência em vez de deixar um vazio sem motivo.
   box.innerHTML = (temAlgum ? linhas : '<p class="hp-dado-vazio">Esta classe não tem espaços de magia neste nível.</p>')
-    + `<div class="magia-contas"><div class="cond-cabeca"><span>Magias por origem</span></div>${contas.join("")}</div>`
-    + (concedidas ? `<div class="magia-fontes">${concedidas}</div>` : "");
+    + `<div class="magia-contas">
+         <div class="cond-cabeca"><span>Magias por origem</span></div>
+         <p class="magia-contas-dica">Toque no <strong>+</strong> para ver as magias de cada origem e no <strong>i</strong> para a descrição.</p>
+         ${contas.join("")}
+       </div>`;
+}
+
+/* Quais origens e quais descrições estão abertas. Fica fora do render porque o
+   painel se redesenha inteiro a cada espaço de magia gasto, e fechar na cara do
+   jogador o que ele acabou de abrir no meio do turno é perder a informação. */
+const _magiaOrigemAberta = new Set();
+const _magiaInfoAberta = new Set();
+
+/** Abre/fecha uma origem ou a descrição de uma magia no painel de jogo */
+function toggleMagiaPainel(e) {
+  const exp = e.target.closest("[data-origem]");
+  if (exp) {
+    const chave = exp.getAttribute("data-origem");
+    const lista = document.querySelector(`[data-origem-lista="${chave}"]`);
+    if (!lista) return true;
+    const abrir = lista.hidden;
+    lista.hidden = !abrir;
+    exp.textContent = abrir ? "−" : "+";
+    exp.title = abrir ? "Fechar" : "Ver as magias";
+    if (abrir) _magiaOrigemAberta.add(chave); else _magiaOrigemAberta.delete(chave);
+    return true;
+  }
+
+  const info = e.target.closest("[data-magia-info]");
+  if (info) {
+    const id = info.getAttribute("data-magia-info");
+    const desc = document.querySelector(`[data-magia-desc="${id}"]`);
+    if (!desc) return true;
+    const abrir = desc.hidden;
+    desc.hidden = !abrir;
+    info.classList.toggle("is-open", abrir);
+    if (abrir) _magiaInfoAberta.add(id); else _magiaInfoAberta.delete(id);
+    return true;
+  }
+
+  return false;
 }
 
 /* ------------------------------------------------------------- CONDIÇÕES */
@@ -3643,8 +3717,8 @@ function getGrantedSpellEntries() {
     out.push({ id, source, tipo: tipo || "Espécie", name: name || spellDisplayName(id, name) });
   };
 
-  const class1Obj = DND5E_DATA.classes.find(c => c.id === character.class1);
-  const class2Obj = character.class2 !== "none" ? DND5E_DATA.classes.find(c => c.id === character.class2) : null;
+  const class1Obj = resolveClassObj(character.class1, 1);
+  const class2Obj = character.class2 !== "none" ? resolveClassObj(character.class2, 2) : null;
 
   // As magias de subclasse chegam por nível, conforme a tabela do livro (3, 5, 7
   // e 9 no conjurador pleno; 3, 5, 9, 13 e 17 no Paladino e no Guardião). Antes
@@ -3996,18 +4070,18 @@ function renderCustomItemsList() {
  * Calcula a capacidade de magias
  */
 function getSpellCapacityInfo(finalMods) {
-  const class1Obj = DND5E_DATA.classes.find(c => c.id === character.class1);
-  const class2Obj = character.class2 !== "none" ? DND5E_DATA.classes.find(c => c.id === character.class2) : null;
+  const class1Obj = resolveClassObj(character.class1, 1);
+  const class2Obj = character.class2 !== "none" ? resolveClassObj(character.class2, 2) : null;
 
   let maxCantrips = 0;
   let maxPrepared = 0;
   // Cada parcela da soma fica registrada aqui para o painel poder explicá-la.
   const breakdown = [];
-  const soma = (fonte, truques, preparadas, detalhe) => {
+  const soma = (fonte, truques, preparadas, detalhe, origem) => {
     if (!truques && !preparadas) return;
     maxCantrips += truques;
     maxPrepared += preparadas;
-    breakdown.push({ fonte, truques, preparadas, detalhe });
+    breakdown.push({ fonte, truques, preparadas, detalhe, origem: origem || "Classe" });
   };
 
   const somaClasse = (classObj, nivel, rotuloNivel) => {
@@ -4037,6 +4111,15 @@ function getSpellCapacityInfo(finalMods) {
   // gasta nada. O que ele deixou em branco vira folga na capacidade, para poder
   // escolher pelo catálogo — sem isso, um Paladino com Iniciado em Magia ficava
   // com "2 / 0 truques", já que a classe dele não tem truques nenhum.
+  // De onde o talento veio: o do antecedente é o Talento de Origem que ele
+  // concede, o do Humano vem do traço Versátil. O painel de jogo mostra essas
+  // capacidades em linhas separadas, que é a divisão que o jogador procura.
+  const origemDoTalento = (fid) => {
+    if (fid === getOriginFeatId()) return "Antecedente";
+    if (fid === getHumanOriginFeatId()) return "Espécie";
+    return "Talento";
+  };
+
   getActiveFeatIds().forEach(fid => {
     const feat = DND5E_DATA.feats.find(f => f.id === fid);
     if (!feat) return;
@@ -4048,7 +4131,7 @@ function getSpellCapacityInfo(finalMods) {
       if (escolhas[slot.key]) return;              // já veio como concedida
       if (slot.level === 0) truques++; else preparadas++;
     });
-    soma(feat.name.split(" (")[0], truques, preparadas, "talento");
+    soma(feat.name.split(" (")[0], truques, preparadas, "talento", origemDoTalento(fid));
   });
 
   // Magia concedida por subclasse, espécie ou talento não ocupa a capacidade da
@@ -6322,6 +6405,10 @@ function bindEvents() {
   // ---- espaços de magia ----
   const painelEspacos = document.getElementById("spellSlotsPanel");
   if (painelEspacos) painelEspacos.addEventListener("click", (e) => {
+    // Abrir uma origem ou uma descrição não muda nada do personagem: mexe só
+    // no DOM e sai, sem o redesenho que fecharia o que acabou de abrir.
+    if (toggleMagiaPainel(e)) return;
+
     const btn = e.target.closest("[data-slot]");
     if (!btn) return;
     changeSpellSlot(Number(btn.getAttribute("data-slot")), Number(btn.getAttribute("data-delta")));
