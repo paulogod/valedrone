@@ -59,6 +59,10 @@ function createBlankCharacter() {
     languages: [],
     customLanguages: "",
 
+    // Magias que um talento, o antecedente ou a espécie deixam conjurar uma vez
+    // por Descanso Longo sem gastar espaço. Guarda só o que já foi usado.
+    freeCasts: {},
+
     // Antecedente Customizado
     customBg: {
       name: "",
@@ -479,7 +483,7 @@ function syncWizardControls() {
 
 /* Objetos aninhados do personagem: precisam de merge chave a chave para uma
    ficha antiga (sem `customBg.name`, sem `featChoices`...) não chegar capenga */
-const CHARACTER_NESTED_KEYS = ["customBg", "customClass1", "customClass2", "customSpecies", "baseScores", "backgroundBonuses", "coins",
+const CHARACTER_NESTED_KEYS = ["customBg", "customClass1", "customClass2", "customSpecies", "freeCasts", "baseScores", "backgroundBonuses", "coins",
   "bio", "deathSaves", "spellSlotsExpended", "sheet", "featChoices", "hpRolls"];
 
 /** Ficha carregada de fora (JSON, localStorage, lista de salvos) sobre a base vazia */
@@ -2039,15 +2043,87 @@ function getGrantedSpellsBySource() {
   return grupos;
 }
 
+/* Como uma magia concedida vai para a mesa. Truque é à vontade; o que vem de
+   talento, antecedente ou espécie o livro de 2024 deixa conjurar uma vez por
+   Descanso Longo sem gastar espaço (e com espaço, se o personagem tiver); o que
+   a classe ou a subclasse concede já vem preparado e gasta espaço do círculo. */
+function comoSeConjura(tipo, circulo) {
+  if (circulo === 0) return { chave: "livre", rotulo: "à vontade" };
+  if (tipo === "Talento" || tipo === "Antecedente" || tipo === "Espécie") {
+    return { chave: "gratis", rotulo: "1x por descanso longo" };
+  }
+  return { chave: "espaco", rotulo: `espaço de ${circulo}º` };
+}
+
+/**
+ * As magias que podem ser conjuradas de graça, uma vez por Descanso Longo.
+ *
+ * Elas não aparecem na tabela de espaços — o Passo Nebuloso do talento é de 2º
+ * círculo num Paladino de 3º nível, que não tem espaço de 2º — e sem um lugar
+ * para marcar o uso, a única conta que a mesa tinha era a memória do jogador.
+ */
+function getFreeCastSpells() {
+  return getGrantedSpellEntries().map(g => {
+    const sp = DND5E_DATA.spells.find(x => x.id === g.id);
+    const circulo = sp ? sp.level : 0;
+    const modo = comoSeConjura(g.tipo || "Espécie", circulo);
+    if (modo.chave !== "gratis") return null;
+    return {
+      id: g.id,
+      nome: sp ? sp.name.split(" (")[0] : g.id,
+      circulo,
+      fonte: g.source,
+      tipo: g.tipo || "Espécie",
+      gastos: (character.freeCasts && character.freeCasts[g.id]) || 0
+    };
+  }).filter(Boolean);
+}
+
+/** Gasta ou devolve a conjuração grátis de uma magia */
+function changeFreeCast(id, delta) {
+  const item = getFreeCastSpells().find(m => m.id === id);
+  if (!item) return;
+  const novo = Math.max(0, Math.min(1, item.gastos + delta));
+  if (novo === item.gastos) {
+    if (delta > 0) showToast(`${item.nome} já foi conjurada de graça neste descanso.`);
+    return;
+  }
+  character.freeCasts = character.freeCasts || {};
+  character.freeCasts[id] = novo;
+  logHpEvent("magia", `${item.nome}: conjuração grátis ${novo ? "gasta" : "de volta"}`, character.currentHp || 0);
+}
+
 function renderSpellSlots() {
   const box = document.getElementById("spellSlotsPanel");
   if (!box) return;
   const totais = getSpellSlotRow();
   const temAlgum = totais.some(t => t > 0);
 
+  /* Até onde mostrar as linhas de círculo: o maior círculo com espaço, ou o
+     maior círculo de magia que está na ficha. Um Paladino de 3º nível com Passo
+     Nebuloso pelo talento precisa ver que não tem espaço de 2º — antes a linha
+     simplesmente não existia, e a magia aparecia na lista de origem sem nada
+     acima dizendo com o que se conjura. */
+  const circuloDeMagiaNaFicha = () => {
+    const ids = [...(character.spellsKnown || []), ...getGrantedSpellEntries().map(g => g.id)];
+    return ids.reduce((maior, id) => {
+      const sp = DND5E_DATA.spells.find(x => x.id === id);
+      return sp && sp.level > maior ? sp.level : maior;
+    }, 0);
+  };
+  const ultimoCirculo = Math.max(
+    totais.reduce((m, t, i) => (t > 0 ? i + 1 : m), 0),
+    circuloDeMagiaNaFicha()
+  );
+
   const linhas = totais.map((total, i) => {
-    if (!total) return "";
     const nivel = i + 1;
+    if (!total) {
+      if (nivel > ultimoCirculo) return "";
+      return `<div class="uso-linha is-vazia">
+        <span class="uso-nome">${nivel}º Círculo <small>sem espaços neste nível</small></span>
+      </div>`;
+    }
     const gastos = character.spellSlotsExpended[nivel] || 0;
     const restam = total - gastos;
     const bolinhas = Array.from({ length: total }, (_, k) =>
@@ -2060,6 +2136,25 @@ function renderSpellSlots() {
                 ${restam <= 0 ? "disabled" : ""} title="Gastar um espaço">−</button>
         <button type="button" class="uso-btn" data-slot="${nivel}" data-delta="-1"
                 ${gastos <= 0 ? "disabled" : ""} title="Devolver um espaço">+</button>
+      </span>
+    </div>`;
+  }).join("");
+
+  // Conjurações grátis (talento, antecedente, espécie): uma por Descanso Longo,
+  // sem gastar espaço. Ficam junto dos espaços porque é ali que se conta o que
+  // ainda dá para conjurar hoje.
+  const gratis = getFreeCastSpells().map(m => {
+    const restam = 1 - m.gastos;
+    return `<div class="uso-linha">
+      <span class="uso-nome">${m.nome}
+        <small>${m.circulo === 0 ? "truque" : `${m.circulo}º círculo`} • ${m.tipo.toLowerCase()}, sem gastar espaço • volta no Descanso Longo</small>
+      </span>
+      <span class="uso-pontos" title="${restam} de 1"><span class="uso-ponto${restam ? " is-cheio is-magia" : ""}"></span></span>
+      <span class="uso-botoes">
+        <button type="button" class="uso-btn" data-freecast="${m.id}" data-delta="1"
+                ${restam <= 0 ? "disabled" : ""} title="Gastar a conjuração grátis">−</button>
+        <button type="button" class="uso-btn" data-freecast="${m.id}" data-delta="-1"
+                ${m.gastos <= 0 ? "disabled" : ""} title="Devolver a conjuração grátis">+</button>
       </span>
     </div>`;
   }).join("");
@@ -2096,10 +2191,12 @@ function renderSpellSlots() {
   const itemHtml = (m) => {
     const sp = spellDe(m.id);
     const aberta = _magiaInfoAberta.has(m.id);
+    const modo = comoSeConjura(m.tipo, m.circulo);
     return `<div class="magia-item">
       <span class="magia-item-nome"${m.fonte ? ` title="${String(m.fonte).replace(/"/g, "&quot;")}"` : ""}>
         ${m.nome} <small>${m.circulo === 0 ? "truque" : `${m.circulo}º`}</small>
       </span>
+      <span class="magia-item-modo is-${modo.chave}">${modo.rotulo}</span>
       ${sp ? `<button type="button" class="magia-item-info${aberta ? " is-open" : ""}" data-magia-info="${m.id}"
                       title="Ver a descrição da magia"><i class="fa-solid fa-info"></i></button>` : ""}
       ${sp ? `<div class="magia-item-desc" data-magia-desc="${m.id}"${aberta ? "" : " hidden"}>${buildSpellInfoHtml(sp)}</div>` : ""}
@@ -2140,7 +2237,7 @@ function renderSpellSlots() {
     `${truquesEscolhidos} / ${cap.maxCantrips} truques · ${magiasEscolhidas} / ${cap.maxPrepared} preparadas`,
     escolhidas.map(id => {
       const sp = spellDe(id);
-      return { id, nome: sp ? sp.name.split(" (")[0] : id, circulo: sp ? sp.level : 0, fonte: "Escolhida no catálogo" };
+      return { id, nome: sp ? sp.name.split(" (")[0] : id, circulo: sp ? sp.level : 0, fonte: "Escolhida no catálogo", tipo: "Classe" };
     }),
     truquesEscolhidos > cap.maxCantrips || magiasEscolhidas > cap.maxPrepared));
 
@@ -2151,7 +2248,7 @@ function renderSpellSlots() {
     if (truques) partes.push(`${truques} truque(s)`);
     if (magias) partes.push(`${magias} magia(s)`);
     contas.push(linhaConta(`concedidas-${k}`, `${k} (concedidas)`,
-      `${partes.join(" · ")} — sempre prontas`, grupos[k]));
+      `${partes.join(" · ")} — sempre prontas`, grupos[k].map(m => ({ ...m, tipo: k }))));
   });
 
   // Um personagem que não conjura nada não precisa ver "Esta classe não tem
@@ -2175,7 +2272,8 @@ function renderSpellSlots() {
   // Aqui já se sabe que o personagem lida com magia de alguma forma. Se ainda
   // assim não tem espaços (um Bruxo de truque só, um Guerreiro com Iniciado em
   // Magia), a frase explica a ausência em vez de deixar um vazio sem motivo.
-  box.innerHTML = (temAlgum ? linhas : '<p class="hp-dado-vazio">Esta classe não tem espaços de magia neste nível.</p>')
+  box.innerHTML = (temAlgum || linhas ? linhas : '<p class="hp-dado-vazio">Esta classe não tem espaços de magia neste nível.</p>')
+    + gratis
     + `<div class="magia-contas">
          <div class="cond-cabeca"><span>Magias por origem</span></div>
          <p class="magia-contas-dica">Toque no <strong>+</strong> para ver as magias de cada origem e no <strong>i</strong> para a descrição.</p>
@@ -2473,6 +2571,13 @@ function longRest(maxHp) {
   // "Completar um Descanso Longo remove 1 dos seus níveis de Exaustão."
   if (character.exhaustionLevel > 0) changeExhaustion(-1);
   recoverFeatureUses("longo");
+  // Conjurações grátis de talento, antecedente e espécie voltam no Longo
+  const gratisGastas = Object.values(character.freeCasts || {}).filter(v => v > 0).length;
+  if (gratisGastas) {
+    character.freeCasts = {};
+    recuperados.push(`${gratisGastas} conjuração(ões) grátis`);
+  }
+
   // "Você recupera todos os espaços de magia gastos" no Descanso Longo
   const gastosAntes = Object.values(character.spellSlotsExpended || {}).reduce((a, b) => a + b, 0);
   if (gastosAntes) {
@@ -6429,6 +6534,13 @@ function bindEvents() {
     // Abrir uma origem ou uma descrição não muda nada do personagem: mexe só
     // no DOM e sai, sem o redesenho que fecharia o que acabou de abrir.
     if (toggleMagiaPainel(e)) return;
+
+    const gratis = e.target.closest("[data-freecast]");
+    if (gratis) {
+      changeFreeCast(gratis.getAttribute("data-freecast"), Number(gratis.getAttribute("data-delta")));
+      renderSpellSlots(); renderHpLog(); recalculateCharacter(); saveToLocalStorage();
+      return;
+    }
 
     const btn = e.target.closest("[data-slot]");
     if (!btn) return;

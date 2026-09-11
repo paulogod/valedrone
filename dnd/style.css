@@ -3083,3 +3083,37 @@ img, table, pre { max-width: 100%; }
 }
 
 .field-hint:empty { display: none; }
+
+
+/* Linha de círculo que o personagem ainda não tem: existe para explicar a
+   ausência quando ele já tem magia daquele círculo por outro caminho. */
+.uso-linha.is-vazia .uso-nome { color: var(--text-muted); }
+
+/* Como a magia vai para a mesa: à vontade, de graça uma vez por descanso, ou
+   gastando espaço do círculo. */
+.magia-item-modo {
+  font-size: 0.66rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  vertical-align: middle;
+  margin-right: 0.2rem;
+}
+
+.magia-item-modo.is-livre {
+  color: #86efac;
+  background: rgba(134, 239, 172, 0.12);
+  border: 1px solid rgba(134, 239, 172, 0.3);
+}
+
+.magia-item-modo.is-gratis {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.magia-item-modo.is-espaco {
+  color: #93c5fd;
+  background: rgba(147, 197, 253, 0.12);
+  border: 1px solid rgba(147, 197, 253, 0.3);
+}
