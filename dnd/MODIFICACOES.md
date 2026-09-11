@@ -618,7 +618,29 @@ longe do livro, o nome sozinho não ajuda.
 nome + resumo ao montar as duas colunas de *Características de Classe*. O que não
 estiver no mapa sai só com o nome, como antes.
 
-#### 7.1.4 O mapa de campos, conferido
+#### 7.1.4 História e Personalidade saía em branco
+
+A caixa continuava vazia no PDF mesmo depois do ajuste de corpo de letra, e a
+causa não era o PDF: `sheetBackstoryDisplay` era **a única das quatro caixas da
+coluna da direita fora do mapa `OVERRIDABLE`** (`bindOfficialSheetEvents()`).
+Aparência, Idiomas e Equipamento gravavam o que o jogador digitasse em
+`character.sheet`; História e Personalidade, não.
+
+Resultado: quem escrevia a história direto na ficha via o texto sumir na
+repintura seguinte — qualquer mudança no criador, ou só recarregar a página,
+chamava `recalculateCharacter()` e `syncOfField()` devolvia o valor automático
+(vazio, se o Passo 6 estivesse em branco). Como a exportação lê a ficha da tela,
+o PDF saía com a caixa vazia junto.
+
+`sheetBackstoryDisplay: "history"` entrou no mapa. `tools/checar-persistencia.js`
+passou a cobrir o caso (escreve na caixa, dispara o `input`, repinta e confere
+que o texto continua lá); sem a correção, os dois testes falham.
+
+Para isso o `tools/dom-falso.js` passou a guardar os ouvintes de cada elemento
+(`el.ouvintes`) e a expor `el.disparar(tipo)`, que era o que faltava para um
+verificador testar o que o app faz com um evento.
+
+#### 7.1.5 O mapa de campos, conferido
 
 O mapa foi reconferido contra o texto do próprio PDF (os rótulos são texto em
 fontes CID, não imagem). Confere tudo: as 411 caixas estão mapeadas, a ordem das

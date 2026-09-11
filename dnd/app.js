@@ -5744,6 +5744,12 @@ function bindOfficialSheetEvents() {
     sheetClassFeatures2: "classFeatures2", sheetSpeciesTraits: "speciesTraits",
     sheetFeatsText: "featsText", sheetSpellAbility: "spellAbility", sheetSpellMod: "spellMod",
     sheetSpellDC: "spellDC", sheetSpellAttack: "spellAttack", sheetAppearance: "appearance",
+    // História e Personalidade ficou de fora daqui até 11/09/2026: das quatro
+    // caixas da coluna da direita, era a única sem override. Quem escrevia a
+    // história direto na ficha via o texto desaparecer na próxima repintura
+    // (qualquer mudança no criador, ou só recarregar a página) — e, como o PDF
+    // lê a ficha, ele saía com a caixa vazia.
+    sheetBackstoryDisplay: "history",
     sheetLanguages: "languages", sheetEquipment: "equipment"
   };
   Object.entries(OVERRIDABLE).forEach(([id, key]) => {
