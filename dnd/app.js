@@ -2044,7 +2044,7 @@ function renderSpellSlots() {
 
   const grupos = getGrantedSpellsBySource();
   // "Classe" entrou junto das outras: sem ela, as magias concedidas pela
-  // própria classe (Destruição Divina, Marca do Caçador...) eram contadas na
+  // própria classe (Destruição Divina, Marca do Predador...) eram contadas na
   // capacidade mas não apareciam em nenhuma linha de origem.
   const ordem = ["Classe", "Subclasse", "Espécie", "Talento", "Antecedente"];
 
@@ -2644,7 +2644,7 @@ function spellcastingAbilityOf() {
  * Uma magia exige jogada de ataque de QUEM CONJURA?
  *
  * Procurar só "jogada de ataque" no texto pega errado quase metade dos casos:
- * Bênção soma 1d4 "à jogada de ataque" do aliado, Marca do Caçador dá dano
+ * Bênção soma 1d4 "à jogada de ataque" do aliado, Marca do Predador dá dano
  * extra "sempre que o acertar com uma jogada de ataque", Santuário fala da
  * jogada de ataque do inimigo. Nenhuma delas se rola para acertar, e todas
  * ocupavam linha na tabela de ataques da ficha.

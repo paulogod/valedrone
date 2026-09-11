@@ -2404,7 +2404,7 @@ const DND5E_DATA = {
         {
           "id": "arcane_trickster",
           "name": "Trapaceiro Arcano (Arcane Trickster)",
-          "desc": "Usa ilusão e encantamento para trapaças mágicas, controlando uma Mão Mágica invisível e furtiva."
+          "desc": "Usa ilusão e encantamento para trapaças mágicas, controlando umas Mãos Mágicas invisíveis e furtiva."
         },
         {
           "id": "soulknife",
@@ -3140,7 +3140,7 @@ const DND5E_DATA = {
         {
           "id": "drow",
           "name": "Drow (Elfo Negro)",
-          "desc": "Visão no Escuro aumentada para 36 metros (120 pés). Conhece Globos de Luz, no 3º nível Escuridão e no 5º Fogo das Fadas."
+          "desc": "Visão no Escuro aumentada para 36 metros (120 pés). Conhece Luzes Dançantes, no 3º nível Escuridão e no 5º Fogo das Fadas."
         }
       ]
     },
@@ -3284,7 +3284,7 @@ const DND5E_DATA = {
         {
           "id": "rock_gnome",
           "name": "Gnomo das Rochas",
-          "desc": "Conhece Prestidigitação e Ferramentas de Engenhoqueiro para criar artefatos mecânicos."
+          "desc": "Conhece Prestidigitação Arcana e Ferramentas de Engenhoqueiro para criar artefatos mecânicos."
         }
       ]
     },
@@ -3946,7 +3946,7 @@ const DND5E_DATA = {
       "name": "Tocado pelo Reino Feérico (Fey Touched)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 em INT, SAB ou CAR. Aprende Passo Sombrio (Misty Step) e 1 magia de 1º círculo (Adivinhação/Encantamento), conjuráveis 1x grátis por descanso longo."
+      "desc": "+1 em INT, SAB ou CAR. Aprende Passo Nebuloso (Misty Step) e 1 magia de 1º círculo (Adivinhação/Encantamento), conjuráveis 1x grátis por descanso longo."
     },
     {
       "id": "grappler",
@@ -5565,7 +5565,7 @@ const DND5E_DATA = {
   "spells": [
     {
       "id": "spare_the_dying",
-      "name": "Poupar os Moribundos (Spare the Dying)",
+      "name": "Acudir os Moribundos (Spare the Dying)",
       "level": 0,
       "school": "Necromancia",
       "time": "Ação",
@@ -5597,7 +5597,7 @@ const DND5E_DATA = {
     },
     {
       "id": "druidcraft",
-      "name": "Artifício Druídico (Druidcraft)",
+      "name": "Arte Druídica (Druidcraft)",
       "level": 0,
       "school": "Transmutação",
       "time": "Ação",
@@ -5611,7 +5611,7 @@ const DND5E_DATA = {
     },
     {
       "id": "toll_the_dead",
-      "name": "Badalar dos Mortos (Toll the Dead)",
+      "name": "Badalar Fúnebre (Toll the Dead)",
       "level": 0,
       "school": "Necromancia",
       "time": "Ação",
@@ -5627,7 +5627,7 @@ const DND5E_DATA = {
     },
     {
       "id": "acid_splash",
-      "name": "Borrifo Ácido (Acid Splash)",
+      "name": "Bolha Ácida (Acid Splash)",
       "level": 0,
       "school": "Evocação",
       "time": "Ação",
@@ -5684,7 +5684,7 @@ const DND5E_DATA = {
     },
     {
       "id": "produce_flame",
-      "name": "Produzir Chama (Produce Flame)",
+      "name": "Criar Chamas (Produce Flame)",
       "level": 0,
       "school": "Invocação",
       "time": "Ação Bônus",
@@ -5743,7 +5743,7 @@ const DND5E_DATA = {
     },
     {
       "id": "true_strike",
-      "name": "Ataque Certeiro (True Strike)",
+      "name": "Golpe Certeiro (True Strike)",
       "level": 0,
       "school": "Adivinhação",
       "time": "Ação",
@@ -5794,7 +5794,7 @@ const DND5E_DATA = {
     },
     {
       "id": "dancing_lights",
-      "name": "Globos de Luz (Dancing Lights)",
+      "name": "Luzes Dançantes (Dancing Lights)",
       "level": 0,
       "school": "Ilusão",
       "time": "Ação",
@@ -5810,7 +5810,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mage_hand",
-      "name": "Mão Mágica (Mage Hand)",
+      "name": "Mãos Mágicas (Mage Hand)",
       "level": 0,
       "school": "Invocação",
       "time": "Ação",
@@ -5859,7 +5859,7 @@ const DND5E_DATA = {
     },
     {
       "id": "word_of_radiance",
-      "name": "Palavra Radiante (Word of Radiance)",
+      "name": "Palavra de Radiância (Word of Radiance)",
       "level": 0,
       "school": "Evocação",
       "time": "Ação",
@@ -5873,7 +5873,7 @@ const DND5E_DATA = {
     },
     {
       "id": "prestidigitation",
-      "name": "Prestidigitação (Prestidigitation)",
+      "name": "Prestidigitação Arcana (Prestidigitation)",
       "level": 0,
       "school": "Transmutação",
       "time": "Ação",
@@ -5937,7 +5937,7 @@ const DND5E_DATA = {
     },
     {
       "id": "eldritch_blast",
-      "name": "Rajada Mística (Eldritch Blast)",
+      "name": "Raio Místico (Eldritch Blast)",
       "level": 0,
       "school": "Evocação",
       "time": "Ação",
@@ -5951,7 +5951,7 @@ const DND5E_DATA = {
     },
     {
       "id": "poison_spray",
-      "name": "Borrifo Venenoso (Poison Spray)",
+      "name": "Rajada de Veneno (Poison Spray)",
       "level": 0,
       "school": "Necromancia",
       "time": "Ação",
@@ -5968,7 +5968,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mending",
-      "name": "Consertar (Mending)",
+      "name": "Reparar (Mending)",
       "level": 0,
       "school": "Transmutação",
       "time": "1 minuto",
@@ -6046,7 +6046,7 @@ const DND5E_DATA = {
     },
     {
       "id": "chill_touch",
-      "name": "Toque Macabro (Chill Touch)",
+      "name": "Toque Necrótico (Chill Touch)",
       "level": 0,
       "school": "Necromancia",
       "time": "Ação",
@@ -6080,7 +6080,7 @@ const DND5E_DATA = {
     },
     {
       "id": "vicious_mockery",
-      "name": "Zombaria Viciosa (Vicious Mockery)",
+      "name": "Zombaria Perversa (Vicious Mockery)",
       "level": 0,
       "school": "Encantamento",
       "time": "Ação",
@@ -6278,7 +6278,7 @@ const DND5E_DATA = {
     },
     {
       "id": "hex",
-      "name": "Bruxaria (Hex)",
+      "name": "Danação (Hex)",
       "level": 1,
       "school": "Encantamento",
       "time": "Ação Bônus",
@@ -6334,7 +6334,7 @@ const DND5E_DATA = {
     },
     {
       "id": "thunderous_smite",
-      "name": "Destruição Trovejante (Thunderous Smite)",
+      "name": "Destruição Estrondosa (Thunderous Smite)",
       "level": 1,
       "school": "Evocação",
       "time": "Ação Bônus, que você realiza imediatamente após acertar um alvo com uma arma Corpo a Corpo ou um Ataque Desarmado",
@@ -6445,7 +6445,7 @@ const DND5E_DATA = {
     },
     {
       "id": "entangle",
-      "name": "Constrição (Entangle)",
+      "name": "Emaranhar (Entangle)",
       "level": 1,
       "school": "Invocação",
       "time": "Ação",
@@ -6586,7 +6586,7 @@ const DND5E_DATA = {
     },
     {
       "id": "tashas_hideous_laughter",
-      "name": "Riso Histérico de Tasha (Tasha's Hideous Laughter)",
+      "name": "Gargalhada Nefasta de Tasha (Tasha's Hideous Laughter)",
       "level": 1,
       "school": "Encantamento",
       "time": "Ação",
@@ -6722,7 +6722,7 @@ const DND5E_DATA = {
     },
     {
       "id": "hunters_mark",
-      "name": "Marca do Caçador (Hunter's Mark)",
+      "name": "Marca do Predador (Hunter's Mark)",
       "level": 1,
       "school": "Adivinhação",
       "time": "Ação Bônus",
@@ -6751,7 +6751,7 @@ const DND5E_DATA = {
     },
     {
       "id": "fog_cloud",
-      "name": "Nuvem de Névoa (Fog Cloud)",
+      "name": "Névoa Obscurecente (Fog Cloud)",
       "level": 1,
       "school": "Invocação",
       "time": "Ação",
@@ -6915,7 +6915,7 @@ const DND5E_DATA = {
     },
     {
       "id": "guiding_bolt",
-      "name": "Raio Guiador (Guiding Bolt)",
+      "name": "Raio Guia (Guiding Bolt)",
       "level": 1,
       "school": "Evocação",
       "time": "Ação",
@@ -7223,7 +7223,7 @@ const DND5E_DATA = {
     },
     {
       "id": "aid",
-      "name": "Ajuda (Aid)",
+      "name": "Auxílio (Aid)",
       "level": 2,
       "school": "Abjuração",
       "time": "Ação",
@@ -7304,7 +7304,7 @@ const DND5E_DATA = {
     },
     {
       "id": "find_steed",
-      "name": "Encontrar Montaria (Find Steed)",
+      "name": "Convocar Montaria (Find Steed)",
       "level": 2,
       "school": "Invocação",
       "time": "Ação",
@@ -7363,7 +7363,7 @@ const DND5E_DATA = {
     },
     {
       "id": "spike_growth",
-      "name": "Crescimento de Espinhos (Spike Growth)",
+      "name": "Crescer Espinhos (Spike Growth)",
       "level": 2,
       "school": "Transmutação",
       "time": "Ação",
@@ -7378,7 +7378,7 @@ const DND5E_DATA = {
     },
     {
       "id": "shatter",
-      "name": "Estilhaçar (Shatter)",
+      "name": "Despedaçar (Shatter)",
       "level": 2,
       "school": "Evocação",
       "time": "Ação",
@@ -7711,7 +7711,7 @@ const DND5E_DATA = {
     },
     {
       "id": "hold_person",
-      "name": "Imobilizar Pessoa (Hold Person)",
+      "name": "Paralisar Pessoa (Hold Person)",
       "level": 2,
       "school": "Encantamento",
       "time": "Ação",
@@ -7730,7 +7730,7 @@ const DND5E_DATA = {
     },
     {
       "id": "misty_step",
-      "name": "Passo Sombrio (Misty Step)",
+      "name": "Passo Nebuloso (Misty Step)",
       "level": 2,
       "school": "Invocação",
       "time": "Ação Bônus",
@@ -7746,7 +7746,7 @@ const DND5E_DATA = {
     },
     {
       "id": "pass_without_trace",
-      "name": "Passo Sem Pegadas (Pass without Trace)",
+      "name": "Passo Sem Rastro (Pass without Trace)",
       "level": 2,
       "school": "Abjuração",
       "time": "Ação",
@@ -8153,7 +8153,7 @@ const DND5E_DATA = {
     },
     {
       "id": "haste",
-      "name": "Velocidade (Haste)",
+      "name": "Celeridade (Haste)",
       "level": 3,
       "school": "Transmutação",
       "time": "Ação",
@@ -8202,7 +8202,7 @@ const DND5E_DATA = {
     },
     {
       "id": "counterspell",
-      "name": "Contra-Mágica (Counterspell)",
+      "name": "Contramagia (Counterspell)",
       "level": 3,
       "school": "Abjuração",
       "time": "Reação, que você executa quando vê uma criatura a até 18 metros de você conjurando uma magia com componentes Verbais, Somáticos ou Materiais",
@@ -8231,7 +8231,7 @@ const DND5E_DATA = {
         "ranger",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Feérico. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Feérico . Ao conjurar a magia, escolha um humor: Alegre, Enfurecido ou Malandro. A criatura se assemelha a uma criatura Feérica à sua escolha definida pelo humor escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece se reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é neUm Guardião conjura Convocar Feérico, conjurando um Espírito Feérico enfurecido para enfrentar um Merrow saqueador."
+      "desc": "Você invoca um Espírito Feérico. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Feérico . Ao conjurar a magia, escolha um humor: Alegre, Enfurecido ou Malandro. A criatura se assemelha a uma criatura Feérica à sua escolha definida pelo humor escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece se reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
     },
     {
       "id": "call_lightning",
@@ -8357,7 +8357,7 @@ const DND5E_DATA = {
       "classes": [
         "ranger"
       ],
-      "desc": "Um Druida humano usa Falar com Animais para conversar com seu melhor amigo urso. Quando seu ataque atinge ou erra o alvo, a arma ou munição que você está usando se transforma em um relâmpago. Em vez de sofrer qualquer dano ou outros efeitos do ataque, o alvo sofre 4d8 pontos de dano Elétrico em um acerto ou metade desse dano em um erro. Cada criatura em um raio de 3 metros do alvo deve então realizar uma salvaguarda de Destreza, sofrendo 2d8 pontos de dano Elétrico se falhar ou metade desse dano em caso de sucesso. A arma ou munição retorna então à sua forma normal. Usando um Espaço de Magia de Círculo Superior. O dano para ambos os efeitos da magia aumenta em 1d8 para cada círculo de espaço de magia acima de 3."
+      "desc": "Quando seu ataque atinge ou erra o alvo, a arma ou munição que você está usando se transforma em um relâmpago. Em vez de sofrer qualquer dano ou outros efeitos do ataque, o alvo sofre 4d8 pontos de dano Elétrico em um acerto ou metade desse dano em um erro. Cada criatura em um raio de 3 metros do alvo deve então realizar uma salvaguarda de Destreza, sofrendo 2d8 pontos de dano Elétrico se falhar ou metade desse dano em caso de sucesso. A arma ou munição retorna então à sua forma normal. Usando um Espaço de Magia de Círculo Superior. O dano para ambos os efeitos da magia aumenta em 1d8 para cada círculo de espaço de magia acima de 3."
     },
     {
       "id": "hunger_of_hadar",
@@ -8607,7 +8607,7 @@ const DND5E_DATA = {
       "classes": [
         "wizard"
       ],
-      "desc": "Uma criatura Grande, quase real e semelhante a um cavalo aparece no chão em um espaço desocupado à sua escolha no alcance da magia. Você decide a aparência da criatura e ela é equipada com uma sela, rédea e freio. Qualquer equipamento criado pela magia desaparece em uma nuvem de fumaça se for carregado a mais de 3 metros de distância da montaria. Pela duração da magia, você ou uma criatura à sua escolha pode usar a montaria. A montaria usa o bloco de estatísticas do Cavalo de Montaria (veja também o apêndice B), exceto que ele tem um Deslocamento de 30 metros e pode viajar 20 quilômetros em uma hora. Quando a magia termina, a montaria desaparece gradualmente, dando ao cavaleiro 1 minuto para desmontar. A magia se encerra se a montaria sofrer algum dano. Montaria Fantasmagórica"
+      "desc": "Uma criatura Grande, quase real e semelhante a um cavalo aparece no chão em um espaço desocupado à sua escolha no alcance da magia. Você decide a aparência da criatura e ela é equipada com uma sela, rédea e freio. Qualquer equipamento criado pela magia desaparece em uma nuvem de fumaça se for carregado a mais de 3 metros de distância da montaria. Pela duração da magia, você ou uma criatura à sua escolha pode usar a montaria. A montaria usa o bloco de estatísticas do Cavalo de Montaria (veja também o apêndice B), exceto que ele tem um Deslocamento de 30 metros e pode viajar 20 quilômetros em uma hora. Quando a magia termina, a montaria desaparece gradualmente, dando ao cavaleiro 1 minuto para desmontar. A magia se encerra se a montaria sofrer algum dano."
     },
     {
       "id": "muralha_de_vento",
@@ -8803,7 +8803,7 @@ const DND5E_DATA = {
     },
     {
       "id": "revivify",
-      "name": "Reviver (Revivify)",
+      "name": "Revivificar (Revivify)",
       "level": 3,
       "school": "Necromancia",
       "time": "Ação",
@@ -9017,7 +9017,7 @@ const DND5E_DATA = {
         "sorcerer",
         "wizard"
       ],
-      "desc": "O Mago glacimante Otiluke explode monstros com Cone de Frio. Cada criatura em uma Esfera de 3 metros de raio centrada em um ponto à sua escolha no alcance da magia deve ser bem-sucedida em uma salvaguarda de Sabedoria, ou esse alvo não pode executar Ações Bônus ou Reações, e deve jogar 1d10 no início de cada um dos turnos dele para determinar o comportamento nesse turno, consultando a tabela abaixo. 1d10 Comportamento para o Turno O alvo não executa uma ação e usa todo o deslocamento para se mover. Jogue 1d4 para a direção: 1, norte; 2, leste; 3, sul; ou 4, oeste. 2-6 O alvo não se move ou executa ações. 7-8 O alvo não se move e executa a ação Atacar para realizar um ataque corpo a corpo contra uma criatura aleatória ao alcance. Se nenhuma estiver ao alcance, o alvo não executa nenhuma ação. 9-10 O alvo escolhe o comportamento dele. Ao final de cada um dos turnos dele, um alvo afetado repete a salvaguarda, encerrando a magia em caso de sucesso. Usando um Espaço de Magia de Círculo Superior. O raio da Esfera aumenta em 1,5 metro para cada círculo de espaço de magia acima de 4."
+      "desc": "Cada criatura em uma Esfera de 3 metros de raio centrada em um ponto à sua escolha no alcance da magia deve ser bem-sucedida em uma salvaguarda de Sabedoria, ou esse alvo não pode executar Ações Bônus ou Reações, e deve jogar 1d10 no início de cada um dos turnos dele para determinar o comportamento nesse turno, consultando a tabela abaixo. 1d10 — Comportamento para o Turno: 1 O alvo não executa uma ação e usa todo o deslocamento para se mover. Jogue 1d4 para a direção: 1, norte; 2, leste; 3, sul; ou 4, oeste. 2-6 O alvo não se move ou executa ações. 7-8 O alvo não se move e executa a ação Atacar para realizar um ataque corpo a corpo contra uma criatura aleatória ao alcance. Se nenhuma estiver ao alcance, o alvo não executa nenhuma ação. 9-10 O alvo escolhe o comportamento dele. Ao final de cada um dos turnos dele, um alvo afetado repete a salvaguarda, encerrando a magia em caso de sucesso. Usando um Espaço de Magia de Círculo Superior. O raio da Esfera aumenta em 1,5 metro para cada círculo de espaço de magia acima de 4."
     },
     {
       "id": "control_water",
@@ -9053,7 +9053,7 @@ const DND5E_DATA = {
     },
     {
       "id": "guardian_of_faith",
-      "name": "Guardião da Fé (Guardian of Faith)",
+      "name": "Defensor da Fé (Guardian of Faith)",
       "level": 4,
       "school": "Invocação",
       "time": "Ação",
@@ -9297,7 +9297,7 @@ const DND5E_DATA = {
     },
     {
       "id": "blight",
-      "name": "Definhar (Blight)",
+      "name": "Malogro (Blight)",
       "level": 4,
       "school": "Necromancia",
       "time": "Ação",
@@ -9310,7 +9310,7 @@ const DND5E_DATA = {
         "sorcerer",
         "wizard"
       ],
-      "desc": "Um elfo Clérigo usa a magia Luz do Dia para trazer a luz do amanhecer para uma corte de vampiros. Uma criatura à sua vista e no alcance da magia realiza uma salvaguarda de Constituição, sofrendo 8d8 pontos de dano Necrótico se falhar ou metade desse dano em caso de sucesso. Uma criatura do tipo Planta falha automaticamente na salvaguarda. Como alternativa, escolha como alvo uma planta não mágica que não seja uma criatura, como uma árvore ou um arbusto. Ela não realiza uma salvaguarda; ela simplesmente murcha e morre. Usando um Espaço de Magia de Círculo Superior. O dano aumenta em 1d8 para cada círculo de espaço de magia acima de 4."
+      "desc": "Uma criatura à sua vista e no alcance da magia realiza uma salvaguarda de Constituição, sofrendo 8d8 pontos de dano Necrótico se falhar ou metade desse dano em caso de sucesso. Uma criatura do tipo Planta falha automaticamente na salvaguarda. Como alternativa, escolha como alvo uma planta não mágica que não seja uma criatura, como uma árvore ou um arbusto. Ela não realiza uma salvaguarda; ela simplesmente murcha e morre. Usando um Espaço de Magia de Círculo Superior. O dano aumenta em 1d8 para cada círculo de espaço de magia acima de 4."
     },
     {
       "id": "moldar_rochas",
@@ -9459,7 +9459,7 @@ const DND5E_DATA = {
     },
     {
       "id": "santuario_particular_de_mordenkainten",
-      "name": "Santuário Particular de Mordenkainten (Mordenkainen's Private Sanctum)",
+      "name": "Santuário Particular de Mordenkainen (Mordenkainen's Private Sanctum)",
       "level": 4,
       "school": "Abjuração",
       "time": "10 minutos",
@@ -9473,7 +9473,7 @@ const DND5E_DATA = {
     },
     {
       "id": "ice_storm",
-      "name": "Tempestade de Gelo (Ice Storm)",
+      "name": "Tempestade Glacial (Ice Storm)",
       "level": 4,
       "school": "Evocação",
       "time": "Ação",
@@ -9599,7 +9599,7 @@ const DND5E_DATA = {
     },
     {
       "id": "teleportation_circle",
-      "name": "Círculo de Teletransporte (Teleportation Circle)",
+      "name": "Círculo de Teleporte (Teleportation Circle)",
       "level": 5,
       "school": "Invocação",
       "time": "1 minuto",
@@ -9769,11 +9769,11 @@ const DND5E_DATA = {
       "time": "Ação",
       "range": "Pessoal",
       "components": "V, S",
-      "duration": "Co",
+      "duration": "Concentração, até 1 hora",
       "classes": [
         "druid"
       ],
-      "desc": "ncentração, até 1 hora Uma aura estende-se de você em uma Emanação de 3 metros pela duração da magia. A aura impede que criaturas que não sejam Constructos e Mortos-Vivos passem ou alcancem através dela. Uma criatura afetada pode conjurar magias ou realizar ataques com armas à Distância ou com Extensão através da barreira. Se você se mover de modo que uma criatura afetada seja forçada a atravessar a barreira, a magia encerra."
+      "desc": "Uma aura estende-se de você em uma Emanação de 3 metros pela duração da magia. A aura impede que criaturas que não sejam Constructos e Mortos-Vivos passem ou alcancem através dela. Uma criatura afetada pode conjurar magias ou realizar ataques com armas à Distância ou com Extensão através da barreira. Se você se mover de modo que uma criatura afetada seja forçada a atravessar a barreira, a magia encerra."
     },
     {
       "id": "mass_cure_wounds",
@@ -10023,7 +10023,7 @@ const DND5E_DATA = {
     },
     {
       "id": "wall_of_force",
-      "name": "Muralha de Força (Wall of Force)",
+      "name": "Muralha de Energia (Wall of Force)",
       "level": 5,
       "school": "Evocação",
       "time": "Ação",
@@ -10053,7 +10053,7 @@ const DND5E_DATA = {
     },
     {
       "id": "cloudkill",
-      "name": "Nuvem Assassina (Cloudkill)",
+      "name": "Névoa Mortal (Cloudkill)",
       "level": 5,
       "school": "Invocação",
       "time": "Ação",
@@ -10082,7 +10082,7 @@ const DND5E_DATA = {
     },
     {
       "id": "hold_monster",
-      "name": "Imobilizar Monstro (Hold Monster)",
+      "name": "Paralisar Monstro (Hold Monster)",
       "level": 5,
       "school": "Encantamento",
       "time": "Ação",
@@ -10173,7 +10173,7 @@ const DND5E_DATA = {
         "ranger",
         "paladin"
       ],
-      "desc": "Você toca uma criatura e magicamente remove um dos seguintes efeitos: - 1 nível de Exaustão - A condição Enfeitiçado ou Petrificado - Uma maldição, incluindo a Sintonização do alvo com um item mágico amaldiçoado - Qualquer redução em um dos valores de atributo do alvo - Qualquer redução nos Pontos de Vida máximos do alvo Um Druida humano conjura Restauração Menor para aliviar o sofrimento de um amigo que foi envenenado em batalha. ,"
+      "desc": "Você toca uma criatura e magicamente remove um dos seguintes efeitos: - 1 nível de Exaustão - A condição Enfeitiçado ou Petrificado - Uma maldição, incluindo a Sintonização do alvo com um item mágico amaldiçoado - Qualquer redução em um dos valores de atributo do alvo - Qualquer redução nos Pontos de Vida máximos do alvo."
     },
     {
       "id": "raise_dead",
@@ -10189,7 +10189,7 @@ const DND5E_DATA = {
         "cleric",
         "paladin"
       ],
-      "desc": "Com um toque, você revive uma criatura morta, se tiver falecido há no máximo 10 dias e não era um Morto-Vivo quando morreu. A criatura retorna à vida com 1 Ponto de Vida. Esta magia também neutraliza quaisquer venenos que afetavam a criatura no momento da morte. Esta magia fecha todas as feridas fatais, mas não restaura membros ou partes do corpo faltantes. Se a criatura estiver sem partes do corpo ou órgãos essenciais para sua sobrevivência - como a cabeça, por exemplo - a magia falha automaticamente. Voltar à vida é um processo difícil. O alvo sofre uma penalidade de -4 em Testes de D20. Sempre que o alvo completar um Descanso Longo, a penalidade é reduzida em 1 até se tornar 0. ,"
+      "desc": "Com um toque, você revive uma criatura morta, se tiver falecido há no máximo 10 dias e não era um Morto-Vivo quando morreu. A criatura retorna à vida com 1 Ponto de Vida. Esta magia também neutraliza quaisquer venenos que afetavam a criatura no momento da morte. Esta magia fecha todas as feridas fatais, mas não restaura membros ou partes do corpo faltantes. Se a criatura estiver sem partes do corpo ou órgãos essenciais para sua sobrevivência - como a cabeça, por exemplo - a magia falha automaticamente. Voltar à vida é um processo difícil. O alvo sofre uma penalidade de -4 em Testes de D20. Sempre que o alvo completar um Descanso Longo, a penalidade é reduzida em 1 até se tornar 0."
     },
     {
       "id": "seeming",
@@ -10240,7 +10240,7 @@ const DND5E_DATA = {
     },
     {
       "id": "tempestade_radiante_de_jallarzti",
-      "name": "Tempestade Radiante de Jallarzti (Jallarzi's Storm of Radiance)",
+      "name": "Tempestade Radiante de Jallarzi (Jallarzi's Storm of Radiance)",
       "level": 5,
       "school": "Evocação",
       "time": "Ação",
@@ -10269,7 +10269,7 @@ const DND5E_DATA = {
         "druid",
         "wizard"
       ],
-      "desc": "Você pode ver e ouvir uma criatura que você escolheu e que está no mesmo plano de existência que você. O alvo realiza uma salvaguarda de Sabedoria, que é modificada (veja as tabelas abaixo) por quão bem você conhece o alvo e o tipo de conexão física que você tem com ele. O alvo não sabe contra o que está realizando a salvaguarda, apenas que se sente desconfortável. Seu Conhecimento do Alvo É... Em caso de sucesso, o alvo não é afetado e você não pode usar esta magia nele novamente por 24 horas. Se falhar, a magia cria um sensor Invisível e intangível a até 3 metros do alvo. Você pode ver e ouvir através do sensor como se estivesse lá. O sensor se move com o alvo, permanecendo a 3 metros dele pela duração da magia. Se algo puder ver o sensor, ele aparece como uma esfera luminosa do tamanho do seu punho. Em vez de uma criatura, você pode escolher um local que viu. Ao fazer isso, o sensor aparece nesse local e não se move."
+      "desc": "Você pode ver e ouvir uma criatura que você escolheu e que está no mesmo plano de existência que você. O alvo realiza uma salvaguarda de Sabedoria, que é modificada (veja as tabelas abaixo) por quão bem você conhece o alvo e o tipo de conexão física que você tem com ele. O alvo não sabe contra o que está realizando a salvaguarda, apenas que se sente desconfortável. Seu conhecimento do alvo (modificador na salvaguarda): de segunda mão, ouviu falar do alvo, +5; de primeira mão, conhece o alvo, +0; amplo, conhece bem o alvo, -5. Você possui algo do alvo (modificador na salvaguarda): retrato ou outra imagem, -2; roupa ou outra posse, -4; parte do corpo, mecha de cabelo ou pedaço de unha, -10. Em caso de sucesso, o alvo não é afetado e você não pode usar esta magia nele novamente por 24 horas. Se falhar, a magia cria um sensor Invisível e intangível a até 3 metros do alvo. Você pode ver e ouvir através do sensor como se estivesse lá. O sensor se move com o alvo, permanecendo a 3 metros dele pela duração da magia. Se algo puder ver o sensor, ele aparece como uma esfera luminosa do tamanho do seu punho. Em vez de uma criatura, você pode escolher um local que viu. Ao fazer isso, o sensor aparece nesse local e não se move."
     },
     {
       "id": "aliado_extraplanar",
@@ -10287,7 +10287,7 @@ const DND5E_DATA = {
     },
     {
       "id": "heroes_feast",
-      "name": "Banquete dos Heróis (Heroes' Feast)",
+      "name": "Banquete de Heróis (Heroes' Feast)",
       "level": 6,
       "school": "Invocação",
       "time": "10 minutos",
@@ -10328,7 +10328,7 @@ const DND5E_DATA = {
         "warlock",
         "wizard"
       ],
-      "desc": "Você conjura um caldeirão com pés de garra cheio de líquido borbulhante. O caldeirão aparece em um espaço desocupado no chão a até 1,5 metro de você e permanece pela duração da magia. O caldeirão não pode ser movido e desaparece quando a magia termina, junto com o líquido borbulhante dentro dele. O líquido no caldeirão copia as propriedades de uma poção Comum ou Incomum à sua escolha (como uma Poção de Cura). Como uma Ação Bônus, você ou um aliado pode alcançar o caldeirão e retirar dele uma poção desse tipo. A poção está contida em um frasco que desaparece quando a poção é consumida. O caldeirão pode produzir um número dessas poções igual ao seu modificador de atributo de conjuração (mínimo 1). Quando a última dessas poções é retirada do caldeirão, o caldeirão desaparece e a magia termina. Poções obtidas do caldeirão que não são consumidas desaparecem quando você conjura esta magia novamente. ,"
+      "desc": "Você conjura um caldeirão com pés de garra cheio de líquido borbulhante. O caldeirão aparece em um espaço desocupado no chão a até 1,5 metro de você e permanece pela duração da magia. O caldeirão não pode ser movido e desaparece quando a magia termina, junto com o líquido borbulhante dentro dele. O líquido no caldeirão copia as propriedades de uma poção Comum ou Incomum à sua escolha (como uma Poção de Cura). Como uma Ação Bônus, você ou um aliado pode alcançar o caldeirão e retirar dele uma poção desse tipo. A poção está contida em um frasco que desaparece quando a poção é consumida. O caldeirão pode produzir um número dessas poções igual ao seu modificador de atributo de conjuração (mínimo 1). Quando a última dessas poções é retirada do caldeirão, o caldeirão desaparece e a magia termina. Poções obtidas do caldeirão que não são consumidas desaparecem quando você conjura esta magia novamente."
     },
     {
       "id": "caminhar_no_vento",
@@ -10407,7 +10407,7 @@ const DND5E_DATA = {
     },
     {
       "id": "heal",
-      "name": "Cura Suprema (Heal)",
+      "name": "Cura Completa (Heal)",
       "level": 6,
       "school": "Abjuração",
       "time": "Ação",
@@ -10568,7 +10568,7 @@ const DND5E_DATA = {
         "warlock",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Ínfero. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Ínfero. Ao conjurar a magia, escolha Demônio, Diabo ou Yugoloth. A criatura se assemelha a um Ínfero do tipo escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo."
+      "desc": "Você invoca um Espírito Ínfero. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Ínfero. Ao conjurar a magia, escolha Demônio, Diabo ou Yugoloth. A criatura se assemelha a um Ínfero do tipo escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
     },
     {
       "id": "mau_olhado",
@@ -10589,7 +10589,7 @@ const DND5E_DATA = {
     },
     {
       "id": "harm",
-      "name": "Prejudicar (Harm)",
+      "name": "Moléstia (Harm)",
       "level": 6,
       "school": "Necromancia",
       "time": "Ação",
@@ -10702,11 +10702,11 @@ const DND5E_DATA = {
         "bard",
         "wizard"
       ],
-      "desc": "Você cria uma proteção que protege até 225 metros quadrados de espaço. A área protegida pode ter até 6 metros de altura e você a molda como um quadrado de 15 metros de lado, cem quadrados de 1,5 metro de lado que são contíguos ou vinte e cinco quadrados de 3 metros de lado que são contíguos. Ao conjurar esta magia, você pode especificar indivíduos que não são afetados pelos efeitos da magia. Você também pode especificar uma senha que, quando proferida em voz alta a até 1,5 metro da área protegida, torne o orador imune aos efeitos da magia. A magia cria os efeitos abaixo dentro da área protegida. Dissipar Magia não tem efeito sobre Proteger Fortaleza em si, mas cada um dos seguintes efeitos pode ser dissipado. Se todos os quatro forem dissipados, Proteger Fortaleza se encerra. Se você conjurar a magia todos os dias por 365 dias na mesma área, a magia permanece até que todos os seus efeitos sejam dissipados. Corredores. A névoa preenche todos os corredores protegidos, tornando a área Totalmente Obscurecida. Além disso, em cada interseção ou passagem ramificada que oferece uma escolha de direção, há uma chance de 50% de que uma criatura diferente de você acredite que está indo na direção oposta à que escolheu. Escadas. Teias preenchem todas as escadas na área protegida de cima para baixo, como na magia Teia . Esses fios voltam a crescer em 10 minutos se forem destruídos enquanto Proteger Fortaleza durar. Portas. Todas as portas da área protegida estão magicamente trancadas, como se estivessem seladas pela magia Tranca Arcana. Além disso, você pode cobrir até dez portas com uma ilusão para fazê-las parecer seções simples de parede. Outro Efeito Mágico. Coloque um dos seguintes efeitos mágicos dentro da área protegida: - Luzes Dançantes em quatro corredores, com um padrão simples que as luzes repetem enquanto durar Proteger Fortaleza - Boca Encantada em dois locais - Nuvem Fétida em dois locais (os vapores retornam dentro de 10 minutos se dispersos enquanto Proteger Fortaleza durar) - Lufada de Vento em um corredor ou sala (o vento sopra continuamente enquanto a magia durar) - Sugestão em um quadrado de 1,5 metro de lados; qualquer criatura que entre nesse quadrado recebe a sugestão mentalmente"
+      "desc": "Você cria uma proteção que protege até 225 metros quadrados de espaço. A área protegida pode ter até 6 metros de altura e você a molda como um quadrado de 15 metros de lado, cem quadrados de 1,5 metro de lado que são contíguos ou vinte e cinco quadrados de 3 metros de lado que são contíguos. Ao conjurar esta magia, você pode especificar indivíduos que não são afetados pelos efeitos da magia. Você também pode especificar uma senha que, quando proferida em voz alta a até 1,5 metro da área protegida, torne o orador imune aos efeitos da magia. A magia cria os efeitos abaixo dentro da área protegida. Dissipar Magia não tem efeito sobre Proteger Fortaleza em si, mas cada um dos seguintes efeitos pode ser dissipado. Se todos os quatro forem dissipados, Proteger Fortaleza se encerra. Se você conjurar a magia todos os dias por 365 dias na mesma área, a magia permanece até que todos os seus efeitos sejam dissipados. Corredores. A névoa preenche todos os corredores protegidos, tornando a área Totalmente Obscurecida. Além disso, em cada interseção ou passagem ramificada que oferece uma escolha de direção, há uma chance de 50% de que uma criatura diferente de você acredite que está indo na direção oposta à que escolheu. Escadas. Teias preenchem todas as escadas na área protegida de cima para baixo, como na magia Teia . Esses fios voltam a crescer em 10 minutos se forem destruídos enquanto Proteger Fortaleza durar. Portas. Todas as portas da área protegida estão magicamente trancadas, como se estivessem seladas pela magia Tranca Arcana. Além disso, você pode cobrir até dez portas com uma ilusão para fazê-las parecer seções simples de parede. Outro Efeito Mágico. Coloque um dos seguintes efeitos mágicos dentro da área protegida: - Luzes Dançantes em quatro corredores, com um padrão simples que as luzes repetem enquanto durar Proteger Fortaleza - Boca Encantada em dois locais - Nuvem Fétida em dois locais (os vapores retornam dentro de 10 minutos se dispersos enquanto Proteger Fortaleza durar) - Lufada de Vento em um corredor ou sala (o vento sopra continuamente enquanto a magia durar) - Sugestão em um quadrado de 1,5 metro de lados; qualquer criatura que entre nesse quadrado recebe a sugestão mentalmente."
     },
     {
       "id": "sunbeam",
-      "name": "Feixe Solar (Sunbeam)",
+      "name": "Raio Solar (Sunbeam)",
       "level": 6,
       "school": "Evocação",
       "time": "Ação",
@@ -10800,7 +10800,7 @@ const DND5E_DATA = {
     },
     {
       "id": "forcecage",
-      "name": "Prisão de Energia (Forcecage)",
+      "name": "Cárcere de Energia (Forcecage)",
       "level": 7,
       "school": "Evocação",
       "time": "Ação",
@@ -10895,7 +10895,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mansao_magnifica_de_mordenkainten",
-      "name": "Mansão Magnífica de Mordenkainten (Mordenkainen's Magnificent Mansion)",
+      "name": "Mansão Magnífica de Mordenkainen (Mordenkainen's Magnificent Mansion)",
       "level": 7,
       "school": "Invocação",
       "time": "1 minuto",
@@ -11062,7 +11062,7 @@ const DND5E_DATA = {
     },
     {
       "id": "teleport",
-      "name": "Teletransporte (Teleport)",
+      "name": "Teleporte (Teleport)",
       "level": 7,
       "school": "Invocação",
       "time": "Ação",
@@ -11094,7 +11094,7 @@ const DND5E_DATA = {
     },
     {
       "id": "plane_shift",
-      "name": "Viagem Planar (Plane Shift)",
+      "name": "Transição Planar (Plane Shift)",
       "level": 7,
       "school": "Invocação",
       "time": "Ação",
@@ -11183,7 +11183,7 @@ const DND5E_DATA = {
         "druid",
         "wizard"
       ],
-      "desc": "Você assume o controle do clima a até 8 quilômetros de você pela duração da magia. Você deve estar ao ar livre para conjurar esta magia, e ela encerra se você for para áreas internas. Ao conjurar a magia, você altera a condição climática atual, determinada pelo Mestre. Você pode alterar a precipitação, a temperatura e o vento. Leva 1d4 x 10 minutos para as novas condições do clima entrarem em vigor. Depois que elas se estabelecerem, você pode alterar as condições novamente. Quando a magia termina, o clima volta gradualmente ao normal. Ao alterar as condições meteorológicas, encontre uma condição atual nas tabelas a seguir e altere o estágio em um, para cima ou para baixo. Ao mudar o vento, você pode alterar a direção dele. PrecipitaçãoEstágio Condição Limpo Nuvens leves Nublado ou com neblina Chuva, granizo ou neve Chuva torrencial, tempestade de granizo ou nevasca Temperatura VentoEstágio Condição Estágio Condição Calor insuportável Calmo Quente Vento moderado Ameno Vento forte Fresco Vendaval Frio Tempestade Frio extremo"
+      "desc": "Você assume o controle do clima a até 8 quilômetros de você pela duração da magia. Você deve estar ao ar livre para conjurar esta magia, e ela encerra se você for para áreas internas. Ao conjurar a magia, você altera a condição climática atual, determinada pelo Mestre. Você pode alterar a precipitação, a temperatura e o vento. Leva 1d4 x 10 minutos para as novas condições do clima entrarem em vigor. Depois que elas se estabelecerem, você pode alterar as condições novamente. Quando a magia termina, o clima volta gradualmente ao normal. Ao alterar as condições meteorológicas, encontre uma condição atual nas tabelas a seguir e altere o estágio em um, para cima ou para baixo. Ao mudar o vento, você pode alterar a direção dele. Precipitação (estágio — condição): 1 Limpo; 2 Nuvens leves; 3 Nublado ou com neblina; 4 Chuva, granizo ou neve; 5 Chuva torrencial, tempestade de granizo ou nevasca. Temperatura (estágio — condição): 1 Calor insuportável; 2 Quente; 3 Ameno; 4 Fresco; 5 Frio; 6 Frio extremo. Vento (estágio — condição): 1 Calmo; 2 Vento moderado; 3 Vento forte; 4 Vendaval; 5 Tempestade."
     },
     {
       "id": "dominate_monster",
@@ -11419,7 +11419,7 @@ const DND5E_DATA = {
     },
     {
       "id": "mass_heal",
-      "name": "Cura em Massa (Mass Heal)",
+      "name": "Cura Completa em Massa (Mass Heal)",
       "level": 9,
       "school": "Abjuração",
       "time": "Ação",
@@ -11510,7 +11510,7 @@ const DND5E_DATA = {
     },
     {
       "id": "power_word_heal",
-      "name": "Palavra de Poder: Curar (Power Word Heal)",
+      "name": "Palavra de Poder: Salvar (Power Word Heal)",
       "level": 9,
       "school": "Encantamento",
       "time": "Ação",
@@ -11540,7 +11540,7 @@ const DND5E_DATA = {
     },
     {
       "id": "true_polymorph",
-      "name": "Metamorfose Verdadeira (True Polymorph)",
+      "name": "Polimorfia Total (True Polymorph)",
       "level": 9,
       "school": "Transmutação",
       "time": "Ação",
@@ -11604,7 +11604,7 @@ const DND5E_DATA = {
     },
     {
       "id": "foresight",
-      "name": "Previdência / Sexto Sentido (Foresight)",
+      "name": "Sexto Sentido (Foresight)",
       "level": 9,
       "school": "Adivinhação",
       "time": "1 minuto",
