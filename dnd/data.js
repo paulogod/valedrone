@@ -9886,7 +9886,7 @@ const DND5E_DATA = {
     },
     {
       "id": "golpe_de_arco",
-      "name": "Golpe de Arço (Steel Wind Strike)",
+      "name": "Ataque do Vento de Aço (Steel Wind Strike)",
       "level": 5,
       "school": "Invocação",
       "time": "Ação",
