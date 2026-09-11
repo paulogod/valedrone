@@ -581,6 +581,60 @@ direto; travessão, bolinha e aspas curvas viram equivalentes ASCII em
 linhas de arma (mais de 6) ou de magia (mais de 30), o que não coube é avisado
 por *toast* em vez de sumir em silêncio.
 
+#### 7.1.1 O visto das caixas marcadas
+
+A ficha da Wizards desenha o visto de cada caixa com um `(3)` da ZapfDingbats em
+corpo 10 **recortado num quadrado de 3 x 3 pontos**, dentro de uma caixinha de
+5 x 5. Sobra um tracinho no canto: na tela dá para adivinhar, no papel não — era
+a queixa nas colunas **C / R / M** das magias, que ficavam parecendo vazias.
+
+`drawBoldCheck()` troca a aparência "ligada" de cada caixa que o app marca por um
+visto vetorial que ocupa a caixa inteira, mantendo a moldura cinza original. Ele
+roda **depois** de `form.updateFieldAppearances()`: marcar a caixa a deixa "suja"
+e a pdf-lib redesenharia por cima. Se algo falhar, a caixa fica com a aparência
+original (e o `/V` continua correto, então o valor nunca se perde).
+
+#### 7.1.2 A letra das áreas de texto encolhe até caber
+
+As áreas de texto iam num corpo 6 fixo. A caixa de *História e Personalidade*
+tem 169 x 132 pontos, ou seja 19 linhas de ~45 caracteres: tudo o que passava
+disso era recortado **sem avisar**, e quem tinha uma história mais comprida via o
+texto simplesmente sumir do PDF.
+
+`pdfAreaFontSize()` mede o texto com a própria Helvetica que vai desenhá-lo
+(`widthOfTextAtSize`), quebra em linhas como a pdf-lib quebra e desce o corpo de
+6 até 3,5 de 0,25 em 0,25 até tudo caber na altura do widget. Se nem no menor
+tamanho couber, o campo sai no menor e um *toast* diz **qual** caixa foi cortada
+(`PDF_AREA_LABELS` guarda o nome legível de cada área).
+
+#### 7.1.3 Resumo das características de classe
+
+`featuresByLevel` só guarda o nome ("Fúria (Rage)"). Traços de espécie e talentos
+já saíam com a descrição, as características de classe não — na ficha impressa,
+longe do livro, o nome sozinho não ajuda.
+
+`DND5E_DATA.featureSummaries` (fim de `data.js`) traz uma linha de resumo para as
+134 características de classe do livro, e `comResumoDaCaracteristica()` junta
+nome + resumo ao montar as duas colunas de *Características de Classe*. O que não
+estiver no mapa sai só com o nome, como antes.
+
+#### 7.1.4 O mapa de campos, conferido
+
+O mapa foi reconferido contra o texto do próprio PDF (os rótulos são texto em
+fontes CID, não imagem). Confere tudo: as 411 caixas estão mapeadas, a ordem das
+perícias da ficha oficial é a mesma do app (DES: Acrobacia, Prestidigitação,
+Furtividade; CAR: Enganação, Intimidação, Atuação, Persuasão), as colunas de
+magia são *Concentração, Ritual & Material Necessário* nessa ordem e as moedas
+saem em CP, PP, PE, PO, PL.
+
+Duas incoerências menores entre tela e PDF foram corrigidas de quebra:
+
+- `renderOfSpellsTable()` no caminho rápido (quando as linhas não mudaram) só
+  reescrevia os campos de texto; as bolinhas C/R/M ficavam com o estado da
+  renderização anterior. Agora também são reescritas a partir do modelo.
+- `buildSpellRowFromData()` marcava **Ritual** se a palavra aparecesse na
+  descrição da magia. Só o tempo de conjuração ("Ação ou Ritual") decide isso.
+
 ### 7.2 Link do RPG Master
 
 `index.html` — o botão do cabeçalho apontava para `../rpg/` (caminho relativo) e

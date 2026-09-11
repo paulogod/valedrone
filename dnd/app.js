@@ -5421,19 +5421,33 @@ function renderOfWeaponsTable() {
 }
 
 /* ------------------------------------------- CARACTERÍSTICAS, RAÇA E TALENTOS */
+
+/**
+ * Nome da característica de classe seguido do resumo de uma linha.
+ *
+ * `featuresByLevel` só guarda o nome ("Fúria (Rage)"), e o jogador ficava sem
+ * saber o que a característica faz — na tela e, pior, no PDF impresso, longe do
+ * livro. O resumo vem de `DND5E_DATA.featureSummaries`; o que não estiver lá
+ * sai só com o nome, como antes.
+ */
+function comResumoDaCaracteristica(nome) {
+  const resumo = (DND5E_DATA.featureSummaries || {})[nome];
+  return resumo ? `${nome}: ${resumo}` : nome;
+}
+
 function renderOfFeatureAreas(ctx) {
   const { class1Obj, class2Obj, speciesObj, totalLevel } = ctx;
 
   const classFeatures = [];
   for (let l = 1; l <= character.level1; l++) {
     if (class1Obj.featuresByLevel && class1Obj.featuresByLevel[l]) {
-      class1Obj.featuresByLevel[l].forEach(f => classFeatures.push(`[Nvl ${l}] ${f}`));
+      class1Obj.featuresByLevel[l].forEach(f => classFeatures.push(`[Nvl ${l}] ${comResumoDaCaracteristica(f)}`));
     }
   }
   if (class2Obj) {
     for (let l = 1; l <= character.level2; l++) {
       if (class2Obj.featuresByLevel && class2Obj.featuresByLevel[l]) {
-        class2Obj.featuresByLevel[l].forEach(f => classFeatures.push(`[${class2Obj.name} ${l}] ${f}`));
+        class2Obj.featuresByLevel[l].forEach(f => classFeatures.push(`[${class2Obj.name} ${l}] ${comResumoDaCaracteristica(f)}`));
       }
     }
   }
@@ -5535,7 +5549,9 @@ function buildSpellRowFromData(sp) {
     time: sp.time,
     range: sp.range,
     c: /Concentração/i.test(sp.duration),
-    r: /Ritual/i.test(sp.desc) || /Ritual/i.test(sp.time),
+    // só o tempo de conjuração diz se a magia é ritual ("Ação ou Ritual"); a
+    // descrição pode citar a palavra sem que a magia tenha a marca.
+    r: /Ritual/i.test(sp.time || ""),
     m: /M/.test((sp.components || "").split(",").map(s => s.trim()).join(",")),
     notes: `${sp.school} • ${sp.components} • ${sp.duration}`
   };
@@ -5613,6 +5629,13 @@ function renderOfSpellsTable() {
       ["level", "name", "time", "range", "notes"].forEach(f => {
         const input = tr.querySelector(`[data-field="${f}"]`);
         if (input && document.activeElement !== input) input.value = r[f] || "";
+      });
+      // C / R / M também: sem isto a linha que o app atualizou sozinha (uma
+      // magia concedida, por exemplo) ficava com as bolinhas da renderização
+      // anterior, e a ficha discordava do que ia para o PDF.
+      ["c", "r", "m"].forEach(f => {
+        const box = tr.querySelector(`[data-field="${f}"]`);
+        if (box) box.checked = !!r[f];
       });
     });
     return;

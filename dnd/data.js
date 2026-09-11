@@ -11980,6 +11980,176 @@ const DND5E_DATA = {
   ]
 };
 
+/* ---------------------------------------------------------------------------
+ * RESUMO DAS CARACTERÍSTICAS DE CLASSE
+ * ---------------------------------------------------------------------------
+ * `featuresByLevel` guarda só o nome da característica. A ficha (na tela e no
+ * PDF oficial) mostra o nome seguido de uma linha do que ela faz, para o
+ * jogador não precisar abrir o livro no meio da mesa. A chave é o nome exato
+ * que aparece em `featuresByLevel`; o que não estiver aqui sai só com o nome.
+ * ------------------------------------------------------------------------- */
+DND5E_DATA.featureSummaries = {
+  // ---- Genéricas (várias classes) ----
+  "Aumento no Valor de Atributo (Ability Score Improvement)": "+2 em um atributo ou +1 em dois (máx. 20), ou um talento no lugar.",
+  "Característica de Subclasse (Subclass Feature)": "Você ganha a característica que a sua subclasse concede neste nível.",
+  "Dádiva Épica (Epic Boon)": "No nível 19, em vez do aumento de atributo, você pode escolher um talento de Dádiva Épica.",
+  "Conjuração (Spellcasting)": "Você conjura magias da sua lista: prepare-as após um descanso longo e gaste espaços de magia.",
+  "Maestria em Arma (Weapon Mastery)": "Você usa a propriedade de maestria de algumas armas (Lentidão, Vexar, Empurrar…).",
+  "Ataque Extra (Extra Attack)": "Ataque duas vezes, em vez de uma, sempre que realizar a ação de Ataque.",
+  "Estilo de Luta (Fighting Style)": "Um talento de Estilo de Luta à sua escolha (Duelismo, Arquearia, Defesa…).",
+  "Evasão (Evasion)": "Salvaguarda de DES por metade do dano: passando, não sofre dano; falhando, sofre metade.",
+
+  // ---- Bárbaro ----
+  "Defesa sem Armadura (Unarmored Defense)": "Sem armadura, sua CA é 10 + mod. de DES + mod. de CON (escudo permitido).",
+  "Fúria (Rage)": "Como ação bônus: dano extra corpo a corpo com FOR, resistência a concussão/cortante/perfurante e vantagem em testes e salvaguardas de FOR.",
+  "Conhecimento Primordial (Primal Knowledge)": "Mais uma perícia de bárbaro, e em Fúria você pode usar FOR em alguns testes de DES, INT, SAB e CAR.",
+  "Subclasse Bárbaro (Barbarian Subclass)": "Escolha o seu Caminho Primitivo: ele concede características neste e nos níveis seguintes.",
+  "Movimento Rápido (Fast Movement)": "+3 m de deslocamento enquanto não estiver usando armadura pesada.",
+  "Instintos Primitivos (Feral Instinct)": "Vantagem em iniciativa.",
+  "Bote Instintivo (Instinctive Pounce)": "Ao entrar em Fúria, mova-se até metade do seu deslocamento de graça.",
+  "Golpe Brutal (Brutal Strike)": "Em Fúria, abra mão da vantagem para causar 1d10 de dano extra e aplicar um efeito (empurrar ou reduzir o deslocamento).",
+  "Fúria Implacável (Relentless Rage)": "Caindo a 0 PV em Fúria, uma salvaguarda de CON deixa você com PV em vez de cair.",
+  "Golpe Brutal Fortalecido (Improved Brutal Strike)": "Mais opções de efeito e mais dados de dano no Golpe Brutal.",
+  "Fúria Persistente (Persistent Rage)": "A Fúria só acaba se você ficar Inconsciente ou decidir encerrá-la; recupera usos no descanso curto.",
+  "Força Indomável (Indomitable Might)": "Se o total de um teste de FOR for menor que o seu valor de FOR, use o valor de FOR.",
+  "Campeão Primitivo (Primal Champion)": "+4 em Força e +4 em Constituição, com máximo 25 nesses atributos.",
+
+  // ---- Bardo ----
+  "Inspiração de Bardo (Bardic Inspiration)": "Ação bônus: dê um dado a um aliado, que o soma a um teste, ataque ou salvaguarda.",
+  "Especialista (Expertise)": "Duas perícias treinadas passam a somar o dobro do bônus de proficiência.",
+  "Pau pra Toda Obra (Jack of All Trades)": "Metade do bônus de proficiência em testes de atributo em que você não é treinado.",
+  "Subclasse de Bardo (Bard Subclass)": "Escolha o seu Colégio de Bardo: ele concede características neste e nos níveis seguintes.",
+  "Fonte de Inspiração (Font of Inspiration)": "Você recupera todos os usos de Inspiração de Bardo em qualquer descanso.",
+  "Contra-Encantamento (Countercharm)": "Reação: dá vantagem na salvaguarda de quem seria Amedrontado ou Enfeitiçado.",
+  "Segredos Mágicos (Magical Secrets)": "Você pode aprender magias das listas de clérigo, druida e mago.",
+  "Inspiração Superior (Superior Inspiration)": "Na iniciativa, recupere usos de Inspiração de Bardo se estiver sem eles.",
+  "Palavras de Criação (Words of Creation)": "Você aprende Palavra de Poder: Curar e Palavra de Poder: Matar.",
+
+  // ---- Clérigo ----
+  "Ordem Divina (Divine Order)": "Escolha Protetor (armadura pesada e armas marciais) ou Taumaturgo (mais um truque e bônus em Religião).",
+  "Canalizar Divindade (Channel Divinity)": "Poder divino recarregável: Expulsar Mortos-Vivos, Intervenção Divina e o que a sua subclasse der.",
+  "Subclasse Clérigo (Cleric Subclass)": "Escolha o seu Domínio Divino: ele concede características neste e nos níveis seguintes.",
+  "Fulminar Mortos-Vivos (Sear Undead)": "Expulsar Mortos-Vivos também causa dano radiante aos mortos-vivos afetados.",
+  "Golpes Abençoados (Blessed Strikes)": "Dano extra com truques ou com ataques de arma, à sua escolha na hora de ganhar a característica.",
+  "Intervenção Divina (Divine Intervention)": "Como ação, peça ajuda à sua divindade e conjure uma magia de clérigo de até 5º círculo sem gastar espaço.",
+  "Golpes Abençoados Aprimorado (Improved Blessed Strikes)": "O dano extra de Golpes Abençoados aumenta.",
+  "Intervenção Divina Maior (Greater Divine Intervention)": "A Intervenção Divina pode conjurar Desejo, uma vez por descanso longo.",
+
+  // ---- Druida ----
+  "Idioma Druídico (Druidic)": "Você fala o idioma secreto dos druidas e deixa mensagens ocultas nele.",
+  "Ordem Primal (Primal Order)": "Escolha Guardião (armas marciais e proficiência em CON) ou Mago (mais um truque e bônus em Natureza/Arcanismo).",
+  "Companheiro Selvagem (Wild Companion)": "Gaste um uso de Forma Selvagem para conjurar Encontrar Familiar sem componentes.",
+  "Forma Selvagem (Wild Shape)": "Ação bônus: transforme-se em uma besta que você conheça, mantendo mente e usando os PV da forma.",
+  "Subclasse de Druida (Druid Subclass)": "Escolha o seu Círculo Druídico: ele concede características neste e nos níveis seguintes.",
+  "Ressurgimento Selvagem (Wild Resurgence)": "Troque usos de Forma Selvagem por espaços de magia e vice-versa.",
+  "Fúria Elemental (Elemental Fury)": "Escolha dano extra nos truques (Fúria Primal) ou cura extra nas magias (Potência da Natureza).",
+  "Fúria Elemental Aprimorada (Improved Elemental Fury)": "O bônus escolhido em Fúria Elemental aumenta.",
+  "Magias Bestiais (Beast Spells)": "Você conjura magias mesmo em Forma Selvagem, sem componentes materiais.",
+  "Arquidruida (Archdruid)": "Recupera usos de Forma Selvagem na iniciativa, e pode trocar componentes de magia por usos dela.",
+
+  // ---- Guerreiro ----
+  "Recuperar Fôlego (Second Wind)": "Ação bônus: recupere 1d10 + nível de guerreiro pontos de vida.",
+  "Mente Tática (Tactical Mind)": "Ao falhar em um teste de atributo, gaste Recuperar Fôlego para somar 1d10 sem perder o uso se ainda assim falhar.",
+  "Surto de Ação (Action Surge)": "Uma ação extra no seu turno, uma vez por descanso curto ou longo.",
+  "Subclasse de Guerreiro (Fighter Subclass)": "Escolha o seu Arquétipo Marcial: ele concede características neste e nos níveis seguintes.",
+  "Ajuste Tático (Tactical Shift)": "Ao usar Recuperar Fôlego, mova-se metade do deslocamento sem provocar ataques de oportunidade.",
+  "Indomável (Indomitable)": "Refaça uma salvaguarda falhada, somando o seu nível de guerreiro.",
+  "Mestre Tático (Tactical Master)": "Ao atacar com uma arma que você domina, troque a maestria dela por Empurrar, Vexar ou Lentidão.",
+  "Dois Ataques Extras (Extra Attack (two))": "Sobe para três ataques por ação de Ataque.",
+  "Ataques Estudados (Studied Attacks)": "Errou um ataque no alvo? O próximo ataque nele neste ou no próximo turno tem vantagem.",
+  "Três Ataques Extras (Extra Attack (three))": "Sobe para quatro ataques por ação de Ataque.",
+
+  // ---- Monge ----
+  "Artes Marciais (Martial Arts)": "Ataques desarmados e armas de monge usam DES, causam o dado de Artes Marciais e dão um ataque desarmado como ação bônus.",
+  "Foco do Monge (Monk's Focus)": "Pontos de Foco movem Rajada de Golpes, Defesa Paciente e Passo do Vento.",
+  "Movimento sem Armadura (Unarmored Movement)": "Deslocamento extra sem armadura nem escudo (+3 m no nível 2, subindo com o nível).",
+  "Metabolismo Incomum (Uncanny Metabolism)": "Na iniciativa, recupere todos os Pontos de Foco e cure alguns pontos de vida (1x por descanso longo).",
+  "Defletir Ataques (Deflect Attacks)": "Reação: reduza o dano de um ataque e, gastando Foco, devolva-o ao atacante.",
+  "Subclasse de Monge (Monk Subclass)": "Escolha a sua Tradição Monástica: ela concede características neste e nos níveis seguintes.",
+  "Queda Lenta (Slow Fall)": "Reação ao cair: reduza o dano da queda em cinco vezes o seu nível de monge.",
+  "Golpe Atordoante (Stunning Strike)": "Gaste 1 Foco ao acertar: salvaguarda de CON ou o alvo fica Atordoado até o fim do seu próximo turno.",
+  "Ataques Potencializados (Empowered Strikes)": "Seus ataques desarmados podem causar dano radiante em vez de concussão.",
+  "Movimento Acrobático (Acrobatic Movement)": "Sem armadura, você se move por paredes e pela água sem cair.",
+  "Autocura (Self-Restoration)": "Você remove a condição Enfeitiçado ou Amedrontado no fim do turno e não sofre exaustão por fome ou sede.",
+  "Foco Aprimorado (Heightened Focus)": "Rajada de Golpes, Defesa Paciente e Passo do Vento ficam mais fortes.",
+  "Defletir Energia (Deflect Energy)": "Defletir Ataques passa a valer contra qualquer tipo de dano.",
+  "Sobrevivente Disciplinado (Disciplined Survivor)": "Proficiência em todas as salvaguardas; gaste Foco para refazer uma que falhou.",
+  "Foco Perfeito (Perfect Focus)": "Na iniciativa com 3 Pontos de Foco ou menos, suba para metade do máximo.",
+  "Defesa Superior (Superior Defense)": "No começo do turno, gaste 3 Foco para ter resistência a todo dano (menos o de força) por 1 minuto.",
+  "Corpo e Mente (Body and Mind)": "+4 em Destreza e +4 em Sabedoria, com máximo 25 nesses atributos.",
+
+  // ---- Paladino ----
+  "Mãos Consagradas (Lay On Hands)": "Uma reserva de cura igual a cinco vezes o seu nível, que também remove a condição Envenenado.",
+  "Destruição do Paladino (Paladin's Smite)": "Você sempre tem Destruição Divina preparada e pode conjurá-la de graça uma vez por descanso longo.",
+  "Subclasse de Paladino (Paladin Subclass)": "Escolha o seu Juramento Sagrado: ele concede características neste e nos níveis seguintes.",
+  "Montaria Fiel (Faithful Steed)": "Você sempre tem Encontrar Corcel preparada e a conjura de graça uma vez por descanso longo.",
+  "Aura de Proteção (Aura of Protection)": "Você e os aliados a 3 m somam o seu mod. de CAR (mín. +1) nas salvaguardas.",
+  "Repudiar Inimigos (Abjure Foes)": "Canalizar Divindade: alvos próximos ficam Amedrontados e perdem parte do turno.",
+  "Aura de Coragem (Aura of Courage)": "Você e os aliados na sua aura não podem ficar Amedrontados.",
+  "Golpes Radiantes (Radiant Strikes)": "Seus ataques com arma causam 1d8 de dano radiante extra.",
+  "Toque Restaurador (Restoring Touch)": "Mãos Consagradas também remove Enfeitiçado, Amedrontado, Paralisado ou Atordoado.",
+  "Aura Expandida (Aura Expansion)": "As suas auras passam de 3 m para 9 m de raio.",
+
+  // ---- Guardião ----
+  "Inimigo Favorito (Favored Enemy)": "Você sempre tem Marca do Caçador preparada e a conjura de graça algumas vezes por descanso longo.",
+  "Explorador Hábil (Deft Explorer)": "Especialização em uma perícia e dois idiomas a mais.",
+  "Subclasse de Guardião (Ranger Subclass)": "Escolha o seu Arquétipo de Guardião: ele concede características neste e nos níveis seguintes.",
+  "Errante (Roving)": "+3 m de deslocamento e deslocamentos de escalada e natação iguais ao seu.",
+  "Incansável (Tireless)": "Como ação mágica, ganhe PV temporários e reduza a sua exaustão; recupera-se no descanso curto.",
+  "Predador Implacável (Relentless Hunter)": "Sofrer dano não quebra a sua concentração em Marca do Caçador.",
+  "Véu da Natureza (Nature's Veil)": "Ação bônus: fique Invisível até o fim do próximo turno, algumas vezes por descanso longo.",
+  "Caçador Preciso (Precise Hunter)": "Vantagem nos ataques contra a criatura marcada pela sua Marca do Caçador.",
+  "Sentidos Selvagens (Feral Senses)": "Percepção às cegas de 9 m: você não fica desprevenido contra criaturas invisíveis.",
+  "Matador de Inimigos Favoritos (Foe Slayer)": "O dado da Marca do Caçador sobe para d10.",
+
+  // ---- Ladino ----
+  "Ataque Furtivo (Sneak Attack)": "Dano extra (1d6 por nível ímpar) quando você tem vantagem ou um aliado está junto do alvo.",
+  "Gíria dos Ladrões (Thieves' Cant)": "Você fala o código secreto do submundo e conhece mais um idioma.",
+  "Especialização (Expertise)": "Duas perícias treinadas passam a somar o dobro do bônus de proficiência.",
+  "Ação Ardilosa (Cunning Action)": "Como ação bônus: Correr, Desengajar ou Esconder-se.",
+  "Mira Firme (Steady Aim)": "Ação bônus parado no lugar: vantagem no próximo ataque deste turno.",
+  "Subclasse Ladino (Rogue Subclass)": "Escolha o seu Arquétipo Ladino: ele concede características neste e nos níveis seguintes.",
+  "Esquiva Sobrenatural (Uncanny Dodge)": "Reação: reduza à metade o dano de um ataque que você enxergou.",
+  "Golpe Astuto (Cunning Strike)": "Troque dados de Ataque Furtivo por efeitos: Envenenar, Derrubar, Desarmar, Retirada…",
+  "Talento Confiável (Reliable Talent)": "Em perícias treinadas, qualquer rolagem menor que 10 no d20 conta como 10.",
+  "Golpe Astuto Aprimorado (Improved Cunning Strike)": "Aplique dois efeitos de Golpe Astuto no mesmo ataque.",
+  "Golpes Sujos (Devious Strikes)": "Novos efeitos de Golpe Astuto: Atordoar, Nocautear e Obscurecer.",
+  "Mente Escorregadia (Slippery Mind)": "Proficiência nas salvaguardas de Sabedoria e de Carisma.",
+  "Elusivo (Elusive)": "Nenhum ataque tem vantagem contra você enquanto você não estiver Incapacitado.",
+  "Golpe de Sorte (Stroke of Luck)": "Uma vez por descanso: transforme um erro em acerto ou um teste falhado em 20.",
+
+  // ---- Feiticeiro ----
+  "Feitiçaria Inata (Innate Sorcery)": "Ação bônus por 1 minuto: +1 na CD das suas magias e vantagem nos ataques de magia.",
+  "Fonte de Magia (Font of Magic)": "Pontos de Feitiçaria, que viram espaços de magia e alimentam a Metamagia.",
+  "Metamagia (Metamagic)": "Duas formas de torcer as suas magias (Sutil, Gêmea, Acelerada, Distante…) gastando Pontos de Feitiçaria.",
+  "Opções de Metamagia (Metamagic Options)": "Mais duas opções de Metamagia à sua escolha.",
+  "Subclasse de Feiticeiro (Sorcerer Subclass)": "Escolha a sua Origem Feiticeira: ela concede características neste e nos níveis seguintes.",
+  "Restauração Feiticeira (Sorcerous Restoration)": "Recupere Pontos de Feitiçaria em um descanso curto, uma vez por dia.",
+  "Feitiçaria Encarnada (Sorcery Incarnate)": "Use Feitiçaria Inata mesmo sem usos sobrando, gastando Pontos de Feitiçaria, e duas Metamagias na mesma magia.",
+  "Apoteose Arcana (Arcane Apotheosis)": "Durante a Feitiçaria Inata, uma Metamagia por turno sai de graça.",
+
+  // ---- Bruxo ----
+  "Invocações Místicas (Eldritch Invocations)": "Poderes permanentes do pacto, trocáveis quando você sobe de nível.",
+  "Magia de Pacto (Pact Magic)": "Poucos espaços de magia, todos do círculo mais alto, recuperados em descanso curto.",
+  "Astúcia Mágica (Magical Cunning)": "Um ritual de 1 minuto recupera metade dos seus espaços de Magia de Pacto.",
+  "Subclasse de Bruxo (Warlock Subclass)": "Escolha o seu Patrono Sobrenatural: ele concede características neste e nos níveis seguintes.",
+  "Contatar Patrono (Contact Patron)": "Você sempre tem Contatar Outro Plano preparada e fala com o seu patrono sem falhar.",
+  "Arcana Mística (6º círculo) (Mystic Arcanum (level 6))": "Uma magia de 6º círculo conjurada de graça, uma vez por descanso longo.",
+  "Arcana Mística (7º círculo) (Mystic Arcanum (level 7))": "Uma magia de 7º círculo conjurada de graça, uma vez por descanso longo.",
+  "Arcana Mística (8º círculo) (Mystic Arcanum (level 8))": "Uma magia de 8º círculo conjurada de graça, uma vez por descanso longo.",
+  "Arcana Mística (9º círculo) (Mystic Arcanum (level 9))": "Uma magia de 9º círculo conjurada de graça, uma vez por descanso longo.",
+  "Mestre Místico (Eldritch Master)": "Um ritual de 1 minuto devolve todos os espaços de Magia de Pacto, uma vez por descanso longo.",
+
+  // ---- Mago ----
+  "Adepto de Ritual (Ritual Adept)": "Conjure como ritual qualquer magia do livro que tenha a marca Ritual, sem prepará-la.",
+  "Recuperação Arcana (Arcane Recovery)": "Em um descanso curto, recupere espaços de magia somando até metade do seu nível.",
+  "Acadêmico (Scholar)": "Especialização em uma perícia de conhecimento (Arcanismo, História, Investigação, Medicina ou Natureza).",
+  "Subclasse de Mago (Wizard Subclass)": "Escolha a sua Tradição Arcana: ela concede características neste e nos níveis seguintes.",
+  "Memorizar Magia (Memorize Spell)": "Em um descanso curto, troque uma magia preparada por outra do seu livro.",
+  "Maestria de Magias (Spell Mastery)": "Uma magia de 1º e uma de 2º círculo passam a ser conjuradas à vontade.",
+  "Assinatura Mágica (Signature Spells)": "Duas magias de 3º círculo sempre preparadas e conjuradas de graça uma vez por descanso."
+};
+
 // Exportar para Node.js
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = DND5E_DATA;

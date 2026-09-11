@@ -157,6 +157,15 @@ const PDF_SLOTS = {
   9: { total: 442, dots: [205] }
 };
 
+/** Rótulo humano das áreas de texto, para o aviso de "não coube" */
+const PDF_AREA_LABELS = {
+  55: "Treino em armas", 56: "Ferramentas",
+  118: "Características de classe", 119: "Características de classe (2ª coluna)",
+  120: "Características raciais", 121: "Talentos",
+  125: "Aparência", 126: "História e Personalidade",
+  127: "Equipamento", 128: "Idiomas"
+};
+
 /* ------------------------------------------------ LEITURA DA FICHA (DOM) */
 
 /** Valor de um campo da ficha na tela (input, textarea ou texto solto) */
@@ -366,13 +375,51 @@ function indexPdfFields(form) {
   return byNum;
 }
 
+/* Corpo de letra das áreas de texto: começa no maior e desce até caber. */
+const PDF_AREA_MAX = 6;        // acima disso o texto fica solto na caixa
+const PDF_AREA_MIN = 3.5;      // abaixo disso não dá para ler impresso
+const PDF_AREA_STEP = 0.25;
+const PDF_LINE_FACTOR = 1.11;  // entrelinha que a pdf-lib usa ao redesenhar
+const PDF_AREA_PADDING = 1.72; // margem interna do widget, em pontos
+
+/** Em quantas linhas o texto quebra dentro de uma caixa de `maxWidth` pontos */
+function pdfWrapCount(text, font, size, maxWidth) {
+  let lines = 0;
+  String(text).split(/\r?\n/).forEach(paragrafo => {
+    lines++;
+    let linha = "";
+    paragrafo.split(/\s+/).filter(Boolean).forEach(palavra => {
+      const tentativa = linha ? `${linha} ${palavra}` : palavra;
+      if (font.widthOfTextAtSize(tentativa, size) <= maxWidth) { linha = tentativa; return; }
+      if (linha) lines++;
+      // palavra sozinha maior que a caixa: a pdf-lib parte no meio dela
+      let sobra = font.widthOfTextAtSize(palavra, size);
+      while (sobra > maxWidth) { lines++; sobra -= maxWidth; }
+      linha = palavra;
+    });
+  });
+  return lines;
+}
+
 /**
- * Corpo de letra: as áreas de texto ficam em 6 (cabe muita linha) e os campos
- * de uma linha só vão em 0 = automático, que é a única forma de o nome da magia
- * ou da arma não sair cortado na caixa estreita da ficha oficial.
+ * Maior corpo de letra em que o texto inteiro cabe na área.
+ *
+ * Antes as áreas iam num 6 fixo: a caixa de História e Personalidade tem 169 x
+ * 132 pontos, ou seja 19 linhas, e tudo o que passava disso era recortado sem
+ * avisar — o jogador com uma história mais comprida via o texto sumir. Agora a
+ * letra encolhe até caber, e só avisa quando nem no menor tamanho coube.
  */
-function pdfFontSizeFor(field) {
-  return field.getName().startsWith("textarea") ? 6 : 0;
+function pdfAreaFontSize(field, text, font) {
+  const widget = field.acroField.getWidgets()[0];
+  if (!widget) return { size: PDF_AREA_MAX, coube: true };
+  const { width, height } = widget.getRectangle();
+  const larguraUtil = width - PDF_AREA_PADDING * 2;
+  const alturaUtil = height - PDF_AREA_PADDING * 2;
+  for (let size = PDF_AREA_MAX; size >= PDF_AREA_MIN; size -= PDF_AREA_STEP) {
+    const linhas = pdfWrapCount(text, font, size, larguraUtil);
+    if (linhas * size * PDF_LINE_FACTOR <= alturaUtil) return { size, coube: true };
+  }
+  return { size: PDF_AREA_MIN, coube: false };
 }
 
 /**
@@ -391,6 +438,48 @@ function setPdfFieldFontSize(field, size) {
   });
 }
 
+/**
+ * Redesenha o visto de uma caixa marcada para ele ocupar a caixa inteira.
+ *
+ * A ficha da Wizards desenha o visto com a ZapfDingbats em corpo 10 dentro de
+ * um recorte de 3 x 3 pontos, numa caixinha de 5 x 5: sobra um tracinho no
+ * canto, e no papel quase não dá para dizer se a caixa está marcada — era o que
+ * acontecia com as colunas C / R / M das magias. Aqui a aparência "ligada" vira
+ * um visto vetorial que preenche a caixa, mantendo a moldura original.
+ *
+ * A mesma aparência serve às duas entradas (/N e /D) porque a ficha aponta as
+ * duas para o mesmo dicionário.
+ */
+function drawBoldCheck(pdfDoc, field) {
+  field.acroField.getWidgets().forEach(widget => {
+    const aparencias = widget.getAppearances();
+    const normal = aparencias && aparencias.normal;
+    if (!normal || typeof normal.keys !== "function") return;  // aparência única, sem estados
+    const ligado = normal.keys().find(k => String(k) !== "/Off");
+    if (!ligado) return;
+
+    const { width, height } = widget.getRectangle();
+    if (!(width > 0 && height > 0)) return;
+    const traco = Math.max(0.7, Math.min(width, height) * 0.22);
+    const ops = [
+      "0.4 0.4 0.4 RG 0.72 w",
+      `0.5 0.5 ${(width - 1).toFixed(2)} ${(height - 1).toFixed(2)} re S`,
+      `0 0 0 RG ${traco.toFixed(2)} w 1 J 1 j`,
+      `${(width * 0.20).toFixed(2)} ${(height * 0.52).toFixed(2)} m`,
+      `${(width * 0.42).toFixed(2)} ${(height * 0.26).toFixed(2)} l`,
+      `${(width * 0.82).toFixed(2)} ${(height * 0.76).toFixed(2)} l S`
+    ].join("\n");
+
+    // Sem compactar: são 84 bytes por caixa, e assim dá para ler a aparência
+    // direto no arquivo quando algo sai errado.
+    const stream = pdfDoc.context.stream(ops, {
+      Type: "XObject", Subtype: "Form",
+      BBox: [0, 0, width, height], Matrix: [1, 0, 0, 1, 0, 0]
+    });
+    normal.set(ligado, pdfDoc.context.register(stream));
+  });
+}
+
 /** Preenche o formulário e devolve os bytes do PDF resultante */
 async function fillOfficialPdf(srcBytes, payload) {
   const { PDFDocument, StandardFonts } = window.PDFLib;
@@ -405,13 +494,25 @@ async function fillOfficialPdf(srcBytes, payload) {
   const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
   let filled = 0;
   const missing = [];
+  const overflow = [];
+  const marcadas = [];
 
   Object.keys(payload.texts).forEach(num => {
     const field = byNum[num];
     if (!field || typeof field.setText !== "function") { missing.push(num); return; }
     try {
-      field.setText(pdfSafeText(payload.texts[num]));
-      setPdfFieldFontSize(field, pdfFontSizeFor(field));
+      const texto = pdfSafeText(payload.texts[num]);
+      field.setText(texto);
+      // Área de texto: a letra encolhe até o texto inteiro caber na caixa.
+      // Campo de uma linha: 0 = automático, a única forma de o nome da magia ou
+      // da arma não sair cortado na caixa estreita da ficha oficial.
+      if (field.getName().startsWith("textarea")) {
+        const { size, coube } = pdfAreaFontSize(field, texto, helvetica);
+        setPdfFieldFontSize(field, size);
+        if (!coube) overflow.push(PDF_AREA_LABELS[num] || field.getName());
+      } else {
+        setPdfFieldFontSize(field, 0);
+      }
       filled++;
     } catch (err) {
       console.warn("Campo de texto não preenchido:", num, err);
@@ -422,7 +523,8 @@ async function fillOfficialPdf(srcBytes, payload) {
     const field = byNum[num];
     if (!field || typeof field.check !== "function") { missing.push(num); return; }
     try {
-      if (payload.checks[num]) { field.check(); filled++; } else { field.uncheck(); }
+      if (payload.checks[num]) { field.check(); marcadas.push(field); filled++; }
+      else { field.uncheck(); }
     } catch (err) {
       console.warn("Caixa de marcação não preenchida:", num, err);
     }
@@ -431,7 +533,15 @@ async function fillOfficialPdf(srcBytes, payload) {
   if (missing.length) console.warn("Campos não encontrados no PDF:", missing.join(", "));
 
   form.updateFieldAppearances(helvetica);
-  return { bytes: await pdfDoc.save(), filled };
+
+  // Depois do updateFieldAppearances de propósito: marcar a caixa a deixa
+  // "suja" e a pdf-lib redesenharia por cima do visto vetorial.
+  marcadas.forEach(field => {
+    try { drawBoldCheck(pdfDoc, field); }
+    catch (err) { console.warn("Visto não redesenhado:", field.getName(), err); }
+  });
+
+  return { bytes: await pdfDoc.save(), filled, overflow };
 }
 
 /* --------------------------------------------- CARGA DA pdf-lib E DO PDF */
@@ -619,12 +729,15 @@ async function exportToOfficialPdf(forcePick, mode) {
       mode === "print" && !forcePick ? getLightPdfBytes() : getOfficialPdfBytes(forcePick)
     ]);
     const payload = collectOfficialPdfPayload();
-    const { bytes, filled } = await fillOfficialPdf(srcBytes, payload);
+    const { bytes, filled, overflow } = await fillOfficialPdf(srcBytes, payload);
     const filename = officialPdfFilename(mode);
     downloadPdfBytes(bytes, filename);
     showPdfToast(`📄 Ficha salva como "${filename}" — ${filled} campos preenchidos.`);
     if (mode === "print") showPdfToast("🖨️ Versão leve, sem o fundo decorativo: abra o arquivo e imprima por ele.");
     payload.warnings.forEach(w => showPdfToast(`⚠️ ${w}`));
+    if (overflow && overflow.length) {
+      showPdfToast(`⚠️ Texto demais para a caixa da ficha oficial, o fim foi cortado: ${overflow.join(", ")}.`);
+    }
   } catch (err) {
     console.error("Falha ao exportar para o PDF oficial:", err);
     showPdfToast(`⚠️ Não deu para gerar o PDF: ${err.message}`);
