@@ -7120,16 +7120,87 @@ function generateRandomCharacter() {
 /**
  * Exporta JSON
  */
-function exportCharacterJson() {
+/* ------------------------------------------------ NOME DO ARQUIVO EXPORTADO */
+
+/** Tira do nome o que nenhum sistema de arquivos aceita */
+function limparNomeDeArquivo(nome) {
+  return String(nome || "").replace(/[\\/:*?"<>|]/g, "").replace(/\s+/g, " ").trim();
+}
+
+/**
+ * "Rhogar - Nível 5": o padrão de todo arquivo que o app exporta.
+ *
+ * `nomeAlternativo` existe para a exportação do PDF, que prefere o nome que
+ * está na ficha da tela — o jogador pode ter trocado por lá.
+ */
+function nomePadraoDeArquivo(nomeAlternativo) {
+  const nome = limparNomeDeArquivo(nomeAlternativo || character.name) || "Personagem";
+  const multi = character.class2 && character.class2 !== "none";
+  const nivel = (character.level1 || 1) + (multi ? (character.level2 || 0) : 0);
+  return `${nome} - Nível ${nivel}`;
+}
+
+/**
+ * Pergunta o nome do arquivo antes de exportar e devolve o nome escolhido, já
+ * limpo e sem extensão — ou `null` se o jogador cancelar.
+ *
+ * Os `on*` no lugar de addEventListener são de propósito: o diálogo é um só,
+ * reaproveitado pelos três botões de exportação, e com addEventListener cada
+ * abertura deixaria mais um ouvinte pendurado no mesmo formulário.
+ */
+function pedirNomeDeArquivo(opcoes) {
+  const { titulo, extensao } = opcoes || {};
+  const sugestao = (opcoes && opcoes.nome) || nomePadraoDeArquivo();
+  const modal = document.getElementById("exportNameModal");
+  const form = document.getElementById("exportNameForm");
+  const input = document.getElementById("exportNameInput");
+  const btnCancelar = document.getElementById("btnCancelExportName");
+  const btnFechar = document.getElementById("closeExportNameModal");
+  // Sem o diálogo (uma página antiga em cache, por exemplo) exporta com o nome
+  // padrão em vez de travar o botão.
+  if (!modal || !form || !input) return Promise.resolve(sugestao);
+
+  const elTitulo = document.getElementById("exportNameTitle");
+  const elExt = document.getElementById("exportNameExt");
+  if (elTitulo) elTitulo.textContent = titulo || "Salvar arquivo";
+  if (elExt) elExt.textContent = extensao || "";
+  input.value = sugestao;
+  modal.classList.add("active");
+  setTimeout(() => { input.focus(); input.select(); }, 50);
+
+  return new Promise(resolve => {
+    const fechar = (valor) => {
+      modal.classList.remove("active");
+      form.onsubmit = null;
+      if (btnCancelar) btnCancelar.onclick = null;
+      if (btnFechar) btnFechar.onclick = null;
+      resolve(valor);
+    };
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const limpo = limparNomeDeArquivo(input.value);
+      if (!limpo) { input.focus(); return; }
+      fechar(limpo);
+    };
+    if (btnCancelar) btnCancelar.onclick = () => fechar(null);
+    if (btnFechar) btnFechar.onclick = () => fechar(null);
+  });
+}
+
+async function exportCharacterJson() {
+  const nome = await pedirNomeDeArquivo({
+    titulo: "Exportar ficha (JSON)", extensao: ".json"
+  });
+  if (!nome) return;
   const jsonStr = JSON.stringify(character, null, 2);
   const blob = new Blob([jsonStr], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${character.name.replace(/\s+/g, '_')}_DND55.json`;
+  a.download = `${nome}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast("💾 Arquivo JSON exportado com sucesso!");
+  showToast(`💾 Ficha exportada como "${nome}.json".`);
 }
 
 /**

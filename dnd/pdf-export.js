@@ -690,12 +690,17 @@ function downloadPdfBytes(bytes, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
-/** Nome do arquivo de saída, a partir do nome do personagem */
-function officialPdfFilename(mode) {
-  const name = (ofVal("sheetCharName") || character.name || "Personagem")
-    .replace(/[\\/:*?"<>|]/g, "")
-    .trim() || "Personagem";
-  return `Ficha D&D 5.5 - ${name}${mode === "print" ? " (leve)" : ""}.pdf`;
+/**
+ * Nome sugerido do arquivo: o do personagem e o nível dele.
+ *
+ * `nomePadraoDeArquivo()` mora no app.js e lê `character`; aqui vale a ficha que
+ * está na tela, que é de onde sai todo o resto do PDF — o jogador pode ter
+ * trocado o nome direto nela.
+ */
+function officialPdfSuggestedName() {
+  const naTela = ofVal("sheetCharName");
+  if (typeof nomePadraoDeArquivo === "function") return nomePadraoDeArquivo(naTela);
+  return (naTela || character.name || "Personagem").replace(/[\\/:*?"<>|]/g, "").trim() || "Personagem";
 }
 
 /**
@@ -717,6 +722,18 @@ async function exportToOfficialPdf(forcePick, mode) {
   const btnId = mode === "print" ? "btnPrintSheet" : "btnExportOfficialPdf";
   const btn = document.getElementById(btnId);
   const originalHtml = btn ? btn.innerHTML : "";
+
+  // O nome do arquivo é perguntado antes de gerar: cancelar aqui não custa os
+  // segundos de montar um PDF de 12 MB que ninguém ia salvar.
+  const nomeEscolhido = typeof pedirNomeDeArquivo === "function"
+    ? await pedirNomeDeArquivo({
+        titulo: mode === "print" ? "Imprimir / PDF" : "Ficha PDF Oficial",
+        extensao: ".pdf",
+        nome: officialPdfSuggestedName()
+      })
+    : officialPdfSuggestedName();
+  if (!nomeEscolhido) return;
+
   try {
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...'; }
     // Em paralelo: a ficha em branco tem quase 12 MB e a pdf-lib mais 500 KB.
@@ -730,7 +747,7 @@ async function exportToOfficialPdf(forcePick, mode) {
     ]);
     const payload = collectOfficialPdfPayload();
     const { bytes, filled, overflow } = await fillOfficialPdf(srcBytes, payload);
-    const filename = officialPdfFilename(mode);
+    const filename = `${nomeEscolhido}.pdf`;
     downloadPdfBytes(bytes, filename);
     showPdfToast(`📄 Ficha salva como "${filename}" — ${filled} campos preenchidos.`);
     if (mode === "print") showPdfToast("🖨️ Versão leve, sem o fundo decorativo: abra o arquivo e imprima por ele.");

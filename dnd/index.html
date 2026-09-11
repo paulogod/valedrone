@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260911b";
+    var APP_VERSION = "20260911c";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -1727,6 +1727,33 @@
         <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
           <button type="button" class="btn btn-secondary" id="btnCancelCustomFeature">Cancelar</button>
           <button type="submit" class="btn btn-primary">Adicionar à Ficha</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NOME DO ARQUIVO NA HORA DE EXPORTAR -->
+  <div class="modal-overlay" id="exportNameModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-file-export"></i> <span id="exportNameTitle">Salvar arquivo</span></h3>
+        <button class="modal-close-btn" id="closeExportNameModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="exportNameForm">
+        <div class="form-group">
+          <label class="form-label" for="exportNameInput">Nome do arquivo</label>
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <input type="text" class="form-control" id="exportNameInput" required autocomplete="off">
+            <span id="exportNameExt" style="color: #94a3b8; font-weight: 600;"></span>
+          </div>
+          <p class="section-desc" style="margin-top: 0.4rem;">
+            O padrão é o nome do personagem e o nível dele. Troque à vontade —
+            <code>\ / : * ? " &lt; &gt; |</code> não valem em nome de arquivo e são removidos.
+          </p>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" id="btnCancelExportName">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-download"></i> Salvar</button>
         </div>
       </form>
     </div>

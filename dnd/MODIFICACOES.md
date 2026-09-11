@@ -657,6 +657,28 @@ Duas incoerências menores entre tela e PDF foram corrigidas de quebra:
 - `buildSpellRowFromData()` marcava **Ritual** se a palavra aparecesse na
   descrição da magia. Só o tempo de conjuração ("Ação ou Ritual") decide isso.
 
+#### 7.1.6 O nome do arquivo é escolhido na hora de exportar
+
+Os três botões de exportação (*Imprimir / PDF*, *Ficha PDF Oficial* e *Exportar
+JSON*) abrem o mesmo diálogo (`#exportNameModal`) com o nome do arquivo já
+preenchido: **`Rhogar - Nível 5`**, o nome do personagem e o nível total (soma a
+multiclasse quando existe). O jogador troca o que quiser; a extensão fica de
+fora do campo e aparece ao lado.
+
+`pedirNomeDeArquivo({ titulo, extensao, nome })` devolve uma promessa com o nome
+já limpo, ou `null` se cancelar. Nos PDFs ele é chamado **antes** de montar o
+arquivo — cancelar não custa os segundos de gerar 12 MB que ninguém ia salvar.
+Os `on*` no lugar de `addEventListener` são de propósito: o diálogo é um só e
+com `addEventListener` cada abertura deixaria mais um ouvinte no formulário.
+
+O nome sai de `nomePadraoDeArquivo()` (app.js), e `limparNomeDeArquivo()` tira o
+que nenhum sistema de arquivos aceita (`\ / : * ? " < > |`). Se o diálogo não
+estiver na página (uma versão antiga em cache), a exportação segue com o nome
+padrão em vez de travar o botão.
+
+O PDF leve parou de sair com "(leve)" no nome — o nome agora é do jogador. Se os
+dois PDFs forem salvos com o mesmo nome, o navegador numera o segundo.
+
 ### 7.2 Link do RPG Master
 
 `index.html` — o botão do cabeçalho apontava para `../rpg/` (caminho relativo) e
