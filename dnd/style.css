@@ -1493,6 +1493,10 @@ select.form-control option {
 .magia-conta-exp:hover { background: rgba(192, 132, 252, 0.25); }
 .magia-conta-exp.is-vazio { background: none; border: none; }
 
+/* O atributo `hidden` sozinho não fecha uma lista com `display: flex`: a regra
+   de classe ganha da folha do navegador, e o "−" fechava sem nada acontecer. */
+.magia-conta-lista[hidden] { display: none; }
+
 .magia-conta-lista {
   display: flex;
   flex-direction: column;
@@ -1527,6 +1531,8 @@ select.form-control option {
 
 .magia-item-info:hover,
 .magia-item-info.is-open { background: rgba(192, 132, 252, 0.3); color: #f5f3ff; }
+
+.magia-item-desc[hidden] { display: none; }
 
 .magia-item-desc {
   margin: 0.25rem 0 0.4rem;
