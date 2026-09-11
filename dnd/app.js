@@ -98,6 +98,9 @@ function createBlankCharacter() {
     expertSkills: [],
     selectedFeats: [],
     customFeats: [],
+    // Marca de que os talentos personalizados desta ficha já foram passados
+    // para a lista de escolhidos (ver mergeIntoBlankCharacter)
+    customFeatsMigrados: true,
     customFeatures: [],
 
     // Escolhas exigidas por cada talento (atributo +1, magias, perícias, opções)
@@ -490,6 +493,17 @@ const CHARACTER_NESTED_KEYS = ["customBg", "customClass1", "customClass2", "cust
 function mergeIntoBlankCharacter(data) {
   const base = createBlankCharacter();
   const merged = { ...base, ...data };
+
+  // Talento personalizado passou a ser marcado como os oficiais. Numa ficha
+  // salva antes disso ele valia sempre, então continua valendo: sem isso o
+  // personagem perderia, na abertura, o que já estava em uso.
+  if (!data.customFeatsMigrados && Array.isArray(merged.customFeats) && merged.customFeats.length) {
+    merged.selectedFeats = Array.isArray(merged.selectedFeats) ? merged.selectedFeats.slice() : [];
+    merged.customFeats.forEach(cf => {
+      if (cf && cf.id && !merged.selectedFeats.includes(cf.id)) merged.selectedFeats.push(cf.id);
+    });
+  }
+  merged.customFeatsMigrados = true;
   CHARACTER_NESTED_KEYS.forEach(k => {
     if (base[k] && typeof base[k] === "object" && !Array.isArray(base[k])) {
       merged[k] = { ...base[k], ...(data[k] || {}) };
@@ -3102,7 +3116,12 @@ function updateFeatsList() {
 
   // Talentos de Origem são concedidos pelo Antecedente, nunca marcados à mão.
   // Limpa qualquer resquício de antecedente anterior salvo no personagem.
+  //
+  // O talento personalizado não está no catálogo do livro: quem filtrava só
+  // pelo catálogo o apagava da lista de escolhidos a cada redesenho, e marcar a
+  // caixa não tinha efeito nenhum — o talento voltava desmarcado.
   character.selectedFeats = character.selectedFeats.filter(id => {
+    if ((character.customFeats || []).some(cf => cf.id === id)) return true;
     const f = DND5E_DATA.feats.find(x => x.id === id);
     return f && f.type !== "origin";
   });
@@ -3240,8 +3259,13 @@ function updateFeatsList() {
   // Contá-lo junto fazia o painel mostrar coisas como "3 / 1" num Paladino de
   // nível 4. A quantidade fica livre de propósito — subclasses e variantes de
   // mesa concedem estilos extras, e travar isso atrapalharia mais que ajudaria.
-  const escolhidos = selectable.filter(f =>
-    character.selectedFeats.includes(f.id) && f.type !== "fighting_style");
+  // O talento personalizado gasta escolha como qualquer outro: ele é um talento
+  // do personagem, não um enfeite. Antes ficava fora da conta e o painel dizia
+  // "0 / 1" com um talento já criado e em uso.
+  const escolhidos = [
+    ...selectable.filter(f => character.selectedFeats.includes(f.id) && f.type !== "fighting_style"),
+    ...getSelectedCustomFeats()
+  ];
   const estilos = selectable.filter(f =>
     character.selectedFeats.includes(f.id) && f.type === "fighting_style");
   const vagas = getFeatSlotInfo();
@@ -3343,9 +3367,9 @@ function updateFeatsList() {
       <h4 class="feat-block-title" style="color: #fbbf24;">Talentos Personalizados</h4>
       <div class="feat-list">
         ${character.customFeats.map(cf => `
-          <div class="feat-row is-selected" data-row="${cf.id}">
-            <span class="feat-row-lock" style="color: #fbbf24;"><i class="fa-solid fa-star"></i></span>
-            <span class="feat-row-name">${cf.name}</span>
+          <div class="feat-row${customFeatIsSelected(cf) ? " is-selected" : ""}" data-row="${cf.id}">
+            <input type="checkbox" class="feat-check" id="featChk_${cf.id}" value="${cf.id}" ${customFeatIsSelected(cf) ? "checked" : ""}>
+            <label class="feat-row-name" for="featChk_${cf.id}">${cf.name}</label>
             <span class="feat-row-tag tag-custom">${featTypeLabel(cf.type)}</span>
             <button type="button" class="feat-info-btn" data-info="${cf.id}" title="Mais informações"><i class="fa-solid fa-info"></i></button>
             <button type="button" class="feat-del-btn btn-delete-custom-feat" data-id="${cf.id}" title="Excluir talento"><i class="fa-solid fa-trash"></i></button>
@@ -3404,6 +3428,7 @@ function updateFeatsList() {
       if (delBtn) {
         const id = delBtn.getAttribute("data-id");
         character.customFeats = character.customFeats.filter(f => f.id !== id);
+        character.selectedFeats = (character.selectedFeats || []).filter(f => f !== id);
         updateFeatsList();
         recalculateCharacter();
         showToast("Talento personalizado removido.");
@@ -3438,7 +3463,8 @@ function updateFeatsList() {
   container.querySelectorAll(".feat-check").forEach(chk => {
     chk.addEventListener("change", (e) => {
       const fId = e.target.value;
-      const feat = DND5E_DATA.feats.find(f => f.id === fId);
+      const feat = DND5E_DATA.feats.find(f => f.id === fId)
+        || (character.customFeats || []).find(f => f.id === fId);
       const nomeTalento = feat ? feat.name.split(" (")[0] : fId;
       if (e.target.checked) {
         if (!character.selectedFeats.includes(fId)) character.selectedFeats.push(fId);
@@ -3584,6 +3610,16 @@ function featChoicesFor(featId) {
  * É por aqui que passam magias concedidas, escolhas de talento e os efeitos
  * mecânicos — quem entra nesta lista vale para tudo.
  */
+/** Um talento personalizado está no personagem quando foi marcado, como os oficiais */
+function customFeatIsSelected(cf) {
+  return (character.selectedFeats || []).includes(cf.id);
+}
+
+/** Os talentos personalizados marcados */
+function getSelectedCustomFeats() {
+  return (character.customFeats || []).filter(customFeatIsSelected);
+}
+
 function getActiveFeatIds() {
   const ids = (character.selectedFeats || []).slice();
   [getOriginFeatId(), getHumanOriginFeatId(), ...(character.extraOriginFeats || [])]
@@ -4668,8 +4704,8 @@ function recalculateCharacter() {
       if (character.backgroundBonuses.tertiary === ab.id) score += 1;
     }
 
-    // Bônus de Talentos Customizados
-    character.customFeats.forEach(cf => {
+    // Bônus de Talentos Customizados (só os que estão no personagem)
+    getSelectedCustomFeats().forEach(cf => {
       if (cf.abilityBonus === ab.id) score += 1;
     });
 
@@ -5435,7 +5471,7 @@ function renderOfFeatureAreas(ctx) {
     const f = DND5E_DATA.feats.find(x => x.id === fId);
     if (f) featLines.push(`${f.name}: ${f.desc}${describeFeatChoices(f)}`);
   });
-  character.customFeats.forEach(cf => featLines.push(`[Custom] ${cf.name}: ${cf.desc}`));
+  getSelectedCustomFeats().forEach(cf => featLines.push(`[Custom] ${cf.name}: ${cf.desc}`));
   syncOfField("sheetFeatsText", featLines.join("\n"), "featsText");
 }
 
@@ -5941,7 +5977,7 @@ function getDisplayedAbilityScore(abId) {
     if (character.backgroundBonuses.secondary === abId) score += 1;
     if (character.backgroundBonuses.tertiary === abId) score += 1;
   }
-  character.customFeats.forEach(cf => { if (cf.abilityBonus === abId) score += 1; });
+  getSelectedCustomFeats().forEach(cf => { if (cf.abilityBonus === abId) score += 1; });
   return score;
 }
 
@@ -6794,13 +6830,11 @@ function bindEvents() {
     const desc = document.getElementById("customFeatDesc").value.trim();
 
     if (name && desc) {
-      character.customFeats.push({
-        id: "custom_" + Date.now(),
-        name,
-        type,
-        abilityBonus,
-        desc
-      });
+      const idNovo = "custom_" + Date.now();
+      character.customFeats.push({ id: idNovo, name, type, abilityBonus, desc });
+      // Quem acabou de criar o talento quer usá-lo: entra já marcado, e a caixa
+      // de seleção na lista serve para tirar depois, se for o caso.
+      if (!character.selectedFeats.includes(idNovo)) character.selectedFeats.push(idNovo);
       customFeatModal.classList.remove("active");
       document.getElementById("customFeatForm").reset();
       updateFeatsList();
@@ -7136,8 +7170,10 @@ function migrateLegacyCharacter(parsed) {
   const isLegacyPreset = known.length === LEGACY_SPELLS.length && LEGACY_SPELLS.every(id => known.includes(id));
   if (isLegacyPreset) character.spellsKnown = [];
 
-  // Talentos de Origem passam a vir do antecedente, nunca da lista marcável
+  // Talentos de Origem passam a vir do antecedente, nunca da lista marcável.
+  // Os personalizados não estão no catálogo e ficam.
   character.selectedFeats = (character.selectedFeats || []).filter(id => {
+    if ((character.customFeats || []).some(cf => cf.id === id)) return true;
     const f = DND5E_DATA.feats.find(x => x.id === id);
     return f && f.type !== "origin";
   });
