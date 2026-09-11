@@ -1957,29 +1957,51 @@ function renderFeatureUses() {
  * Sai da mesma fonte da ficha: a tabela da classe, com o total que o jogador
  * tiver escrito à mão por cima. Sem isso, o painel e a ficha discordariam.
  */
+/**
+ * A linha de nove círculos da tabela oficial, no nível pedido.
+ *
+ * A Magia de Pacto do Bruxo não tem uma linha de nove círculos: são N espaços,
+ * todos do mesmo círculo, e a tabela guarda isso como { count, level }. Quem
+ * tratava toda tabela como vetor chamava .map num objeto — qualquer Bruxo
+ * derrubava o painel de espaços, e a ficha A4 mostrava nove zeros. Aqui a forma
+ * do pacto vira o mesmo vetor de nove posições que as outras usam.
+ */
+function linhaDeEspacosDaTabela(tipo, nivel) {
+  const tabela = DND5E_DATA.spellSlotsTable[tipo] || DND5E_DATA.spellSlotsTable.full;
+  const bruta = tabela[nivel];
+  if (!bruta) return [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  return Array.isArray(bruta)
+    ? bruta.slice()
+    : Array.from({ length: 9 }, (_, i) => (i + 1 === bruta.level ? bruta.count : 0));
+}
+
+/**
+ * Total de espaços de um círculo: o que o jogador escreveu na ficha vence a
+ * tabela — mas só se for número.
+ *
+ * O campo da ficha guarda texto. Uma ficha ainda em branco guardava "" em todos
+ * os círculos, e o painel de jogo descartava a linha inteira — texto vazio não
+ * é zero, mas também não é um total: sobrava só o 1º círculo, o único com
+ * número. Um zero guardado como texto fazia o contrário, desenhando linhas de
+ * "0 de 0" para círculos que o personagem nem tem.
+ */
+function totalDeEspacos(auto, manual) {
+  const n = parseInt(manual, 10);
+  return Number.isFinite(n) ? n : auto;
+}
+
 function getSpellSlotRow() {
   const c1 = resolveClassObj(character.class1, 1);
   const c2 = character.class2 !== "none" ? resolveClassObj(character.class2, 2) : null;
   const conj = (c1 && c1.spellcasting) ? c1 : (c2 && c2.spellcasting ? c2 : null);
   const nivel = (character.level1 || 0) + (c2 ? (character.level2 || 0) : 0);
   const tipo = conj && conj.spellcasting ? conj.spellcasting.type : "full";
-  const tabela = DND5E_DATA.spellSlotsTable[tipo] || DND5E_DATA.spellSlotsTable.full;
-  const bruta = (conj && tabela[nivel]) || [0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-  // A Magia de Pacto do Bruxo não tem uma linha de nove círculos: são N espaços,
-  // todos do mesmo círculo, e a tabela guarda isso como { count, level }. O
-  // código tratava toda tabela como vetor e chamava .map num objeto — qualquer
-  // Bruxo derrubava o painel de espaços com "linha.map is not a function", e
-  // com ele o painel inteiro de jogo. Aqui a forma do pacto vira o mesmo vetor
-  // de nove posições que as outras usam.
-  const linha = Array.isArray(bruta)
-    ? bruta
-    : Array.from({ length: 9 }, (_, i) => (i + 1 === bruta.level ? bruta.count : 0));
+  const linha = conj ? linhaDeEspacosDaTabela(tipo, nivel) : [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   const ov = sheetOv();
   return linha.map((auto, i) => {
     const manual = ov.slots && ov.slots[i + 1] ? ov.slots[i + 1].total : undefined;
-    return manual !== undefined && manual !== null ? manual : auto;
+    return totalDeEspacos(auto, manual);
   });
 }
 
@@ -5331,8 +5353,7 @@ function renderOfSpellSlots(ctx) {
   if (!grid) return;
 
   const type = spellCastingClass && spellCastingClass.spellcasting ? spellCastingClass.spellcasting.type : "full";
-  const table = DND5E_DATA.spellSlotsTable[type] || DND5E_DATA.spellSlotsTable.full;
-  const slotsRow = (table && table[totalLevel]) || [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const slotsRow = linhaDeEspacosDaTabela(type, totalLevel);
 
   const ov = sheetOv();
   if (!ov.slots || typeof ov.slots !== "object") ov.slots = {};
@@ -5341,7 +5362,7 @@ function renderOfSpellSlots(ctx) {
   for (let lvl = 1; lvl <= 9; lvl++) {
     const auto = slotsRow[lvl - 1] || 0;
     const st = ov.slots[lvl] || {};
-    const total = st.total !== undefined && st.total !== null ? st.total : auto;
+    const total = totalDeEspacos(auto, st.total);
     const used = character.spellSlotsExpended[lvl] || 0;
 
     const cell = document.createElement("div");
