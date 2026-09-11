@@ -3886,6 +3886,14 @@ const DND5E_DATA = {
       "desc": "Ataques desarmados causam 1d6 + FOR (ou 1d8 se ambas as mãos estiverem livres). Causa 1d4 de dano automático no início do turno a quem agarrar."
     },
     {
+      "id": "ability_score_improvement",
+      "name": "Aumento no Valor de Atributo (Ability Score Improvement)",
+      "type": "general",
+      "prereq": "Nível 4+",
+      "repeatable": true,
+      "desc": "Aumente um valor de atributo em 2, ou dois valores de atributo em 1 cada, até o máximo de 20. Você pode escolher este talento mais de uma vez, e é o que a maioria dos personagens pega nas vagas de talento de nível 4, 8, 12, 16 e 19."
+    },
+    {
       "id": "actor",
       "name": "Ator (Actor)",
       "type": "general",

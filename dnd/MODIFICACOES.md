@@ -679,6 +679,35 @@ padrão em vez de travar o botão.
 O PDF leve parou de sair com "(leve)" no nome — o nome agora é do jogador. Se os
 dois PDFs forem salvos com o mesmo nome, o navegador numera o segundo.
 
+### 7.1.7 O talento de Aumento no Valor de Atributo
+
+No Livro do Jogador de 2024 o aumento de atributo é um **talento**, e o mais
+escolhido de todos — é o padrão das vagas de nível 4, 8, 12, 16 e 19. Ele não
+estava em `DND5E_DATA.feats`: quem chegava ao nível 4 abria o Passo 3 e não
+tinha o que pegar.
+
+Entrou como talento geral (`ability_score_improvement`, pré-requisito Nível 4+),
+com caixa de escolhas própria, porque é o único que foge do padrão dos outros
+em duas coisas:
+
+- **Dá +2 num atributo ou +1 em dois.** A caixa traz dois seletores de atributo;
+  repetir o mesmo atributo nos dois é o +2 do livro.
+- **É repetível.** Um seletor "quantas vezes você pegou este talento" (1 a 5,
+  que é o teto de vagas de uma classe) multiplica as caixas e faz o talento
+  gastar uma vaga por vez — o painel mostra `2 / 3`, não `1 / 3`, e a lista de
+  talentos escreve `Aumento no Valor de Atributo ×2`.
+
+As escolhas ficam em `featChoices.ability_score_improvement.options`, com as
+chaves `asiVezes`, `asi0a`, `asi0b`, `asi1a`… Assim tudo continua sendo
+`kind: "option"` para o mesmo ouvinte de sempre e salva junto com o personagem
+sem nenhum formato novo. `getFeatAbilityBonus()` soma os dois +1 de cada vez, e
+`describeFeatChoices()` resume na ficha (`1º aumento: +2 em FOR; 2º aumento: +1
+em CON, +1 em DES`).
+
+O app continua **não travando o máximo de 20** — ele nunca travou, nem para os
+bônus de antecedente, e a ficha é editável de propósito. O limite está escrito
+na descrição do talento.
+
 ### 7.2 Link do RPG Master
 
 `index.html` — o botão do cabeçalho apontava para `../rpg/` (caminho relativo) e

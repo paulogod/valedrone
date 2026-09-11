@@ -3269,6 +3269,9 @@ function updateFeatsList() {
   const estilos = selectable.filter(f =>
     character.selectedFeats.includes(f.id) && f.type === "fighting_style");
   const vagas = getFeatSlotInfo();
+  // O Aumento no Valor de Atributo é repetível: ele gasta uma vaga por vez que
+  // foi pego, e não uma só por estar marcado.
+  const vagasUsadas = escolhidos.reduce((n, f) => n + vagasQueOTalentoUsa(f), 0);
 
   const busca = (_featFilterState.busca || "").toLowerCase().trim();
   const tipo = _featFilterState.tipo || "all";
@@ -3309,12 +3312,15 @@ function updateFeatsList() {
 
     <div class="feat-slots-card">
       <div class="feat-slots-line">
-        <span class="feat-slots-num${escolhidos.length > vagas.total ? " is-over" : ""}">${escolhidos.length} / ${vagas.total}</span>
+        <span class="feat-slots-num${vagasUsadas > vagas.total ? " is-over" : ""}">${vagasUsadas} / ${vagas.total}</span>
         <span class="feat-slots-label">escolhas de talento usadas</span>
       </div>
       <p class="feat-slots-note">${vagas.detalhe}</p>
       ${escolhidos.length
-        ? `<p class="feat-slots-mine"><i class="fa-solid fa-check"></i> ${escolhidos.map(f => f.name.split(" (")[0]).join(" · ")}</p>`
+        ? `<p class="feat-slots-mine"><i class="fa-solid fa-check"></i> ${escolhidos.map(f => {
+             const n = vagasQueOTalentoUsa(f);
+             return `${f.name.split(" (")[0]}${n > 1 ? ` ×${n}` : ""}`;
+           }).join(" · ")}</p>`
         : `<p class="feat-slots-mine is-empty">Nenhum talento escolhido ainda.</p>`}
       ${estilos.length
         ? `<p class="feat-slots-mine"><i class="fa-solid fa-shield"></i> Estilos de Luta (livres, não gastam escolha de talento): ${estilos.map(f => f.name.split(" (")[0]).join(" · ")}</p>`
@@ -3454,6 +3460,9 @@ function updateFeatsList() {
       _ofSpellsSig = null;
       updateSkillsSelector();
       recalculateCharacter();
+      // Mudar quantas vezes o aumento foi pego muda o número de caixas e a
+      // contagem de vagas: aqui a lista precisa ser redesenhada mesmo.
+      if (key === "asiVezes") updateFeatsList();
 
       const feat = DND5E_DATA.feats.find(f => f.id === featId);
       if (value && feat) showToast(`✔ ${feat.name}: escolha aplicada na ficha.`);
@@ -3522,13 +3531,53 @@ function magicInitiateSlots(classId, listLabel) {
   ];
 }
 
+/* ------------------------------- AUMENTO NO VALOR DE ATRIBUTO (o talento) */
+
+/**
+ * No Livro do Jogador de 2024 o aumento de atributo é um talento como qualquer
+ * outro — e o mais escolhido de todos, já que é o padrão das vagas de nível 4,
+ * 8, 12, 16 e 19. Ele é o único repetível, e o único que dá +2 num atributo em
+ * vez de +1, então não cabe na caixa de escolhas genérica.
+ *
+ * As escolhas moram em `featChoices.ability_score_improvement.options`, com as
+ * chaves `asiVezes`, `asi0a`, `asi0b`, `asi1a`… Assim tudo continua sendo
+ * `kind: "option"` para o mesmo ouvinte de sempre, e salva junto com o resto do
+ * personagem sem nenhum formato novo.
+ */
+const ASI_FEAT_ID = "ability_score_improvement";
+const ASI_MAX_VEZES = 5;   // as cinco vagas de talento de uma classe só
+
+/** Quantas vezes o talento de aumento de atributo foi pego (1 a 5) */
+function asiVezes() {
+  const n = parseInt(featChoicesFor(ASI_FEAT_ID).options.asiVezes, 10);
+  return Math.min(Math.max(n || 1, 1), ASI_MAX_VEZES);
+}
+
+/** Os dois +1 de cada vez que o talento foi pego; o mesmo atributo duas vezes é +2 */
+function asiEscolhas() {
+  const ch = featChoicesFor(ASI_FEAT_ID);
+  const pares = [];
+  for (let i = 0; i < asiVezes(); i++) {
+    pares.push([ch.options[`asi${i}a`] || "", ch.options[`asi${i}b`] || ""]);
+  }
+  return pares;
+}
+
+/** Quantas escolhas de talento um talento consome (o aumento pode valer por vários) */
+function vagasQueOTalentoUsa(feat) {
+  return feat && feat.id === ASI_FEAT_ID ? asiVezes() : 1;
+}
+
 /**
  * Escolhas que não dá para deduzir da descrição.
  * `grants` = magias fixas que o talento concede (vão direto para a ficha).
  * `spells` = magias que o jogador escolhe. `skills` / `expertise` = perícias.
  * `options` = listas fechadas (elemento, tipo de dano).
+ * `asi` = a caixa própria do Aumento no Valor de Atributo.
  */
 const FEAT_EXTRA_CHOICES = {
+  ability_score_improvement: { asi: true },
+
   magic_initiate_cleric: { spells: magicInitiateSlots("cleric", "Clérigo") },
   magic_initiate_druid: { spells: magicInitiateSlots("druid", "Druida") },
   magic_initiate_wizard: { spells: magicInitiateSlots("wizard", "Mago") },
@@ -3576,7 +3625,7 @@ const FEAT_EXTRA_CHOICES = {
 
 /** Descreve tudo que um talento pede ao jogador */
 function getFeatChoiceSpec(feat) {
-  if (!feat) return { abilityOptions: [], spells: [], skills: [], options: [], grants: [], expertise: null, hasChoices: false };
+  if (!feat) return { abilityOptions: [], spells: [], skills: [], options: [], grants: [], expertise: null, asi: false, hasChoices: false };
   const extra = FEAT_EXTRA_CHOICES[feat.id] || {};
   const abilityOptions = extra.abilityOptions || parseFeatAbilityOptions(feat.desc);
   const spells = extra.spells || [];
@@ -3584,11 +3633,12 @@ function getFeatChoiceSpec(feat) {
   const options = extra.options || [];
   const grants = extra.grants || [];
   const expertise = extra.expertise || null;
+  const asi = !!extra.asi;
   const hasStyleEffect = !!FIGHTING_STYLE_EFFECTS[feat.id];
   return {
-    abilityOptions, spells, skills, options, grants, expertise, hasStyleEffect,
+    abilityOptions, spells, skills, options, grants, expertise, asi, hasStyleEffect,
     hasChoices: !!(abilityOptions.length || spells.length || skills.length ||
-                   options.length || grants.length || expertise || hasStyleEffect)
+                   options.length || grants.length || expertise || asi || hasStyleEffect)
   };
 }
 
@@ -3717,6 +3767,26 @@ function buildFeatChoiceBoxHtml(feat, isActive) {
        </select>`));
   });
 
+  if (spec.asi) {
+    const vezes = asiVezes();
+    const selAtributo = (chave) => `
+      <select class="feat-choice-input" data-choice-feat="${feat.id}" data-choice-kind="option" data-choice-key="${chave}">
+        <option value="">— escolher —</option>
+        ${DND5E_DATA.abilities.map(a =>
+          `<option value="${a.id}"${ch.options[chave] === a.id ? " selected" : ""}>${a.name} (${a.abbr})</option>`).join("")}
+      </select>`;
+    fields.push(field("Quantas vezes você pegou este talento",
+      `<select class="feat-choice-input" data-choice-feat="${feat.id}" data-choice-kind="option" data-choice-key="asiVezes">
+         ${Array.from({ length: ASI_MAX_VEZES }, (_, i) => i + 1).map(n =>
+           `<option value="${n}"${vezes === n ? " selected" : ""}>${n}x</option>`).join("")}
+       </select>`));
+    for (let i = 0; i < vezes; i++) {
+      const prefixo = vezes > 1 ? `${i + 1}º aumento — ` : "";
+      fields.push(field(`${prefixo}primeiro +1`, selAtributo(`asi${i}a`)));
+      fields.push(field(`${prefixo}segundo +1 (repita o atributo para +2)`, selAtributo(`asi${i}b`)));
+    }
+  }
+
   const grantLine = spec.grants.length
     ? `<p class="feat-choice-granted"><i class="fa-solid fa-wand-sparkles"></i> Vai direto para a ficha:
          ${spec.grants.map(id => spellDisplayName(id, (FEAT_EXTRA_CHOICES[feat.id]?.grantNames || {})[id])).join(", ")}</p>`
@@ -3764,7 +3834,19 @@ function describeFeatChoices(feat) {
     const sk = DND5E_DATA.skills.find(s => s.id === ch.expertise);
     parts.push(`especialização: ${sk ? sk.name : ch.expertise}`);
   }
-  Object.values(ch.options || {}).filter(Boolean).forEach(v => parts.push(v));
+  if (spec.asi) {
+    asiEscolhas().forEach((par, i) => {
+      const soma = {};
+      par.filter(Boolean).forEach(id => { soma[id] = (soma[id] || 0) + 1; });
+      const txt = Object.keys(soma).map(id => {
+        const ab = DND5E_DATA.abilities.find(a => a.id === id);
+        return `+${soma[id]} em ${ab ? ab.abbr : id}`;
+      }).join(", ");
+      if (txt) parts.push(asiEscolhas().length > 1 ? `${i + 1}º aumento: ${txt}` : txt);
+    });
+  } else {
+    Object.values(ch.options || {}).filter(Boolean).forEach(v => parts.push(v));
+  }
 
   const styleEffect = FIGHTING_STYLE_EFFECTS[feat.id];
   if (styleEffect) parts.push(styleEffect.note);
@@ -3789,6 +3871,11 @@ function getFeatAbilityBonus(abilityId) {
   let bonus = 0;
   getActiveFeatIds().forEach(fid => {
     if (featChoicesFor(fid).ability === abilityId) bonus += 1;
+    // O Aumento no Valor de Atributo tem dois +1 por vez que foi pego, e os
+    // dois podem cair no mesmo atributo (que é o +2 do livro).
+    if (fid === ASI_FEAT_ID) {
+      asiEscolhas().forEach(par => par.forEach(id => { if (id === abilityId) bonus += 1; }));
+    }
   });
   return bonus;
 }
