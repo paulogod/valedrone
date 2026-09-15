@@ -106,6 +106,15 @@ function createBlankCharacter() {
     // Escolhas exigidas por cada talento (atributo +1, magias, perícias, opções)
     featChoices: {},
 
+    // Invocações Místicas do Bruxo: [{ id, escolha, magias }]. Repetíveis
+    // aparecem uma vez por cópia, cada uma com a sua escolha.
+    invocations: [],
+
+    // Escolhas de características de classe (Ordem Divina, Metamagia,
+    // Especialização...). Chave = id em DND5E_DATA.classChoices; valor = id da
+    // opção ou lista de ids, conforme o tipo da escolha.
+    classChoices: {},
+
     // Overrides da ficha oficial editável (campos digitados à mão pelo jogador)
     sheet: {},
 
@@ -245,10 +254,54 @@ function tabelaOficialDeConjuracao(tipo) {
   return modelo ? modelo.spellcasting : null;
 }
 
+/**
+ * Guerreiro e Ladino não conjuram, mas o Cavaleiro Místico e o Trapaceiro
+ * Arcano sim, a partir do 3º nível. A conjuração mora na subclasse
+ * (`spellcasting` do data.js) e entra aqui na classe: assim capacidade,
+ * espaços, CD e atributo de conjuração passam a valer sem caso especial.
+ */
+function comConjuracaoDaSubclasse(base, slot) {
+  if (!base || base.spellcasting || !base.subclasses) return base;
+  const subId = slot === 2 ? character.subclass2 : character.subclass1;
+  const nivel = (slot === 2 ? character.level2 : character.level1) || 0;
+  const sub = base.subclasses.find(s => s.id === subId);
+  if (!sub || !sub.spellcasting || nivel < (sub.spellcasting.fromLevel || 3)) return base;
+  return { ...base, spellcasting: sub.spellcasting };
+}
+
+/**
+ * Deslocamento extra das classes, com as condições do livro:
+ * Movimento Rápido (Bárbaro 5) e Errante (Guardião 6) — +3 m sem armadura
+ * pesada; Movimento sem Armadura (Monge) — cresce com o nível, sem armadura
+ * nem escudo. Vale o nível na classe, seja primária ou multiclasse.
+ */
+function getClassSpeedBonus(armorObj, shieldObj) {
+  const pesada = !!armorObj && armorObj.id !== "none" && /pesada|heavy/i.test(`${armorObj.type || ""} ${armorObj.category || ""} ${armorObj.name || ""}`);
+  const semArmadura = !armorObj || armorObj.id === "none";
+  const semEscudo = !shieldObj || shieldObj.id === "none" || !shieldObj.acBonus;
+  let bonus = 0;
+  if (classLevel("barbarian") >= 5 && !pesada) bonus += 3;
+  if (classLevel("ranger") >= 6 && !pesada) bonus += 3;
+  getActiveSubclassEffects().forEach(e => { if (e.speed) bonus += e.speed; });
+  const monge = classLevel("monk");
+  if (monge >= 2 && semArmadura && semEscudo) {
+    bonus += monge >= 18 ? 9 : monge >= 14 ? 7.5 : monge >= 10 ? 6 : monge >= 6 ? 4.5 : 3;
+  }
+  return bonus;
+}
+
+/** Nível do personagem numa classe (soma primária e multiclasse se for a mesma) */
+function classLevel(classId) {
+  let n = 0;
+  if (character.class1 === classId) n += character.level1 || 0;
+  if (character.class2 && character.class2 !== "none" && character.class2 === classId) n += character.level2 || 0;
+  return n;
+}
+
 /** Objeto de classe já com tudo o que o jogador preencheu no painel (slot 1 ou 2) */
 function resolveClassObj(id, slot) {
   const base = DND5E_DATA.classes.find(c => c.id === id);
-  if (!base || !base.isCustom) return base;
+  if (!base || !base.isCustom) return comConjuracaoDaSubclasse(base, slot);
   const st = customClassState(slot);
 
   const featuresByLevel = {};
@@ -487,7 +540,7 @@ function syncWizardControls() {
 /* Objetos aninhados do personagem: precisam de merge chave a chave para uma
    ficha antiga (sem `customBg.name`, sem `featChoices`...) não chegar capenga */
 const CHARACTER_NESTED_KEYS = ["customBg", "customClass1", "customClass2", "customSpecies", "freeCasts", "baseScores", "backgroundBonuses", "coins",
-  "bio", "deathSaves", "spellSlotsExpended", "sheet", "featChoices", "hpRolls"];
+  "bio", "deathSaves", "spellSlotsExpended", "sheet", "featChoices", "hpRolls", "classChoices"];
 
 /** Ficha carregada de fora (JSON, localStorage, lista de salvos) sobre a base vazia */
 function mergeIntoBlankCharacter(data) {
@@ -504,6 +557,7 @@ function mergeIntoBlankCharacter(data) {
     });
   }
   merged.customFeatsMigrados = true;
+  if (!Array.isArray(merged.invocations)) merged.invocations = [];
   CHARACTER_NESTED_KEYS.forEach(k => {
     if (base[k] && typeof base[k] === "object" && !Array.isArray(base[k])) {
       merged[k] = { ...base[k], ...(data[k] || {}) };
@@ -652,42 +706,69 @@ function updateLineagesDropdown() {
 }
 
 /**
- * Atualiza o dropdown de Subclasses baseado na Classe 1 e Nível
+ * Atualiza os dropdowns de Subclasse da classe primária e da multiclasse.
+ * A multiclasse não tinha seletor nenhum: um Guerreiro 3 em multiclasse não
+ * podia ser Cavaleiro Místico, e as magias e características de subclasse da
+ * segunda classe nunca chegavam à ficha.
  */
 function updateSubclassesDropdown() {
-  const classObj = DND5E_DATA.classes.find(c => c.id === character.class1);
-  const selectSubclass1 = document.getElementById("selectSubclass1");
-  const subclass1Desc = document.getElementById("subclass1Desc");
-  
-  selectSubclass1.innerHTML = "";
+  preencherSubclasse(1);
+  preencherSubclasse(2);
+}
 
-  if (character.level1 < 3) {
-    selectSubclass1.innerHTML = '<option value="none">Disponível a partir do 3º Nível</option>';
-    selectSubclass1.disabled = true;
-    subclass1Desc.innerHTML = `<p><em>No D&D 5.5 (2024), a escolha de Subclasse é desbloqueada no <strong>3º nível</strong>. Ao evoluir para o nível 3, você poderá escolher entre as 4 especializações da classe.</em></p>`;
-  } else {
-    selectSubclass1.disabled = false;
-    if (classObj && classObj.subclasses) {
-      classObj.subclasses.forEach(sub => {
-        const opt = document.createElement("option");
-        opt.value = sub.id;
-        opt.textContent = sub.name;
-        selectSubclass1.appendChild(opt);
-      });
-      if (!character.subclass1 || character.subclass1 === "none" || !classObj.subclasses.find(s => s.id === character.subclass1)) {
-        character.subclass1 = classObj.subclasses[0].id;
-      }
-      selectSubclass1.value = character.subclass1;
-      const curSub = classObj.subclasses.find(s => s.id === character.subclass1);
-      
-      const bonusSpellsHtml = subclassSpellsHtml(curSub, character.level1)
-                             + landSpellsHtml(curSub, character.level1);
+/** Texto da subclasse escolhida: descrição e magias por nível */
+function subclassDescHtml(sub, nivel) {
+  if (!sub) return "";
+  const caracteristicas = (sub.features || []).map(f => {
+    const chegou = f.level <= nivel;
+    return `<details class="sub-feat${chegou ? "" : " is-futura"}">
+        <summary><span class="sub-feat-nivel">Nv ${f.level}</span> <strong>${f.name}</strong>${chegou ? "" : " <em>(ainda não)</em>"}
+          <span class="sub-feat-resumo">${f.resumo || ""}</span></summary>
+        <p>${f.desc}</p>
+      </details>`;
+  }).join("");
+  return `<h4><i class="fa-solid fa-khanda"></i> ${sub.name}</h4><p>${sub.desc}</p>`
+    + subclassSpellsHtml(sub, nivel) + landSpellsHtml(sub, nivel)
+    + (caracteristicas ? `<div class="sub-feats"><p class="sub-feats-titulo">Características da subclasse (clique para ler o texto do livro)</p>${caracteristicas}</div>` : "");
+}
 
-      if (curSub) {
-        subclass1Desc.innerHTML = `<h4><i class="fa-solid fa-khanda"></i> ${curSub.name}</h4><p>${curSub.desc}</p>${bonusSpellsHtml}`;
-      }
-    }
+function preencherSubclasse(slot) {
+  const classId = slot === 2 ? character.class2 : character.class1;
+  const nivel = (slot === 2 ? character.level2 : character.level1) || 0;
+  const chave = slot === 2 ? "subclass2" : "subclass1";
+  const select = document.getElementById(`selectSubclass${slot}`);
+  const desc = document.getElementById(`subclass${slot}Desc`);
+  if (!select || !desc) return;
+
+  if (slot === 2) {
+    const grupo = document.getElementById("subclass2Group");
+    const temMulticlasse = classId && classId !== "none";
+    if (grupo) grupo.hidden = !temMulticlasse;
+    if (!temMulticlasse) return;
   }
+
+  const classObj = DND5E_DATA.classes.find(c => c.id === classId);
+  select.innerHTML = "";
+
+  if (nivel < 3 || !classObj || !classObj.subclasses || !classObj.subclasses.length) {
+    select.innerHTML = '<option value="none">Disponível a partir do 3º Nível</option>';
+    select.disabled = true;
+    desc.innerHTML = `<p><em>No D&D 5.5 (2024), a escolha de Subclasse é desbloqueada no <strong>3º nível</strong>${slot === 2 ? " da classe de multiclasse" : ""}. Ao evoluir para o nível 3, você poderá escolher entre as 4 especializações da classe.</em></p>`;
+    return;
+  }
+
+  select.disabled = false;
+  classObj.subclasses.forEach(sub => {
+    const opt = document.createElement("option");
+    opt.value = sub.id;
+    opt.textContent = sub.name;
+    select.appendChild(opt);
+  });
+  if (!character[chave] || character[chave] === "none" || !classObj.subclasses.find(s => s.id === character[chave])) {
+    character[chave] = classObj.subclasses[0].id;
+  }
+  select.value = character[chave];
+  desc.innerHTML = subclassDescHtml(classObj.subclasses.find(s => s.id === character[chave]), nivel);
 }
 
 /* Painéis de Classe/Multiclasse/Espécie personalizadas: aparecem só quando a
@@ -1479,6 +1560,7 @@ function getCustomBgToolName() {
  */
 function getFormattedLanguages() {
   const list = [...character.languages];
+  getClassChoiceLanguages().forEach(l => { if (!list.includes(l)) list.push(l); });
 
   // Idiomas concedidos por uma espécie personalizada entram junto dos demais.
   const spCustom = resolveSpeciesObj(character.species);
@@ -1827,19 +1909,40 @@ function updateSkillsSelector() {
   const maxChoiceCount = classObj.skillChoices ? classObj.skillChoices.count : 2;
   const bgSkills = bgObj.isCustom ? [character.customBg.skill1, character.customBg.skill2] : (bgObj.skills || []);
 
-  document.getElementById("skillsChoiceLabel").textContent = `Perícias da Classe (Escolha até ${maxChoiceCount} opções da lista da classe):`;
+  // A classe dá N perícias da lista dela. Antes dava para marcar qualquer uma,
+  // em qualquer quantidade. Perícias fora da lista só entram por outros meios
+  // (antecedente, talento, escolhas de classe ou marcando direto na ficha): aqui
+  // ficam travadas, mas uma já marcada pode ser desmarcada.
+  const outrasFontes = new Set([
+    ...getFeatGrantedSkills().trained, ...getFeatGrantedSkills().expert, ...getClassChoiceSkills().trained
+  ]);
+  const daClasse = character.trainedSkills.filter(id => allowedSkills.includes(id) && !bgSkills.includes(id));
+  const cheio = daClasse.length >= maxChoiceCount;
+
+  document.getElementById("skillsChoiceLabel").innerHTML =
+    `Perícias da Classe: <span style="color: ${daClasse.length > maxChoiceCount ? "#ef4444" : "#c084fc"}">${daClasse.length} / ${maxChoiceCount}</span> ` +
+    `<small style="color: #94a3b8; font-weight: 400;">(da lista da classe; as do antecedente não contam)</small>`;
 
   DND5E_DATA.skills.forEach(sk => {
     const isBgSkill = bgSkills.includes(sk.id);
     const isAllowed = allowedSkills.includes(sk.id);
-    const isChecked = character.trainedSkills.includes(sk.id) || isBgSkill;
+    const isOutra = outrasFontes.has(sk.id);
+    const isChecked = character.trainedSkills.includes(sk.id) || isBgSkill || isOutra;
+    const travada = isBgSkill || (isOutra && !character.trainedSkills.includes(sk.id))
+      || (!isChecked && (!isAllowed || cheio));
+    const motivo = isBgSkill ? " [Antecedente]"
+      : isOutra && !character.trainedSkills.includes(sk.id) ? " [Talento/Escolha]"
+      : isAllowed ? " [Classe]"
+      : character.trainedSkills.includes(sk.id) ? " [Fora da lista]" : "";
 
     const item = document.createElement("label");
     item.className = "skill-select-item";
     item.innerHTML = `
-      <input type="checkbox" value="${sk.id}" ${isChecked ? 'checked' : ''} ${isBgSkill ? 'disabled' : ''}>
-      <span><strong>${sk.name}</strong> <small style="color: #94a3b8;">(${DND5E_DATA.abilities.find(a => a.id === sk.ability).abbr})${isBgSkill ? ' [Antecedente]' : isAllowed ? ' [Classe]' : ''}</small></span>
+      <input type="checkbox" value="${sk.id}" ${isChecked ? 'checked' : ''} ${travada ? 'disabled' : ''}>
+      <span><strong>${sk.name}</strong> <small style="color: #94a3b8;">(${DND5E_DATA.abilities.find(a => a.id === sk.ability).abbr})${motivo}</small></span>
     `;
+    if (!isChecked && !isAllowed) item.title = "Fora da lista de perícias da classe";
+    else if (!isChecked && cheio) item.title = `A classe já tem as ${maxChoiceCount} perícias`;
 
     const checkbox = item.querySelector("input");
     checkbox.addEventListener("change", (e) => {
@@ -1851,6 +1954,8 @@ function updateSkillsSelector() {
       } else {
         character.trainedSkills = character.trainedSkills.filter(s => s !== skId);
       }
+      updateSkillsSelector();
+      renderClassChoices();
       recalculateCharacter();
     });
 
@@ -1911,6 +2016,21 @@ function getLimitedUses() {
   };
   daClasse(character.class1, character.level1);
   if (character.class2 && character.class2 !== "none") daClasse(character.class2, character.level2);
+
+  // Subclasses com recurso próprio (Dados de Superioridade do Mestre da Batalha)
+  [1, 2].forEach(slot => {
+    const sub = subclasseEscolhida(slot);
+    if (!sub || !Array.isArray(sub.limitedUses)) return;
+    const nivel = (slot === 2 ? character.level2 : character.level1) || 0;
+    sub.limitedUses.forEach(u => {
+      const max = (u.byLevel && u.byLevel[nivel]) || 0;
+      if (!max || lista.some(x => x.id === u.id)) return;
+      lista.push({
+        id: u.id, name: u.name, classe: sub.name.split(" (")[0], max, recovery: u.recovery,
+        gastos: (character.featureUses && character.featureUses[u.id]) || 0
+      });
+    });
+  });
   return lista;
 }
 
@@ -2008,13 +2128,48 @@ function totalDeEspacos(auto, manual) {
   return Number.isFinite(n) ? n : auto;
 }
 
+/**
+ * Espaços de magia pela regra do livro (cap. 2, Conjurador Multiclasse).
+ *
+ * Uma classe conjuradora só: a tabela dela, no nível DELA — antes o app usava
+ * o nível total, e um Guerreiro 5 / Mago 3 tinha os espaços de um Mago 8.
+ * Duas classes com Conjuração: soma os níveis de conjurador (inteiro no pleno,
+ * metade arredondada para cima no Paladino e Guardião, um terço arredondado
+ * para baixo no Cavaleiro Místico e Trapaceiro Arcano) e usa a tabela do
+ * conjurador pleno, que é a mesma do multiclasse. A Magia de Pacto do Bruxo é
+ * à parte e soma por cima.
+ */
+function linhaDeEspacosAutomatica() {
+  const classes = [
+    [resolveClassObj(character.class1, 1), character.level1 || 0],
+    character.class2 !== "none" ? [resolveClassObj(character.class2, 2), character.level2 || 0] : null
+  ].filter(x => x && x[0] && x[0].spellcasting && x[1] > 0);
+
+  const vazia = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const conjuracao = classes.filter(([c]) => c.spellcasting.type !== "pact");
+  const pacto = classes.filter(([c]) => c.spellcasting.type === "pact");
+
+  let linha = vazia.slice();
+  if (conjuracao.length === 1) {
+    const [c, nivel] = conjuracao[0];
+    linha = linhaDeEspacosDaTabela(c.spellcasting.type, nivel);
+  } else if (conjuracao.length > 1) {
+    const nivelDeConjurador = conjuracao.reduce((soma, [c, nivel]) => {
+      const tipo = c.spellcasting.type;
+      if (tipo === "half") return soma + Math.ceil(nivel / 2);
+      if (tipo === "third") return soma + Math.floor(nivel / 3);
+      return soma + nivel;
+    }, 0);
+    linha = nivelDeConjurador > 0 ? linhaDeEspacosDaTabela("full", Math.min(20, nivelDeConjurador)) : vazia.slice();
+  }
+  pacto.forEach(([, nivel]) => {
+    linhaDeEspacosDaTabela("pact", nivel).forEach((n, i) => { linha[i] += n; });
+  });
+  return linha;
+}
+
 function getSpellSlotRow() {
-  const c1 = resolveClassObj(character.class1, 1);
-  const c2 = character.class2 !== "none" ? resolveClassObj(character.class2, 2) : null;
-  const conj = (c1 && c1.spellcasting) ? c1 : (c2 && c2.spellcasting ? c2 : null);
-  const nivel = (character.level1 || 0) + (c2 ? (character.level2 || 0) : 0);
-  const tipo = conj && conj.spellcasting ? conj.spellcasting.type : "full";
-  const linha = conj ? linhaDeEspacosDaTabela(tipo, nivel) : [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const linha = linhaDeEspacosAutomatica();
 
   const ov = sheetOv();
   return linha.map((auto, i) => {
@@ -2061,8 +2216,20 @@ function getGrantedSpellsBySource() {
    talento, antecedente ou espécie o livro de 2024 deixa conjurar uma vez por
    Descanso Longo sem gastar espaço (e com espaço, se o personagem tiver); o que
    a classe ou a subclasse concede já vem preparado e gasta espaço do círculo. */
-function comoSeConjura(tipo, circulo) {
+function comoSeConjura(tipo, circulo, id) {
   if (circulo === 0) return { chave: "livre", rotulo: "à vontade" };
+  // Invocação conjura "sem gastar espaço" sem limite de usos — menos o
+  // Presente das Profundezas, que é uma vez por Descanso Longo.
+  if (tipo === "Maestria de Magias") return { chave: "livre", rotulo: "à vontade, sem espaço" };
+  if (tipo === "Ritual") return { chave: "livre", rotulo: "só como Ritual" };
+  if (tipo === "Subclasse (grátis)") return { chave: "gratis", rotulo: "1x por descanso longo" };
+  if (tipo === "Arcana Mística") return { chave: "gratis", rotulo: "1x por descanso longo" };
+  if (tipo === "Assinatura Mágica") return { chave: "gratis", rotulo: "1x por descanso curto" };
+  if (tipo === "Invocação") {
+    return INVOCATION_ONCE_SPELLS().has(id)
+      ? { chave: "gratis", rotulo: "1x por descanso longo" }
+      : { chave: "livre", rotulo: "à vontade, sem espaço" };
+  }
   if (tipo === "Talento" || tipo === "Antecedente" || tipo === "Espécie") {
     return { chave: "gratis", rotulo: "1x por descanso longo" };
   }
@@ -2080,7 +2247,7 @@ function getFreeCastSpells() {
   return getGrantedSpellEntries().map(g => {
     const sp = DND5E_DATA.spells.find(x => x.id === g.id);
     const circulo = sp ? sp.level : 0;
-    const modo = comoSeConjura(g.tipo || "Espécie", circulo);
+    const modo = comoSeConjura(g.tipo || "Espécie", circulo, g.id);
     if (modo.chave !== "gratis") return null;
     return {
       id: g.id,
@@ -2177,7 +2344,7 @@ function renderSpellSlots() {
   // "Classe" entrou junto das outras: sem ela, as magias concedidas pela
   // própria classe (Destruição Divina, Marca do Predador...) eram contadas na
   // capacidade mas não apareciam em nenhuma linha de origem.
-  const ordem = ["Classe", "Subclasse", "Espécie", "Talento", "Antecedente"];
+  const ordem = ["Classe", "Subclasse", "Subclasse (grátis)", "Ritual", "Invocação", "Pacto do Tomo", "Arcana Mística", "Maestria de Magias", "Assinatura Mágica", "Espécie", "Talento", "Antecedente"];
 
   // Uma linha por origem. Capacidade (o que dá para escolher) e concessão (o que
   // já vem pronto) são coisas diferentes e aparecem separadas: um Paladino com
@@ -2205,7 +2372,7 @@ function renderSpellSlots() {
   const itemHtml = (m) => {
     const sp = spellDe(m.id);
     const aberta = _magiaInfoAberta.has(m.id);
-    const modo = comoSeConjura(m.tipo, m.circulo);
+    const modo = comoSeConjura(m.tipo, m.circulo, m.id);
     return `<div class="magia-item">
       <span class="magia-item-nome"${m.fonte ? ` title="${String(m.fonte).replace(/"/g, "&quot;")}"` : ""}>
         ${m.nome} <small>${m.circulo === 0 ? "truque" : `${m.circulo}º`}</small>
@@ -2254,6 +2421,11 @@ function renderSpellSlots() {
       return { id, nome: sp ? sp.name.split(" (")[0] : id, circulo: sp ? sp.level : 0, fonte: "Escolhida no catálogo", tipo: "Classe" };
     }),
     truquesEscolhidos > cap.maxCantrips || magiasEscolhidas > cap.maxPrepared));
+
+  const acima = escolhidas.map(spellDe).filter(magiaAcimaDoCirculo);
+  if (acima.length) {
+    contas.push(`<p class="invoc-aviso"><i class="fa-solid fa-triangle-exclamation"></i> Acima do círculo que o personagem prepara: ${acima.map(sp => `${sp.name.split(" (")[0]} (${sp.level}º)`).join(", ")}</p>`);
+  }
 
   ordem.filter(k => grupos[k]).forEach(k => {
     const truques = grupos[k].filter(m => m.circulo === 0).length;
@@ -2560,6 +2732,11 @@ function spendHitDie(chave, maxHp, conMod) {
  */
 function shortRest() {
   const devolvidos = recoverFeatureUses("curto");
+  // Assinatura Mágica volta no Descanso Curto, as outras conjurações grátis só no Longo
+  getFreeCastSpells().filter(m => m.tipo === "Assinatura Mágica" && m.gastos).forEach(m => {
+    character.freeCasts[m.id] = 0;
+    devolvidos.push(m.nome);
+  });
   logHpEvent("descanso", `Descanso Curto${devolvidos.length ? ` — ${devolvidos.join(", ")} de volta` : ""}`,
              character.currentHp || 0);
   showToast(`☕ Descanso Curto${devolvidos.length ? ` — ${devolvidos.join(", ")} recuperado(s)` : ""}. Gaste Dados de Vida para recuperar Pontos de Vida.`);
@@ -2770,8 +2947,8 @@ const ATRIBUTO_CURTO = { "Força": "FOR", "Destreza": "DES", "Constituição": "
  * O atributo de conjuração da classe do personagem, ou null se ele não conjura.
  */
 function spellcastingAbilityOf() {
-  const c1 = DND5E_DATA.classes.find(c => c.id === character.class1);
-  const c2 = DND5E_DATA.classes.find(c => c.id === character.class2);
+  const c1 = resolveClassObj(character.class1, 1);
+  const c2 = character.class2 !== "none" ? resolveClassObj(character.class2, 2) : null;
   const sc = (c1 && c1.spellcasting) || (c2 && c2.spellcasting);
   return sc ? sc.ability : null;
 }
@@ -2816,19 +2993,33 @@ function spellCombatInfo(sp) {
  * Maior círculo de espaço de magia que o personagem tem. Sai da tabela de
  * espaços, não do DOM: assim o cálculo também vale fora da tela renderizada.
  */
+/**
+ * Maior círculo de magia que o personagem pode PREPARAR: o da tabela de cada
+ * classe conjuradora no nível dela (no multiclasse os espaços somam, mas as
+ * magias preparadas continuam presas à tabela de cada classe). 0 = não conjura.
+ */
+function maiorCirculoPreparavel() {
+  let maior = 0;
+  [[resolveClassObj(character.class1, 1), character.level1 || 0],
+   character.class2 !== "none" ? [resolveClassObj(character.class2, 2), character.level2 || 0] : null]
+    .filter(x => x && x[0] && x[0].spellcasting && x[1] > 0)
+    .forEach(([c, nivel]) => {
+      linhaDeEspacosDaTabela(c.spellcasting.type, nivel).forEach((n, i) => { if (n > 0 && i + 1 > maior) maior = i + 1; });
+    });
+  return maior;
+}
+
+/** A magia escolhida está acima do que o personagem consegue preparar? */
+function magiaAcimaDoCirculo(sp) {
+  if (!sp || !sp.level || character.class1 === "none") return false;
+  return sp.level > maiorCirculoPreparavel();
+}
+
 function highestSpellSlotLevel() {
-  const daClasse = (classId, nivel) => {
-    const c = DND5E_DATA.classes.find(x => x.id === classId);
-    if (!c || !c.spellcasting || nivel < 1) return 0;
-    const tabela = DND5E_DATA.spellSlotsTable[c.spellcasting.type] || DND5E_DATA.spellSlotsTable.full;
-    const linha = tabela[nivel];
-    if (!linha) return 0;
-    for (let i = linha.length - 1; i >= 0; i--) if (linha[i] > 0) return i + 1;
-    return 0;
-  };
-  return Math.max(1,
-    daClasse(character.class1, character.level1),
-    character.class2 !== "none" ? daClasse(character.class2, character.level2) : 0);
+  const linha = linhaDeEspacosAutomatica();
+  let maior = 0;
+  linha.forEach((n, i) => { if (n > 0) maior = i + 1; });
+  return Math.max(1, maior);
 }
 
 /**
@@ -2924,17 +3115,42 @@ function spellAttackRows(finalMods, pb) {
     // ficha impressa com o que não se rola para acertar.
     const info = spellCombatInfo(sp);
     if (!info.ataque) return null;
+    // Invocações que mexem no truque escolhido
+    const noTruque = (invId) => getActiveInvocations().some(({ inv, entrada }) =>
+      inv.id === invId && entrada.escolha === sp.id);
+    let dano = info.dano;
+    let alcance = sp.range;
+    const extras = [];
+    if (sp.level === 0 && noTruque("agonizing_blast")) {
+      const cha = finalMods.cha || 0;
+      if (cha) dano = dano.replace(/^(\d+d\d+)/, `$1 ${cha > 0 ? "+" : "-"}${Math.abs(cha)}`);
+      extras.push("Explosão Agonizante");
+    }
+    if (sp.level === 0 && noTruque("eldritch_spear")) {
+      const base = parseFloat(String(sp.range || "").replace(",", ".")) || 0;
+      if (base) alcance = `${String(base + 9 * warlockLevel()).replace(".", ",")} metros`;
+      extras.push("Lança Mística");
+    }
+    if (sp.level === 0 && noTruque("repelling_blast")) extras.push("empurra 3 m (Explosão Repulsiva)");
+    getChosenClassOptions().forEach(({ op }) => {
+      const cd = op.cantripDamage;
+      if (!cd || sp.level !== 0 || !(sp.classes || []).includes(cd.spellClass)) return;
+      const m = finalMods[cd.ability] || 0;
+      if (m) dano = dano.replace(/^(\d+d\d+)/, `$1 ${m > 0 ? "+" : "-"}${Math.abs(m)}`);
+      extras.push(op.name);
+    });
     const notas = [
       formatSpellLevel(sp.level),
       sp.time,
-      sp.range,
-      spellNeedsConcentration(sp) ? "Concentração" : null
+      alcance,
+      spellNeedsConcentration(sp) ? "Concentração" : null,
+      ...extras
     ].filter(Boolean).join(" • ");
     return {
       srcId: "spell:" + sp.id,
       name: sp.name.split(" (")[0],
       atk: `${atkMagico >= 0 ? "+" : ""}${atkMagico}`,
-      damage: info.dano,
+      damage: dano,
       notes: notas
     };
   }).filter(Boolean);
@@ -3106,6 +3322,8 @@ function classLabelOf(id) {
 }
 
 function updateFeatsList() {
+  renderClassChoices();
+  renderInvocations();
   const container = document.getElementById("featsContainer");
   if (!container) return;
 
@@ -3444,28 +3662,7 @@ function updateFeatsList() {
     // Escolhas do talento (atributo, magia, perícia, opção)
     container.addEventListener("change", (e) => {
       const sel = e.target.closest(".feat-choice-input");
-      if (!sel) return;
-      const featId = sel.getAttribute("data-choice-feat");
-      const kind = sel.getAttribute("data-choice-kind");
-      const key = sel.getAttribute("data-choice-key");
-      const ch = featChoicesFor(featId);
-      const value = sel.value;
-
-      if (kind === "ability") ch.ability = value || undefined;
-      else if (kind === "expertise") ch.expertise = value || undefined;
-      else if (kind === "spell") { if (value) ch.spells[key] = value; else delete ch.spells[key]; }
-      else if (kind === "skill") { if (value) ch.skills[key] = value; else delete ch.skills[key]; }
-      else if (kind === "option") { if (value) ch.options[key] = value; else delete ch.options[key]; }
-
-      _ofSpellsSig = null;
-      updateSkillsSelector();
-      recalculateCharacter();
-      // Mudar quantas vezes o aumento foi pego muda o número de caixas e a
-      // contagem de vagas: aqui a lista precisa ser redesenhada mesmo.
-      if (key === "asiVezes") updateFeatsList();
-
-      const feat = DND5E_DATA.feats.find(f => f.id === featId);
-      if (value && feat) showToast(`✔ ${feat.name}: escolha aplicada na ficha.`);
+      if (sel) aplicarEscolhaDeTalento(sel);
     });
   }
 
@@ -3670,13 +3867,685 @@ function getSelectedCustomFeats() {
   return (character.customFeats || []).filter(customFeatIsSelected);
 }
 
+/**
+ * Grava a escolha feita num seletor de talento (atributo, magia, perícia,
+ * opção). Serve à lista de talentos e ao talento de Origem que vem pelas
+ * Lições dos Grandes Antigos, no painel de invocações.
+ */
+function aplicarEscolhaDeTalento(sel) {
+  const featId = sel.getAttribute("data-choice-feat");
+  const kind = sel.getAttribute("data-choice-kind");
+  const key = sel.getAttribute("data-choice-key");
+  const ch = featChoicesFor(featId);
+  const value = sel.value;
+
+  if (kind === "ability") ch.ability = value || undefined;
+  else if (kind === "expertise") ch.expertise = value || undefined;
+  else if (kind === "spell") { if (value) ch.spells[key] = value; else delete ch.spells[key]; }
+  else if (kind === "skill") { if (value) ch.skills[key] = value; else delete ch.skills[key]; }
+  else if (kind === "option") { if (value) ch.options[key] = value; else delete ch.options[key]; }
+
+  _ofSpellsSig = null;
+  updateSkillsSelector();
+  recalculateCharacter();
+  // Mudar quantas vezes o aumento foi pego muda o número de caixas e a
+  // contagem de vagas: aqui a lista precisa ser redesenhada mesmo.
+  if (key === "asiVezes") updateFeatsList();
+
+  const feat = DND5E_DATA.feats.find(f => f.id === featId);
+  if (value && feat) showToast(`✔ ${feat.name}: escolha aplicada na ficha.`);
+}
+
 function getActiveFeatIds() {
   const ids = (character.selectedFeats || []).slice();
-  [getOriginFeatId(), getHumanOriginFeatId(), ...(character.extraOriginFeats || [])]
+  [getOriginFeatId(), getHumanOriginFeatId(), ...(character.extraOriginFeats || []), ...getInvocationFeatIds()]
     .forEach(id => {
       if (id && !ids.includes(id)) ids.push(id);
     });
   return ids;
+}
+
+/* ------------------------------------------------------ ESCOLHAS DE CLASSE */
+
+/** Slot (1 ou 2) em que a classe da escolha está; 0 se o personagem não a tem */
+function classChoiceSlot(ch) {
+  if (character.class1 === ch.classId) return 1;
+  if (character.class2 && character.class2 !== "none" && character.class2 === ch.classId) return 2;
+  return 0;
+}
+
+/** Quantas seleções a escolha pede no nível atual da classe */
+function classChoiceCount(ch) {
+  if (ch.kind === "option") return 1;
+  if (!ch.countByLevel) return ch.count || 0;
+  const nivel = classLevel(ch.classId);
+  let n = 0;
+  Object.keys(ch.countByLevel).map(Number).sort((a, b) => a - b)
+    .forEach(l => { if (nivel >= l) n = ch.countByLevel[l]; });
+  return n;
+}
+
+/** Valor bruto guardado para a escolha */
+function classChoiceValue(id) {
+  if (!character.classChoices || typeof character.classChoices !== "object") character.classChoices = {};
+  return character.classChoices[id];
+}
+
+/** Valores de uma escolha de lista, cortados na quantidade que o nível permite */
+function classChoiceList(ch) {
+  const v = classChoiceValue(ch.id);
+  const lista = Array.isArray(v) ? v : [];
+  return lista.slice(0, classChoiceCount(ch)).filter(Boolean);
+}
+
+/** A escolha vale agora? Nível na classe, subclasse certa e condição `showIf` */
+function isClassChoiceActive(ch) {
+  const slot = classChoiceSlot(ch);
+  if (!slot || classLevel(ch.classId) < ch.level) return false;
+  if (ch.subclassId) {
+    const sub = subclasseEscolhida(slot);
+    if (!sub || sub.id !== ch.subclassId) return false;
+  }
+  if (ch.showIf && classChoiceValue(ch.showIf.choice) !== ch.showIf.value) return false;
+  return true;
+}
+
+function getActiveClassChoices() {
+  return (DND5E_DATA.classChoices || []).filter(isClassChoiceActive);
+}
+
+/** Opções escolhidas nas escolhas de uma opção só (Ordem Divina, Fúria Elemental...) */
+function getChosenClassOptions() {
+  return getActiveClassChoices()
+    .filter(ch => ch.kind === "option")
+    .map(ch => ({ ch, op: (ch.options || []).find(o => o.id === classChoiceValue(ch.id)) }))
+    .filter(x => x.op);
+}
+
+/** Perícias vindas das escolhas de classe. Especialização só vale em perícia treinada. */
+function getClassChoiceSkills() {
+  const ativas = getActiveClassChoices();
+  const trained = ativas.filter(ch => ch.kind === "skill").flatMap(ch => [...(ch.fixedSkills || []), ...classChoiceList(ch)]);
+  const treinadas = new Set([...getTrainedSkillsWithoutClassExpertise(), ...trained]);
+  const expert = ativas.filter(ch => ch.kind === "expertise").flatMap(classChoiceList)
+    .filter(id => treinadas.has(id));
+  return { trained, expert };
+}
+
+/** Perícias treinadas por classe, antecedente e talentos (sem passar pelas especializações de classe) */
+function getTrainedSkillsWithoutClassExpertise() {
+  const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background) || EMPTY_BACKGROUND;
+  const bgSkills = bgObj.isCustom ? [character.customBg.skill1, character.customBg.skill2] : (bgObj.skills || []);
+  const feat = getFeatGrantedSkills();
+  const daClasse = (DND5E_DATA.classChoices || [])
+    .filter(ch => ch.kind === "skill" && isClassChoiceActive(ch)).flatMap(ch => [...(ch.fixedSkills || []), ...classChoiceList(ch)]);
+  return [...new Set([...(character.trainedSkills || []), ...bgSkills, ...feat.trained, ...feat.expert, ...daClasse])].filter(Boolean);
+}
+
+/** Bônus fixo em perícia (Taumaturgo e Xamã: Sabedoria, mínimo +1) */
+function getClassSkillBonus(skId, finalMods) {
+  return [...getChosenClassOptions().map(x => x.op), ...getActiveSubclassEffects()].reduce((soma, op) => {
+    const b = op.skillBonus;
+    if (!b || !b.skills.includes(skId)) return soma;
+    return soma + Math.max(b.min || 0, (finalMods || {})[b.ability] || 0);
+  }, 0);
+}
+
+/** Idiomas das escolhas de classe: os fixos (Druídico, Gíria dos Ladrões) e os escolhidos */
+function getClassChoiceLanguages() {
+  return getActiveClassChoices()
+    .filter(ch => ch.kind === "language")
+    .flatMap(ch => [...(ch.fixed || []), ...classChoiceList(ch)]);
+}
+
+/** Resumo da escolha para a ficha ("" se nada foi escolhido) */
+function describeClassChoice(ch) {
+  const nomeSkill = (id) => (DND5E_DATA.skills.find(sk => sk.id === id) || {}).name || id;
+  if (ch.kind === "option") {
+    const op = (ch.options || []).find(o => o.id === classChoiceValue(ch.id));
+    return op ? `${op.name} — ${op.desc}` : "";
+  }
+  const lista = classChoiceList(ch);
+  if (ch.kind === "multi") {
+    return lista.map(id => {
+      const op = (ch.options || []).find(o => o.id === id);
+      return op ? op.name : id;
+    }).join("; ");
+  }
+  if (ch.kind === "skill" || ch.kind === "expertise") return [...(ch.fixedSkills || []), ...lista].map(nomeSkill).join(", ");
+  if (ch.kind === "language") return [...(ch.fixed || []), ...lista].join(", ");
+  if (ch.kind === "spell") return lista.map(id => spellDisplayName(id).split(" (")[0]).join(", ");
+  return "";
+}
+
+/** Nomes de idioma que o personagem pode escolher (os da tabela do livro) */
+function classChoiceLanguageNames() {
+  return DND5E_DATA.languages.map(l => l.name);
+}
+
+/**
+ * Painel "Escolhas de Classe" do Passo 3. Uma caixa por característica que
+ * pede escolha e que o personagem já alcançou; o que falta escolher fica
+ * marcado, e o que é escolhido vai direto para a ficha.
+ */
+function renderClassChoices() {
+  const box = document.getElementById("classChoicesContainer");
+  if (!box) return;
+  const ativas = getActiveClassChoices();
+  if (!ativas.length) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  box.hidden = false;
+  const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  const treinadas = getTrainedSkillsWithoutClassExpertise();
+  const expertJaEscolhidas = (excetoId) => new Set(ativas
+    .filter(ch => ch.kind === "expertise" && ch.id !== excetoId).flatMap(classChoiceList));
+
+  const selectLista = (ch, i, opcoes, atual) => `
+    <label class="feat-choice-field">
+      <span class="feat-choice-label">${classChoiceCount(ch) > 1 ? `${i + 1}ª escolha` : "Escolha"}</span>
+      <select class="invoc-input" data-cc="${ch.id}" data-cc-idx="${i}">
+        <option value="">— escolher —</option>
+        ${opcoes.map(o => `<option value="${esc(o.id)}"${o.id === atual ? " selected" : ""}>${esc(o.name)}</option>`).join("")}
+      </select>
+    </label>`;
+
+  const caixa = (ch) => {
+    const n = classChoiceCount(ch);
+    const lista = Array.isArray(classChoiceValue(ch.id)) ? classChoiceValue(ch.id) : [];
+    const avisos = [];
+    let corpo = "";
+
+    if (ch.kind === "option") {
+      const atual = classChoiceValue(ch.id);
+      corpo = `<div class="cc-opcoes">${(ch.options || []).map(o => `
+        <label class="cc-opcao${atual === o.id ? " is-on" : ""}">
+          <input type="radio" name="cc_${ch.id}" value="${o.id}" data-cc="${ch.id}" ${atual === o.id ? "checked" : ""}>
+          <span><strong>${o.name}</strong><small>${o.desc}</small></span>
+        </label>`).join("")}</div>`;
+      if (!atual) avisos.push("Escolha uma das opções.");
+    } else if (ch.kind === "multi") {
+      corpo = `<div class="cc-opcoes cc-multi">${(ch.options || []).map(o => {
+        const marcado = lista.includes(o.id);
+        const cheio = !marcado && lista.filter(Boolean).length >= n;
+        return `<label class="cc-opcao${marcado ? " is-on" : ""}${cheio ? " is-off" : ""}">
+          <input type="checkbox" value="${o.id}" data-cc-multi="${ch.id}" ${marcado ? "checked" : ""} ${cheio ? "disabled" : ""}>
+          <span><strong>${o.name}</strong><small>${o.desc}</small></span>
+        </label>`;
+      }).join("")}</div>`;
+    } else {
+      const campos = [];
+      for (let i = 0; i < n; i++) {
+        const outros = new Set(lista.filter((v, j) => j !== i && j < n && v));
+        let opcoes = [];
+        if (ch.kind === "skill") {
+          const permitidas = ch.useClassSkills
+            ? ((DND5E_DATA.classes.find(c => c.id === ch.classId) || {}).skillChoices || {}).list || []
+            : ch.skills || DND5E_DATA.skills.map(sk => sk.id);
+          const jaTem = new Set(treinadas.filter(id => !lista.includes(id)));
+          opcoes = DND5E_DATA.skills
+            .filter(sk => permitidas.includes(sk.id) && (!jaTem.has(sk.id) || lista[i] === sk.id) && !outros.has(sk.id))
+            .map(sk => ({ id: sk.id, name: sk.name }));
+        } else if (ch.kind === "expertise") {
+          const bloqueadas = expertJaEscolhidas(ch.id);
+          opcoes = DND5E_DATA.skills
+            .filter(sk => (!ch.skills || ch.skills.includes(sk.id)) && (treinadas.includes(sk.id) || lista[i] === sk.id)
+              && !outros.has(sk.id) && !bloqueadas.has(sk.id))
+            .map(sk => ({ id: sk.id, name: sk.name }));
+          if (lista[i] && !treinadas.includes(lista[i])) avisos.push(`${(DND5E_DATA.skills.find(sk => sk.id === lista[i]) || {}).name || lista[i]} não é uma perícia treinada: a Especialização não vale.`);
+        } else if (ch.kind === "language") {
+          const jaTem = new Set([...(character.languages || []), ...(ch.fixed || [])]);
+          opcoes = classChoiceLanguageNames()
+            .filter(nome => (!jaTem.has(nome) || lista[i] === nome) && !outros.has(nome))
+            .map(nome => ({ id: nome, name: nome }));
+        } else if (ch.kind === "spell") {
+          opcoes = DND5E_DATA.spells
+            .filter(sp => sp.level === ch.spell.level && (!ch.spell.classes || (sp.classes || []).some(c => ch.spell.classes.includes(c))) && !outros.has(sp.id))
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(sp => ({ id: sp.id, name: sp.name }));
+        }
+        campos.push(selectLista(ch, i, opcoes, lista[i] || ""));
+      }
+      if (ch.fixed && ch.fixed.length) corpo += `<p class="feat-choice-granted"><i class="fa-solid fa-language"></i> Já vem com: ${ch.fixed.join(", ")}</p>`;
+      if (ch.fixedSkills && ch.fixedSkills.length) corpo += `<p class="feat-choice-granted"><i class="fa-solid fa-check"></i> Já vem com: ${ch.fixedSkills.map(id => (DND5E_DATA.skills.find(sk => sk.id === id) || {}).name || id).join(", ")}</p>`;
+      if (campos.length) corpo += `<div class="feat-choice-grid">${campos.join("")}</div>`;
+      if (ch.kind === "expertise" && !treinadas.length) avisos.push("Marque primeiro as perícias treinadas.");
+    }
+
+    const feitas = ch.kind === "option" ? (classChoiceValue(ch.id) ? 1 : 0) : lista.slice(0, n).filter(Boolean).length;
+    if (ch.kind !== "option" && n > 0 && feitas < n) avisos.push(`Faltam ${n - feitas} de ${n}.`);
+    const classe = classLabelOf(ch.classId);
+
+    return `<div class="feat-choice-box invoc-box cc-box">
+      <div class="feat-choice-title">
+        <i class="fa-solid fa-sliders"></i> ${ch.label}
+        <span class="cc-origem">${classe} ${ch.level}${n > 1 && ch.kind !== "option" ? ` · ${feitas}/${n}` : ""}</span>
+      </div>
+      ${ch.desc ? `<p class="cc-desc">${ch.desc}</p>` : ""}
+      ${corpo}
+      ${avisos.map(a => `<p class="invoc-aviso"><i class="fa-solid fa-triangle-exclamation"></i> ${a}</p>`).join("")}
+    </div>`;
+  };
+
+  box.innerHTML = `
+    <h4 class="feat-block-title"><i class="fa-solid fa-list-check"></i> Escolhas de Classe</h4>
+    <p class="feat-slots-note">O que as características da sua classe pedem para escolher até o nível atual. Tudo o que for escolhido aqui vai direto para a ficha.</p>
+    ${ativas.map(caixa).join("")}
+  `;
+
+  if (box.dataset.bound) return;
+  box.dataset.bound = "1";
+
+  const depoisDeMudar = () => {
+    _ofSpellsSig = null;
+    _ofWeaponsSig = null;
+    renderClassChoices();
+    updateFeatsList();
+    renderSpellsCatalog();
+    recalculateCharacter();
+  };
+
+  box.addEventListener("change", (e) => {
+    const alvo = e.target;
+    const multi = alvo.getAttribute && alvo.getAttribute("data-cc-multi");
+    if (multi) {
+      const ch = (DND5E_DATA.classChoices || []).find(c => c.id === multi);
+      let lista = (Array.isArray(classChoiceValue(multi)) ? classChoiceValue(multi) : []).filter(Boolean);
+      if (alvo.checked) { if (!lista.includes(alvo.value) && lista.length < classChoiceCount(ch)) lista.push(alvo.value); }
+      else lista = lista.filter(v => v !== alvo.value);
+      character.classChoices[multi] = lista;
+      depoisDeMudar();
+      return;
+    }
+    const id = alvo.getAttribute && alvo.getAttribute("data-cc");
+    if (!id) return;
+    const ch = (DND5E_DATA.classChoices || []).find(c => c.id === id);
+    if (!ch) return;
+    if (ch.kind === "option") {
+      character.classChoices[id] = alvo.value;
+    } else {
+      const idx = parseInt(alvo.getAttribute("data-cc-idx"), 10) || 0;
+      const lista = Array.isArray(classChoiceValue(id)) ? classChoiceValue(id).slice() : [];
+      lista[idx] = alvo.value;
+      character.classChoices[id] = lista;
+    }
+    depoisDeMudar();
+  });
+}
+
+/* ------------------------------------------------------ INVOCAÇÕES MÍSTICAS */
+
+/** Espaços de escolha do Livro das Sombras (Pacto do Tomo) */
+const TOME_SLOTS = [
+  { key: "c1", label: "Truque 1", level: 0 },
+  { key: "c2", label: "Truque 2", level: 0 },
+  { key: "c3", label: "Truque 3", level: 0 },
+  { key: "r1", label: "Ritual de 1º círculo 1", level: 1, ritual: true },
+  { key: "r2", label: "Ritual de 1º círculo 2", level: 1, ritual: true }
+];
+
+/** Magias de invocação que são uma vez por Descanso Longo, não à vontade */
+function INVOCATION_ONCE_SPELLS() {
+  return new Set((DND5E_DATA.invocations || []).flatMap(i => i.grantsOnce || []));
+}
+
+function invocationById(id) {
+  return (DND5E_DATA.invocations || []).find(i => i.id === id) || null;
+}
+
+/** Nível de Bruxo do personagem, somando classe primária e multiclasse */
+function warlockLevel() {
+  let n = 0;
+  if (character.class1 === "warlock") n += character.level1 || 0;
+  if (character.class2 === "warlock") n += character.level2 || 0;
+  return n;
+}
+
+/** Quantas invocações a tabela do Bruxo concede no nível atual */
+function maxInvocations() {
+  const nivel = warlockLevel();
+  const bruxo = DND5E_DATA.classes.find(c => c.id === "warlock");
+  if (!nivel || !bruxo || !bruxo.invocationsByLevel) return 0;
+  return bruxo.invocationsByLevel[Math.min(nivel, 20)] || 0;
+}
+
+/** Entradas escolhidas, sem lixo de ficha antiga */
+function invocationEntries() {
+  if (!Array.isArray(character.invocations)) character.invocations = [];
+  character.invocations = character.invocations.filter(e => e && invocationById(e.id));
+  return character.invocations;
+}
+
+/** Texto do pré-requisito, como o livro escreve */
+function invocationPrereqText(inv) {
+  const partes = [];
+  if (inv.level > 1) partes.push(`Bruxo Nível ${inv.level}+`);
+  if (inv.requires) {
+    const req = invocationById(inv.requires);
+    partes.push(req ? req.name.split(" (")[0] : inv.requires);
+  }
+  if (inv.cantrip === "dano") partes.push("Truque de Bruxo que cause dano");
+  if (inv.cantrip === "ataque") partes.push("Truque de Bruxo de dano com jogada de ataque");
+  if (inv.cantrip === "alcance") partes.push("Truque de Bruxo de dano com alcance de 3 m+");
+  return partes.join(", ");
+}
+
+/**
+ * O que impede a invocação de valer: nível de Bruxo baixo ou falta da
+ * invocação exigida. O truque não entra aqui — ele é escolhido no Passo 4,
+ * depois deste, e travar a invocação por isso obrigaria a voltar.
+ */
+function invocationBlockReason(inv, entradas) {
+  const lista = entradas || invocationEntries();
+  if (warlockLevel() < (inv.level || 1)) return `exige Bruxo nível ${inv.level}`;
+  if (inv.requires && !lista.some(e => e.id === inv.requires)) {
+    const req = invocationById(inv.requires);
+    return `exige ${req ? req.name.split(" (")[0] : inv.requires}`;
+  }
+  return null;
+}
+
+/** Invocações valendo na ficha: com nível de Bruxo e pré-requisitos atendidos */
+function getActiveInvocations() {
+  if (!warlockLevel()) return [];
+  const entradas = invocationEntries();
+  return entradas
+    .map(entrada => ({ inv: invocationById(entrada.id), entrada }))
+    .filter(({ inv }) => inv && !invocationBlockReason(inv, entradas));
+}
+
+/** Talentos de Origem vindos das Lições dos Grandes Antigos */
+function getInvocationFeatIds() {
+  return getActiveInvocations()
+    .filter(({ inv, entrada }) => inv.choice === "talento_origem" && entrada.escolha)
+    .map(({ entrada }) => entrada.escolha);
+}
+
+/** O truque serve para a invocação? ("dano", "ataque" ou "alcance") */
+function cantripFitsInvocation(sp, tipo) {
+  if (!sp || sp.level !== 0) return false;
+  const info = spellCombatInfo(sp);
+  if (!info.dano) return false;
+  if (tipo === "ataque") return info.ataque;
+  if (tipo === "alcance") {
+    const metros = parseFloat(String(sp.range || "").replace(",", "."));
+    return metros >= 3;
+  }
+  return true;
+}
+
+/**
+ * Truques que a invocação aceita: os de Bruxo do catálogo e os do Livro das
+ * Sombras (que funcionam como magias de Bruxo). Os já conhecidos vêm primeiro.
+ */
+function cantripOptionsForInvocation(inv) {
+  const doTomo = new Set(getActiveInvocations()
+    .filter(({ inv: i }) => i.choice === "tomo")
+    .flatMap(({ entrada }) => Object.values(entrada.magias || {})));
+  const conhecidos = new Set([...(character.spellsKnown || []), ...doTomo]);
+  return DND5E_DATA.spells
+    .filter(sp => ((sp.classes || []).includes("warlock") || doTomo.has(sp.id)) && cantripFitsInvocation(sp, inv.cantrip))
+    .map(sp => ({ sp, conhecido: conhecidos.has(sp.id) }))
+    .sort((a, b) => (b.conhecido - a.conhecido) || a.sp.name.localeCompare(b.sp.name));
+}
+
+/** Complemento do nome da invocação na ficha: o truque ou talento escolhido */
+function describeInvocationChoice(inv, entrada) {
+  if (inv.choice === "truque" || inv.choice === "talento_origem") {
+    const lista = inv.choice === "truque" ? DND5E_DATA.spells : DND5E_DATA.feats;
+    const alvo = lista.find(x => x.id === entrada.escolha);
+    return alvo ? ` (${alvo.name.split(" (")[0]})` : "";
+  }
+  if (inv.choice === "tomo") {
+    const nomes = TOME_SLOTS.map(s => (entrada.magias || {})[s.key]).filter(Boolean)
+      .map(id => spellDisplayName(id).split(" (")[0]);
+    return nomes.length ? ` (${nomes.join(", ")})` : "";
+  }
+  return "";
+}
+
+/**
+ * Painel das Invocações Místicas no Passo 3. Só aparece para quem tem nível
+ * de Bruxo. Cada invocação mostra o pré-requisito; as que o personagem ainda
+ * não atende ficam travadas, e as já escolhidas que deixaram de valer (nível
+ * baixado, pacto removido) ficam marcadas em vermelho e fora da ficha.
+ */
+function renderInvocations() {
+  const box = document.getElementById("invocationsContainer");
+  if (!box) return;
+  const nivel = warlockLevel();
+  if (!nivel) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  box.hidden = false;
+
+  const entradas = invocationEntries();
+  const max = maxInvocations();
+  const usadas = entradas.length;
+  const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+  const selectTruque = (inv, entrada, idx) => {
+    const usadosPorOutras = new Set(entradas
+      .filter((e, i) => e.id === inv.id && i !== idx && e.escolha).map(e => e.escolha));
+    const opts = cantripOptionsForInvocation(inv)
+      .filter(({ sp }) => !usadosPorOutras.has(sp.id))
+      .map(({ sp, conhecido }) => `<option value="${sp.id}"${entrada.escolha === sp.id ? " selected" : ""}>${sp.name}${conhecido ? "" : " — ainda não conhecido"}</option>`)
+      .join("");
+    return `<label class="feat-choice-field">
+        <span class="feat-choice-label">Truque</span>
+        <select class="invoc-input" data-invoc-idx="${idx}" data-invoc-kind="escolha">
+          <option value="">— escolher —</option>${opts}
+        </select>
+      </label>`;
+  };
+
+  const selectTalento = (inv, entrada, idx) => {
+    const ativos = new Set(getActiveFeatIds());
+    const opts = DND5E_DATA.feats
+      .filter(f => f.type === "origin" && (f.id === entrada.escolha || !ativos.has(f.id)))
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(f => `<option value="${f.id}"${entrada.escolha === f.id ? " selected" : ""}>${f.name}</option>`).join("");
+    return `<label class="feat-choice-field">
+        <span class="feat-choice-label">Talento de Origem</span>
+        <select class="invoc-input" data-invoc-idx="${idx}" data-invoc-kind="escolha">
+          <option value="">— escolher —</option>${opts}
+        </select>
+      </label>`;
+  };
+
+  const selectsTomo = (entrada, idx) => TOME_SLOTS.map(slot => {
+    const opts = DND5E_DATA.spells
+      .filter(sp => sp.level === slot.level && (!slot.ritual || spellIsRitual(sp)))
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(sp => `<option value="${sp.id}"${(entrada.magias || {})[slot.key] === sp.id ? " selected" : ""}>${sp.name}</option>`).join("");
+    return `<label class="feat-choice-field">
+        <span class="feat-choice-label">${slot.label}</span>
+        <select class="invoc-input" data-invoc-idx="${idx}" data-invoc-kind="tomo" data-invoc-key="${slot.key}">
+          <option value="">— escolher —</option>${opts}
+        </select>
+      </label>`;
+  }).join("");
+
+  /* Caixa de uma cópia escolhida: as escolhas que ela pede e o aviso do que
+     falta. Repetíveis têm uma caixa por cópia. */
+  const caixaDaEntrada = (inv, entrada, idx, copia, totalCopias) => {
+    const campos = [];
+    const avisos = [];
+    const bloqueio = invocationBlockReason(inv, entradas);
+    if (bloqueio) avisos.push(`Pré-requisito não atendido (${bloqueio}): não vai para a ficha.`);
+
+    if (inv.choice === "truque") {
+      campos.push(selectTruque(inv, entrada, idx));
+      if (!entrada.escolha) avisos.push("Escolha o truque que recebe a invocação.");
+      else if (!(character.spellsKnown || []).includes(entrada.escolha) &&
+               !cantripOptionsForInvocation(inv).some(o => o.sp.id === entrada.escolha && o.conhecido)) {
+        avisos.push("Esse truque ainda não está entre as magias do personagem (Passo 4).");
+      }
+    }
+    if (inv.choice === "talento_origem") {
+      campos.push(selectTalento(inv, entrada, idx));
+      const feat = DND5E_DATA.feats.find(f => f.id === entrada.escolha);
+      if (feat && !bloqueio) campos.push(buildFeatChoiceBoxHtml(feat, true));
+    }
+    if (inv.choice === "tomo") campos.push(selectsTomo(entrada, idx));
+
+    const concedidas = [...(inv.grants || []), ...(inv.grantsOnce || [])];
+    if (!campos.length && !concedidas.length && !avisos.length && totalCopias === 1) return "";
+    return `<div class="feat-choice-box invoc-box">
+        <div class="feat-choice-title">
+          <i class="fa-solid fa-sliders"></i> ${totalCopias > 1 ? `${copia}ª vez` : "Escolhas desta invocação"}
+          ${totalCopias > 1 ? `<button type="button" class="feat-del-btn" data-invoc-remove="${idx}" title="Remover esta cópia"><i class="fa-solid fa-xmark"></i></button>` : ""}
+        </div>
+        ${campos.length ? `<div class="feat-choice-grid">${campos.join("")}</div>` : ""}
+        ${concedidas.length ? `<p class="feat-choice-granted"><i class="fa-solid fa-wand-sparkles"></i> Vai direto para as magias:
+            ${concedidas.map(id => spellDisplayName(id).split(" (")[0]).join(", ")}</p>` : ""}
+        ${avisos.map(a => `<p class="invoc-aviso"><i class="fa-solid fa-triangle-exclamation"></i> ${a}</p>`).join("")}
+      </div>`;
+  };
+
+  const linha = (inv) => {
+    const copias = entradas.map((e, i) => ({ e, i })).filter(x => x.e.id === inv.id);
+    const meu = copias.length > 0;
+    const bloqueio = invocationBlockReason(inv, entradas);
+    const prereq = invocationPrereqText(inv);
+    const travada = !meu && !!bloqueio;
+    const caixas = copias.map((x, n) => caixaDaEntrada(inv, x.e, x.i, n + 1, copias.length)).join("");
+    return `
+      <div class="feat-row${meu ? " is-selected" : ""}${travada ? " is-locked" : ""}${meu && bloqueio ? " is-invalid" : ""}">
+        <input type="checkbox" class="invoc-check" id="invocChk_${inv.id}" value="${inv.id}"
+               ${meu ? "checked" : ""} ${travada ? "disabled" : ""}>
+        <label class="feat-row-name" for="invocChk_${inv.id}">${inv.name}</label>
+        ${prereq ? `<span class="feat-row-prereq" title="Pré-requisito: ${esc(prereq)}"><i class="fa-solid ${bloqueio ? "fa-lock" : "fa-lock-open"}"></i> ${esc(prereq)}</span>` : ""}
+        ${inv.repeatable ? `<span class="feat-row-tag" title="Pode ser pega mais de uma vez, com escolha diferente">Repetível</span>` : ""}
+        <button type="button" class="feat-info-btn" data-invoc-info="${inv.id}" title="Mais informações"><i class="fa-solid fa-info"></i></button>
+      </div>
+      <div class="feat-info-panel" data-invoc-panel="${inv.id}" hidden>
+        <p>${inv.desc}</p>
+        ${prereq ? `<p class="feat-info-meta"><strong>Pré-requisito:</strong> ${esc(prereq)}</p>` : ""}
+      </div>
+      ${caixas}
+      ${meu && inv.repeatable && !bloqueio
+        ? `<button type="button" class="btn btn-secondary btn-sm invoc-mais" data-invoc-add="${inv.id}">
+             <i class="fa-solid fa-plus"></i> Pegar ${inv.name.split(" (")[0]} mais uma vez
+           </button>`
+        : ""}`;
+  };
+
+  // Disponíveis primeiro, na ordem do livro; as travadas por nível vão para o fim
+  const todas = (DND5E_DATA.invocations || []).slice();
+  const disponiveis = todas.filter(i => entradas.some(e => e.id === i.id) || !invocationBlockReason(i, entradas));
+  const travadas = todas.filter(i => !disponiveis.includes(i));
+
+  box.innerHTML = `
+    <h4 class="feat-block-title"><i class="fa-solid fa-hand-sparkles"></i> Invocações Místicas (Bruxo nível ${nivel})</h4>
+    <div class="feat-slots-card">
+      <div class="feat-slots-line">
+        <span class="feat-slots-num${usadas > max ? " is-over" : ""}">${usadas} / ${max}</span>
+        <span class="feat-slots-label">invocações escolhidas</span>
+      </div>
+      <p class="feat-slots-note">
+        A tabela do Bruxo concede 1 invocação no nível 1, 3 no 2, 5 no 5, 6 no 7, 7 no 9, 8 no 12, 9 no 15 e 10 no 18.
+        Invocações com cadeado exigem um nível de Bruxo maior ou um Pacto.
+      </p>
+    </div>
+    <div class="feat-group">
+      <h5 class="feat-group-head"><span>Disponíveis</span><span class="feat-group-count">${disponiveis.length}</span></h5>
+      <div class="feat-list">${disponiveis.map(linha).join("")}</div>
+    </div>
+    ${travadas.length ? `
+      <div class="feat-group">
+        <h5 class="feat-group-head"><span>Pré-requisito não atendido</span><span class="feat-group-count">${travadas.length}</span></h5>
+        <div class="feat-list">${travadas.map(linha).join("")}</div>
+      </div>` : ""}
+  `;
+
+  if (box.dataset.bound) return;
+  box.dataset.bound = "1";
+
+  const depoisDeMudar = () => {
+    _ofSpellsSig = null;
+    _ofWeaponsSig = null;
+    renderInvocations();
+    renderSpellsCatalog();
+    updateSkillsSelector();
+    recalculateCharacter();
+  };
+
+  box.addEventListener("click", (e) => {
+    const info = e.target.closest("[data-invoc-info]");
+    if (info) {
+      const panel = box.querySelector(`[data-invoc-panel="${info.getAttribute("data-invoc-info")}"]`);
+      if (panel) {
+        panel.hidden = !panel.hidden;
+        info.classList.toggle("is-open", !panel.hidden);
+      }
+      return;
+    }
+    const add = e.target.closest("[data-invoc-add]");
+    if (add) {
+      invocationEntries().push({ id: add.getAttribute("data-invoc-add"), escolha: "", magias: {} });
+      depoisDeMudar();
+      return;
+    }
+    const rem = e.target.closest("[data-invoc-remove]");
+    if (rem) {
+      invocationEntries().splice(parseInt(rem.getAttribute("data-invoc-remove"), 10), 1);
+      depoisDeMudar();
+    }
+  });
+
+  box.addEventListener("change", (e) => {
+    const chk = e.target.closest(".invoc-check");
+    if (chk) {
+      const id = chk.value;
+      const inv = invocationById(id);
+      const lista = invocationEntries();
+      if (chk.checked) {
+        lista.push({ id, escolha: "", magias: {} });
+        logHpEvent("talento", `Adicionou a invocação ${inv.name.split(" (")[0]}`, character.currentHp || 0);
+      } else {
+        // O livro não deixa trocar uma invocação que é pré-requisito de outra
+        const dependentes = lista
+          .map(x => invocationById(x.id))
+          .filter(x => x && x.requires === id);
+        if (dependentes.length) {
+          chk.checked = true;
+          showToast(`${inv.name.split(" (")[0]} é pré-requisito de ${[...new Set(dependentes.map(d => d.name.split(" (")[0]))].join(", ")}. Remova essas primeiro.`);
+          return;
+        }
+        character.invocations = lista.filter(x => x.id !== id);
+        logHpEvent("talento", `Removeu a invocação ${inv.name.split(" (")[0]}`, character.currentHp || 0);
+      }
+      depoisDeMudar();
+      return;
+    }
+
+    const sel = e.target.closest(".invoc-input");
+    if (sel) {
+      const entrada = invocationEntries()[parseInt(sel.getAttribute("data-invoc-idx"), 10)];
+      if (!entrada) return;
+      if (sel.getAttribute("data-invoc-kind") === "tomo") {
+        entrada.magias = entrada.magias || {};
+        if (sel.value) entrada.magias[sel.getAttribute("data-invoc-key")] = sel.value;
+        else delete entrada.magias[sel.getAttribute("data-invoc-key")];
+      } else {
+        entrada.escolha = sel.value;
+      }
+      depoisDeMudar();
+      return;
+    }
+
+    // Escolhas do talento de Origem das Lições dos Grandes Antigos
+    const featSel = e.target.closest(".feat-choice-input");
+    if (featSel) {
+      aplicarEscolhaDeTalento(featSel);
+      renderInvocations();
+    }
+  });
 }
 
 /** Nome de exibição de uma magia pelo id, com fallback para talentos fora do catálogo */
@@ -3983,6 +4852,19 @@ function getGrantedSpellEntries() {
   somarSubclasse(class1Obj, character.subclass1, character.level1);
   if (class2Obj) somarSubclasse(class2Obj, character.subclass2, character.level2);
 
+  // Magias que uma característica de subclasse deixa sempre preparadas (Magia
+  // Fascinante, Rompe-Magia...), só como Ritual (Coração Selvagem) ou uma vez
+  // sem espaço (Mestre Telecinético).
+  [1, 2].forEach(slot => {
+    const sub = subclasseEscolhida(slot);
+    if (!sub || !sub.featureSpells) return;
+    const nivel = (slot === 2 ? character.level2 : character.level1) || 0;
+    const tipo = sub.featureSpellsMode === "ritual" ? "Ritual"
+      : sub.featureSpellsMode === "gratis" ? "Subclasse (grátis)" : "Subclasse";
+    Object.keys(sub.featureSpells).map(Number).filter(n => n <= nivel)
+      .forEach(n => sub.featureSpells[n].forEach(id => push(id, `Subclasse (${sub.name})`, null, tipo)));
+  });
+
   // Magias que a PRÓPRIA classe concede por característica, sempre preparadas.
   // Faltava este caminho: só subclasse, espécie e talento concediam. O
   // Paladino de nível 2 aparecia tendo de preparar a Destruição Divina, quando
@@ -4025,6 +4907,19 @@ function getGrantedSpellEntries() {
     spec.grants.forEach(id => push(id, `Talento (${feat.name})`, names[id], tipo));
     const ch = featChoicesFor(fid);
     spec.spells.forEach(slot => push(ch.spells[slot.key], `Talento (${feat.name})`, null, tipo));
+  });
+
+  getActiveClassChoices().filter(ch => ch.kind === "spell").forEach(ch => {
+    const fonte = ch.label.split(" — ")[0];
+    classChoiceList(ch).forEach(id => push(id, fonte, null, ch.grantTipo || "Classe"));
+  });
+
+  getActiveInvocations().forEach(({ inv, entrada }) => {
+    const fonte = `Invocação (${inv.name.split(" (")[0]})`;
+    [...(inv.grants || []), ...(inv.grantsOnce || [])].forEach(id => push(id, fonte, null, "Invocação"));
+    if (inv.choice === "tomo") {
+      TOME_SLOTS.forEach(slot => push((entrada.magias || {})[slot.key], fonte, null, "Pacto do Tomo"));
+    }
   });
 
   return out;
@@ -4354,6 +5249,10 @@ function getSpellCapacityInfo(finalMods) {
     soma("Alto Elfo", 1, 0, "linhagem");
   }
 
+  getChosenClassOptions().forEach(({ ch, op }) => {
+    if (op.extraCantrips) soma(`${ch.label} (${op.name})`, op.extraCantrips, 0, "característica de classe");
+  });
+
   const grantedSpells = getGrantedSpellEntries();
 
   // Talentos que dão magia (Iniciado em Magia, Tocado pelas Fadas…) têm caixas
@@ -4559,6 +5458,7 @@ function renderSpellsCatalog() {
         <td class="col-name">
           <span class="spell-row-name">${sp.name}</span>
           ${spellTagsHtml(sp, origem)}
+          ${!origem && magiaAcimaDoCirculo(sp) ? `<span class="spell-tag is-acima" title="Seu personagem ainda não prepara magias de ${sp.level}º círculo (máximo: ${maiorCirculoPreparavel() ? maiorCirculoPreparavel() + "º" : "nenhum"})">acima do seu círculo</span>` : ""}
         </td>
         <td class="col-school">${spellSchoolHtml(sp.school)}</td>
         <td class="col-classes">${formatSpellClasses(sp)}</td>
@@ -4644,6 +5544,10 @@ function renderSpellsCatalog() {
       } else {
         character.spellsKnown.push(spId);
         logHpEvent("magia", `Adicionou ${nomeMagia}`, character.currentHp || 0);
+        if (magiaAcimaDoCirculo(sp)) {
+          const max = maiorCirculoPreparavel();
+          showToast(`⚠ ${nomeMagia} é de ${sp.level}º círculo; ${max ? `seu personagem prepara até o ${max}º` : "seu personagem ainda não tem espaços de magia"}.`);
+        }
       }
       renderSpellsCatalog();
       renderHpLog();
@@ -4834,7 +5738,9 @@ function recalculateCharacter() {
     if (sourceLabel) {
       sourceLabel.textContent = class1Obj.id === "none"
         ? "Classe Conjuradora: — escolha a classe no Passo 1 —"
-        : `Classe Conjuradora: ${class1Obj.name} (${class1Obj.spellcasting ? 'Conjurador ' + class1Obj.spellcasting.type : 'Não-conjurador'})`;
+        : `Classe Conjuradora: ${[class1Obj, class2Obj].filter(Boolean).map(c => `${c.name} (${c.spellcasting
+            ? { full: "conjurador pleno", half: "meio conjurador", third: "1/3 de conjurador", pact: "Magia de Pacto" }[c.spellcasting.type] || "conjurador"
+            : "não conjurador"})`).join(" / ")}`;
     }
 
     renderSpellCapacityBreakdown(capInfo);
@@ -4845,6 +5751,8 @@ function recalculateCharacter() {
   let maxHp = somarPontosDeVida(class1Obj, class2Obj, conMod);
 
   if (character.species === "dwarf") maxHp += totalLevel;
+  // Resiliência Dracônica: +1 PV por nível na classe (3 ao chegar no nível 3)
+  getActiveSubclassEffects().forEach(e => { if (e.hpPerLevel) maxHp += e.hpPerLevel * e.nivelDaClasse; });
   if (getActiveFeatIds().includes("tough")) {
     maxHp += totalLevel * 2;
   }
@@ -4856,11 +5764,15 @@ function recalculateCharacter() {
   let ac = 10 + dexMod;
 
   if (armorObj.id === "none") {
-    if (character.class1 === "barbarian" || (class2Obj && class2Obj.id === "barbarian")) {
-      ac = 10 + dexMod + finalMods["con"];
-    } else if (character.class1 === "monk" || (class2Obj && class2Obj.id === "monk")) {
-      ac = 10 + dexMod + finalMods["wis"];
-    }
+    // Defesa sem Armadura: o Bárbaro pode usar Escudo, o Monge não. Com as
+    // duas classes vale a que der mais (o livro manda escolher uma só).
+    const semEscudo = !shieldObj || shieldObj.id === "none" || !shieldObj.acBonus;
+    if (classLevel("barbarian")) ac = Math.max(ac, 10 + dexMod + finalMods["con"]);
+    if (classLevel("monk") && semEscudo) ac = Math.max(ac, 10 + dexMod + finalMods["wis"]);
+    // Resiliência Dracônica e Ginga Fascinante: 10 + DES + CAR
+    getActiveSubclassEffects().forEach(e => {
+      if (e.ac && (e.ac.shieldOk || semEscudo)) ac = Math.max(ac, 10 + dexMod + (finalMods[e.ac.ability] || 0));
+    });
   } else {
     if (armorObj.dexMod === "full") ac = armorObj.baseAC + dexMod;
     else if (armorObj.dexMod === "cap2") ac = armorObj.baseAC + Math.min(dexMod, 2);
@@ -4886,26 +5798,24 @@ function recalculateCharacter() {
 
   let speed = speciesObj.speed || 9;
   if (character.species === "elf" && character.lineage === "wood_elf") speed = 10.5;
-  if (character.class1 === "barbarian" && character.level1 >= 5) speed += 3;
-  if (character.class1 === "monk" && character.level1 >= 2) speed += 3;
+  speed += getClassSpeedBonus(armorObj, shieldObj);
 
   // 7. Salvaguardas & Perícias
   const proficientSaves = class1Obj.savingThrows || ["str", "con"];
   const bgSkills = bgObj.isCustom ? [character.customBg.skill1, character.customBg.skill2] : (bgObj.skills || []);
   const featSkills = getFeatGrantedSkills();
+  const classSkills = getClassChoiceSkills();
   const allTrainedSkills = Array.from(new Set([
-    ...character.trainedSkills, ...bgSkills, ...featSkills.trained, ...featSkills.expert
+    ...character.trainedSkills, ...bgSkills, ...featSkills.trained, ...featSkills.expert, ...classSkills.trained
   ]));
-  const allExpertSkills = Array.from(new Set([...character.expertSkills, ...featSkills.expert]));
+  const allExpertSkills = Array.from(new Set([...character.expertSkills, ...featSkills.expert, ...classSkills.expert]));
   
-  const hasPerception = allTrainedSkills.includes("perception");
-  const passivePerception = 10 + finalMods["wis"] + (hasPerception ? pb : 0);
-  
-  const hasInsight = allTrainedSkills.includes("insight");
-  const passiveInsight = 10 + finalMods["wis"] + (hasInsight ? pb : 0);
-  
-  const hasInvestigation = allTrainedSkills.includes("investigation");
-  const passiveInvestigation = 10 + finalMods["int"] + (hasInvestigation ? pb : 0);
+  // Passiva = 10 + a mesma conta da perícia (especialização e Pau pra Toda Obra inclusos)
+  const passiva = (skId, ab) => 10 + finalMods[ab] + getClassSkillBonus(skId, finalMods) + (allExpertSkills.includes(skId) ? pb * 2
+    : allTrainedSkills.includes(skId) ? pb : getJackOfAllTradesBonus(pb));
+  const passivePerception = passiva("perception", "wis");
+  const passiveInsight = passiva("insight", "wis");
+  const passiveInvestigation = passiva("investigation", "int");
 
   // 8. Magias & CD de Conjuração
   let spellCastingClass = class1Obj.spellcasting ? class1Obj : class2Obj && class2Obj.spellcasting ? class2Obj : null;
@@ -5137,10 +6047,45 @@ function getLineageLabel(speciesObj) {
   return lin ? `${speciesObj.name} (${lin.name})` : speciesObj.name;
 }
 
-function getSubclassLabel(class1Obj) {
-  if (character.level1 < 3 || !class1Obj || !class1Obj.subclasses) return "";
-  const sub = class1Obj.subclasses.find(s => s.id === character.subclass1);
-  return sub ? sub.name : "";
+function getSubclassLabel() {
+  return [1, 2].map(slot => {
+    const sub = subclasseEscolhida(slot);
+    return sub ? sub.name : "";
+  }).filter(Boolean).join(" / ");
+}
+
+/**
+ * Efeitos numéricos das subclasses já alcançados (`effects` no data.js):
+ * CA alternativa, PV por nível, deslocamento, salvaguardas, proficiências e
+ * bônus em perícia. Cada item vem com o nível da classe daquele slot.
+ */
+function getActiveSubclassEffects() {
+  const lista = [];
+  [1, 2].forEach(slot => {
+    const sub = subclasseEscolhida(slot);
+    if (!sub || !Array.isArray(sub.effects)) return;
+    const nivel = (slot === 2 ? character.level2 : character.level1) || 0;
+    sub.effects.filter(e => nivel >= e.level).forEach(e => lista.push({ ...e, nivelDaClasse: nivel, sub }));
+  });
+  return lista;
+}
+
+/** Características de subclasse até o nível atual de um slot */
+function subclassFeaturesUpTo(slot) {
+  const sub = subclasseEscolhida(slot);
+  if (!sub || !Array.isArray(sub.features)) return [];
+  const nivel = (slot === 2 ? character.level2 : character.level1) || 0;
+  return sub.features.filter(f => f.level <= nivel).map(f => ({ ...f, sub }));
+}
+
+/** Subclasse valendo num slot (1 = primária, 2 = multiclasse), já no nível 3 */
+function subclasseEscolhida(slot) {
+  const classId = slot === 2 ? character.class2 : character.class1;
+  const nivel = (slot === 2 ? character.level2 : character.level1) || 0;
+  if (!classId || classId === "none" || nivel < 3) return null;
+  const classObj = DND5E_DATA.classes.find(c => c.id === classId);
+  if (!classObj || !classObj.subclasses) return null;
+  return classObj.subclasses.find(s => s.id === (slot === 2 ? character.subclass2 : character.subclass1)) || null;
 }
 
 /* ------------------------------------------------- ATRIBUTOS, SALVAS E PERÍCIAS */
@@ -5149,7 +6094,23 @@ function getSubclassLabel(class1Obj) {
 function getSaveProfs(class1Obj) {
   const ov = sheetOv();
   if (Array.isArray(ov.saveProfs)) return ov.saveProfs;
-  return class1Obj && class1Obj.savingThrows ? class1Obj.savingThrows : ["str", "con"];
+  const base = class1Obj && class1Obj.savingThrows ? class1Obj.savingThrows : ["str", "con"];
+  // Sobrevivente Disciplinado (Monge 14): todas. Mente Escorregadia (Ladino 15): SAB e CAR.
+  if (classLevel("monk") >= 14) return ["str", "dex", "con", "int", "wis", "cha"];
+  const extras = getActiveSubclassEffects().flatMap(e => e.saves || []);
+  if (classLevel("rogue") >= 15) extras.push("wis", "cha");
+  return extras.length ? [...new Set([...base, ...extras])] : base;
+}
+
+/** Aura de Proteção (Paladino 6): Carisma nas salvaguardas, no mínimo +1 */
+function getAuraOfProtectionBonus(finalMods) {
+  if (classLevel("paladin") < 6) return 0;
+  return Math.max(1, (finalMods && finalMods.cha) || 0);
+}
+
+/** Pau pra Toda Obra (Bardo 2): metade do BP, para baixo, em perícia sem proficiência */
+function getJackOfAllTradesBonus(pb) {
+  return classLevel("bard") >= 2 ? Math.floor(pb / 2) : 0;
 }
 
 function renderOfAbilities(ctx) {
@@ -5169,7 +6130,7 @@ function renderOfAbilities(ctx) {
       const mod = finalMods[abId];
       const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
       const isSaveProf = saveProfs.includes(abId);
-      const saveBonus = mod + (isSaveProf ? pb : 0);
+      const saveBonus = mod + (isSaveProf ? pb : 0) + getAuraOfProtectionBonus(finalMods);
       const skills = DND5E_DATA.skills.filter(sk => sk.ability === abId);
 
       const show = v => _ofBlank ? "" : v;   // ficha em branco: caixas vazias
@@ -5196,7 +6157,7 @@ function renderOfAbilities(ctx) {
         ${skills.map(sk => {
           const isExpert = allExpertSkills.includes(sk.id);
           const isProf = allTrainedSkills.includes(sk.id);
-          const bonus = mod + (isExpert ? pb * 2 : isProf ? pb : 0);
+          const bonus = mod + getClassSkillBonus(sk.id, finalMods) + (isExpert ? pb * 2 : isProf ? pb : getJackOfAllTradesBonus(pb));
           return `
             <div class="of-prof-line-item">
               <button type="button" class="of-prof-mark ${_ofBlank ? '' : isExpert ? 'is-expert' : isProf ? 'is-prof' : ''}" data-skill-mark="${sk.id}" title="Clique: nenhum → proficiente → especialista"></button>
@@ -5222,6 +6183,8 @@ function renderOfProficienciesBox(ctx) {
   const armorProfs = [
     ...(class1Obj.armorProficiencies || []),
     ...(class2Obj ? class2Obj.armorProficiencies || [] : []),
+    ...getChosenClassOptions().flatMap(({ op }) => op.armor || []),
+    ...getActiveSubclassEffects().flatMap(e => e.armor || []),
     ...(speciesObj && speciesObj.isCustom ? speciesObj.armorProficiencies || [] : [])
   ].join(" ").toLowerCase();
 
@@ -5230,11 +6193,13 @@ function renderOfProficienciesBox(ctx) {
   syncOfCheck("sheetArmorHeavy", armorProfs.includes("pesada"), "armorHeavy");
   syncOfCheck("sheetArmorShields", armorProfs.includes("escudo"), "armorShields");
 
-  const weaponAuto = [
+  const weaponAuto = [...new Set([
     ...(class1Obj.weaponProficiencies || []),
     ...(class2Obj ? class2Obj.weaponProficiencies || [] : []),
+    ...getChosenClassOptions().flatMap(({ op }) => op.weapons || []),
+    ...getActiveSubclassEffects().flatMap(e => e.weapons || []),
     ...(speciesObj && speciesObj.isCustom ? speciesObj.weaponProficiencies || [] : [])
-  ].join(", ");
+  ])].join(", ");
   syncOfField("sheetWeaponProfs", weaponAuto, "weaponProfs");
 
   const toolAuto = [
@@ -5526,25 +6491,42 @@ function renderOfFeatureAreas(ctx) {
   const { class1Obj, class2Obj, speciesObj, totalLevel } = ctx;
 
   const classFeatures = [];
+  // Com a subclasse escolhida, a linha genérica "Característica de Subclasse"
+  // dá lugar às características de verdade, cada uma no seu nível.
+  const generica = (f, slot) => /^Característica de Subclasse/.test(f) && subclasseEscolhida(slot);
   for (let l = 1; l <= character.level1; l++) {
     if (class1Obj.featuresByLevel && class1Obj.featuresByLevel[l]) {
-      class1Obj.featuresByLevel[l].forEach(f => classFeatures.push(`[Nvl ${l}] ${comResumoDaCaracteristica(f)}`));
+      class1Obj.featuresByLevel[l].filter(f => !generica(f, 1)).forEach(f => classFeatures.push(`[Nvl ${l}] ${comResumoDaCaracteristica(f)}`));
     }
+    subclassFeaturesUpTo(1).filter(f => f.level === l)
+      .forEach(f => classFeatures.push(`[Nvl ${l} • ${f.sub.name.split(" (")[0]}] ${f.name}: ${f.resumo}`));
   }
   if (class2Obj) {
     for (let l = 1; l <= character.level2; l++) {
       if (class2Obj.featuresByLevel && class2Obj.featuresByLevel[l]) {
-        class2Obj.featuresByLevel[l].forEach(f => classFeatures.push(`[${class2Obj.name} ${l}] ${comResumoDaCaracteristica(f)}`));
+        class2Obj.featuresByLevel[l].filter(f => !generica(f, 2)).forEach(f => classFeatures.push(`[${class2Obj.name} ${l}] ${comResumoDaCaracteristica(f)}`));
       }
+      subclassFeaturesUpTo(2).filter(f => f.level === l)
+        .forEach(f => classFeatures.push(`[${class2Obj.name.split(" (")[0]} ${l} • ${f.sub.name.split(" (")[0]}] ${f.name}: ${f.resumo}`));
     }
   }
   // O texto livre da classe personalizada entra junto das características:
   // é o único lugar da ficha onde essa descrição tem onde caber.
+  getActiveClassChoices().forEach(ch => {
+    const texto = describeClassChoice(ch);
+    if (texto) classFeatures.push(`[Escolha] ${ch.label}: ${texto}`);
+  });
+  getActiveInvocations().forEach(({ inv, entrada }) => {
+    classFeatures.push(`[Invocação] ${inv.name.split(" (")[0]}${describeInvocationChoice(inv, entrada)}: ${inv.resumo}`);
+  });
   if (class1Obj.isCustom && class1Obj.about) classFeatures.push(`${class1Obj.name}: ${class1Obj.about}`);
   if (class2Obj && class2Obj.isCustom && class2Obj.about) classFeatures.push(`${class2Obj.name}: ${class2Obj.about}`);
 
-  const subObj = class1Obj.subclasses ? class1Obj.subclasses.find(s => s.id === character.subclass1) : null;
-  if (character.level1 >= 3 && subObj) classFeatures.push(`Subclasse — ${subObj.name}: ${subObj.desc}`);
+  [1, 2].forEach(slot => {
+    const subObj = subclasseEscolhida(slot);
+    // Subclasse sem características cadastradas (não deveria acontecer) ainda mostra a descrição
+    if (subObj && !(subObj.features || []).length) classFeatures.push(`Subclasse — ${subObj.name}: ${subObj.desc}`);
+  });
   character.customFeatures.forEach(cf => classFeatures.push(`${cf.title}: ${cf.desc}`));
 
   const half = Math.ceil(classFeatures.length / 2);
@@ -5568,6 +6550,10 @@ function renderOfFeatureAreas(ctx) {
 
   getExtraOriginFeatObjs().forEach(f => {
     featLines.push(`[Origem • Extra] ${f.name}: ${f.desc}${describeFeatChoices(f)}`);
+  });
+  getInvocationFeatIds().forEach(fid => {
+    const f = DND5E_DATA.feats.find(x => x.id === fid);
+    if (f) featLines.push(`[Origem • Invocação] ${f.name}: ${f.desc}${describeFeatChoices(f)}`);
   });
   character.selectedFeats.forEach(fId => {
     const f = DND5E_DATA.feats.find(x => x.id === fId);
@@ -5595,8 +6581,7 @@ function renderOfSpellSlots(ctx) {
   const grid = document.getElementById("sheetSpellSlotsGrid");
   if (!grid) return;
 
-  const type = spellCastingClass && spellCastingClass.spellcasting ? spellCastingClass.spellcasting.type : "full";
-  const slotsRow = linhaDeEspacosDaTabela(type, totalLevel);
+  const slotsRow = linhaDeEspacosAutomatica();
 
   const ov = sheetOv();
   if (!ov.slots || typeof ov.slots !== "object") ov.slots = {};
@@ -6387,6 +7372,8 @@ function bindEvents() {
     const row = document.getElementById("multiclassLevelRow");
     row.style.display = character.class2 !== "none" ? "grid" : "none";
     updateCustomOriginPanels();
+    updateSubclassesDropdown();
+    updateFeatsList();
     renderSpellsCatalog();
     recalculateCharacter();
   });
@@ -6394,6 +7381,8 @@ function bindEvents() {
   document.getElementById("selectLevel2").addEventListener("change", (e) => {
     character.level2 = parseInt(e.target.value);
     updateCustomOriginPanels();
+    updateSubclassesDropdown();
+    updateFeatsList();
     renderSpellsCatalog();
     recalculateCharacter();
   });
@@ -6565,16 +7554,17 @@ function bindEvents() {
   document.getElementById("btnRollAllStats").addEventListener("click", roll4d6Stats);
 
   // Subclasse (Passo 3)
-  document.getElementById("selectSubclass1").addEventListener("change", (e) => {
-    character.subclass1 = e.target.value;
-    const classObj = DND5E_DATA.classes.find(c => c.id === character.class1);
-    const subObj = classObj ? classObj.subclasses.find(s => s.id === character.subclass1) : null;
-    if (subObj) {
-      const bonusSpellsHtml = subclassSpellsHtml(subObj, character.level1)
-                             + landSpellsHtml(subObj, character.level1);
-      document.getElementById("subclass1Desc").innerHTML = `<h4><i class="fa-solid fa-khanda"></i> ${subObj.name}</h4><p>${subObj.desc}</p>${bonusSpellsHtml}`;
-    }
-    recalculateCharacter();
+  [1, 2].forEach(slot => {
+    const sel = document.getElementById(`selectSubclass${slot}`);
+    if (!sel) return;
+    sel.addEventListener("change", (e) => {
+      character[`subclass${slot}`] = e.target.value;
+      _ofSpellsSig = null;
+      preencherSubclasse(slot);
+      updateFeatsList();
+      renderSpellsCatalog();
+      recalculateCharacter();
+    });
   });
 
   // Filtros de Magias (Passo 4)
@@ -7164,9 +8154,85 @@ function resetCharacter() {
   }
 }
 
+/** Um item qualquer da lista (ou undefined se vazia) */
+function sortear(lista) {
+  return lista.length ? lista[Math.floor(Math.random() * lista.length)] : undefined;
+}
+
+/** `n` itens diferentes da lista, em ordem aleatória */
+function sortearVarios(lista, n) {
+  const copia = lista.slice();
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia.slice(0, Math.max(0, n));
+}
+
+/**
+ * Preenche no personagem aleatório o que a classe pede para escolher: Estilo de
+ * Luta, escolhas de característica (Ordem Divina, Metamagia, Especialização...)
+ * e Invocações Místicas. Sem isso o sorteio saía com metade da ficha em aberto.
+ */
+function sortearEscolhasDeClasse() {
+  character.classChoices = {};
+  character.invocations = [];
+  character.featChoices = {};
+  character.selectedFeats = [];
+
+  // As escolhas de uma opção vêm primeiro: outras dependem delas (showIf).
+  const porTipo = (DND5E_DATA.classChoices || []).slice().sort((a, b) => (a.kind === "option" ? -1 : 0) - (b.kind === "option" ? -1 : 0));
+  porTipo.forEach(ch => {
+    if (!isClassChoiceActive(ch)) return;
+    const n = classChoiceCount(ch);
+    if (ch.kind === "option") {
+      character.classChoices[ch.id] = (sortear(ch.options) || {}).id;
+    } else if (ch.kind === "multi") {
+      character.classChoices[ch.id] = sortearVarios(ch.options.map(o => o.id), n);
+    } else if (ch.kind === "skill") {
+      const treinadas = new Set(getTrainedSkillsWithoutClassExpertise());
+      const permitidas = ch.useClassSkills
+        ? ((DND5E_DATA.classes.find(c => c.id === ch.classId) || {}).skillChoices || {}).list || []
+        : ch.skills || DND5E_DATA.skills.map(sk => sk.id);
+      character.classChoices[ch.id] = sortearVarios(permitidas.filter(id => !treinadas.has(id)), n);
+    } else if (ch.kind === "expertise") {
+      const jaEspecialista = new Set(getClassChoiceSkills().expert);
+      const pool = getTrainedSkillsWithoutClassExpertise().filter(id => (!ch.skills || ch.skills.includes(id)) && !jaEspecialista.has(id));
+      character.classChoices[ch.id] = sortearVarios(pool, n);
+    } else if (ch.kind === "language") {
+      const ja = new Set([...(character.languages || []), ...(ch.fixed || [])]);
+      character.classChoices[ch.id] = sortearVarios(classChoiceLanguageNames().filter(l => !ja.has(l) && !/^Comum/.test(l)), n);
+    } else if (ch.kind === "spell") {
+      const pool = DND5E_DATA.spells.filter(sp => sp.level === ch.spell.level && (!ch.spell.classes || (sp.classes || []).some(c => ch.spell.classes.includes(c))));
+      character.classChoices[ch.id] = sortearVarios(pool.map(sp => sp.id), n);
+    }
+  });
+
+  // Estilo de Luta: Guerreiro 1, Paladino e Guardião 2 (se não pegaram a alternativa)
+  const estilos = DND5E_DATA.feats.filter(f => f.type === "fighting_style");
+  const querEstilo = classLevel("fighter") >= 1
+    || (classLevel("paladin") >= 2 && character.classChoices.paladin_fighting_style === "fighting_style")
+    || (classLevel("ranger") >= 2 && character.classChoices.ranger_fighting_style === "fighting_style");
+  if (querEstilo && estilos.length) character.selectedFeats.push(sortear(estilos).id);
+
+  // Invocações: primeiro as sem pré-requisito de invocação, depois as que dependem delas
+  const max = maxInvocations();
+  for (let rodada = 0; rodada < 2 && character.invocations.length < max; rodada++) {
+    const candidatas = (DND5E_DATA.invocations || []).filter(inv =>
+      !inv.repeatable && !character.invocations.some(e => e.id === inv.id)
+      && !invocationBlockReason(inv, character.invocations) && (rodada === 1 || !inv.requires));
+    sortearVarios(candidatas, max - character.invocations.length).forEach(inv => {
+      if (inv.requires && !character.invocations.some(e => e.id === inv.requires)) return;
+      character.invocations.push({ id: inv.id, escolha: "", magias: {} });
+    });
+  }
+  if (warlockLevel() && !character.spellsKnown.includes("eldritch_blast")) character.spellsKnown.push("eldritch_blast");
+}
+
 function generateRandomCharacter() {
-  const classes = DND5E_DATA.classes;
-  const speciesList = DND5E_DATA.species;
+  // A classe e a espécie "Personalizada" não têm mecânica para sortear
+  const classes = DND5E_DATA.classes.filter(c => !c.isCustom);
+  const speciesList = DND5E_DATA.species.filter(sp => !sp.isCustom);
   const bgs = DND5E_DATA.backgrounds;
 
   const randClass = classes[Math.floor(Math.random() * classes.length)];
@@ -7189,8 +8255,13 @@ function generateRandomCharacter() {
     character.subclass1 = "none";
   }
 
-  character.trainedSkills = randClass.skillChoices ? randClass.skillChoices.list.slice(0, randClass.skillChoices.count) : ["athletics", "perception"];
+  character.trainedSkills = randClass.skillChoices
+    ? sortearVarios(randClass.skillChoices.list.filter(id => !(randBg.skills || []).includes(id)), randClass.skillChoices.count)
+    : ["athletics", "perception"];
+  character.expertSkills = [];
+  character.spellsKnown = [];
   character.weapons = ["longsword", "dagger", "shortbow"];
+  sortearEscolhasDeClasse();
 
   document.getElementById("inputCharName").value = character.name;
   document.getElementById("selectClass1").value = character.class1;

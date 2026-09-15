@@ -664,11 +664,26 @@
           </div>
           <div class="info-selection-card" id="subclass1Desc"></div>
 
+          <!-- Subclasse da multiclasse (só aparece com uma segunda classe) -->
+          <div id="subclass2Group" hidden>
+            <div class="form-group" style="margin-top: 1rem;">
+              <label class="form-label" for="selectSubclass2">Subclasse da Multiclasse (Nível 3+ na segunda classe)</label>
+              <select class="form-control" id="selectSubclass2"></select>
+            </div>
+            <div class="info-selection-card" id="subclass2Desc"></div>
+          </div>
+
           <!-- Seleção de Perícias da Classe -->
           <div class="form-group" style="margin-top: 1rem;">
             <label class="form-label" id="skillsChoiceLabel">Perícias da Classe:</label>
             <div class="skills-selector-grid" id="skillsSelectorGrid"></div>
           </div>
+
+          <!-- Escolhas pedidas pelas características de classe -->
+          <div class="form-group feat-list-block" id="classChoicesContainer" style="margin-top: 1.25rem;" hidden></div>
+
+          <!-- Invocações Místicas (só aparece com nível de Bruxo) -->
+          <div class="form-group feat-list-block" id="invocationsContainer" style="margin-top: 1.25rem;" hidden></div>
 
           <!-- Lista Completa de Talentos (Oficiais + Customizáveis) -->
           <div class="form-group" style="margin-top: 1.25rem;">

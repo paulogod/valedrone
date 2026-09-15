@@ -1576,6 +1576,54 @@ Capacidade e concessão são coisas diferentes e aparecem separadas. A linha
 
 ---
 
+## 9b. Rodada 9 — classes conferidas contra o Livro do Jogador
+
+**Data:** 15/09/2026. Verificadores novos: `tools/checar-invocacoes.js` e
+`tools/checar-classes.js`.
+
+### Contas corrigidas
+- **Espaços de magia** saem de `linhaDeEspacosAutomatica()`: uma classe
+  conjuradora usa a tabela dela no nível dela; duas somam nível de conjurador
+  (pleno inteiro, Paladino/Guardião metade para cima, Cavaleiro Místico e
+  Trapaceiro Arcano um terço para baixo) e usam a tabela do pleno; a Magia de
+  Pacto soma por cima. A tabela `half` do `data.js` era a de 2014 (Paladino 1
+  sem espaços) e foi trocada pela de 2024; entrou a tabela `third`.
+- **Cavaleiro Místico e Trapaceiro Arcano conjuram**: `spellcasting` mora na
+  subclasse e `comConjuracaoDaSubclasse()` o injeta em `resolveClassObj()`.
+- **Subclasse da multiclasse** ganhou seletor (`selectSubclass2`).
+- **Deslocamento** (`getClassSpeedBonus`): Movimento sem Armadura do Monge por
+  nível, Movimento Rápido e Errante sem armadura pesada, valendo na multiclasse.
+- **CA**: Monge com escudo perde a Defesa sem Armadura.
+- **Salvaguardas**: Monge 14 (todas), Ladino 15 (SAB e CAR), Aura de Proteção.
+- **Perícias**: Pau pra Toda Obra e especialização entram também nas passivas.
+
+### Escolhas de classe (`DND5E_DATA.classChoices`, `character.classChoices`)
+Painel "Escolhas de Classe" no Passo 3: Ordem Divina, Ordem Primal, Golpes
+Abençoados, Fúria Elemental, Metamagia, Manobras, Especialização (Ladino,
+Bardo, Guardião, Acadêmico), Conhecimento Primordial, idiomas de classe,
+Combatente Abençoado/Druídico, Arcana Mística, Maestria de Magias, Assinatura
+Mágica e perícias de subclasse. Cada tipo (`option`, `multi`, `skill`,
+`expertise`, `language`, `spell`) tem efeito na ficha. As perícias da classe
+agora respeitam a lista e a quantidade.
+
+### Invocações Místicas (`DND5E_DATA.invocations`, `character.invocations`)
+As 28 do livro, com pré-requisito de nível e de Pacto travando a escolha e
+truque exigido só avisando (ele é escolhido no Passo 4).
+
+### Subclasses
+As 48 subclasses ganharam `features` (nível, nome, `resumo` para a ficha e
+`desc` com o texto do livro), nomes oficiais, `featureSpells` (magias sempre
+preparadas por característica) e `effects` (CA, PV, deslocamento,
+salvaguardas, proficiências, bônus em perícia). O texto foi extraído do PDF por
+colunas; os resumos foram escritos à mão.
+
+### Outros
+- Catálogo marca "acima do seu círculo" (`maiorCirculoPreparavel()`).
+- Personagem aleatório não sorteia mais "Personalizada" e preenche Estilo de
+  Luta, escolhas de classe e Invocações (`sortearEscolhasDeClasse()`).
+
+---
+
 ## 10. Como o código da ficha funciona
 
 Toda a ficha vive no bloco marcado em `app.js` como
