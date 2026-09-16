@@ -727,9 +727,16 @@ function subclassDescHtml(sub, nivel) {
         <p>${f.desc}</p>
       </details>`;
   }).join("");
+  const jaTem = (sub.features || []).filter(f => f.level <= nivel).length;
   return `<h4><i class="fa-solid fa-khanda"></i> ${sub.name}</h4><p>${sub.desc}</p>`
     + subclassSpellsHtml(sub, nivel) + landSpellsHtml(sub, nivel)
-    + (caracteristicas ? `<div class="sub-feats"><p class="sub-feats-titulo">Características da subclasse (clique para ler o texto do livro)</p>${caracteristicas}</div>` : "");
+    + (caracteristicas ? blocoHtml({
+        id: `subclasse-${sub.id}`,
+        titulo: "Características da subclasse",
+        meta: `${jaTem} no seu nível · ${(sub.features || []).length} no total`,
+        padrao: false,
+        corpo: `<div class="sub-feats">${caracteristicas}</div>`
+      }) : "");
 }
 
 function preencherSubclasse(slot) {
@@ -1919,9 +1926,9 @@ function updateSkillsSelector() {
   const daClasse = character.trainedSkills.filter(id => allowedSkills.includes(id) && !bgSkills.includes(id));
   const cheio = daClasse.length >= maxChoiceCount;
 
+  // O contador mora no cabeçalho do bloco, visível mesmo com ele fechado
   document.getElementById("skillsChoiceLabel").innerHTML =
-    `Perícias da Classe: <span style="color: ${daClasse.length > maxChoiceCount ? "#ef4444" : "#c084fc"}">${daClasse.length} / ${maxChoiceCount}</span> ` +
-    `<small style="color: #94a3b8; font-weight: 400;">(da lista da classe; as do antecedente não contam)</small>`;
+    `<span style="color: ${daClasse.length > maxChoiceCount ? "#ef4444" : "#c084fc"}; font-weight: 700;">${daClasse.length} / ${maxChoiceCount}</span> da lista da classe`;
 
   DND5E_DATA.skills.forEach(sk => {
     const isBgSkill = bgSkills.includes(sk.id);
@@ -3427,8 +3434,14 @@ function updateFeatsList() {
         `).join("")}
       </div>
     ` : ""}
+    ${blocoHtml({
+      id: "origem-extra",
+      titulo: "Adicionar Talento de Origem",
+      meta: "variante de mesa, prêmio ou concessão do Mestre",
+      icone: "fa-plus",
+      padrao: false,
+      corpo: `
     <div class="feat-choice-box origem-extra-add">
-      <div class="feat-choice-title"><i class="fa-solid fa-plus"></i> Adicionar Talento de Origem</div>
       <div class="origem-extra-linha">
         <select class="form-control" id="selectExtraOriginFeat" aria-label="Talento de origem a adicionar">
           ${disponiveis.length
@@ -3440,7 +3453,8 @@ function updateFeatsList() {
           <i class="fa-solid fa-plus"></i> Adicionar
         </button>
       </div>
-    </div>
+    </div>`
+    })}
   `;
   container.appendChild(grantedSection);
 
@@ -3565,14 +3579,14 @@ function updateFeatsList() {
           const doGrupo = visiveis.filter(f => f.type === id);
           if (!doGrupo.length) return "";
           const meus = doGrupo.filter(f => character.selectedFeats.includes(f.id)).length;
-          return `
-            <div class="feat-group">
-              <h5 class="feat-group-head">
-                <span>${rotulo}</span>
-                <span class="feat-group-count">${doGrupo.length}${meus ? ` · ${meus} no personagem` : ""}</span>
-              </h5>
-              <div class="feat-list">${doGrupo.map(linhaDoTalento).join("")}</div>
-            </div>`;
+          return blocoHtml({
+            id: `talentos-${id}`,
+            titulo: rotulo,
+            meta: `${doGrupo.length} talentos${meus ? ` · ${meus} no personagem` : ""}`,
+            // Busca ou filtro ligado abre o grupo: o jogador está procurando algo
+            padrao: !!busca || tipo !== "all" || soMeus || meus > 0,
+            corpo: `<div class="feat-list">${doGrupo.map(linhaDoTalento).join("")}</div>`
+          });
         }).join("")}
   `;
   container.appendChild(officialSection);
@@ -3905,6 +3919,45 @@ function getActiveFeatIds() {
   return ids;
 }
 
+/* ------------------------------------------------- BLOCOS QUE ABREM E FECHAM */
+
+/*
+ * As listas do assistente são longas por natureza (40 talentos, 28 invocações,
+ * 20 manobras, 400 magias). Em vez de rolar tudo, cada lista vira um bloco
+ * `<details>` com título, contagem e seta. O estado de aberto/fechado mora
+ * aqui, fora do `character`: é estado de tela e não vai para a ficha salva.
+ * Sem isso, cada redesenho (que é frequente) fecharia tudo de novo.
+ */
+const _blocosAbertos = {};
+
+function blocoEstaAberto(id, padrao) {
+  return _blocosAbertos[id] === undefined ? !!padrao : _blocosAbertos[id];
+}
+
+/**
+ * HTML de um bloco retrátil.
+ * `meta` é o resumo que fica visível com o bloco fechado (ex.: "3 de 40").
+ */
+function blocoHtml({ id, titulo, meta, corpo, padrao, icone }) {
+  const aberto = blocoEstaAberto(id, padrao);
+  return `<details class="bloco" data-bloco="${id}"${aberto ? " open" : ""}>
+      <summary class="bloco-head">
+        <i class="fa-solid fa-chevron-right bloco-seta"></i>
+        <span class="bloco-titulo">${icone ? `<i class="fa-solid ${icone}"></i> ` : ""}${titulo}</span>
+        ${meta ? `<span class="bloco-meta">${meta}</span>` : ""}
+      </summary>
+      <div class="bloco-corpo">${corpo}</div>
+    </details>`;
+}
+
+/* `toggle` não sobe na árvore: o ouvinte é único, na fase de captura. */
+document.addEventListener("toggle", (e) => {
+  const alvo = e.target;
+  if (alvo && alvo.tagName === "DETAILS" && alvo.hasAttribute("data-bloco")) {
+    _blocosAbertos[alvo.getAttribute("data-bloco")] = alvo.open;
+  }
+}, true);
+
 /* ------------------------------------------------------ ESCOLHAS DE CLASSE */
 
 /** Slot (1 ou 2) em que a classe da escolha está; 0 se o personagem não a tem */
@@ -4067,6 +4120,7 @@ function renderClassChoices() {
         </label>`).join("")}</div>`;
       if (!atual) avisos.push("Escolha uma das opções.");
     } else if (ch.kind === "multi") {
+      const escolhidas = lista.filter(Boolean);
       corpo = `<div class="cc-opcoes cc-multi">${(ch.options || []).map(o => {
         const marcado = lista.includes(o.id);
         const cheio = !marcado && lista.filter(Boolean).length >= n;
@@ -4075,6 +4129,13 @@ function renderClassChoices() {
           <span><strong>${o.name}</strong><small>${o.desc}</small></span>
         </label>`;
       }).join("")}</div>`;
+      corpo = blocoHtml({
+        id: `cc-${ch.id}`,
+        titulo: escolhidas.length ? escolhidas.map(id => ((ch.options || []).find(o => o.id === id) || {}).name || id).join(" · ") : "Nenhuma escolhida ainda",
+        meta: `${escolhidas.length} de ${n} · ${(ch.options || []).length} opções`,
+        padrao: escolhidas.length < n,
+        corpo
+      });
     } else {
       const campos = [];
       for (let i = 0; i < n; i++) {
@@ -4452,15 +4513,20 @@ function renderInvocations() {
         Invocações com cadeado exigem um nível de Bruxo maior ou um Pacto.
       </p>
     </div>
-    <div class="feat-group">
-      <h5 class="feat-group-head"><span>Disponíveis</span><span class="feat-group-count">${disponiveis.length}</span></h5>
-      <div class="feat-list">${disponiveis.map(linha).join("")}</div>
-    </div>
-    ${travadas.length ? `
-      <div class="feat-group">
-        <h5 class="feat-group-head"><span>Pré-requisito não atendido</span><span class="feat-group-count">${travadas.length}</span></h5>
-        <div class="feat-list">${travadas.map(linha).join("")}</div>
-      </div>` : ""}
+    ${blocoHtml({
+      id: "invocacoes-disponiveis",
+      titulo: "Disponíveis",
+      meta: `${disponiveis.length} invocações · ${usadas} escolhidas`,
+      padrao: usadas < max,
+      corpo: `<div class="feat-list">${disponiveis.map(linha).join("")}</div>`
+    })}
+    ${travadas.length ? blocoHtml({
+      id: "invocacoes-travadas",
+      titulo: "Pré-requisito não atendido",
+      meta: `${travadas.length} invocações`,
+      padrao: false,
+      corpo: `<div class="feat-list">${travadas.map(linha).join("")}</div>`
+    }) : ""}
   `;
 
   if (box.dataset.bound) return;
@@ -5436,6 +5502,21 @@ function renderSpellsCatalog() {
     return;
   }
 
+  // Barra de abrir/fechar todos os círculos de uma vez
+  const barra = document.createElement("div");
+  barra.className = "spell-groups-bar";
+  barra.innerHTML = `
+    <button type="button" class="btn btn-secondary btn-sm" data-grupos="abrir"><i class="fa-solid fa-chevron-down"></i> Abrir todos os círculos</button>
+    <button type="button" class="btn btn-secondary btn-sm" data-grupos="fechar"><i class="fa-solid fa-chevron-right"></i> Fechar todos</button>`;
+  barra.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-grupos]");
+    if (!btn) return;
+    const abrir = btn.getAttribute("data-grupos") === "abrir";
+    [...porCirculo.keys()].forEach(n => { _blocosAbertos[`magias-circulo-${n}`] = abrir; });
+    renderSpellsCatalog();
+  });
+  container.appendChild(barra);
+
   const table = document.createElement("table");
   table.className = "spells-table";
 
@@ -5479,17 +5560,28 @@ function renderSpellsCatalog() {
       </tr>`;
   };
 
+  // `<details>` não vale dentro de tabela: aqui o próprio cabeçalho do círculo
+  // é o botão, e as linhas dele ganham `hidden` quando o grupo está fechado.
+  // Um filtro ou uma busca em uso abre tudo — quem procura quer ver o resultado.
+  const filtrando = !!searchQuery || filterLevel !== "all" || filterClass !== "all"
+    || filterSchool !== "all" || soSelecionadas;
   const corpo = [...porCirculo.keys()].sort((a, b) => a - b).map(nivel => {
     const magias = porCirculo.get(nivel);
     const naFicha = magias.filter(sp => idsNaFicha.has(sp.id)).length;
+    const idBloco = `magias-circulo-${nivel}`;
+    // Fechado por padrão: o catálogo inteiro são 400 linhas. Abre sozinho o
+    // círculo que já tem magia na ficha — ali há o que conferir.
+    const aberto = filtrando || blocoEstaAberto(idBloco, naFicha > 0);
     return `
       <tr class="spell-group-row">
-        <th colspan="5" class="spell-group-head">
+        <th colspan="5" class="spell-group-head${aberto ? " is-aberto" : ""}" data-grupo="${idBloco}"
+            role="button" tabindex="0" aria-expanded="${aberto}">
+          <i class="fa-solid fa-chevron-right bloco-seta"></i>
           <span class="spell-group-title">${formatSpellLevel(nivel)}</span>
           <span class="spell-group-count">${magias.length} magia${magias.length > 1 ? "s" : ""}${naFicha ? ` · ${naFicha} na ficha` : ""}</span>
         </th>
       </tr>
-      ${magias.map(linhaDaMagia).join("")}`;
+      ${aberto ? magias.map(linhaDaMagia).join("") : ""}`;
   }).join("");
 
   table.innerHTML = `
@@ -5504,6 +5596,14 @@ function renderSpellsCatalog() {
     </thead>
     <tbody>${corpo}</tbody>
   `;
+
+  // O cabeçalho do círculo é um botão: Enter e Espaço abrem e fecham, como um <details>
+  table.addEventListener("keydown", (e) => {
+    const grupo = e.target.closest && e.target.closest("[data-grupo]");
+    if (!grupo || (e.key !== "Enter" && e.key !== " ")) return;
+    e.preventDefault();
+    grupo.click();
+  });
 
   table.addEventListener("click", (e) => {
     const infoBtn = e.target.closest(".spell-info-btn");
@@ -5530,6 +5630,14 @@ function renderSpellsCatalog() {
         recalculateCharacter();
         showToast("Magia personalizada removida.");
       }
+      return;
+    }
+
+    const grupo = e.target.closest("[data-grupo]");
+    if (grupo) {
+      const id = grupo.getAttribute("data-grupo");
+      _blocosAbertos[id] = !blocoEstaAberto(id, grupo.classList.contains("is-aberto"));
+      renderSpellsCatalog();
       return;
     }
 
@@ -8108,9 +8216,27 @@ function bindEvents() {
 }
 
 /**
+ * Leva a tela ao começo do passo recém-aberto.
+ *
+ * Sem isso, quem clicava em "Próximo" no fim de um passo continuava com a
+ * página rolada: o passo novo aparecia já no meio (ou no fim, quando é mais
+ * curto que o anterior), como se tivesse carregado de baixo para cima. A
+ * rolagem é suave, menos para quem pediu menos animação no sistema.
+ */
+function scrollToWizardTop() {
+  const nav = document.getElementById("wizardNav");
+  const painel = document.getElementById("creatorPanel");
+  const alvo = nav || painel;
+  if (!alvo) return;
+  const menosMovimento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const topo = alvo.getBoundingClientRect().top + window.scrollY - 12;
+  window.scrollTo({ top: Math.max(0, topo), behavior: menosMovimento ? "auto" : "smooth" });
+}
+
+/**
  * Altera o passo ativo do Wizard
  */
-function setWizardStep(stepNum) {
+function setWizardStep(stepNum, opcoes) {
   document.querySelectorAll(".step-tab-btn").forEach(btn => {
     btn.classList.toggle("active", parseInt(btn.getAttribute("data-step")) === stepNum);
   });
@@ -8129,6 +8255,15 @@ function setWizardStep(stepNum) {
   } else if (stepNum === 4) {
     renderSpellsCatalog();
   }
+
+  // Foco no título do passo: leitor de tela anuncia onde parou, e o teclado
+  // continua a navegação do começo do conteúdo, não de onde estava antes.
+  const titulo = document.querySelector(`#step${stepNum} .section-title`);
+  if (titulo) {
+    titulo.setAttribute("tabindex", "-1");
+    if (!opcoes || opcoes.foco !== false) titulo.focus({ preventScroll: true });
+  }
+  if (!opcoes || opcoes.rolar !== false) scrollToWizardTop();
 }
 
 /**

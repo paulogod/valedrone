@@ -674,10 +674,16 @@
           </div>
 
           <!-- Seleção de Perícias da Classe -->
-          <div class="form-group" style="margin-top: 1rem;">
-            <label class="form-label" id="skillsChoiceLabel">Perícias da Classe:</label>
-            <div class="skills-selector-grid" id="skillsSelectorGrid"></div>
-          </div>
+          <details class="bloco" data-bloco="pericias-da-classe" open>
+            <summary class="bloco-head">
+              <i class="fa-solid fa-chevron-right bloco-seta"></i>
+              <span class="bloco-titulo"><i class="fa-solid fa-list-check"></i> Perícias da Classe</span>
+              <span class="bloco-meta" id="skillsChoiceLabel">Perícias da Classe:</span>
+            </summary>
+            <div class="bloco-corpo">
+              <div class="skills-selector-grid" id="skillsSelectorGrid"></div>
+            </div>
+          </details>
 
           <!-- Escolhas pedidas pelas características de classe -->
           <div class="form-group feat-list-block" id="classChoicesContainer" style="margin-top: 1.25rem;" hidden></div>

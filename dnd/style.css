@@ -1867,6 +1867,73 @@ select.form-control option {
 /* Invocações Místicas */
 #invocationsContainer[hidden],
 #classChoicesContainer[hidden] { display: none; }
+/* Blocos retráteis das listas longas do assistente */
+.bloco {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: var(--radius-md, 8px);
+  background: rgba(15, 23, 42, 0.4);
+  margin-bottom: 0.6rem;
+  overflow: hidden;
+}
+
+.bloco-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  list-style: none;
+  user-select: none;
+}
+
+.bloco-head::-webkit-details-marker { display: none; }
+.bloco-head:hover { background: rgba(139, 92, 246, 0.1); }
+.bloco-head:focus-visible { outline: 2px solid #8b5cf6; outline-offset: -2px; }
+
+.bloco-seta {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: #c084fc;
+  transition: transform 0.18s ease;
+}
+
+.bloco[open] > .bloco-head > .bloco-seta { transform: rotate(90deg); }
+
+.bloco-titulo { min-width: 0; }
+
+.bloco-meta {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #94a3b8;
+  text-align: right;
+}
+
+.bloco-corpo { padding: 0 0.6rem 0.6rem; }
+
+/* O título do passo recebe foco ao trocar de passo: sem anel para o mouse */
+.section-title:focus { outline: none; }
+.section-title:focus-visible { outline: 2px solid #8b5cf6; outline-offset: 4px; border-radius: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bloco-seta { transition: none; }
+}
+
+.spell-groups-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.spell-group-head[data-grupo] { cursor: pointer; user-select: none; }
+.spell-group-head[data-grupo]:hover { background: rgba(139, 92, 246, 0.14); }
+.spell-group-head .bloco-seta { margin-right: 0.4rem; }
+.spell-group-head.is-aberto .bloco-seta { transform: rotate(90deg); }
+
 .cc-box { margin-bottom: 0.6rem; }
 .spell-tag.is-acima { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); }
 .sub-feats { margin-top: 0.6rem; display: grid; gap: 0.3rem; }
