@@ -38,6 +38,11 @@ function createBlankCharacter() {
     extraOriginFeats: [],
     background: "none",
 
+    // Antecedente que deixa escolher (como o Pirata): perícias e talento de
+    // Origem escolhidos pelo jogador. Os oficiais fechados não usam nada disso.
+    backgroundSkills: [],
+    backgroundFeat: "none",
+
     // Classe e espécie personalizadas: só nome e um texto livre. O jogador que
     // usa material caseiro escreve aqui o que a mesa combinou; o app não tenta
     // adivinhar mecânica nenhuma a partir disso.
@@ -651,9 +656,110 @@ function populateDropdowns() {
   updateSubclassesDropdown();
   updateBackgroundBonusSelectors();
   initCustomBackgroundPanel();
+  renderBackgroundChoices();
   updateCustomOriginPanels();
   updateSkillsSelector();
   updateFeatsList();
+}
+
+/**
+ * Escolhas de um antecedente aberto (o Pirata, por exemplo): as perícias da
+ * lista dele e o Talento de Origem.
+ *
+ * Os antecedentes oficiais fechados já vêm com perícia e talento definidos, e
+ * o personalizado tem o painel próprio: nos dois casos este bloco não aparece.
+ */
+function renderBackgroundChoices() {
+  const box = document.getElementById("bgChoicesContainer");
+  if (!box) return;
+  const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background);
+  const temEscolha = bgObj && !bgObj.isCustom && (bgObj.skillChoices || bgObj.featChoice);
+  if (!temEscolha) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  box.hidden = false;
+
+  const escolhidas = character.backgroundSkills || [];
+  const campos = [];
+
+  if (bgObj.skillChoices) {
+    const { count, list } = bgObj.skillChoices;
+    for (let i = 0; i < count; i++) {
+      const outras = new Set(escolhidas.filter((v, j) => j !== i && v));
+      const opcoes = DND5E_DATA.skills
+        .filter(sk => list.includes(sk.id) && !outras.has(sk.id))
+        .map(sk => {
+          const ab = DND5E_DATA.abilities.find(a => a.id === sk.ability);
+          return `<option value="${sk.id}"${escolhidas[i] === sk.id ? " selected" : ""}>${sk.name} (${ab ? ab.abbr : ""})</option>`;
+        }).join("");
+      campos.push(`
+        <label class="feat-choice-field">
+          <span class="feat-choice-label">Perícia ${i + 1}</span>
+          <select class="invoc-input" data-bg-skill="${i}">
+            <option value="">— escolher —</option>${opcoes}
+          </select>
+        </label>`);
+    }
+  }
+
+  if (bgObj.featChoice) {
+    const opcoes = DND5E_DATA.feats.filter(f => f.type === "origin")
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(f => `<option value="${f.id}"${character.backgroundFeat === f.id ? " selected" : ""}>${f.name}</option>`).join("");
+    campos.push(`
+      <label class="feat-choice-field">
+        <span class="feat-choice-label">Talento de Origem</span>
+        <select class="invoc-input" data-bg-feat="1">
+          <option value="none">— escolher —</option>${opcoes}
+        </select>
+      </label>`);
+  }
+
+  const faltando = [];
+  if (bgObj.skillChoices && escolhidas.filter(Boolean).length < bgObj.skillChoices.count) {
+    faltando.push(`Faltam ${bgObj.skillChoices.count - escolhidas.filter(Boolean).length} de ${bgObj.skillChoices.count} perícias.`);
+  }
+  if (bgObj.featChoice && character.backgroundFeat === "none") faltando.push("Escolha o Talento de Origem.");
+
+  box.innerHTML = `
+    <div class="feat-choice-box cc-box">
+      <div class="feat-choice-title">
+        <i class="fa-solid fa-anchor"></i> Escolhas do Antecedente
+        <span class="cc-origem">${bgObj.name.split(" (")[0]}</span>
+      </div>
+      <p class="cc-desc">
+        Este antecedente deixa as escolhas em aberto: as perícias saem da lista dele, o Talento de Origem é
+        o que você preferir, e os aumentos de atributo estão logo acima, no Passo 2.
+      </p>
+      <div class="feat-choice-grid">${campos.join("")}</div>
+      ${faltando.map(f => `<p class="invoc-aviso"><i class="fa-solid fa-triangle-exclamation"></i> ${f}</p>`).join("")}
+    </div>`;
+
+  if (box.dataset.bound) return;
+  box.dataset.bound = "1";
+  box.addEventListener("change", (e) => {
+    const sel = e.target;
+    if (!sel.getAttribute) return;
+    const idx = sel.getAttribute("data-bg-skill");
+    if (idx !== null) {
+      const lista = (character.backgroundSkills || []).slice();
+      lista[parseInt(idx, 10)] = sel.value;
+      character.backgroundSkills = lista;
+    } else if (sel.getAttribute("data-bg-feat")) {
+      character.backgroundFeat = sel.value;
+    } else {
+      return;
+    }
+    _ofSpellsSig = null;
+    renderBackgroundChoices();
+    renderSpeciesBackgroundSummary();
+    updateSkillsSelector();
+    updateFeatsList();
+    renderSpellsCatalog();
+    recalculateCharacter();
+  });
 }
 
 /**
@@ -1355,7 +1461,28 @@ function somarPontosDeVida(class1Obj, class2Obj, conMod) {
 function getOriginFeatId() {
   const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background);
   if (!bgObj) return null;
-  return (bgObj.isCustom ? character.customBg.feat : bgObj.feat) || null;
+  if (bgObj.isCustom) return character.customBg.feat || null;
+  // Antecedente com talento à escolha (Pirata): vale o que o jogador marcou
+  if (bgObj.featChoice) return character.backgroundFeat !== "none" ? character.backgroundFeat : null;
+  return bgObj.feat || null;
+}
+
+/**
+ * Perícias que o antecedente concede.
+ *
+ * Três formatos convivem: o oficial fechado (`skills`), o personalizado (duas
+ * escolhas no painel) e o que deixa escolher de uma lista (`skillChoices`,
+ * como o Pirata). Toda a conta de perícias passa por aqui para não haver três
+ * versões da mesma regra espalhadas pelo código.
+ */
+function getBackgroundSkillIds() {
+  const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background);
+  if (!bgObj) return [];
+  if (bgObj.isCustom) return [character.customBg.skill1, character.customBg.skill2].filter(Boolean);
+  if (bgObj.skillChoices) {
+    return (character.backgroundSkills || []).slice(0, bgObj.skillChoices.count).filter(Boolean);
+  }
+  return (bgObj.skills || []).slice();
 }
 
 /**
@@ -1758,9 +1885,13 @@ function renderSpeciesBackgroundSummary() {
       bonusDesc = `+1 em ${pName}, +1 em ${sName}, +1 em ${tName}`;
     }
   } else {
-    const featObj = DND5E_DATA.feats.find(f => f.id === bgObj.feat);
+    const featObj = getOriginFeatObj();
+    featName = featObj ? featObj.name : (bgObj.featChoice ? "— escolha o talento de origem —" : bgObj.featName);
     featDesc = featObj ? featObj.desc : "";
-    skillsDesc = bgObj.skills.map(s => DND5E_DATA.skills.find(sk => sk.id === s)?.name || s).join(", ");
+    const ids = getBackgroundSkillIds();
+    skillsDesc = ids.length
+      ? ids.map(s => DND5E_DATA.skills.find(sk => sk.id === s)?.name || s).join(", ")
+      : (bgObj.skillChoices ? `— escolha ${bgObj.skillChoices.count} —` : "");
   }
 
   const langsStr = getFormattedLanguages();
@@ -1916,7 +2047,7 @@ function updateSkillsSelector() {
 
   const allowedSkills = classObj.skillChoices ? classObj.skillChoices.list : [];
   const maxChoiceCount = classObj.skillChoices ? classObj.skillChoices.count : 2;
-  const bgSkills = bgObj.isCustom ? [character.customBg.skill1, character.customBg.skill2] : (bgObj.skills || []);
+  const bgSkills = getBackgroundSkillIds();
 
   // A classe dá N perícias da lista dela. Antes dava para marcar qualquer uma,
   // em qualquer quantidade. Perícias fora da lista só entram por outros meios
@@ -3934,7 +4065,7 @@ function vagasDeTalentoUsadas() {
 function pericasDaClasseEscolhidas() {
   const classObj = resolveClassObj(character.class1, 1) || EMPTY_CLASS;
   const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background) || EMPTY_BACKGROUND;
-  const bgSkills = bgObj.isCustom ? [character.customBg.skill1, character.customBg.skill2] : (bgObj.skills || []);
+  const bgSkills = getBackgroundSkillIds();
   const lista = (classObj.skillChoices || {}).list || [];
   return {
     escolhidas: character.trainedSkills.filter(id => lista.includes(id) && !bgSkills.includes(id)).length,
@@ -3959,6 +4090,14 @@ function pendenciasDoWizard() {
   if (character.class1 === "none") p[1].push("Classe");
   if (character.species === "none") p[1].push("Espécie");
   if (character.background === "none") p[1].push("Antecedente");
+  const bgAberto = DND5E_DATA.backgrounds.find(b => b.id === character.background);
+  if (bgAberto && !bgAberto.isCustom) {
+    if (bgAberto.skillChoices) {
+      const feitas = getBackgroundSkillIds().length;
+      if (feitas < bgAberto.skillChoices.count) p[1].push(`Perícias do antecedente (${feitas} de ${bgAberto.skillChoices.count})`);
+    }
+    if (bgAberto.featChoice && !getOriginFeatId()) p[1].push("Talento de Origem do antecedente");
+  }
 
   // Passo 2 — atributos
   const scores = character.baseScores || {};
@@ -4240,8 +4379,7 @@ function getClassChoiceSkills() {
 
 /** Perícias treinadas por classe, antecedente e talentos (sem passar pelas especializações de classe) */
 function getTrainedSkillsWithoutClassExpertise() {
-  const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background) || EMPTY_BACKGROUND;
-  const bgSkills = bgObj.isCustom ? [character.customBg.skill1, character.customBg.skill2] : (bgObj.skills || []);
+  const bgSkills = getBackgroundSkillIds();
   const feat = getFeatGrantedSkills();
   const daClasse = (DND5E_DATA.classChoices || [])
     .filter(ch => ch.kind === "skill" && isClassChoiceActive(ch)).flatMap(ch => [...(ch.fixedSkills || []), ...classChoiceList(ch)]);
@@ -6156,7 +6294,7 @@ function recalculateCharacter() {
 
   // 7. Salvaguardas & Perícias
   const proficientSaves = class1Obj.savingThrows || ["str", "con"];
-  const bgSkills = bgObj.isCustom ? [character.customBg.skill1, character.customBg.skill2] : (bgObj.skills || []);
+  const bgSkills = getBackgroundSkillIds();
   const featSkills = getFeatGrantedSkills();
   const classSkills = getClassChoiceSkills();
   const allTrainedSkills = Array.from(new Set([
@@ -7819,8 +7957,12 @@ function bindEvents() {
 
   document.getElementById("selectBackground").addEventListener("change", (e) => {
     character.background = e.target.value;
+    // Escolhas do antecedente anterior não valem para o novo
+    character.backgroundSkills = [];
+    character.backgroundFeat = "none";
     initCustomBackgroundPanel();
     updateBackgroundBonusSelectors();
+    renderBackgroundChoices();
     renderSpeciesBackgroundSummary();
     updateSkillsSelector();
     renderHumanOriginFeat();
@@ -8666,6 +8808,12 @@ function generateRandomCharacter() {
   } else {
     character.subclass1 = "none";
   }
+
+  // Antecedente que deixa escolher (Pirata): sorteia as perícias e o talento
+  character.backgroundSkills = [];
+  character.backgroundFeat = "none";
+  if (randBg.skillChoices) character.backgroundSkills = sortearVarios(randBg.skillChoices.list, randBg.skillChoices.count);
+  if (randBg.featChoice) character.backgroundFeat = (sortear(DND5E_DATA.feats.filter(f => f.type === "origin")) || {}).id || "none";
 
   character.trainedSkills = randClass.skillChoices
     ? sortearVarios(randClass.skillChoices.list.filter(id => !(randBg.skills || []).includes(id)), randClass.skillChoices.count)

@@ -3726,6 +3726,36 @@ const DND5E_DATA = {
       "startingGold": 50
     },
     {
+      "id": "pirate",
+      "name": "Pirata (Pirate)",
+      "abilityOptions": [
+        "str",
+        "dex",
+        "con",
+        "int",
+        "wis",
+        "cha"
+      ],
+      "feat": null,
+      "featChoice": true,
+      "featName": "Talento à Escolha",
+      "skills": [],
+      "skillChoices": {
+        "count": 2,
+        "list": [
+          "perception",
+          "survival",
+          "acrobatics",
+          "athletics"
+        ]
+      },
+      "tools": [
+        "Ferramentas de Carpinteiro"
+      ],
+      "equipmentDesc": "Ferramentas de Carpinteiro (reparo de navio), Corda de Cânhamo (15 m), Pé de Cabra, Roupas de Viajante, Lona de Vela, Faca, 10 PO.",
+      "startingGold": 50
+    },
+    {
       "id": "sailor",
       "name": "Marinheiro (Sailor)",
       "abilityOptions": [

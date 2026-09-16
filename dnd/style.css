@@ -1938,6 +1938,7 @@ select.form-control option {
 .feat-slots-num.is-over { color: #ef4444; }
 
 /* Invocações Místicas */
+#bgChoicesContainer[hidden],
 #invocationsContainer[hidden],
 #classChoicesContainer[hidden] { display: none; }
 /* Blocos retráteis das listas longas do assistente */

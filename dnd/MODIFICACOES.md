@@ -1656,6 +1656,31 @@ colunas; os resumos foram escritos à mão.
 
 ---
 
+## 9d. Rodada 11 — antecedente Pirata e antecedentes "abertos"
+
+**Data:** 16/09/2026.
+
+O Pirata é o primeiro antecedente que deixa escolhas em aberto sem ser o
+"Personalizado". Dois campos novos no `data.js` dão conta disso, e valem para
+qualquer antecedente futuro:
+
+| Campo | O que faz |
+|---|---|
+| `skillChoices: { count, list }` | o jogador escolhe N perícias da lista (Pirata: 2 entre Percepção, Sobrevivência, Acrobacia e Atletismo) |
+| `featChoice: true` | o Talento de Origem é escolhido pelo jogador (`character.backgroundFeat`), em vez de vir fixo em `feat` |
+
+- `getBackgroundSkillIds()` virou o único lugar que responde "quais perícias o
+  antecedente dá" — antes a conta estava repetida em quatro pontos, cada um
+  tratando só o caso fechado e o personalizado.
+- `renderBackgroundChoices()` desenha o bloco "Escolhas do Antecedente" no
+  Passo 1, logo abaixo do seletor; some para os antecedentes fechados.
+- As escolhas entram nas pendências do Passo 1 e no sorteio do personagem
+  aleatório. Trocar de antecedente zera o que tinha sido escolhido.
+- Atributos: `abilityOptions` com os seis, então o +2/+1 (ou +1/+1/+1) é livre.
+- Ferramenta: Ferramentas de Carpinteiro, que é o que conserta navio.
+
+---
+
 ## 10. Como o código da ficha funciona
 
 Toda a ficha vive no bloco marcado em `app.js` como
