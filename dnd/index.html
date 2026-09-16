@@ -1567,6 +1567,26 @@
     </div>
   </div>
 
+  <!-- MODAL: PENDÊNCIAS DO PASSO (antes de avançar) -->
+  <div class="modal-overlay" id="pendingStepModal" role="dialog" aria-modal="true" aria-labelledby="pendingStepTitle">
+    <div class="modal-window modal-window-sm">
+      <div class="modal-header">
+        <h3 class="modal-title" id="pendingStepTitle"><i class="fa-solid fa-triangle-exclamation"></i> Falta escolher neste passo</h3>
+        <button class="modal-close-btn" id="closePendingStepModal" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="pending-desc" id="pendingStepDesc"></p>
+      <ul class="pending-list" id="pendingStepList"></ul>
+      <p class="pending-nota">
+        <i class="fa-solid fa-circle-info"></i>
+        Dá para continuar e voltar depois: o passo fica marcado na trilha com a bolinha laranja.
+      </p>
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-primary" id="btnPendingAdjust"><i class="fa-solid fa-pen"></i> Ajustar agora</button>
+        <button type="button" class="btn btn-secondary" id="btnPendingContinue">Continuar assim <i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: ADICIONAR TALENTO CUSTOMIZADO -->
   <div class="modal-overlay" id="customFeatModal">
     <div class="modal-window">

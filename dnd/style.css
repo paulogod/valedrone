@@ -307,6 +307,19 @@ body {
   margin-bottom: 0.9rem;
   border-bottom: 1px solid rgba(139, 92, 246, 0.15);
   scrollbar-width: thin;
+  /* A trilha dos passos acompanha a rolagem: em listas longas dá para trocar
+     de passo sem voltar ao topo. As margens negativas cobrem o padding do
+     painel, senão o conteúdo apareceria pelas beiradas ao passar por baixo. */
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  margin-left: -0.85rem;
+  margin-right: -0.85rem;
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+  padding-top: 0.6rem;
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(10px);
 }
 
 .wizard-nav .step-tab-btn { scroll-snap-align: start; }
@@ -335,6 +348,66 @@ body {
   white-space: nowrap;
   transition: all 0.2s;
 }
+
+/* Caixa de pendências antes de avançar de passo */
+.modal-window-sm { max-width: 460px; }
+
+.pending-desc { margin: 0 0 0.6rem; font-size: 0.86rem; color: #cbd5e1; }
+
+.pending-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.pending-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.1);
+  font-size: 0.82rem;
+  color: #fde68a;
+}
+
+.pending-list li::before {
+  content: "\f0a9";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  color: #f59e0b;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.pending-nota {
+  margin: 0.7rem 0 0;
+  font-size: 0.76rem;
+  color: #94a3b8;
+}
+
+/* Bolinha com o número de escolhas em aberto naquele passo */
+.step-pend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.05rem;
+  height: 1.05rem;
+  padding: 0 0.25rem;
+  border-radius: 9999px;
+  background: #f59e0b;
+  color: #1f2937;
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.step-pend[hidden] { display: none; }
+
+.step-tab-btn.active .step-pend { background: #fbbf24; }
 
 .step-tab-btn:hover {
   background: rgba(139, 92, 246, 0.15);
@@ -2229,7 +2302,8 @@ select.form-control option {
    filtrando; com ele dá para rolar e se localizar. */
 .spell-group-head {
   position: sticky;
-  top: 0;
+  /* Abaixo da trilha de passos, que também é fixa (altura medida no app.js) */
+  top: var(--wizard-nav-h, 0px);
   z-index: 2;
   text-align: left;
   padding: 0.45rem 0.6rem;

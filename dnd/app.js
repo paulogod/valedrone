@@ -214,7 +214,9 @@ document.addEventListener("DOMContentLoaded", () => {
   recalculateCharacter();
   fitSheetToViewport();
   requestAnimationFrame(fitSheetToViewport);
+  ajustarAlturaDaNav();
   window.addEventListener("resize", fitSheetToViewport);
+  window.addEventListener("resize", ajustarAlturaDaNav);
   window.addEventListener("orientationchange", () => setTimeout(fitSheetToViewport, 150));
 });
 
@@ -3919,6 +3921,197 @@ function getActiveFeatIds() {
   return ids;
 }
 
+/* ------------------------------------------- PENDÊNCIAS DE CADA PASSO */
+
+/** Vagas de talento já usadas (o Estilo de Luta não gasta vaga) */
+function vagasDeTalentoUsadas() {
+  const selecionaveis = DND5E_DATA.feats.filter(f => f.type !== "origin" && f.type !== "fighting_style");
+  return [...selecionaveis.filter(f => character.selectedFeats.includes(f.id)), ...getSelectedCustomFeats()]
+    .reduce((n, f) => n + vagasQueOTalentoUsa(f), 0);
+}
+
+/** Perícias da lista da classe já marcadas (as do antecedente não contam) */
+function pericasDaClasseEscolhidas() {
+  const classObj = resolveClassObj(character.class1, 1) || EMPTY_CLASS;
+  const bgObj = DND5E_DATA.backgrounds.find(b => b.id === character.background) || EMPTY_BACKGROUND;
+  const bgSkills = bgObj.isCustom ? [character.customBg.skill1, character.customBg.skill2] : (bgObj.skills || []);
+  const lista = (classObj.skillChoices || {}).list || [];
+  return {
+    escolhidas: character.trainedSkills.filter(id => lista.includes(id) && !bgSkills.includes(id)).length,
+    total: (classObj.skillChoices || {}).count || 0
+  };
+}
+
+/**
+ * O que ainda falta escolher em cada passo do assistente.
+ *
+ * Vira uma bolinha no número do passo: sem isso, só se descobre que faltou
+ * escolher a subclasse (ou metade das manobras) rolando os seis passos de novo.
+ * Só entra o que o livro pede de verdade — biografia e equipamento são
+ * opcionais e não viram cobrança.
+ */
+function pendenciasDoWizard() {
+  const p = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+  if (isBlankSheet()) return p;      // ficha em branco: nada a cobrar ainda
+
+  // Passo 1 — origens
+  if (!character.name.trim()) p[1].push("Nome do personagem");
+  if (character.class1 === "none") p[1].push("Classe");
+  if (character.species === "none") p[1].push("Espécie");
+  if (character.background === "none") p[1].push("Antecedente");
+
+  // Passo 2 — atributos
+  const scores = character.baseScores || {};
+  if (DND5E_DATA.abilities.every(a => (scores[a.id] || 8) === 8)) p[2].push("Distribuir os valores de atributo");
+  if (character.background !== "none" && character.backgroundBonuses.primary === "none") {
+    p[2].push("Bônus de atributo do antecedente");
+  }
+
+  // Passo 3 — subclasse, perícias, escolhas de classe, invocações e talentos
+  [1, 2].forEach(slot => {
+    const classId = slot === 2 ? character.class2 : character.class1;
+    const nivel = (slot === 2 ? character.level2 : character.level1) || 0;
+    if (classId === "none" || nivel < 3) return;
+    const classObj = DND5E_DATA.classes.find(c => c.id === classId);
+    if (classObj && (classObj.subclasses || []).length && !subclasseEscolhida(slot)) {
+      p[3].push(`Subclasse de ${classLabelOf(classId)}`);
+    }
+  });
+  const per = pericasDaClasseEscolhidas();
+  if (per.total && per.escolhidas < per.total) p[3].push(`Perícias da classe (${per.escolhidas} de ${per.total})`);
+  getActiveClassChoices().forEach(ch => {
+    const n = classChoiceCount(ch);
+    const feitas = ch.kind === "option" ? (classChoiceValue(ch.id) ? 1 : 0) : classChoiceList(ch).length;
+    const pedidas = ch.kind === "option" ? 1 : n;
+    if (feitas < pedidas) p[3].push(pedidas > 1 ? `${ch.label} (${feitas} de ${pedidas})` : ch.label);
+  });
+  if (warlockLevel()) {
+    const max = maxInvocations();
+    const usadas = invocationEntries().length;
+    if (usadas < max) p[3].push(`Invocações Místicas (${usadas} de ${max})`);
+    getActiveInvocations().forEach(({ inv, entrada }) => {
+      if (inv.choice && inv.choice !== "tomo" && !entrada.escolha) p[3].push(`Escolha de ${inv.name.split(" (")[0]}`);
+    });
+  }
+  const vagas = getFeatSlotInfo().total;
+  const usadasEmTalento = vagasDeTalentoUsadas();
+  if (usadasEmTalento < vagas) p[3].push(`Talentos (${usadasEmTalento} de ${vagas})`);
+
+  // Passo 4 — magias
+  const cap = getSpellCapacityInfo(_ultimosMods || {});
+  if (cap.currentCantripsCount < cap.maxCantrips) p[4].push(`Truques (${cap.currentCantripsCount} de ${cap.maxCantrips})`);
+  if (cap.currentPreparedCount < cap.maxPrepared) p[4].push(`Magias preparadas (${cap.currentPreparedCount} de ${cap.maxPrepared})`);
+
+  return p;
+}
+
+/** Desenha a bolinha de pendência em cada passo da trilha */
+function renderWizardPendencias() {
+  const pend = pendenciasDoWizard();
+  document.querySelectorAll(".step-tab-btn").forEach(btn => {
+    const passo = parseInt(btn.getAttribute("data-step"), 10);
+    const itens = pend[passo] || [];
+    let marca = btn.querySelector(".step-pend");
+    if (!marca) {
+      marca = document.createElement("span");
+      marca.className = "step-pend";
+      btn.appendChild(marca);
+    }
+    marca.hidden = itens.length === 0;
+    marca.textContent = itens.length ? String(itens.length) : "";
+    if (itens.length) {
+      marca.title = `Falta escolher: ${itens.join(" · ")}`;
+      btn.setAttribute("aria-description", `${itens.length} escolha(s) em aberto: ${itens.join("; ")}`);
+    } else {
+      btn.removeAttribute("aria-description");
+    }
+  });
+}
+
+/* --------------------------------- AVISO DE PENDÊNCIAS AO TROCAR DE PASSO */
+
+/*
+ * Assinatura das pendências que o jogador já disse para ignorar, por passo.
+ * Sem isso, quem escolheu "Continuar assim" levaria o mesmo aviso toda vez que
+ * passasse pelo passo. Se a lista mudar (subiu de nível e apareceu escolha
+ * nova), a assinatura muda e o aviso volta a aparecer.
+ */
+const _pendenciasAceitas = {};
+
+/* O que fazer se o jogador escolher "Continuar assim", e para onde devolver o
+   foco quando a caixa fechar. */
+let _pendenciaAoContinuar = null;
+let _pendenciaFoco = null;
+
+/* Só o texto do botão do passo: o número da trilha e a bolinha de pendência
+   são elementos à parte e não entram no nome. */
+function nomeDoPassoDoWizard(passo) {
+  const btn = document.querySelector(`.step-tab-btn[data-step="${passo}"]`);
+  if (!btn || !btn.childNodes) return `Passo ${passo}`;
+  const texto = Array.from(btn.childNodes)
+    .filter(n => n.nodeType === 3)
+    .map(n => n.textContent)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return texto || `Passo ${passo}`;
+}
+
+function passoAtualDoWizard() {
+  const ativo = document.querySelector(".step-tab-btn.active");
+  return ativo ? parseInt(ativo.getAttribute("data-step"), 10) : 1;
+}
+
+/** Fecha a caixa e devolve o foco para quem a abriu */
+function fecharModalPendencias() {
+  const modal = document.getElementById("pendingStepModal");
+  if (modal) modal.classList.remove("active");
+  if (_pendenciaFoco && document.contains(_pendenciaFoco)) _pendenciaFoco.focus();
+  _pendenciaFoco = null;
+  _pendenciaAoContinuar = null;
+}
+
+/**
+ * Mostra o que falta no passo antes de deixar avançar.
+ * "Ajustar agora" fica no passo; "Continuar assim" segue e não pergunta de
+ * novo enquanto a lista for a mesma.
+ */
+function abrirModalPendencias(passo, itens, aoContinuar) {
+  const modal = document.getElementById("pendingStepModal");
+  const lista = document.getElementById("pendingStepList");
+  const desc = document.getElementById("pendingStepDesc");
+  if (!modal || !lista || !desc) { aoContinuar(); return; }
+
+  const nomeDoPasso = nomeDoPassoDoWizard(passo);
+  desc.innerHTML = `No passo <strong>${nomeDoPasso}</strong> ${itens.length === 1 ? "falta uma escolha" : `faltam ${itens.length} escolhas`}:`;
+  lista.innerHTML = itens.map(i => `<li>${i}</li>`).join("");
+
+  _pendenciaAoContinuar = aoContinuar;
+  _pendenciaFoco = document.activeElement;
+  modal.classList.add("active");
+  const btnAjustar = document.getElementById("btnPendingAdjust");
+  if (btnAjustar) btnAjustar.focus();
+}
+
+/**
+ * Troca de passo passando pelo aviso de pendências.
+ * Só o botão "Próximo" passa por aqui: clicar direto numa aba da trilha é um
+ * pedido explícito de ir para lá, e atravessar um aviso nesse caso só atrapalha.
+ */
+function avancarPassoComAviso(destino) {
+  const atual = passoAtualDoWizard();
+  const itens = (pendenciasDoWizard()[atual] || []);
+  const assinatura = itens.join("|");
+  if (!itens.length || _pendenciasAceitas[atual] === assinatura) {
+    setWizardStep(destino);
+    return;
+  }
+  abrirModalPendencias(atual, itens, () => {
+    _pendenciasAceitas[atual] = assinatura;
+    setWizardStep(destino);
+  });
+}
+
 /* ------------------------------------------------- BLOCOS QUE ABREM E FECHAM */
 
 /*
@@ -3928,7 +4121,26 @@ function getActiveFeatIds() {
  * aqui, fora do `character`: é estado de tela e não vai para a ficha salva.
  * Sem isso, cada redesenho (que é frequente) fecharia tudo de novo.
  */
-const _blocosAbertos = {};
+const BLOCOS_CHAVE = "dnd55_blocos_abertos";
+
+const _blocosAbertos = (() => {
+  try {
+    const bruto = localStorage.getItem(BLOCOS_CHAVE);
+    const dados = bruto ? JSON.parse(bruto) : null;
+    return dados && typeof dados === "object" ? dados : {};
+  } catch (err) {
+    return {};   // navegador sem localStorage ou dado corrompido: começa limpo
+  }
+})();
+
+/* Gravar a cada clique seria escrita demais; um tempinho depois basta. */
+let _blocosTimer = null;
+function guardarBlocos() {
+  clearTimeout(_blocosTimer);
+  _blocosTimer = setTimeout(() => {
+    try { localStorage.setItem(BLOCOS_CHAVE, JSON.stringify(_blocosAbertos)); } catch (err) { /* sem espaço ou modo anônimo */ }
+  }, 400);
+}
 
 function blocoEstaAberto(id, padrao) {
   return _blocosAbertos[id] === undefined ? !!padrao : _blocosAbertos[id];
@@ -3955,6 +4167,7 @@ document.addEventListener("toggle", (e) => {
   const alvo = e.target;
   if (alvo && alvo.tagName === "DETAILS" && alvo.hasAttribute("data-bloco")) {
     _blocosAbertos[alvo.getAttribute("data-bloco")] = alvo.open;
+    guardarBlocos();
   }
 }, true);
 
@@ -5454,6 +5667,11 @@ function listasDaClassePersonalizada() {
   return listas;
 }
 
+/* Quantas magias de cada círculo entram de uma vez, e quantas já foram
+   mostradas em cada um. Estado de tela: zera quando o filtro muda. */
+const MAGIAS_POR_LOTE = 25;
+const _magiasMostradas = {};
+
 function renderSpellsCatalog() {
   syncCustomSpellsIntoCatalog();
   const container = document.getElementById("spellsCatalogList");
@@ -5513,6 +5731,7 @@ function renderSpellsCatalog() {
     if (!btn) return;
     const abrir = btn.getAttribute("data-grupos") === "abrir";
     [...porCirculo.keys()].forEach(n => { _blocosAbertos[`magias-circulo-${n}`] = abrir; });
+    guardarBlocos();
     renderSpellsCatalog();
   });
   container.appendChild(barra);
@@ -5566,9 +5785,19 @@ function renderSpellsCatalog() {
   const filtrando = !!searchQuery || filterLevel !== "all" || filterClass !== "all"
     || filterSchool !== "all" || soSelecionadas;
   const corpo = [...porCirculo.keys()].sort((a, b) => a - b).map(nivel => {
-    const magias = porCirculo.get(nivel);
-    const naFicha = magias.filter(sp => idsNaFicha.has(sp.id)).length;
+    const todas = porCirculo.get(nivel);
+    const naFicha = todas.filter(sp => idsNaFicha.has(sp.id)).length;
     const idBloco = `magias-circulo-${nivel}`;
+    // Lote a lote: um círculo com 80 magias vira 80 linhas de tabela, e no
+    // celular isso pesa para rolar. Mostra as primeiras e cresce sob demanda.
+    const mostrados = _magiasMostradas[nivel] || MAGIAS_POR_LOTE;
+    // O que já está na ficha entra sempre, mesmo além do lote: essas são as
+    // magias que o jogador volta aqui para conferir ou tirar.
+    const magias = [
+      ...todas.slice(0, mostrados),
+      ...todas.slice(mostrados).filter(sp => idsNaFicha.has(sp.id))
+    ];
+    const faltam = todas.length - magias.length;
     // Fechado por padrão: o catálogo inteiro são 400 linhas. Abre sozinho o
     // círculo que já tem magia na ficha — ali há o que conferir.
     const aberto = filtrando || blocoEstaAberto(idBloco, naFicha > 0);
@@ -5578,10 +5807,18 @@ function renderSpellsCatalog() {
             role="button" tabindex="0" aria-expanded="${aberto}">
           <i class="fa-solid fa-chevron-right bloco-seta"></i>
           <span class="spell-group-title">${formatSpellLevel(nivel)}</span>
-          <span class="spell-group-count">${magias.length} magia${magias.length > 1 ? "s" : ""}${naFicha ? ` · ${naFicha} na ficha` : ""}</span>
+          <span class="spell-group-count">${todas.length} magia${todas.length > 1 ? "s" : ""}${naFicha ? ` · ${naFicha} na ficha` : ""}</span>
         </th>
       </tr>
-      ${aberto ? magias.map(linhaDaMagia).join("") : ""}`;
+      ${aberto ? magias.map(linhaDaMagia).join("") : ""}
+      ${aberto && faltam ? `
+        <tr class="spell-mais-row">
+          <td colspan="5">
+            <button type="button" class="btn btn-secondary btn-sm" data-mais="${nivel}">
+              <i class="fa-solid fa-plus"></i> Mostrar mais ${Math.min(MAGIAS_POR_LOTE, faltam)} (faltam ${faltam})
+            </button>
+          </td>
+        </tr>` : ""}`;
   }).join("");
 
   table.innerHTML = `
@@ -5633,10 +5870,19 @@ function renderSpellsCatalog() {
       return;
     }
 
+    const mais = e.target.closest("[data-mais]");
+    if (mais) {
+      const nivel = mais.getAttribute("data-mais");
+      _magiasMostradas[nivel] = (_magiasMostradas[nivel] || MAGIAS_POR_LOTE) + MAGIAS_POR_LOTE;
+      renderSpellsCatalog();
+      return;
+    }
+
     const grupo = e.target.closest("[data-grupo]");
     if (grupo) {
       const id = grupo.getAttribute("data-grupo");
       _blocosAbertos[id] = !blocoEstaAberto(id, grupo.classList.contains("is-aberto"));
+      guardarBlocos();
       renderSpellsCatalog();
       return;
     }
@@ -5946,6 +6192,7 @@ function recalculateCharacter() {
 
   renderStyleEffectsPanel({ ac, armorStyleMods });
   renderDeathSaves();
+  renderWizardPendencias();
 
   saveToLocalStorage();
 }
@@ -7390,9 +7637,26 @@ function bindEvents() {
   });
 
   document.getElementById("btnNextStep").addEventListener("click", () => {
-    const currentStep = parseInt(document.querySelector(".step-tab-btn.active").getAttribute("data-step"));
-    if (currentStep < 6) setWizardStep(currentStep + 1);
+    const currentStep = passoAtualDoWizard();
+    if (currentStep < 6) avancarPassoComAviso(currentStep + 1);
   });
+
+  // Caixa de pendências: ajustar (fica no passo) ou continuar assim
+  const modalPend = document.getElementById("pendingStepModal");
+  if (modalPend) {
+    document.getElementById("btnPendingContinue").addEventListener("click", () => {
+      const seguir = _pendenciaAoContinuar;
+      fecharModalPendencias();
+      if (seguir) seguir();
+    });
+    document.getElementById("btnPendingAdjust").addEventListener("click", fecharModalPendencias);
+    document.getElementById("closePendingStepModal").addEventListener("click", fecharModalPendencias);
+    // Clique no fundo escuro e Esc equivalem a "Ajustar": na dúvida, fica.
+    modalPend.addEventListener("click", (e) => { if (e.target === modalPend) fecharModalPendencias(); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modalPend.classList.contains("active")) fecharModalPendencias();
+    });
+  }
 
   // As duas páginas ficam abertas, uma embaixo da outra. Os botões deixaram de
   // trocar de página e passaram a ligar e desligar cada uma — dá para ver as
@@ -8223,6 +8487,19 @@ function bindEvents() {
  * curto que o anterior), como se tivesse carregado de baixo para cima. A
  * rolagem é suave, menos para quem pediu menos animação no sistema.
  */
+/**
+ * Mede a trilha de passos e publica a altura em `--wizard-nav-h`.
+ *
+ * A trilha é fixa no topo; quem gruda embaixo dela (o cabeçalho de cada
+ * círculo do catálogo) precisa saber dessa altura para não ficar escondido.
+ * Ela muda com a largura da tela (no desktop os passos quebram em duas linhas).
+ */
+function ajustarAlturaDaNav() {
+  const nav = document.getElementById("wizardNav");
+  if (!nav) return;
+  document.documentElement.style.setProperty("--wizard-nav-h", `${Math.round(nav.getBoundingClientRect().height)}px`);
+}
+
 function scrollToWizardTop() {
   const nav = document.getElementById("wizardNav");
   const painel = document.getElementById("creatorPanel");

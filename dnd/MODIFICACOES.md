@@ -1624,6 +1624,38 @@ colunas; os resumos foram escritos à mão.
 
 ---
 
+## 9c. Rodada 10 — navegação e tamanho das páginas do assistente
+
+**Data:** 16/09/2026.
+
+- **Trocar de passo volta ao topo.** `setWizardStep()` chama
+  `scrollToWizardTop()` (rolagem suave, instantânea com "reduzir movimento") e
+  põe o foco no título do passo. Antes a página ficava onde estava e o passo
+  novo aparecia no meio.
+- **A trilha de passos é fixa** (`position: sticky`) e mostra uma bolinha
+  laranja com quantas escolhas faltam naquele passo (`pendenciasDoWizard()`,
+  redesenhada ao fim de `recalculateCharacter()`). `ajustarAlturaDaNav()`
+  publica a altura em `--wizard-nav-h`, que o cabeçalho de círculo do catálogo
+  usa para grudar logo abaixo dela.
+- **Listas longas viram blocos retráteis** (`blocoHtml()`, um `<details>` com
+  seta, título e contagem): talentos por tipo, invocações, manobras e
+  metamagia, características de subclasse e perícias da classe. O estado mora
+  em `_blocosAbertos` e é guardado em `localStorage`
+  (`dnd55_blocos_abertos`), então sobrevive aos redesenhos e à sessão.
+- **Catálogo de magias:** cada círculo abre e fecha (o cabeçalho é o botão,
+  com Enter e Espaço), começa fechado — menos o círculo que já tem magia na
+  ficha —, tem "abrir/fechar todos" e entra em lotes de 25 com "Mostrar mais".
+  O que já está na ficha aparece mesmo fora do lote.
+- **Aviso antes de avançar:** o botão "Próximo" passa por
+  `avancarPassoComAviso()`. Se o passo tem escolha em aberto, abre a caixa
+  `#pendingStepModal` com a lista e dois caminhos: "Ajustar agora" (fica no
+  passo) ou "Continuar assim" (segue e não pergunta de novo enquanto a lista
+  for a mesma, guardada em `_pendenciasAceitas`). Esc e clique no fundo valem
+  como "Ajustar". Clicar direto numa aba da trilha não passa pelo aviso: ali o
+  jogador já disse aonde quer ir.
+
+---
+
 ## 10. Como o código da ficha funciona
 
 Toda a ficha vive no bloco marcado em `app.js` como
