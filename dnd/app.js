@@ -217,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
   syncWizardControls();
   populateDropdowns();
   recalculateCharacter();
+  abrirFichaDoMestre();
   fitSheetToViewport();
   requestAnimationFrame(fitSheetToViewport);
   ajustarAlturaDaNav();
@@ -9133,6 +9134,10 @@ function importCharacterJson(e) {
  * Veja getCachedSession().
  */
 function saveToLocalStorage(forceSlot = false) {
+  // Ficha aberta pelo painel do Mestre: é consulta, não pode tomar o lugar da
+  // sessão nem da lista de salvos de quem usa o criador neste navegador.
+  // Salvar de propósito (botão) continua valendo.
+  if (_fichaDoMestre && !forceSlot) return;
   try {
     localStorage.setItem("dnd55_active_character", JSON.stringify(character));
     // A partir da primeira edição o cache é o trabalho em andamento, não uma
@@ -9175,6 +9180,49 @@ function migrateLegacyCharacter(parsed) {
   });
 
   character.schemaVersion = 2;
+}
+
+/**
+ * O painel do Mestre (rpg/) abre uma ficha aqui com ?ficha=<token>: ele deixa
+ * o JSON em localStorage sob "dnd55_mestre_<token>" e abre esta página em outra
+ * aba. A entrada é consumida na hora (senão acumularia uma por clique) e fica
+ * no sessionStorage da aba, para recarregar a página não perder a ficha.
+ */
+let _fichaDoMestre = false;
+
+function abrirFichaDoMestre() {
+  let token;
+  try { token = new URLSearchParams(location.search).get("ficha"); } catch (err) { return; }
+  if (!token || !/^[\w-]+$/.test(token)) return;
+  const chave = "dnd55_mestre_" + token;
+  let bruto = null;
+  try {
+    bruto = localStorage.getItem(chave);
+    if (bruto) {
+      localStorage.removeItem(chave);
+      sessionStorage.setItem(chave, bruto);
+    } else {
+      bruto = sessionStorage.getItem(chave);
+    }
+  } catch (err) { /* armazenamento bloqueado */ }
+
+  if (!bruto) {
+    showToast("A ficha enviada pelo painel do Mestre não foi encontrada. Clique na lupa de novo.");
+    return;
+  }
+  try {
+    const dados = JSON.parse(bruto);
+    if (!dados || !dados.class1) throw new Error("não é uma ficha de D&D 5.5");
+    _fichaDoMestre = true;
+    applyLoadedCharacter(dados);
+    const btnSheet = document.getElementById("btnModeSheet");
+    if (btnSheet) btnSheet.click();
+    hideSessionRestoreButton();
+    document.title = `${character.name || "Ficha"} — D&D 5.5`;
+    showToast(`🔍 Ficha de ${character.name || "sem nome"} aberta pelo painel do Mestre.`);
+  } catch (err) {
+    showToast("Não foi possível abrir a ficha: " + err.message);
+  }
 }
 
 /**

@@ -424,7 +424,9 @@ function resumirFicha(dados) {
     iniciativa: r.iniciativa ?? null,
     percepcaoPassiva: r.percepcaoPassiva ?? null,
     percepcao: r.percepcao ?? null,
-    carregadaEm: new Date().toISOString()
+    carregadaEm: new Date().toISOString(),
+    // JSON inteiro, para a lupa abrir a ficha completa no Criador
+    json: dados
   };
 }
 
@@ -470,7 +472,7 @@ function renderFichas() {
   state.fichas.forEach((f, i) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${txt(i, 'nome', 'ficha-forte')}${txt(i, 'jogador', 'ficha-sub')}
+      <td><div class="ficha-nome">${txt(i, 'nome', 'ficha-forte')}<button class="btn-lupa" onclick="fichaAbrir(${i})" title="${f.json ? 'Abrir a ficha completa' : 'Carregue o JSON de novo para abrir a ficha completa'}" ${f.json ? '' : 'disabled'}>🔍</button></div>${txt(i, 'jogador', 'ficha-sub')}
         ${f.temResumo ? '' : '<span class="ficha-aviso">Ficha antiga: exporte de novo no Criador para trazer PV, CA, percepção e iniciativa.</span>'}</td>
       <td>${txt(i, 'classe')}${txt(i, 'subclasse', 'ficha-sub')}</td>
       <td>${txt(i, 'especie')}</td>
@@ -490,6 +492,25 @@ function renderFichas() {
       </div></td>`;
     tb.appendChild(tr);
   });
+}
+
+/**
+ * Abre a ficha completa no Criador (../dnd/) em outra aba. O JSON vai pelo
+ * localStorage (mesma origem) sob um token único; o Criador consome a chave.
+ * PV e nome seguem o que o mestre editou aqui.
+ */
+function fichaAbrir(i) {
+  const f = state.fichas[i];
+  if (!f || !f.json) return;
+  const dados = { ...f.json, name: f.nome, playerName: f.jogador, currentHp: f.pvAtual, tempHp: f.pvTemp || 0 };
+  const token = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  try {
+    localStorage.setItem('dnd55_mestre_' + token, JSON.stringify(dados));
+  } catch(e) {
+    alert('Não foi possível abrir a ficha: sem espaço no navegador.');
+    return;
+  }
+  window.open('../dnd/?ficha=' + token, '_blank');
 }
 
 function fichaEditar(i, k, v) {

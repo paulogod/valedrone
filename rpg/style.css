@@ -248,3 +248,10 @@ select.table-input {
 #fichasTable .table-input.ficha-sub { color: #94a3b8; font-size: .75rem; }
 .ficha-pv { display: flex; align-items: center; gap: .25rem; white-space: nowrap; }
 #fichasTable .hp-display .table-input { color: inherit; }
+.ficha-nome { display: flex; align-items: center; gap: .25rem; }
+.btn-lupa {
+  background: rgba(139,92,246,.15); border: 1px solid rgba(139,92,246,.3); border-radius: 6px;
+  cursor: pointer; font-size: .9rem; padding: .2rem .4rem; line-height: 1; flex-shrink: 0;
+}
+.btn-lupa:hover:not(:disabled) { background: rgba(139,92,246,.35); }
+.btn-lupa:disabled { opacity: .35; cursor: not-allowed; }
