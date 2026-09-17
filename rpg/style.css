@@ -241,3 +241,10 @@ select.table-input {
 .ficha-sub { display: block; color: #94a3b8; font-size: .75rem; font-weight: 400; }
 .ficha-num { font-weight: 700; font-size: 1.05rem; text-align: center; }
 .ficha-aviso { color: #fbbf24; font-size: .75rem; }
+.fichas-ajuda + .turn-bar { margin-bottom: 1rem; }
+#fichasTable .table-input { min-width: 7rem; }
+#fichasTable .table-input.ficha-in { min-width: 0; width: 4.2rem; text-align: center; font-weight: 700; }
+#fichasTable .table-input.ficha-forte { font-weight: 700; }
+#fichasTable .table-input.ficha-sub { color: #94a3b8; font-size: .75rem; }
+.ficha-pv { display: flex; align-items: center; gap: .25rem; white-space: nowrap; }
+#fichasTable .hp-display .table-input { color: inherit; }

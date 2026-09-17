@@ -53,12 +53,17 @@ document.getElementById('entityForm').addEventListener('submit', e => {
   e.preventDefault();
   const name = document.getElementById('entityName').value.trim();
   if (!name) return;
+  const maxHp = +document.getElementById('entityMaxHp').value;
+  const ficha = state.fichaNoFormulario !== null && state.fichaNoFormulario !== undefined ? state.fichas[state.fichaNoFormulario] : null;
+  const hpFicha = ficha && ficha.pvAtual !== null && ficha.pvAtual !== undefined ? Math.min(ficha.pvAtual, maxHp) : maxHp;
+  state.fichaNoFormulario = null;
+  document.getElementById('entityFicha').value = '';
   state.entities.push({
     id: Date.now(),
     name,
     type: document.getElementById('entityType').value,
-    maxHp: +document.getElementById('entityMaxHp').value,
-    hp: +document.getElementById('entityMaxHp').value,
+    maxHp,
+    hp: hpFicha,
     initiative: +document.getElementById('entityInitiative').value,
     armor: +document.getElementById('entityArmor').value,
     conditions: document.getElementById('entityConditions').value.split(',').map(s=>s.trim()).filter(Boolean),
@@ -453,37 +458,104 @@ const sinal = n => n === null || n === undefined ? '—' : (n >= 0 ? `+${n}` : `
 const valor = n => n === null || n === undefined ? '—' : n;
 
 function renderFichas() {
+  renderFichaSelect();
   const tb = document.getElementById('fichasTableBody');
   if (!state.fichas.length) {
     tb.innerHTML = '<tr><td colspan="9" class="fichas-ajuda">Nenhuma ficha carregada.</td></tr>';
     return;
   }
   tb.innerHTML = '';
+  const txt = (i, k, extra = '') => `<input type="text" class="table-input ${extra}" value="${esc(state.fichas[i][k] ?? '')}" onchange="fichaEditar(${i}, '${k}', this.value)">`;
+  const num = (i, k, extra = '') => `<input type="number" class="table-input ficha-in ${extra}" value="${state.fichas[i][k] ?? ''}" onchange="fichaEditar(${i}, '${k}', this.value === '' ? null : +this.value)">`;
   state.fichas.forEach((f, i) => {
     const tr = document.createElement('tr');
-    const pv = f.pvMax === null
-      ? '—'
-      : `<span class="hp-display ${hpClass(f.pvAtual, f.pvMax)}">${f.pvAtual}/${f.pvMax}</span>${f.pvTemp ? ` <span class="ficha-sub">+${f.pvTemp} temp.</span>` : ''}`;
     tr.innerHTML = `
-      <td><strong>${esc(f.nome || '(sem nome)')}</strong>${f.jogador ? `<span class="ficha-sub">${esc(f.jogador)}</span>` : ''}
-        ${f.temResumo ? '' : '<span class="ficha-aviso">Ficha antiga: exporte de novo no Criador para ver PV, CA, percepção e iniciativa.</span>'}</td>
-      <td>${esc(f.classe)}${f.subclasse ? `<span class="ficha-sub">${esc(f.subclasse)}</span>` : ''}</td>
-      <td>${esc(f.especie)}</td>
-      <td class="ficha-num">${esc(f.nivelTexto)}</td>
-      <td class="ficha-num">${pv}</td>
-      <td class="ficha-num">${valor(f.ca)}</td>
-      <td class="ficha-num">${valor(f.percepcaoPassiva)}<span class="ficha-sub">passiva${f.percepcao !== null ? ` (${sinal(f.percepcao)})` : ''}</span></td>
-      <td class="ficha-num">${sinal(f.iniciativa)}</td>
+      <td>${txt(i, 'nome', 'ficha-forte')}${txt(i, 'jogador', 'ficha-sub')}
+        ${f.temResumo ? '' : '<span class="ficha-aviso">Ficha antiga: exporte de novo no Criador para trazer PV, CA, percepção e iniciativa.</span>'}</td>
+      <td>${txt(i, 'classe')}${txt(i, 'subclasse', 'ficha-sub')}</td>
+      <td>${txt(i, 'especie')}</td>
+      <td>${txt(i, 'nivelTexto', 'ficha-in')}</td>
+      <td class="hp-display ${hpClass(f.pvAtual ?? 0, f.pvMax ?? 0)}"><div class="ficha-pv">${num(i, 'pvAtual')} / ${num(i, 'pvMax')}</div>
+        <div class="ficha-pv"><span class="ficha-sub">temp.</span>${num(i, 'pvTemp')}</div></td>
+      <td>${num(i, 'ca')}</td>
+      <td>${num(i, 'percepcaoPassiva')}<span class="ficha-sub">passiva</span></td>
+      <td>${num(i, 'iniciativa')}</td>
       <td><div class="action-cell">
-        <button class="btn btn-repair" onclick="fichaParaCombate(${i})">⚔️ Personagens</button>
+        <input type="number" min="0" max="9999" value="0" id="fichaDmg${i}">
+        <button class="btn btn-dmg" onclick="fichaDano(${i})">Dano</button>
+        <input type="number" min="0" max="9999" value="0" id="fichaCura${i}">
+        <button class="btn btn-heal" onclick="fichaCura(${i})">Curar</button>
+        <button class="btn btn-repair" onclick="fichaNoFormulario(${i})">➕ Personagens</button>
         <button class="btn btn-danger" onclick="fichaRemover(${i})">Remover</button>
       </div></td>`;
     tb.appendChild(tr);
   });
 }
 
-/** Leva a ficha para a aba Personagens (PV, CA e iniciativa). Não duplica. */
-function fichaParaCombate(i, silencioso) {
+function fichaEditar(i, k, v) {
+  state.fichas[i][k] = v;
+  if (k === 'percepcaoPassiva') state.fichas[i].percepcao = v === null ? null : v - 10;
+  salvarFichas(); renderFichas();
+}
+
+/** Dano gasta os temporários primeiro, como no Criador */
+function fichaDano(i) {
+  const f = state.fichas[i];
+  let v = +document.getElementById('fichaDmg' + i).value || 0;
+  const doTemp = Math.min(f.pvTemp || 0, v);
+  f.pvTemp = (f.pvTemp || 0) - doTemp;
+  f.pvAtual = Math.max(0, (f.pvAtual ?? f.pvMax ?? 0) - (v - doTemp));
+  salvarFichas(); renderFichas();
+}
+function fichaCura(i) {
+  const f = state.fichas[i];
+  const v = +document.getElementById('fichaCura' + i).value || 0;
+  const atual = (f.pvAtual ?? 0) + v;
+  f.pvAtual = f.pvMax === null || f.pvMax === undefined ? atual : Math.min(f.pvMax, atual);
+  salvarFichas(); renderFichas();
+}
+
+/** Seletor de ficha no formulário da aba Personagens */
+function renderFichaSelect() {
+  const sel = document.getElementById('entityFicha');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— preencher à mão —</option>' + state.fichas.map((f, i) =>
+    `<option value="${i}">${esc(f.nome || '(sem nome)')}${f.classe ? ' — ' + esc(f.classe) + ' ' + esc(f.nivelTexto || '') : ''}</option>`).join('');
+}
+
+/** Preenche o formulário "Adicionar Personagem" com os dados da ficha */
+function preencherFormularioComFicha(i) {
+  const f = state.fichas[i];
+  if (!f) return;
+  const set = (id, v) => { document.getElementById(id).value = v; };
+  set('entityName', f.nome || '');
+  set('entityType', 'PC');
+  set('entityMaxHp', f.pvMax ?? f.pvAtual ?? 10);
+  set('entityInitiative', f.iniciativa ?? 0);
+  set('entityArmor', f.ca ?? 0);
+  set('entityConditions', '');
+  set('entityAbilities', [
+    [f.classe, f.nivelTexto].filter(Boolean).join(' '), f.especie,
+    f.percepcaoPassiva !== null && f.percepcaoPassiva !== undefined ? `Percepção passiva ${f.percepcaoPassiva}` : ''
+  ].filter(Boolean).join(', '));
+  state.fichaNoFormulario = i;
+}
+
+function fichaNoFormulario(i) {
+  renderFichaSelect();
+  document.getElementById('entityFicha').value = String(i);
+  preencherFormularioComFicha(i);
+  document.getElementById('tab-personagens').click();
+  document.getElementById('entityForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+document.getElementById('entityFicha').addEventListener('change', e => {
+  if (e.target.value === '') { state.fichaNoFormulario = null; return; }
+  preencherFormularioComFicha(+e.target.value);
+});
+
+/** Envio direto, usado por "Enviar todas". Não duplica. */
+function fichaParaCombate(i) {
   const f = state.fichas[i];
   const ent = {
     id: f.id, name: f.nome || '(sem nome)', type: 'PC',
@@ -494,9 +566,6 @@ function fichaParaCombate(i, silencioso) {
   const j = state.entities.findIndex(e => e.id === f.id);
   if (j >= 0) state.entities[j] = { ...state.entities[j], name: ent.name, maxHp: ent.maxHp, hp: ent.hp, initiative: ent.initiative, armor: ent.armor };
   else state.entities.push(ent);
-  state.entities.sort((a,b) => b.initiative - a.initiative);
-  renderEntities(); saveData();
-  if (!silencioso) alert(`"${ent.name}" enviado para Personagens.`);
 }
 
 function fichaRemover(i) {
@@ -507,7 +576,9 @@ function fichaRemover(i) {
 
 document.getElementById('fichasCombateBtn').addEventListener('click', () => {
   if (!state.fichas.length) return;
-  state.fichas.forEach((_, i) => fichaParaCombate(i, true));
+  state.fichas.forEach((_, i) => fichaParaCombate(i));
+  state.entities.sort((a,b) => b.initiative - a.initiative);
+  renderEntities(); saveData();
   alert(`${state.fichas.length} ficha(s) enviada(s) para Personagens.`);
 });
 
