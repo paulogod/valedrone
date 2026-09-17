@@ -18,6 +18,7 @@
 
     <nav class="tab-nav" id="tabNav">
       <button class="tab-btn active" data-tab="personagens" id="tab-personagens">🎭 Personagens</button>
+      <button class="tab-btn" data-tab="fichas" id="tab-fichas">🐉 Fichas D&amp;D</button>
       <button class="tab-btn" data-tab="embarcacao" id="tab-embarcacao">⛵ Embarcação</button>
       <button class="tab-btn" data-tab="tripulacao" id="tab-tripulacao">👥 Tripulação</button>
       <button class="tab-btn" data-tab="combate" id="tab-combate">⚔️ Combate Naval</button>
@@ -53,6 +54,27 @@
               <th>Nome</th><th>Tipo</th><th>PV</th><th>Iniciativa</th><th>Armadura</th><th>Condições</th><th>Habilidades</th><th>Ações</th>
             </tr></thead>
             <tbody id="entityTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FICHAS D&D TAB -->
+    <section class="tab-content" id="content-fichas">
+      <div class="card">
+        <h2 class="card-title">Fichas dos Jogadores — D&amp;D 5.5</h2>
+        <p class="fichas-ajuda">Carregue os JSON exportados pelo <a href="../dnd/">Criador de Ficha</a>. Dá para escolher vários de uma vez; carregar de novo a ficha do mesmo personagem atualiza a linha dele.</p>
+        <div class="turn-bar">
+          <label class="btn btn-primary file-label">📂 Carregar Fichas (JSON)<input type="file" accept=".json,application/json" id="fichasInput" multiple hidden></label>
+          <button class="btn btn-secondary" id="fichasCombateBtn">⚔️ Enviar todas para Personagens</button>
+          <button class="btn btn-danger" id="fichasLimparBtn">Limpar</button>
+        </div>
+        <div class="table-wrap">
+          <table id="fichasTable">
+            <thead><tr>
+              <th>Personagem</th><th>Classe</th><th>Raça</th><th>Nível</th><th>PV</th><th>CA</th><th>Percepção</th><th>Iniciativa</th><th>Ações</th>
+            </tr></thead>
+            <tbody id="fichasTableBody"></tbody>
           </table>
         </div>
       </div>

@@ -6332,7 +6332,44 @@ function recalculateCharacter() {
   renderDeathSaves();
   renderWizardPendencias();
 
+  character.resumo = montarResumoDoMestre({
+    class1Obj, class2Obj, speciesObj, totalLevel, maxHp, ac, init, speed, passivePerception
+  });
+
   saveToLocalStorage();
+}
+
+/**
+ * Resumo do personagem para o painel do Mestre (rpg/). Vai junto no JSON
+ * exportado porque CA, PV máximo, iniciativa e percepção são calculados aqui,
+ * e refazer essas contas lá seria duplicar o app inteiro. Respeita o que o
+ * jogador digitou à mão na ficha: o Mestre vê o mesmo número que o jogador.
+ */
+function montarResumoDoMestre(ctx) {
+  const { class1Obj, class2Obj, speciesObj, totalLevel, maxHp, ac, init, speed, passivePerception } = ctx;
+  const ov = (key, auto) => (hasOv(key) ? sheetOv()[key] : auto);
+  const num = (v) => { const n = parseInt(v, 10); return Number.isFinite(n) ? n : null; };
+  const pvMax = num(ov("hpMax", maxHp));
+  const passiva = num(ov("passivePerception", passivePerception));
+  return {
+    versao: 1,
+    atualizadoEm: new Date().toISOString(),
+    nome: character.name || "",
+    jogador: character.playerName || "",
+    classe: ov("className", class2Obj ? `${class1Obj.name} / ${class2Obj.name}` : class1Obj.name) || "",
+    subclasse: ov("subclassText", getSubclassLabel(class1Obj)) || "",
+    especie: ov("speciesText", getLineageLabel(speciesObj)) || "",
+    nivel: totalLevel,
+    nivelTexto: ov("levelText", class2Obj ? `${character.level1}/${character.level2}` : String(character.level1)),
+    pvMax,
+    pvAtual: character.currentHp !== null && character.currentHp !== undefined ? character.currentHp : pvMax,
+    pvTemp: character.tempHp || 0,
+    ca: num(ov("ac", ac)),
+    iniciativa: num(ov("initiative", init)),
+    percepcaoPassiva: passiva,
+    percepcao: passiva !== null ? passiva - 10 : null,
+    deslocamento: ov("speed", `${speed} m`)
+  };
 }
 
 /**

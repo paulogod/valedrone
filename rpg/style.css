@@ -234,3 +234,10 @@ select.table-input {
   color: #fbbf24;
   text-decoration: underline;
 }
+
+/* ========== FICHAS D&D ========== */
+.fichas-ajuda { color: #94a3b8; font-size: .85rem; margin-bottom: 1rem; }
+.fichas-ajuda a { color: #c084fc; }
+.ficha-sub { display: block; color: #94a3b8; font-size: .75rem; font-weight: 400; }
+.ficha-num { font-weight: 700; font-size: 1.05rem; text-align: center; }
+.ficha-aviso { color: #fbbf24; font-size: .75rem; }

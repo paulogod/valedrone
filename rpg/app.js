@@ -381,6 +381,142 @@ function combatRemove(i) {
   renderCombat(); saveData();
 }
 
+// ==================== FICHAS D&D 5.5 ====================
+// Fichas exportadas pelo criador em ../dnd/. CA, PV máximo, iniciativa e
+// percepção são contas do criador: ele grava o resultado em `resumo`, e aqui
+// só se lê. Ficam no localStorage para o mestre não recarregar a cada sessão.
+const FICHAS_KEY = 'rpg_fichas_dnd';
+
+function carregarFichas() {
+  try { return JSON.parse(localStorage.getItem(FICHAS_KEY)) || []; }
+  catch(e) { return []; }
+}
+function salvarFichas() {
+  try { localStorage.setItem(FICHAS_KEY, JSON.stringify(state.fichas)); }
+  catch(e) { console.error('Fichas não salvas:', e); }
+}
+state.fichas = carregarFichas();
+
+/** Linha do painel a partir do JSON exportado (com ou sem resumo) */
+function resumirFicha(dados) {
+  const r = dados.resumo || {};
+  const nivelBruto = (+dados.level1 || 1) + (dados.class2 && dados.class2 !== 'none' ? (+dados.level2 || 0) : 0);
+  const pvMax = r.pvMax ?? null;
+  return {
+    id: dados.id || ('ficha_' + Date.now() + Math.random()),
+    temResumo: !!dados.resumo,
+    nome: r.nome ?? dados.name ?? '',
+    jogador: r.jogador ?? dados.playerName ?? '',
+    classe: r.classe || dados.class1 || '',
+    subclasse: r.subclasse || '',
+    especie: r.especie || dados.species || '',
+    nivel: r.nivel ?? nivelBruto,
+    nivelTexto: r.nivelTexto || String(r.nivel ?? nivelBruto),
+    pvMax,
+    pvAtual: r.pvAtual ?? dados.currentHp ?? pvMax,
+    pvTemp: r.pvTemp ?? dados.tempHp ?? 0,
+    ca: r.ca ?? null,
+    iniciativa: r.iniciativa ?? null,
+    percepcaoPassiva: r.percepcaoPassiva ?? null,
+    percepcao: r.percepcao ?? null,
+    carregadaEm: new Date().toISOString()
+  };
+}
+
+function lerArquivoTexto(file) {
+  return new Promise((ok, erro) => {
+    const reader = new FileReader();
+    reader.onload = ev => ok(ev.target.result);
+    reader.onerror = () => erro(reader.error);
+    reader.readAsText(file);
+  });
+}
+
+document.getElementById('fichasInput').addEventListener('change', async e => {
+  const files = Array.from(e.target.files || []);
+  const falhas = [];
+  for (const file of files) {
+    try {
+      const dados = JSON.parse(await lerArquivoTexto(file));
+      if (!dados || !dados.class1) throw new Error('não é uma ficha do Criador D&D 5.5');
+      const ficha = resumirFicha(dados);
+      const i = state.fichas.findIndex(f => f.id === ficha.id);
+      if (i >= 0) state.fichas[i] = ficha; else state.fichas.push(ficha);
+    } catch(err) { falhas.push(`${file.name}: ${err.message}`); }
+  }
+  e.target.value = '';
+  salvarFichas(); renderFichas();
+  if (falhas.length) alert('Não foi possível carregar:\n' + falhas.join('\n'));
+});
+
+const sinal = n => n === null || n === undefined ? '—' : (n >= 0 ? `+${n}` : `${n}`);
+const valor = n => n === null || n === undefined ? '—' : n;
+
+function renderFichas() {
+  const tb = document.getElementById('fichasTableBody');
+  if (!state.fichas.length) {
+    tb.innerHTML = '<tr><td colspan="9" class="fichas-ajuda">Nenhuma ficha carregada.</td></tr>';
+    return;
+  }
+  tb.innerHTML = '';
+  state.fichas.forEach((f, i) => {
+    const tr = document.createElement('tr');
+    const pv = f.pvMax === null
+      ? '—'
+      : `<span class="hp-display ${hpClass(f.pvAtual, f.pvMax)}">${f.pvAtual}/${f.pvMax}</span>${f.pvTemp ? ` <span class="ficha-sub">+${f.pvTemp} temp.</span>` : ''}`;
+    tr.innerHTML = `
+      <td><strong>${esc(f.nome || '(sem nome)')}</strong>${f.jogador ? `<span class="ficha-sub">${esc(f.jogador)}</span>` : ''}
+        ${f.temResumo ? '' : '<span class="ficha-aviso">Ficha antiga: exporte de novo no Criador para ver PV, CA, percepção e iniciativa.</span>'}</td>
+      <td>${esc(f.classe)}${f.subclasse ? `<span class="ficha-sub">${esc(f.subclasse)}</span>` : ''}</td>
+      <td>${esc(f.especie)}</td>
+      <td class="ficha-num">${esc(f.nivelTexto)}</td>
+      <td class="ficha-num">${pv}</td>
+      <td class="ficha-num">${valor(f.ca)}</td>
+      <td class="ficha-num">${valor(f.percepcaoPassiva)}<span class="ficha-sub">passiva${f.percepcao !== null ? ` (${sinal(f.percepcao)})` : ''}</span></td>
+      <td class="ficha-num">${sinal(f.iniciativa)}</td>
+      <td><div class="action-cell">
+        <button class="btn btn-repair" onclick="fichaParaCombate(${i})">⚔️ Personagens</button>
+        <button class="btn btn-danger" onclick="fichaRemover(${i})">Remover</button>
+      </div></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+/** Leva a ficha para a aba Personagens (PV, CA e iniciativa). Não duplica. */
+function fichaParaCombate(i, silencioso) {
+  const f = state.fichas[i];
+  const ent = {
+    id: f.id, name: f.nome || '(sem nome)', type: 'PC',
+    maxHp: f.pvMax ?? 0, hp: f.pvAtual ?? f.pvMax ?? 0,
+    initiative: f.iniciativa ?? 0, armor: f.ca ?? 0,
+    conditions: [], abilities: [], turn_info: ''
+  };
+  const j = state.entities.findIndex(e => e.id === f.id);
+  if (j >= 0) state.entities[j] = { ...state.entities[j], name: ent.name, maxHp: ent.maxHp, hp: ent.hp, initiative: ent.initiative, armor: ent.armor };
+  else state.entities.push(ent);
+  state.entities.sort((a,b) => b.initiative - a.initiative);
+  renderEntities(); saveData();
+  if (!silencioso) alert(`"${ent.name}" enviado para Personagens.`);
+}
+
+function fichaRemover(i) {
+  if (!confirm(`Remover a ficha de "${state.fichas[i].nome || '(sem nome)'}"?`)) return;
+  state.fichas.splice(i, 1);
+  salvarFichas(); renderFichas();
+}
+
+document.getElementById('fichasCombateBtn').addEventListener('click', () => {
+  if (!state.fichas.length) return;
+  state.fichas.forEach((_, i) => fichaParaCombate(i, true));
+  alert(`${state.fichas.length} ficha(s) enviada(s) para Personagens.`);
+});
+
+document.getElementById('fichasLimparBtn').addEventListener('click', () => {
+  if (!state.fichas.length || !confirm('Remover todas as fichas carregadas?')) return;
+  state.fichas = [];
+  salvarFichas(); renderFichas();
+});
+
 // ==================== NOTES ====================
 const notesArea = document.getElementById('notesArea');
 notesArea.value = state.notes;
@@ -391,7 +527,7 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify({
     entities: state.entities, ship: state.ship,
     combatShips: state.combatShips, notes: state.notes,
-    currentTurn: state.currentTurn
+    currentTurn: state.currentTurn, fichas: state.fichas
   }, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -414,6 +550,7 @@ document.getElementById('importBtn').addEventListener('change', e => {
       })) || [];
       state.notes = data.notes || '';
       state.currentTurn = data.currentTurn || 0;
+      if (Array.isArray(data.fichas)) { state.fichas = data.fichas; salvarFichas(); }
       renderAll(); saveData();
       alert('Dados importados com sucesso!');
     } catch(err) { alert('Erro ao importar: ' + err.message); }
@@ -435,6 +572,7 @@ function renderAll() {
   renderShip();
   renderCrew();
   renderCombat();
+  renderFichas();
   notesArea.value = state.notes;
 }
 renderAll();
