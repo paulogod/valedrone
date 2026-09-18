@@ -3843,154 +3843,176 @@ const DND5E_DATA = {
       "name": "Alerta (Alert)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Soma seu Bônus de Proficiência na Iniciativa. Além disso, pode trocar sua iniciativa com um aliado voluntário no início do combate."
+      "desc": "Soma seu Bônus de Proficiência na Iniciativa. Além disso, pode trocar sua iniciativa com um aliado voluntário no início do combate.",
+      "full": "Você adquire os seguintes benefícios. Proficiência em Iniciativa. Quando você joga Iniciativa, pode adicionar seu Bônus de Proficiência à jogada. Troca de Iniciativa. Imediatamente após jogar Iniciativa, você pode trocar sua Iniciativa com a Iniciativa de um aliado voluntário no mesmo combate. Não é possível fazer a troca se você ou o aliado tem a condição Incapacitado."
     },
     {
       "id": "crafter",
       "name": "Artesão (Crafter)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Ganha proficiência em 3 ferramentas de artesão. Pode produzir itens rapidamente durante descansos com 20% de desconto nos custos de matéria-prima."
+      "desc": "Ganha proficiência em 3 ferramentas de artesão. Pode produzir itens rapidamente durante descansos com 20% de desconto nos custos de matéria-prima.",
+      "full": "Você adquire os seguintes benefícios. Proficiência com Ferramentas. Você adquire proficiência com três Ferramentas de Artesão diferentes à sua escolha na tabela Fabricação Rápida. Desconto. Sempre que você compra um item não mágico, recebe um desconto de 20% nele. Fabricação Rápida. Quando completa um Descanso Longo, você pode fabricar uma peça de equipamento da tabela Fabricação Rápida, se tiver as Ferramentas de Artesão associadas a esse item e tenha proficiência com essas ferramentas. O item permanece até que você complete outro Descanso Longo, momento em que o item se desfaz."
     },
     {
       "id": "healer",
       "name": "Curandeiro (Healer)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Ao usar um Kit de Primeiros Socorros para estabilizar, a criatura recupera 1 PV. Pode gastar 1 uso do kit para curar 1d6 + 4 + PB de uma criatura uma vez por descanso."
+      "desc": "Ao usar um Kit de Primeiros Socorros para estabilizar, a criatura recupera 1 PV. Pode gastar 1 uso do kit para curar 1d6 + 4 + PB de uma criatura uma vez por descanso.",
+      "full": "Você adquire os seguintes benefícios. Médico de Combate. Caso tenha um Kit de Curandeiro, você pode gastar um uso e cuidar de uma criatura a até 1,5 metro de você como uma ação Usar Objeto. Essa criatura pode gastar um dos Dados de Pontos de Vida dela e você joga esse dado. A criatura recupera um número de Pontos de Vida igual à jogada mais o seu Bônus de Proficiência. Cura Garantida. Sempre que jogar um dado para determinar o número de Pontos de Vida que você recupera com uma magia ou com o benefício do talento Médico de Combate, você pode jogar novamente o dado se o resultado for 1, e você deve usar a nova jogada."
     },
     {
       "id": "lucky",
       "name": "Sortudo (Lucky)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Ganha Pontos de Sorte iguais ao seu Bônus de Proficiência por descanso longo. Gaste 1 ponto para ganhar Vantagem em uma jogada de d20 ou impor Desvantagem em um ataque contra você."
+      "desc": "Ganha Pontos de Sorte iguais ao seu Bônus de Proficiência por descanso longo. Gaste 1 ponto para ganhar Vantagem em uma jogada de d20 ou impor Desvantagem em um ataque contra você.",
+      "full": "Você adquire os seguintes benefícios. Pontos de Sorte. Você tem um número de Pontos de Sorte igual ao seu Bônus de Proficiência e pode gastar os pontos nos benefícios abaixo. Você restaura seus Pontos de Sorte gastos quando completa um Descanso Longo. Vantagem. Quando você joga um d20 para um Teste de D20, pode gastar 1 Ponto de Sorte para ter Vantagem na jogada. Desvantagem. Quando uma criatura jogar um d20 para uma jogada de ataque contra você, você pode gastar 1 Ponto de Sorte para impor Desvantagem nessa jogada."
     },
     {
       "id": "magic_initiate_cleric",
       "name": "Iniciado em Magia (Clérigo)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Aprende 2 Truques e 1 Magia de 1º círculo da lista do Clérigo (Sabedoria). A magia pode ser conjurada 1 vez grátis por descanso longo ou com espaços de magia."
+      "desc": "Aprende 2 Truques e 1 Magia de 1º círculo da lista do Clérigo (Sabedoria). A magia pode ser conjurada 1 vez grátis por descanso longo ou com espaços de magia.",
+      "full": "Você adquire os seguintes benefícios. Dois Truques. Você aprende dois truques à sua escolha na lista de magias de Clérigo, Druida ou Mago. Inteligência, Sabedoria ou Carisma é seu atributo de conjuração para as magias deste talento (escolha quando selecionar este talento). Magia de 1º Círculo. Escolha uma magia de 1º círculo da mesma lista que você selecionou para os truques deste talento. Você tem essa magia sempre preparada. Você pode conjurá-la uma vez sem um espaço de magia, e você restaura a capacidade de conjurá-la dessa maneira quando completa um Descanso Longo. Você também pode conjurar a magia usando qualquer espaço de magia que tiver. Substituição de Magia. Sempre que você alcança um novo nível, pode substituir uma das magias que escolheu para este talento por uma magia diferente do mesmo círculo da lista de magias escolhida. Repetível. Você pode adquirir este talento mais de uma vez, mas deve escolher uma lista de magias diferente a cada vez."
     },
     {
       "id": "magic_initiate_druid",
       "name": "Iniciado em Magia (Druida)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Aprende 2 Truques e 1 Magia de 1º círculo da lista do Druida (Sabedoria). A magia pode ser conjurada 1 vez grátis por descanso longo ou com espaços de magia."
+      "desc": "Aprende 2 Truques e 1 Magia de 1º círculo da lista do Druida (Sabedoria). A magia pode ser conjurada 1 vez grátis por descanso longo ou com espaços de magia.",
+      "full": "Você adquire os seguintes benefícios. Dois Truques. Você aprende dois truques à sua escolha na lista de magias de Clérigo, Druida ou Mago. Inteligência, Sabedoria ou Carisma é seu atributo de conjuração para as magias deste talento (escolha quando selecionar este talento). Magia de 1º Círculo. Escolha uma magia de 1º círculo da mesma lista que você selecionou para os truques deste talento. Você tem essa magia sempre preparada. Você pode conjurá-la uma vez sem um espaço de magia, e você restaura a capacidade de conjurá-la dessa maneira quando completa um Descanso Longo. Você também pode conjurar a magia usando qualquer espaço de magia que tiver. Substituição de Magia. Sempre que você alcança um novo nível, pode substituir uma das magias que escolheu para este talento por uma magia diferente do mesmo círculo da lista de magias escolhida. Repetível. Você pode adquirir este talento mais de uma vez, mas deve escolher uma lista de magias diferente a cada vez."
     },
     {
       "id": "magic_initiate_wizard",
       "name": "Iniciado em Magia (Mago)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Aprende 2 Truques e 1 Magia de 1º círculo da lista do Mago (Inteligência). A magia pode ser conjurada 1 vez grátis por descanso longo ou com espaços de magia."
+      "desc": "Aprende 2 Truques e 1 Magia de 1º círculo da lista do Mago (Inteligência). A magia pode ser conjurada 1 vez grátis por descanso longo ou com espaços de magia.",
+      "full": "Você adquire os seguintes benefícios. Dois Truques. Você aprende dois truques à sua escolha na lista de magias de Clérigo, Druida ou Mago. Inteligência, Sabedoria ou Carisma é seu atributo de conjuração para as magias deste talento (escolha quando selecionar este talento). Magia de 1º Círculo. Escolha uma magia de 1º círculo da mesma lista que você selecionou para os truques deste talento. Você tem essa magia sempre preparada. Você pode conjurá-la uma vez sem um espaço de magia, e você restaura a capacidade de conjurá-la dessa maneira quando completa um Descanso Longo. Você também pode conjurar a magia usando qualquer espaço de magia que tiver. Substituição de Magia. Sempre que você alcança um novo nível, pode substituir uma das magias que escolheu para este talento por uma magia diferente do mesmo círculo da lista de magias escolhida. Repetível. Você pode adquirir este talento mais de uma vez, mas deve escolher uma lista de magias diferente a cada vez."
     },
     {
       "id": "musician",
       "name": "Músico (Musician)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Ao final de um descanso curto ou longo, toque uma canção para conceder Inspiração Heroica a um número de aliados igual ao seu Bônus de Proficiência."
+      "desc": "Ao final de um descanso curto ou longo, toque uma canção para conceder Inspiração Heroica a um número de aliados igual ao seu Bônus de Proficiência.",
+      "full": "Você adquire os seguintes benefícios. Treinamento em Instrumentos. Você adquire proficiência com três Instrumentos Musicais à sua escolha. Canção Encorajadora. Ao completar um Descanso Curto ou Longo, você pode tocar uma música em um Instrumento Musical com o qual tem proficiência e conceder Inspiração Heroica a aliados que ouvem a música. O número de aliados que você pode afetar desse modo é igual ao seu Bônus de Proficiência."
     },
     {
       "id": "savage_attacker",
       "name": "Atacante Selvagem (Savage Attacker)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Uma vez por turno ao acertar um ataque com arma, role o dano da arma duas vezes e use o maior resultado."
+      "desc": "Uma vez por turno ao acertar um ataque com arma, role o dano da arma duas vezes e use o maior resultado.",
+      "full": "Você treinou para causar ataques particularmente nocivos. Uma vez por turno, quando você atinge um alvo com uma arma, pode jogar os dados de dano da arma duas vezes e usar qualquer uma das jogadas contra o alvo."
     },
     {
       "id": "skilled",
       "name": "Habilidoso (Skilled)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Ganha proficiência em qualquer combinação de 3 perícias ou ferramentas à sua escolha."
+      "desc": "Ganha proficiência em qualquer combinação de 3 perícias ou ferramentas à sua escolha.",
+      "full": "Você adquire proficiência em qualquer combinação de três perícias ou ferramentas à sua escolha. Repetível. Você pode adquirir este talento mais de uma vez."
     },
     {
       "id": "tavern_brawler",
       "name": "Lutador de Taverna (Tavern Brawler)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Ataques desarmados causam 1d4 + FOR de dano. Pode empurrar alvos 1,5m após acertar um ataque desarmado e rolar novamente 1s no dano."
+      "desc": "Ataques desarmados causam 1d4 + FOR de dano. Pode empurrar alvos 1,5m após acertar um ataque desarmado e rolar novamente 1s no dano.",
+      "full": "Você adquire os seguintes benefícios. Ataque Desarmado Aprimorado. Quando você atinge com seu Ataque Desarmado e causar dano, pode causar dano Contundente igual a 1d4 pontos mais seu modificador de Força em vez do dano normal de um Ataque Desarmado. Dano Garantido. Sempre que você joga um dado de dano para seu Ataque Desarmado, pode jogar novamente o dado se o resultado for 1, e deve usar a nova jogada. Armamento Improvisado. Você tem proficiência com armas improvisadas. Empurrar. Quando você atinge uma criatura com um Ataque Desarmado como parte da ação Atacar no seu turno, pode causar dano ao alvo e também empurrá-lo 1,5 metro para longe de você. Você pode usar esse benefício apenas uma vez por turno."
     },
     {
       "id": "tough",
       "name": "Duro de Matar (Tough)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Seus pontos de vida máximos aumentam em uma quantidade igual a 2 vezes o seu nível total de personagem (retroativo)."
+      "desc": "Seus pontos de vida máximos aumentam em uma quantidade igual a 2 vezes o seu nível total de personagem (retroativo).",
+      "full": "Seus Pontos de Vida máximos aumentam em um valor igual ao dobro do seu nível de personagem quando você obtém este talento. Sempre que você alcança um nível de personagem depois disso, seus Pontos de Vida máximos aumentam em 2 Pontos de Vida adicionais."
     },
     {
       "id": "fighting_style_archery",
       "name": "Estilo: Arqueirismo (Archery)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "+2 de bônus em jogadas de ataque feitas com armas de ataque à distância."
+      "desc": "+2 de bônus em jogadas de ataque feitas com armas de ataque à distância.",
+      "full": "Você recebe um bônus de +2 nas jogadas de ataque com armas à Distância."
     },
     {
       "id": "fighting_style_blind_fighting",
       "name": "Estilo: Luta Cega (Blind Fighting)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Ganha Percepção às Cegas (Blindsight) com alcance de 3 metros (10 pés)."
+      "desc": "Ganha Percepção às Cegas (Blindsight) com alcance de 3 metros (10 pés).",
+      "full": "Você tem Visão às Cegas com um alcance de 3 metros."
     },
     {
       "id": "fighting_style_defense",
       "name": "Estilo: Defesa (Defense)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Ganha +1 de bônus na Classe de Armadura enquanto estiver usando qualquer armadura."
+      "desc": "Ganha +1 de bônus na Classe de Armadura enquanto estiver usando qualquer armadura.",
+      "full": "Enquanto estiver usando armadura Leve, Média ou Pesada, você recebe um bônus de +1 na Classe de Armadura."
     },
     {
       "id": "fighting_style_dueling",
       "name": "Estilo: Duelismo (Dueling)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "+2 de bônus nas jogadas de dano ao empunhar uma arma corpo a corpo em uma mão e nenhuma outra arma."
+      "desc": "+2 de bônus nas jogadas de dano ao empunhar uma arma corpo a corpo em uma mão e nenhuma outra arma.",
+      "full": "Quando você segura uma arma Corpo a Corpo em uma mão e nenhuma outra arma, você recebe um bônus de +2 nas jogadas de dano desta arma."
     },
     {
       "id": "fighting_style_great_weapon",
       "name": "Estilo: Grandes Armas (Great Weapon)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Ao rolar 1 ou 2 em dado de dano de ataque com arma de duas mãos, pode rolar o dado novamente."
+      "desc": "Ao rolar 1 ou 2 em dado de dano de ataque com arma de duas mãos, pode rolar o dado novamente.",
+      "full": "Quando você joga dano para um ataque que realiza com uma arma Corpo a Corpo que está empunhando com as duas mãos, pode tratar qualquer 1 ou 2 em um dado de dano como um 3. A arma deve ter a propriedade Duas Mãos ou Versátil para obter este benefício."
     },
     {
       "id": "fighting_style_interception",
       "name": "Estilo: Interceptação (Interception)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Quando uma criatura a 1,5m sofrer dano, use sua Reação com escudo ou arma para reduzir o dano em 1d10 + PB."
+      "desc": "Quando uma criatura a 1,5m sofrer dano, use sua Reação com escudo ou arma para reduzir o dano em 1d10 + PB.",
+      "full": "Quando uma criatura à sua vista atinge outra criatura a até 1,5 metro de você com uma jogada de ataque, você pode executar uma Reação para reduzir o dano causado ao alvo em 1d10 mais seu Bônus de Proficiência. Você deve estar segurando um Escudo ou uma arma Simples ou Marcial para executar esta Reação."
     },
     {
       "id": "fighting_style_protection",
       "name": "Estilo: Proteção (Protection)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Quando um inimigo atacar um aliado a 1,5m de você, use sua Reação com escudo para impor Desvantagem no ataque."
+      "desc": "Quando um inimigo atacar um aliado a 1,5m de você, use sua Reação com escudo para impor Desvantagem no ataque.",
+      "full": "Quando uma criatura à sua vista ataca um alvo que não é você e que está a até 1,5 metro de distância, você pode executar uma Reação para interpor seu Escudo, se o estiver segurando. Isso impõe Desvantagem na jogada de ataque que acionou a reação e em todas as jogadas contra o alvo até o início do seu próximo turno, enquanto você estiver a até 1,5 metro do alvo."
     },
     {
       "id": "fighting_style_thrown_weapon",
       "name": "Estilo: Armas de Arremesso (Thrown Weapon)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Pode sacar uma arma arremessável como parte do ataque e ganha +2 de bônus nas jogadas de dano."
+      "desc": "Pode sacar uma arma arremessável como parte do ataque e ganha +2 de bônus nas jogadas de dano.",
+      "full": "Quando você atinge com uma jogada de ataque à distância usando uma arma com a propriedade Arremesso, você obtém um bônus de +2 na jogada de dano."
     },
     {
       "id": "fighting_style_two_weapon",
       "name": "Estilo: Duas Armas (Two-Weapon Fighting)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Ao realizar o ataque extra do combate com duas armas, adiciona seu modificador de atributo ao dano."
+      "desc": "Ao realizar o ataque extra do combate com duas armas, adiciona seu modificador de atributo ao dano.",
+      "full": "Quando você realiza um ataque adicional como resultado de usar uma arma com a propriedade Leve, você pode adicionar seu modificador de atributo ao dano desse ataque, se já não estiver adicionando-o ao dano."
     },
     {
       "id": "fighting_style_unarmed",
       "name": "Estilo: Combate Desarmado (Unarmed Fighting)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Ataques desarmados causam 1d6 + FOR (ou 1d8 se ambas as mãos estiverem livres). Causa 1d4 de dano automático no início do turno a quem agarrar."
+      "desc": "Ataques desarmados causam 1d6 + FOR (ou 1d8 se ambas as mãos estiverem livres). Causa 1d4 de dano automático no início do turno a quem agarrar.",
+      "full": "Quando você atinge com seu Ataque Desarmado e causa dano, pode causar dano Contundente igual a 1d6 mais seu modificador de Força em vez do dano normal de um Ataque Desarmado. Se você não estiver segurando nenhuma arma ou Escudo quando realizar a jogada de ataque, o d6 se torna um d8. No início de cada um dos seus turnos, você pode causar 1d4 pontos de dano Contundente a uma criatura Imobilizada por você."
     },
     {
       "id": "ability_score_improvement",
@@ -3998,308 +4020,352 @@ const DND5E_DATA = {
       "type": "general",
       "prereq": "Nível 4+",
       "repeatable": true,
-      "desc": "Aumente um valor de atributo em 2, ou dois valores de atributo em 1 cada, até o máximo de 20. Você pode escolher este talento mais de uma vez, e é o que a maioria dos personagens pega nas vagas de talento de nível 4, 8, 12, 16 e 19."
+      "desc": "Aumente um valor de atributo em 2, ou dois valores de atributo em 1 cada, até o máximo de 20. Você pode escolher este talento mais de uma vez, e é o que a maioria dos personagens pega nas vagas de talento de nível 4, 8, 12, 16 e 19.",
+      "full": "Aumente um valor de atributo à sua escolha em 2, ou aumente dois valores de atributo à sua escolha em 1. Este talento não pode aumentar um valor de atributo acima de 20. Repetível. Você pode adquirir este talento mais de uma vez."
     },
     {
       "id": "actor",
       "name": "Ator (Actor)",
       "type": "general",
       "prereq": "Nível 4+, Carisma 13+",
-      "desc": "+1 em CAR. Vantagem em testes de Enganação e Atuação para se passar por outra pessoa; mimetiza vozes e sons de criaturas."
+      "desc": "+1 em CAR. Vantagem em testes de Enganação e Atuação para se passar por outra pessoa; mimetiza vozes e sons de criaturas.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Carisma em 1, até no máximo 20. Personificação. Enquanto está disfarçado como uma pessoa real ou fictícia, você tem Vantagem em testes de Carisma (Atuação ou Enganação) para convencer os outros de que você é essa pessoa. Mimetismo. Você pode imitar os sons de outras criaturas, incluindo a fala. Uma criatura que ouve a imitação deve ser bem-sucedida em um teste de Sabedoria (Intuição) para determinar que o efeito é falso (CD 8 mais seu modificador de Carisma e seu Bônus de Proficiência)."
     },
     {
       "id": "athlete",
       "name": "Atleta (Athlete)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Levantar do chão custa apenas 1,5m de deslocamento, escalar não custa movimento extra e salto em distância requer apenas 1,5m de corrida."
+      "desc": "+1 em FOR ou DES. Levantar do chão custa apenas 1,5m de deslocamento, escalar não custa movimento extra e salto em distância requer apenas 1,5m de corrida.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Deslocamento de Escalada. Você adquire Deslocamento de Escalada igual ao seu Deslocamento. Levantar. Quando você tem a condição Caído, pode se reerguer com apenas 1,5 metro de movimento. Saltar. Você pode realizar um Salto em Distância ou Salto em Altura correndo após mover-se apenas 1,5 metro."
     },
     {
       "id": "charger",
       "name": "Investida Poderosa (Charger)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Se mover pelo menos 3 metros em linha reta antes de atacar, causa +1d8 de dano extra ou empurra o alvo 3 metros."
+      "desc": "+1 em FOR ou DES. Se mover pelo menos 3 metros em linha reta antes de atacar, causa +1d8 de dano extra ou empurra o alvo 3 metros.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Corrida Aprimorada. Quando você executa a ação Correr, seu Deslocamento aumenta em 3 metros para esta ação. Ataque em Investida. Se você se mover pelo menos 3 metros em linha reta em direção a um alvo imediatamente antes de atingi-lo com uma jogada de ataque corpo a corpo como parte da ação Atacar, escolha um dos seguintes efeitos: obter um bônus de +1d8 na jogada de dano do ataque ou empurrar o alvo até 3 metros se ele não for um tamanho maior que você. Você pode usar esse benefício apenas uma vez em cada um dos seus turnos."
     },
     {
       "id": "chef",
       "name": "Chef de Cozinha (Chef)",
       "type": "general",
       "prereq": "Nível 4+, Constituição ou Sabedoria 13+",
-      "desc": "+1 em CON ou SAB. Prepara refeições especiais em descanso curto que curam 1d8 PV adicionais, e produz guloseimas que concedem PV temporários iguais a PB."
+      "desc": "+1 em CON ou SAB. Prepara refeições especiais em descanso curto que curam 1d8 PV adicionais, e produz guloseimas que concedem PV temporários iguais a PB.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Constituição ou Sabedoria em 1, até no máximo 20. Utensílios de Cozinheiro. Você adquire proficiência com Utensílios de Cozinheiro se ainda não o tiver. Refeição Satisfatória. Como parte de um Descanso Curto, você pode cozinhar alimentos especiais se tiver ingredientes e Utensílios de Cozinheiro à mão. Você pode preparar comida suficiente para um número de criaturas igual a 4 mais seu Bônus de Proficiência. No final do Descanso Curto, qualquer criatura que comer a comida e gastar um ou mais Dados de Vida para recuperar Pontos de Vida recupera 1d8 Pontos de Vida adicionais. Guloseimas Revigorantes. Com 1 hora de trabalho ou quando completar um Descanso Longo, você pode cozinhar um número de guloseimas igual ao seu Bônus de Proficiência se tiver ingredientes e Utensílios de Cozinheiro à mão. Essas guloseimas especiais permanecem por 8 horas após serem feitas. Uma criatura pode executar uma Ação Bônus para comer uma dessas guloseimas e obter um número de Pontos de Vida Temporários igual ao seu Bônus de Proficiência."
     },
     {
       "id": "crossbow_expert",
       "name": "Especialista em Besta (Crossbow Expert)",
       "type": "general",
       "prereq": "Nível 4+, Destreza 13+",
-      "desc": "+1 em DES. Ignora a propriedade de recarga de bestas, pode atirar corpo a corpo sem desvantagem e dispara besta de mão com Ação Bônus."
+      "desc": "+1 em DES. Ignora a propriedade de recarga de bestas, pode atirar corpo a corpo sem desvantagem e dispara besta de mão com Ação Bônus.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza em 1, até no máximo 20. Ignorar Recarga. Você ignora a propriedade Recarga da Besta de Mão, Besta Leve e Besta Pesada (todas chamadas de bestas em outras partes deste talento). Se estiver segurando uma dessas bestas, você pode carregar uma peça de munição nela mesmo sem ter uma mão livre. Disparo à Queima-Roupa. Estar a 1,5 metro de um inimigo não impõe Desvantagem em suas jogadas de ataque com bestas. Combate com Duas Armas. Ao realizar o ataque adicional da propriedade Leve, você pode adicionar seu modificador de atributo ao dano do ataque adicional se esse ataque for com uma besta que tenha a propriedade Leve e você ainda não estiver adicionando esse modificador ao dano."
     },
     {
       "id": "crusher",
       "name": "Esmagador (Crusher)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Constituição 13+",
-      "desc": "+1 em FOR ou CON. 1x/turno ao causar dano de concussão empurra o alvo 1,5m; crítico concede Vantagem em todos os ataques contra o alvo até seu próximo turno."
+      "desc": "+1 em FOR ou CON. 1x/turno ao causar dano de concussão empurra o alvo 1,5m; crítico concede Vantagem em todos os ataques contra o alvo até seu próximo turno.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Constituição em 1, até no máximo 20. Empurrar. Uma vez por turno, quando você atinge uma criatura com um ataque que causa dano Contundente, você pode movê-la 1,5 metro para um espaço desocupado se o alvo não for um tamanho maior que você. Crítico Melhorado. Ao obter um Acerto Crítico que causa dano Contundente a uma criatura, jogadas de ataque contra essa criatura tem Vantagem até o início do seu próximo turno."
     },
     {
       "id": "defensive_duelist",
       "name": "Duelista Defensivo (Defensive Duelist)",
       "type": "general",
       "prereq": "Nível 4+, Destreza 13+",
-      "desc": "+1 em DES. Ao empunhar arma com Acuidade e ser atingido corpo a corpo, use sua Reação para somar seu PB na CA contra aquele ataque."
+      "desc": "+1 em DES. Ao empunhar arma com Acuidade e ser atingido corpo a corpo, use sua Reação para somar seu PB na CA contra aquele ataque.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza em 1, até no máximo 20. Aparar. Se estiver segurando uma arma de Acuidade e outra criatura acertar você com um ataque corpo a corpo, você pode executar uma Reação para adicionar seu Bônus de Proficiência à sua Classe de Armadura, potencialmente fazendo com que o ataque erre. Você obtém este bônus na sua CA contra ataques corpo a corpo até o início do seu próximo turno."
     },
     {
       "id": "elemental_adept",
       "name": "Conjurador Elemental (Elemental Adept)",
       "type": "general",
       "prereq": "Nível 4+, Conjurador",
-      "desc": "+1 em INT, SAB ou CAR. Suas magias do elemento escolhido (Fogo, Frio, Elétrico, Ácido ou Trovão) ignoram resistência e tratam 1s no dano como 2s."
+      "desc": "+1 em INT, SAB ou CAR. Suas magias do elemento escolhido (Fogo, Frio, Elétrico, Ácido ou Trovão) ignoram resistência e tratam 1s no dano como 2s.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Domínio Elemental. Escolha um dos seguintes tipos de dano: Ácido, Elétrico, Gélido, Ígneo ou Trovejante. Magias que você conjura ignoram a Resistência a dano do tipo escolhido. Além disso, ao jogar dano para uma magia que causa dano deste tipo, você pode tratar qualquer 1 em um dado de dano como um 2. Repetível. Você pode adquirir este talento mais de uma vez, mas deve escolher um tipo de dano diferente a cada vez para Domínio Elemental."
     },
     {
       "id": "fey_touched",
       "name": "Tocado pelo Reino Feérico (Fey Touched)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 em INT, SAB ou CAR. Aprende Passo Nebuloso (Misty Step) e 1 magia de 1º círculo (Adivinhação/Encantamento), conjuráveis 1x grátis por descanso longo."
+      "desc": "+1 em INT, SAB ou CAR. Aprende Passo Nebuloso (Misty Step) e 1 magia de 1º círculo (Adivinhação/Encantamento), conjuráveis 1x grátis por descanso longo.",
+      "full": "Sua exposição à magia Feérica lhe concede os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Magia Feérica. Escolha uma magia de 1º círculo da escola de magia Adivinhação ou Encantamento. Você tem sempre essa magia e Passo Nebuloso preparadas, podendo conjurá-las sem gastar espaço de magia. Após usar uma delas desse modo, você não pode conjurá-la assim novamente até completar um Descanso Longo. Também é possível conjurar essas magias utilizando espaços de magia de círculos apropriados. O atributo de conjuração das magias é o aprimorado por este talento."
     },
     {
       "id": "grappler",
       "name": "Especialista em Agarrar (Grappler)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Vantagem em jogadas de ataque contra criatura agarrada por você; seu deslocamento não é reduzido ao arrastar criaturas agarradas."
+      "desc": "+1 em FOR ou DES. Vantagem em jogadas de ataque contra criatura agarrada por você; seu deslocamento não é reduzido ao arrastar criaturas agarradas.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Socar e Imobilizar. Quando você atinge uma criatura com um Ataque Desarmado como parte da ação Atacar no seu turno, pode usar as opções Dano e Imobilizar apenas uma vez por turno. Vantagem no Ataque. Você tem Vantagem em jogadas de ataque contra uma criatura Imobilizada por você. Imobilizador Veloz. Você não precisa gastar movimento adicional para se mover enquanto estiver imobilizando uma criatura Imobilizada, desde que ela seja do seu tamanho ou menor."
     },
     {
       "id": "great_weapon_master",
       "name": "Mestre em Armas Grandes (Great Weapon Master)",
       "type": "general",
       "prereq": "Nível 4+, Força 13+",
-      "desc": "+1 em FOR. Soma seu PB ao dano com armas pesadas. Ao acertar um acerto crítico ou reduzir criatura a 0 PV, desfere um ataque adicional com Ação Bônus."
+      "desc": "+1 em FOR. Soma seu PB ao dano com armas pesadas. Ao acertar um acerto crítico ou reduzir criatura a 0 PV, desfere um ataque adicional com Ação Bônus.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força em 1, até no máximo 20. Maestria em Armas Pesadas. Quando você atinge uma criatura com uma arma que tem a propriedade Pesada como parte da ação Atacar no seu turno, você pode causar dano adicional ao alvo com a arma. O dano adicional é igual ao seu Bônus de Proficiência. Cortar. Imediatamente após obter um Acerto Crítico ou reduzir uma criatura a 0 Pontos de Vida com uma arma Corpo a Corpo, você pode realizar um ataque com a mesma arma como uma Ação Bônus."
     },
     {
       "id": "heavy_armor_master",
       "name": "Mestre em Armaduras Pesadas (Heavy Armor Master)",
       "type": "general",
       "prereq": "Nível 4+, Proficiência com Armaduras Pesadas",
-      "desc": "+1 em FOR. Reduz todo dano não-mágico cortante, perfurante e de concussão recebido em valor igual ao seu Bônus de Proficiência."
+      "desc": "+1 em FOR. Reduz todo dano não-mágico cortante, perfurante e de concussão recebido em valor igual ao seu Bônus de Proficiência.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Constituição em 1, até no máximo 20. Redução de Dano. Quando você é atingido por um ataque enquanto está vestido com uma armadura Pesada, qualquer dano Contundente, Cortante e Perfurante causado a você por esse ataque é reduzido em uma quantidade de pontos igual ao seu Bônus de Proficiência."
     },
     {
       "id": "inspiring_leader",
       "name": "Líder Inspirador (Inspiring Leader)",
       "type": "general",
       "prereq": "Nível 4+, Sabedoria ou Carisma 13+",
-      "desc": "+1 em SAB ou CAR. Discurso de 10 min concede PV temporários iguais a Nível + Modificador a até 6 aliados por descanso."
+      "desc": "+1 em SAB ou CAR. Discurso de 10 min concede PV temporários iguais a Nível + Modificador a até 6 aliados por descanso.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Sabedoria ou Carisma em 1, até no máximo 20. Atuação Encorajadora. Ao completar um Descanso Curto ou Longo, você pode fazer uma atuação encorajadora: um discurso, música ou dança. Ao realizar isso, escolha até seis aliados (você pode se incluir) a até 9 metros de você que presenciaram a atuação. Criaturas escolhidas recebem Pontos de Vida Temporários iguais ao seu nível de personagem mais o modificador do atributo que você aumentou com este talento."
     },
     {
       "id": "mage_slayer",
       "name": "Matador de Magos (Mage Slayer)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Reação para atacar criatura que conjurar magia adjacente a você, impõe desvantagem na concentração e ganha vantagem em salvaguardas mágicas."
+      "desc": "+1 em FOR ou DES. Reação para atacar criatura que conjurar magia adjacente a você, impõe desvantagem na concentração e ganha vantagem em salvaguardas mágicas.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Quebrador de Concentração. Quando você causa dano a uma criatura que está se concentrando em uma magia, ela tem Desvantagem na salvaguarda que realiza para manter a Concentração. Resguardo Mental. Se falhar em uma salvaguarda de Inteligência, Sabedoria ou Carisma, em vez disso você escolhe ser bem-sucedido. Após usar esse benefício, você não pode usá-lo novamente até completar um Descanso Curto ou Longo."
     },
     {
       "id": "medium_armor_master",
       "name": "Mestre em Armaduras Médias (Medium Armor Master)",
       "type": "general",
       "prereq": "Nível 4+, Proficiência com Armaduras Médias",
-      "desc": "+1 em FOR ou DES. Permite somar até +3 de Destreza na CA usando armadura média e elimina a desvantagem em testes de Furtividade."
+      "desc": "+1 em FOR ou DES. Permite somar até +3 de Destreza na CA usando armadura média e elimina a desvantagem em testes de Furtividade.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Portador Ágil. Enquanto estiver usando armadura Média, você pode adicionar 3, em vez de 2, à sua CA se tiver um valor de Destreza 16 ou superior."
     },
     {
       "id": "mounted_combatant",
       "name": "Combatente Montado (Mounted Combatant)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 em FOR, DES ou SAB. Vantagem em ataques corpo a corpo contra criaturas menores que sua montaria, e pode forçar ataques contra a montaria a mirarem em você."
+      "desc": "+1 em FOR, DES ou SAB. Vantagem em ataques corpo a corpo contra criaturas menores que sua montaria, e pode forçar ataques contra a montaria a mirarem em você.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força, Destreza ou Sabedoria em 1, até no máximo 20. Golpe Montado. Enquanto estiver montado, você tem Vantagem em jogadas de ataque contra qualquer criatura desmontada a até 1,5 metro de sua montaria que seja pelo menos um tamanho menor que a montaria. Pulo Lateral. Se sua montaria for submetida a um efeito que lhe permita realizar uma salvaguarda de Destreza para sofrer apenas metade do dano, ela não sofre dano em caso de sucesso, e apenas metade do dano se falhar. Para que sua montaria obtenha esse benefício, você deve estar montando-a, e nenhum de vocês pode ter a condição Incapacitado. Redirecionar Ataque. Enquanto estiver montado, você pode forçar um ataque que atinge sua montaria a atingi-lo se você não tem a condição Incapacitado."
     },
     {
       "id": "observant",
       "name": "Observador (Observant)",
       "type": "general",
       "prereq": "Nível 4+, Inteligência ou Sabedoria 13+",
-      "desc": "+1 em INT ou SAB. Ganha +5 de bônus permanente em Percepção Passiva e Investigação Passiva; leitura labial precisa."
+      "desc": "+1 em INT ou SAB. Ganha +5 de bônus permanente em Percepção Passiva e Investigação Passiva; leitura labial precisa.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência ou Sabedoria em 1, até no máximo 20. Observador Atento. Escolha uma das seguintes perícias: Intuição, Investigação ou Percepção. Se não tiver proficiência na perícia escolhida, você a adquire; se já for proficiente, adquire Especialização. Pesquisa Rápida. Você pode executar a ação Procurar como uma Ação Bônus."
     },
     {
       "id": "piercer",
       "name": "Perfurador (Piercer)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. 1x/turno rola novamente um dado de dano perfurante; no acerto crítico adiciona 1 dado extra de dano da arma."
+      "desc": "+1 em FOR ou DES. 1x/turno rola novamente um dado de dano perfurante; no acerto crítico adiciona 1 dado extra de dano da arma.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Punção. Uma vez por turno, quando você atinge uma criatura com um ataque que causa dano Perfurante, pode jogar novamente um dos dados de dano do ataque, e você deve usar a nova jogada. Crítico Melhorado. Ao obter um Acerto Crítico que causa dano Perfurante a uma criatura, você pode jogar um dado de dano adicional ao determinar o dano Perfurante adicional que o alvo sofre."
     },
     {
       "id": "poisoner",
       "name": "Mestre dos Venenos (Poisoner)",
       "type": "general",
       "prereq": "Nível 4+, Destreza ou Inteligência 13+",
-      "desc": "+1 em DES ou INT. Seus danos de veneno ignoram resistência; aplica veneno em armas como Ação Bônus e produz venenos potentes."
+      "desc": "+1 em DES ou INT. Seus danos de veneno ignoram resistência; aplica veneno em armas como Ação Bônus e produz venenos potentes.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza ou Inteligência em 1, até no máximo 20. Veneno Potente. Ao realizar uma jogada de dano que causa dano Venenoso, você ignora Resistência a dano Venenoso. Preparar Veneno. Você adquire proficiência com o Kit de Veneno. Com 1 hora de trabalho usando esse kit e gastando 50 PO em materiais, você pode fabricar um número de doses de veneno igual ao seu Bônus de Proficiência. Como uma Ação Bônus, você pode aplicar uma dose de veneno a uma arma ou peça de munição. Uma vez aplicado, o veneno retém sua potência por 1 minuto ou até você causar dano com o item envenenado, o que for mais curto. Ao sofrer dano do item envenenado, uma criatura deve ser bem-sucedida em uma salvaguarda de Constituição (CD 8 mais o modificador do atributo aumentado por este talento e seu Bônus de Proficiência) ou sofre 2d8 pontos de dano Venenoso e está com a condição Envenenado até o final do seu próximo turno."
     },
     {
       "id": "polearm_master",
       "name": "Mestre de Armas de Haste (Polearm Master)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Ao atacar com alabarda, glaive ou bordão, faz ataque bônus com a outra ponta (1d4) e ataca criaturas que entram no seu alcance."
+      "desc": "+1 em FOR ou DES. Ao atacar com alabarda, glaive ou bordão, faz ataque bônus com a outra ponta (1d4) e ataca criaturas que entram no seu alcance.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Golpe de Haste. Como uma ação, imediatamente após atacar com um Cajado, Lança ou uma arma que tenha a propriedade Extensão e Pesado, você pode executar uma Ação Bônus para realizar um ataque corpo a corpo com a extremidade oposta da arma. A arma causa dano Contundente, e o dado de dano da arma para este ataque é um d4. Golpe Reativo. Ao empunhar um Cajado, Lança ou uma arma que tenha as propriedades Extensão e Pesado, você pode executar uma Reação para realizar um ataque corpo a corpo com essa arma contra uma criatura que entra no seu alcance."
     },
     {
       "id": "resilient",
       "name": "Resiliente (Resilient)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 no atributo escolhido (FOR, DES, CON, INT, SAB ou CAR) e ganha Proficiência nas Salvaguardas desse atributo."
+      "desc": "+1 no atributo escolhido (FOR, DES, CON, INT, SAB ou CAR) e ganha Proficiência nas Salvaguardas desse atributo.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Escolha um atributo no qual você não tenha proficiência em salvaguarda. Aumente o valor de atributo escolhido em 1, até no máximo 20. Proficiência em Salvaguarda. Você adquire proficiência em salvaguardas com o atributo escolhido."
     },
     {
       "id": "ritual_caster",
       "name": "Conjurador de Rituais (Ritual Caster)",
       "type": "general",
       "prereq": "Nível 4+, Inteligência ou Sabedoria 13+",
-      "desc": "+1 em INT, SAB ou CAR. Ganha um Grimório de Rituais podendo conjurar magias com a tag Ritual sem gastar espaços de magia."
+      "desc": "+1 em INT, SAB ou CAR. Ganha um Grimório de Rituais podendo conjurar magias com a tag Ritual sem gastar espaços de magia.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Magias Rituais. Escolha um número de magias de 1º círculo igual ao seu Bônus de Proficiência que tem o marcador Ritual. Você tem essas magias sempre preparadas e pode conjurá-las com qualquer espaço de magia que tiver. O atributo de conjuração das magias é o atributo aumentado por este talento. Sempre que seu Bônus de Proficiência aumentar depois disso, você pode adicionar uma magia de 1º círculo com o marcador Ritual às magias sempre preparadas com esta característica. Ritual Rápido. Com este benefício, você pode conjurar uma magia Ritual que tem preparada usando seu tempo de conjuração normal, em vez do tempo prolongado para um Ritual. Realizar isso não requer um espaço de magia. Após conjurar a magia desse modo, você não pode usar esse benefício novamente até completar um Descanso Longo."
     },
     {
       "id": "sentinel",
       "name": "Sentinela (Sentinel)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Acertar ataque de oportunidade reduz a velocidade do alvo para 0. Desfere ataques de oportunidade mesmo se o alvo Desengajar."
+      "desc": "+1 em FOR ou DES. Acertar ataque de oportunidade reduz a velocidade do alvo para 0. Desfere ataques de oportunidade mesmo se o alvo Desengajar.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Diligente. Imediatamente após uma criatura em até 1,5 metro de você executar a ação Desengajar ou atingir um alvo diferente de você com um ataque, você pode realizar um Ataque de Oportunidade contra essa criatura. Deter. Ao atingir uma criatura com um Ataque de Oportunidade, o Deslocamento da criatura se torna 0 pelo resto do turno atual."
     },
     {
       "id": "shadow_touched",
       "name": "Tocado pelas Sombras (Shadow Touched)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 em INT, SAB ou CAR. Aprende Invisibilidade e 1 magia de 1º círculo (Ilusão/Necromancia), conjuráveis 1x grátis por descanso longo."
+      "desc": "+1 em INT, SAB ou CAR. Aprende Invisibilidade e 1 magia de 1º círculo (Ilusão/Necromancia), conjuráveis 1x grátis por descanso longo.",
+      "full": "Sua exposição à magia do Sombral lhe concede os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Magia Sombria. Escolha uma magia de 1º círculo da escola de magia Ilusão ou Necromancia. Você tem essa magia e Invisibilidade sempre preparadas, podendo conjurá-las sem gastar espaço de magia. Após usar uma delas desse modo, você não pode conjurá-la assim novamente até completar um Descanso Longo. Também é possível conjurar estas magias utilizando espaços de magia de círculos apropriados. O atributo de conjuração das magias é o aprimorado por este talento."
     },
     {
       "id": "sharpshooter",
       "name": "Atirador Aguçado (Sharpshooter)",
       "type": "general",
       "prereq": "Nível 4+, Destreza 13+",
-      "desc": "+1 em DES. Ataques à distância ignoram meia e 3/4 de cobertura, alcance longo não impõe desvantagem e pode disparar corpo a corpo sem penalidade."
+      "desc": "+1 em DES. Ataques à distância ignoram meia e 3/4 de cobertura, alcance longo não impõe desvantagem e pode disparar corpo a corpo sem penalidade.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza em 1, até no máximo 20. Ignorar Cobertura. Seus ataques à distância com armas ignoram Cobertura Parcial e Cobertura de Três Quartos. Disparo à Queima-Roupa. Estar a 1,5 metro de um inimigo não impõe Desvantagem em suas jogadas de ataque com armas à Distância. Tiro Longo. Atacar com alcance máximo não impõe Desvantagem em suas jogadas de ataque com armas à Distância."
     },
     {
       "id": "shield_master",
       "name": "Mestre em Escudos (Shield Master)",
       "type": "general",
       "prereq": "Nível 4+, Proficiência com Escudos",
-      "desc": "+1 em FOR. Empurra ou derruba inimigos com escudo como Ação Bônus, soma bônus do escudo em salvaguardas de DES e usa Reação para anular dano em sucesso de DES."
+      "desc": "+1 em FOR. Empurra ou derruba inimigos com escudo como Ação Bônus, soma bônus do escudo em salvaguardas de DES e usa Reação para anular dano em sucesso de DES.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força em 1, até no máximo 20. Golpe de Escudo. Ao atacar uma criatura a até 1,5 metro de você como parte da ação Atacar e atingir com uma arma Corpo a Corpo, você pode atacar imediatamente o alvo com seu Escudo se ele estiver equipado, forçando o alvo a realizar uma salvaguarda de Força (CD 8 mais seu modificador de Força e seu Bônus de Proficiência). Se falhar, você empurra o alvo a 1,5 metro de você ou impõe a ele a condição Caído (à sua escolha). Você pode usar esse benefício apenas uma vez em cada um dos seus turnos. Interpor Escudo. Se você for submetido a um efeito que lhe permita realizar uma salvaguarda de Destreza para sofrer apenas metade do dano, pode usar uma Reação para não sofrer dano se você for bem-sucedido na salvaguarda e estiver segurando um Escudo."
     },
     {
       "id": "skill_expert",
       "name": "Especialista em Perícias (Skill Expert)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 no atributo à sua escolha, ganha Proficiência em 1 perícia e Especialização (dobro do PB) em 1 perícia já treinada."
+      "desc": "+1 no atributo à sua escolha, ganha Proficiência em 1 perícia e Especialização (dobro do PB) em 1 perícia já treinada.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 20. Proficiência em Perícia. Você adquire proficiência em uma perícia à sua escolha. Especialização. Escolha uma perícia na qual você tenha proficiência, mas não seja Especialização. Você obtém Especialização nessa perícia."
     },
     {
       "id": "slasher",
       "name": "Cortador (Slasher)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. 1x/turno ao causar dano cortante reduz a velocidade do alvo em 3 metros; acerto crítico impõe Desvantagem em todos os ataques dele."
+      "desc": "+1 em FOR ou DES. 1x/turno ao causar dano cortante reduz a velocidade do alvo em 3 metros; acerto crítico impõe Desvantagem em todos os ataques dele.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Debilitar. Uma vez por turno, quando você atinge uma criatura com um ataque que causa dano Cortante, você pode reduzir o Deslocamento dessa criatura em 3 metros até o início do seu próximo turno. Crítico Melhorado. Ao obter um Acerto Crítico que causa dano Cortante a uma criatura, ela tem Desvantagem nas jogadas de ataque até o início do seu próximo turno."
     },
     {
       "id": "speedster",
       "name": "Velocista / Mobilidade (Speedster)",
       "type": "general",
       "prereq": "Nível 4+, Destreza ou Constituição 13+",
-      "desc": "+1 em DES ou CON. Seu deslocamento aumenta em +3 metros; ao correr em Disparada ignora terreno difícil e atacar uma criatura impede ataques de oportunidade dela."
+      "desc": "+1 em DES ou CON. Seu deslocamento aumenta em +3 metros; ao correr em Disparada ignora terreno difícil e atacar uma criatura impede ataques de oportunidade dela.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza ou Constituição em 1, até no máximo 20. Aumento de Deslocamento. Seu Deslocamento aumenta em 3 metros. Correr em Terreno Difícil. Ao executar a ação Correr no seu turno, Terreno Difícil não custa movimento adicional pelo resto deste turno. Movimentação Ágil. Ataques de Oportunidade têm Desvantagem contra você."
     },
     {
       "id": "spell_sniper",
       "name": "Franco-Atirador Arcano (Spell Sniper)",
       "type": "general",
       "prereq": "Nível 4+, Conjurador",
-      "desc": "+1 em INT, SAB ou CAR. Dobra o alcance de magias com jogadas de ataque, ignora meia e 3/4 de cobertura e pode conjurar ataques mágicos corpo a corpo sem desvantagem."
+      "desc": "+1 em INT, SAB ou CAR. Dobra o alcance de magias com jogadas de ataque, ignora meia e 3/4 de cobertura e pode conjurar ataques mágicos corpo a corpo sem desvantagem.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Ignorar Cobertura. Jogadas de ataque com magias ignoram Cobertura Parcial e Cobertura de Três Quartos. Conjuração à Queima-Roupa. Estar a 1,5 metro de um inimigo não impõe Desvantagem em suas jogadas de ataque com magias. Alcance Aumentado. Ao conjurar uma magia que tem um alcance de pelo menos 3 metros e exija realizar uma jogada de ataque, você pode aumentar o alcance da magia em 18 metros."
     },
     {
       "id": "telekinetic",
       "name": "Telecinético (Telekinetic)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 em INT, SAB ou CAR. Aprende Mãos Mágicas invisível com alcance dobrado e usa Ação Bônus para empurrar ou puxar criaturas a até 9 metros."
+      "desc": "+1 em INT, SAB ou CAR. Aprende Mãos Mágicas invisível com alcance dobrado e usa Ação Bônus para empurrar ou puxar criaturas a até 9 metros.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Telecinese Menor. Você aprende a magia Mãos Mágicas. Você pode conjurá-la sem componentes Verbais ou Somáticos, pode usar a mão espectral Invisível e o alcance dela e a distância que ela pode estar de você aumentam em 9 metros ao conjurá-la. O atributo de conjuração da magia é o atributo aumentado por este talento. Empurrão Telecinético. Como uma Ação Bônus, você pode empurrar telecinéticamente uma criatura à sua vista a até 9 metros de você. Ao realizar isso, o alvo deve ser bem-sucedido em uma salvaguarda de Força (CD 8 mais o modificador de atributo do aumento por este talento e seu Bônus de Proficiência) ou é movido 1,5 metro na sua direção ou para longe de você."
     },
     {
       "id": "telepathic",
       "name": "Telepata (Telepathic)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 em INT, SAB ou CAR. Fala telepaticamente com criaturas a até 18 metros e conjura Detectar Pensamentos 1x ao dia sem gastar espaços de magia."
+      "desc": "+1 em INT, SAB ou CAR. Fala telepaticamente com criaturas a até 18 metros e conjura Detectar Pensamentos 1x ao dia sem gastar espaços de magia.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Enunciado Telepático. Você pode falar telepaticamente com qualquer criatura à sua vista a até 18 metros de você. Seus enunciados telepáticos estão em um idioma que você conhece, e a criatura só o entende se souber esse idioma. Sua comunicação não dá à criatura a capacidade de responder a você telepaticamente. Detectar Pensamentos. Você tem a magia Detectar Pensamentos sempre preparada. Você pode conjurá-la sem um espaço de magia ou componentes de magia, não podendo conjurá-la dessa forma novamente antes de completar um Descanso Longo. Além disso, pode conjurá-la gastando o espaço de magia que você tem do círculo apropriado. Seu atributo de conjuração para a magia é o atributo aumentado por este talento."
     },
     {
       "id": "war_caster",
       "name": "Conjurador de Guerra (War Caster)",
       "type": "general",
       "prereq": "Nível 4+, Conjurador",
-      "desc": "+1 em INT, SAB ou CAR. Vantagem em salvaguardas de CON para concentração, realiza componentes somáticos com armas em mãos e conjura magias como Reação de oportunidade."
+      "desc": "+1 em INT, SAB ou CAR. Vantagem em salvaguardas de CON para concentração, realiza componentes somáticos com armas em mãos e conjura magias como Reação de oportunidade.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Concentração. Você tem Vantagem em salvaguardas de Constituição que realiza para manter a Concentração. Magia Reativa. Quando uma criatura provocar um Ataque de Oportunidade a você ao sair do seu alcance, você pode executar uma Reação para conjurar uma magia contra a criatura, em vez de realizar o Ataque de Oportunidade. A magia deve ter um tempo de conjuração de uma ação e deve ter como alvo apenas aquela criatura. Componentes Somáticos. Você pode realizar os componentes somáticos de magias mesmo quando estiver com armas ou um Escudo em uma ou ambas as mãos."
     },
     {
       "id": "boon_combat_prowess",
       "name": "Dádiva da Proeza de Combate (Boon of Combat Prowess)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). 1 vez por turno, ao errar uma jogada de ataque, você pode transformá-la em um acerto."
+      "desc": "+1 em um atributo (máximo 30). 1 vez por turno, ao errar uma jogada de ataque, você pode transformá-la em um acerto.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Pontaria Inigualável. Quando você erra uma jogada de ataque, em vez disso você acerta. Após usar este benefício, você não pode utilizá-lo novamente até o início do seu próximo turno."
     },
     {
       "id": "boon_dimensional_travel",
       "name": "Dádiva da Viagem Dimensional (Boon of Dimensional Travel)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Imediatamente após realizar a ação de Ataque ou Magia, pode se teletransportar até 9 metros sem gastar movimento."
+      "desc": "+1 em um atributo (máximo 30). Imediatamente após realizar a ação de Ataque ou Magia, pode se teletransportar até 9 metros sem gastar movimento.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Passos Fugazes. Imediatamente após executar a ação Atacar ou Usar Magia, você pode se teleportar até 9 metros para um espaço desocupado à sua vista."
     },
     {
       "id": "boon_energy_resistance",
       "name": "Dádiva da Resistência Energética (Boon of Energy Resistance)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Ganha resistência permanente a 2 tipos de dano elemental à sua escolha (podendo trocar ao fim de descanso longo)."
+      "desc": "+1 em um atributo (máximo 30). Ganha resistência permanente a 2 tipos de dano elemental à sua escolha (podendo trocar ao fim de descanso longo).",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Resistências à Energia. Você obtém Resistência a dois dos seguintes tipos de dano à sua escolha: Ácido, Elétrico, Gélido, Ígneo, Necrótico, Psíquico, Radiante, Trovejante ou Venenoso. Sempre que completar um Descanso Longo, você pode mudar suas escolhas. Redirecionamento de Energia. Ao sofrer dano de um dos tipos escolhidos para o benefício Resistências à Energia, você pode executar uma Reação para direcionar o dano do mesmo tipo para outra criatura à sua vista a até 18 metros de você que não esteja sob Cobertura Total. Se você fizer isso, essa criatura deve ser bem-sucedida em uma salvaguarda de Destreza (CD 8 mais seu modificador de Constituição e seu Bônus de Proficiência) ou sofre dano igual a 2d12 mais seu modificador de Constituição."
     },
     {
       "id": "boon_fate",
       "name": "Dádiva do Destino (Boon of Fate)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Quando você ou criatura a 18m rolar um d20, pode adicionar ou subtrair 2d4 do resultado final como Reação."
+      "desc": "+1 em um atributo (máximo 30). Quando você ou criatura a 18m rolar um d20, pode adicionar ou subtrair 2d4 do resultado final como Reação.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Aprimorar Destino. Quando você ou outra criatura a até 18 metros de você for bem-sucedida ou falhar em um Teste D20, você pode jogar 2d4 e aplicar os resultados como bônus ou penalidade na jogada de d20. Após usar este benefício, você não pode utilizá-lo novamente até jogar Iniciativa ou completar um Descanso Curto ou Longo."
     },
     {
       "id": "boon_fortitude",
       "name": "Dádiva da Fortitude Épica (Boon of Fortitude)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Seus PV máximos aumentam em 40; ao receber qualquer cura, recupera PV adicionais iguais ao seu modificador de Constituição."
+      "desc": "+1 em um atributo (máximo 30). Seus PV máximos aumentam em 40; ao receber qualquer cura, recupera PV adicionais iguais ao seu modificador de Constituição.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Saúde Fortalecida. Seus Pontos de Vida máximos aumentam em 40. Além disso, sempre que você recuperar Pontos de Vida, pode recuperar Pontos de Vida adicionais iguais ao seu modificador de Constituição. Após recuperar esses Pontos de Vida adicionais, você não pode fazer isso novamente até o início do seu próximo turno."
     },
     {
       "id": "boon_irresistible_offense",
       "name": "Dádiva da Ofensiva Irresistível (Boon of Irresistible Offense)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Todos os seus ataques e danos ignoram completamente resistências a dano; em acerto crítico causa dano extra igual ao seu valor de atributo."
+      "desc": "+1 em um atributo (máximo 30). Todos os seus ataques e danos ignoram completamente resistências a dano; em acerto crítico causa dano extra igual ao seu valor de atributo.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 30. Superar Defesas. O dano Contundente, Cortante e Perfurante que você causa sempre ignora Resistência. Golpe Devastador. Quando você tira 20 no d20 para uma jogada de ataque, pode causar dano adicional ao alvo igual ao valor do atributo aumentado por este talento. O tipo de dano adicional é o mesmo do ataque."
     },
     {
       "id": "boon_night_spirit",
       "name": "Dádiva do Espírito Noturno (Boon of the Night Spirit)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Enquanto estiver em penumbra ou escuridão, fica Invisível como Ação Bônus e ganha resistência a todos os danos exceto psíquico e radiante."
+      "desc": "+1 em um atributo (máximo 30). Enquanto estiver em penumbra ou escuridão, fica Invisível como Ação Bônus e ganha resistência a todos os danos exceto psíquico e radiante.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Fundir-se com Sombras. Enquanto estiver em Meia-luz ou Escuridão, você pode se conceder a condição Invisível como uma Ação Bônus. A condição encerra imediatamente após você executar uma ação, uma Ação Bônus ou uma Reação. Forma Sombria. Enquanto estiver em Meia-luz ou Escuridão, você tem Resistência a todos os danos, exceto Psíquico e Radiante."
     },
     {
       "id": "boon_recovery",
       "name": "Dádiva da Recuperação Heroica (Boon of Recovery)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Ao cair a 0 PV, você pode recuperar instantaneamente metade dos seus pontos de vida máximos (1 vez por descanso longo)."
+      "desc": "+1 em um atributo (máximo 30). Ao cair a 0 PV, você pode recuperar instantaneamente metade dos seus pontos de vida máximos (1 vez por descanso longo).",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Até a Morte. Quando você for reduzido a 0 Pontos de Vida, pode escolher ficar com 1 Ponto de Vida e recuperar um número de Pontos de Vida igual à metade dos seus Pontos de Vida máximos. Após usar esse benefício, você não pode usá-lo novamente até completar um Descanso Longo. Recuperar Vitalidade. Você tem uma reserva de dez d10s. Como uma Ação Bônus, você pode gastar dados da reserva, jogá-los e recuperar um número de Pontos de Vida igual ao total do resultado. Você restaura todos os dados gastos quando você completa um Descanso Longo."
     },
     {
       "id": "boon_speed",
       "name": "Dádiva da Velocidade Suprema (Boon of Speed)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Seu deslocamento aumenta em +9 metros; você pode realizar a ação de Desengajar como Ação Bônus."
+      "desc": "+1 em um atributo (máximo 30). Seu deslocamento aumenta em +9 metros; você pode realizar a ação de Desengajar como Ação Bônus.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Artista de Fuga. Como uma Ação Bônus, você pode executar a ação Desengajar, que também encerra a condição Imobilizado em você. Agilidade. Seu Deslocamento aumenta em 9 metros."
     },
     {
       "id": "boon_truesight",
       "name": "Dádiva da Visão Verdadeira (Boon of Truesight)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Você ganha Visão da Verdade (Truesight) permanente com alcance de 18 metros."
+      "desc": "+1 em um atributo (máximo 30). Você ganha Visão da Verdade (Truesight) permanente com alcance de 18 metros.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Visão Verdadeira. Você tem Visão Verdadeira com um alcance de 18 metros."
     }
   ],
   "weaponMasteries": [
@@ -7251,7 +7317,8 @@ const DND5E_DATA = {
       "classes": [
         "paladin"
       ],
-      "desc": "Você convoca um ser sobrenatural que aparece como uma montaria leal em um espaço desocupado à sua escolha no alcance da magia. Essa criatura usa o bloco de estatísticas de Montaria Sobrenatural . Se você já tem uma montaria desta magia, a montaria é substituída pela nova. A montaria se assemelha a um animal grande e que se pode montar à sua escolha, como um alce, um camelo, um cavalo ou um lobo atroz. Sempre que conjurar a magia, escolha o tipo de criatura da montaria - Celestial, Feérico ou Ínfero - que determina certas características no bloco de estatísticas. Combate. A montaria é um aliado seu e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa e funciona como uma montaria controlada enquanto você a monta (conforme definido nas regras sobre combate montado). Se você tem a condição Incapacitado, a montaria age no turno dela imediatamente após o seu, de forma independente, concentrando-se em protegê-lo. Desaparecimento da Montaria. A montaria desaparece se é reduzida a 0 Pontos de Vida ou se você morrer. Quando desaparece, deixa para trás qualquer coisa que estivesse vestindo ou carregando. Se você conjurar esta magia novamente, você decide se invoca a montaria que desapareceu ou uma diferente. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você convoca um ser sobrenatural que aparece como uma montaria leal em um espaço desocupado à sua escolha no alcance da magia. Essa criatura usa o bloco de estatísticas de Montaria Sobrenatural . Se você já tem uma montaria desta magia, a montaria é substituída pela nova. A montaria se assemelha a um animal grande e que se pode montar à sua escolha, como um alce, um camelo, um cavalo ou um lobo atroz. Sempre que conjurar a magia, escolha o tipo de criatura da montaria - Celestial, Feérico ou Ínfero - que determina certas características no bloco de estatísticas. Combate. A montaria é um aliado seu e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa e funciona como uma montaria controlada enquanto você a monta (conforme definido nas regras sobre combate montado). Se você tem a condição Incapacitado, a montaria age no turno dela imediatamente após o seu, de forma independente, concentrando-se em protegê-lo. Desaparecimento da Montaria. A montaria desaparece se é reduzida a 0 Pontos de Vida ou se você morrer. Quando desaparece, deixa para trás qualquer coisa que estivesse vestindo ou carregando. Se você conjurar esta magia novamente, você decide se invoca a montaria que desapareceu ou uma diferente. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas.",
+      "bloco": "Montaria SobrenaturalCelestial Grande, Feérico ou Ínfero (À Sua Escolha), Neutro CA 10 + 1 por círculo de magia PV 5 + 10 por círculo de magia (a montaria tem um número de Dados de Vida [d10s] igual ao círculo da magia) Deslocamento 18 m, Voo 18 m (requer magia de 4º círculo ou superior) SGFor 18 +4 +4 Des 12 +1 +1 Con 14 +2 +2 Int 6 –2 –2 Sab 12 +1 +1 Car 8 –1 –1 Sentidos Percepção Passiva 11 Idiomas Telepatia 1,5 km (funciona apenas com você) ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosVínculo Vital. Ao recuperar Pontos de Vida de uma magia 1º círculo ou superior, a montaria recupera o mesmo número de Pontos de Vida se você estiver a até 1,5 metro dela.AçõesPancada Sobrenatural. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 mais o círculo da magia de pontos de dano Radiante (Celestial), Psíquico (Feérico) ou Necrótico (Ínfero).Ações BônusDerrubar Brilho (Apenas Ínfero; Recarrega após um Descanso Longo). Salvaguarda de Sabedoria: CD é igual a CD para evitar sua magia, uma criatura a até 18 metros à vista da montaria. Falha: O alvo tem a condição Amedrontado até o final do seu próximo turno. Passo Feérico (Apenas Feérico; Recarrega após um Descanso Longo). A montaria se teleporta, junto com seu cavaleiro, para um espaço desocupado à sua escolha a até 18 metros de distância de onde está. Toque Curativo (Apenas Celestial; Recarrega após um Descanso Longo). Uma criatura a até 1,5 metro da montaria recupera um número de Pontos de Vida igual a 2d8 mais o círculo da magia."
     },
     {
       "id": "rope_trick",
@@ -7514,7 +7581,8 @@ const DND5E_DATA = {
         "druid",
         "ranger"
       ],
-      "desc": "Você invoca um Espírito Bestial. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Bestial . Ao conjurar a magia, escolha um ambiente: Água, Ar ou Terra. A criatura se assemelha a um animal à sua escolha que é nativo do ambiente escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Bestial. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Bestial . Ao conjurar a magia, escolha um ambiente: Água, Ar ou Terra. A criatura se assemelha a um animal à sua escolha que é nativo do ambiente escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas.",
+      "bloco": "Espírito BestialFera Pequena, Neutra CA 11 + o círculo da magia PV 20 (apenas Ar) ou 30 (apenas Água e Terra) + 5 para cada círculo de magia acima de 2 Deslocamento 9 m; Escalada 9 m (Apenas Terra); Natação 9 m (Apenas água); Voo 18 m (Apenas Ar) SGFor 13 +1 +1 Des 16 +3 +3 Con 15 +2 +2 Int 10 +0 +0 Sab 10 +0 +0 Car 16 +3 +3 Sentidos: Visão no Escuro 18 m, Percepção Passiva 12 Idiomas: Compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosRespirar na Água (Apenas Água). O espírito só pode respirar debaixo d’água. Sobrevoo (Apenas Ar). O espírito não provoca Ataques de Oportunidade quando voa para fora do alcance de um inimigo. Táticas de Grupo (Apenas Água e Terra). O espírito tem Vantagem em uma jogada de ataque contra uma criatura se pelo menos um dos aliados do espírito estiver a até 1,5 metro da criatura e o aliado não tem a condição Incapacitado.AçõesAtaques Múltiplos. O espírito realiza um número de ataques de Dilacerar igual à metade do círculo da magia (arredondado para baixo). Dilacerar. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 4 mais o círculo da magia em pontos de dano Perfurante."
     },
     {
       "id": "lamina_flamejante",
@@ -8168,7 +8236,8 @@ const DND5E_DATA = {
         "ranger",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Feérico. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Feérico . Ao conjurar a magia, escolha um humor: Alegre, Enfurecido ou Malandro. A criatura se assemelha a uma criatura Feérica à sua escolha definida pelo humor escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece se reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Feérico. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Feérico . Ao conjurar a magia, escolha um humor: Alegre, Enfurecido ou Malandro. A criatura se assemelha a uma criatura Feérica à sua escolha definida pelo humor escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece se reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas.",
+      "bloco": "Espírito FeéricoFeérico Pequeno, Neutro CA 12 + o círculo da magia PV 30 + 10 para cada círculo de magia acima de 3 Deslocamento 9 m, Voo 9 m SGFor 13 +1 +1 Des 16 +3 +3 Con 14 +2 +2 Int 14 +2 +2 Sab 11 +0 +0 Car 16 +3 +3 Imunidades Enfeitiçado Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Silvestre, compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)AçõesAtaques Múltiplos. O espírito realiza um número de ataques com Lâmina Feérica igual à metade do círculo da magia (arredondado para baixo). Lâmina Feérica. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 2d6 + 3 + o círculo da magia pontos de dano Energético.Ações BônusPasso Feérico. O espírito se teleporta magicamente até 9 metros para um espaço desocupado à vista dele. Em seguida, ocorre um dos seguintes efeitos, com base no humor escolhido para o espírito: Alegre. Salvaguarda de Sabedoria: CD é igual a CD para evitar sua magia, uma criatura à vista do espírito e a até 3 metros dele. Falha: O alvo fica Enfeitiçado por você e pelo espírito por 1 minuto ou até que o alvo sofra qualquer dano. Enfurecido. O espírito tem Vantagem na próxima jogada de ataque que realizar antes do final deste turno. Malandro. O espírito preenche um Cubo de 3 metros de lado a até 1,5 metro dele com Escuridão mágica, que dura até o final do próximo turno dele."
     },
     {
       "id": "call_lightning",
@@ -8431,7 +8500,8 @@ const DND5E_DATA = {
         "warlock",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Morto-Vivo. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Morto-vivo. Ao conjurar a magia, escolha a forma da criatura: Esquelético, Fantasmagórico ou Pútrido. O espírito se assemelha a uma criatura Morta-viva com a forma escolhida, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Morto-Vivo. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Morto-vivo. Ao conjurar a magia, escolha a forma da criatura: Esquelético, Fantasmagórico ou Pútrido. O espírito se assemelha a uma criatura Morta-viva com a forma escolhida, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas.",
+      "bloco": "Espírito Morto-Vivo — Morto-vivo Médio, Neutro CA 11 + o círculo da magia PV 30 (apenas Fantasmagórico e Pútrido) ou 20 (apenas Esquelético) + 10 para cada círculo de magia acima de 3 Deslocamento 9 m; Voo 12 m (pairar; apenas Fantasmagórico) SGFor 12 +1 +1 Des 16 +3 +3 Con 15 +2 +2 Int 4 –3 –3 Sab 10 +0 +0 Car 9 –1 –1 Imunidades Necrótico, Venenoso; Amedrontado, Envenenado, Exaustão, Paralisado Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosAura Purulenta (Apenas Pútrido). Salvaguarda de Constituição: CD é igual a CD para evitar sua magia, qualquer criatura (exceto você) que inicie o turno dentro de uma Emanação de 1,5 metro originada a partir do espírito. Falha: A criatura tem a condição Envenenado até o início de seu próximo turno. Passagem Incorpórea (Apenas Fantasmagórico). O espírito pode se mover através de outras criaturas e objetos como se fossem Terreno Difícil. Se ele terminar o turno dentro de um objeto, ele é desviado para o espaço desocupado mais próximo e sofre 1d10 pontos de dano Energético por cada 1,5 metro percorrido.AçõesAtaques Múltiplos. O espírito realiza um número de ataques igual à metade do círculo da magia (arredondado para baixo). Garra Podre (Apenas Pútrido). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d6 + 3 mais o círculo da magia em pontos de dano Cortante. Se o alvo tem a condição Envenenado, ele tem a condição Paralisado até o final do próximo turno dele. Raio da Cova (Somente Esquelético). Jogada de Ataque à Distância: Bônus é igual ao seu modificador de ataque mágico, alcance 45 m. Dano: 2d4 + 3 mais o círculo da magia em pontos de dano Necrótico. Toque Mortal (Apenas Fantasmagórico). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 3 mais o círculo da magia em pontos de dano Necrótico, e o alvo tem a condição Amedrontado até o final do próximo turno dele."
     },
     {
       "id": "slow",
@@ -8986,7 +9056,8 @@ const DND5E_DATA = {
         "ranger",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Elemental. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Elemental. Ao conjurar a magia, escolha um elemento: Água, Ar, Fogo ou Terra. A criatura se assemelha a uma forma bípede envolta no elemento escolhido, o que determina certas características no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Elemental. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Elemental. Ao conjurar a magia, escolha um elemento: Água, Ar, Fogo ou Terra. A criatura se assemelha a uma forma bípede envolta no elemento escolhido, o que determina certas características no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas.",
+      "bloco": "Espírito ElementalElemental Médio, Neutro CA 11 + o círculo da magia PV 50 + 10 para cada círculo de magia acima de 4 Deslocamento 12 m; Escavação 12 m (apenas Terra); Natação 12 m (apenas Água); Voo 12 m (pairar; apenas Ar) SGFor 18 +4 +4 Des 15 +2 +2 Con 17 +3 +3 Int 4 –3 –3 Sab 10 +0 +0 Car 16 +3 +3 Resistências Ácido (apenas Água), Cortante e Perfurante (apenas Terra), Elétrico e Trovejante (apenas Ar) Imunidades Ígneo (somente Fogo), Venenoso; Envenenado, Exaustão, Paralisado, Petrificado Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Primordial, compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosEstado Amorfo (Apenas Água, Ar e Fogo). O espírito pode se mover por um espaço tão estreito quanto 2,5 centímetros de largura sem contá-lo como Terreno Difícil.AçõesAtaques Múltiplos. O espírito realiza um número de ataques de Pancada igual à metade do círculo da magia (arredondado para baixo). Pancada. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d10 + 4 + o círculo da magia pontos de dano Contundente (apenas Terra), Elétrico (apenas Ar), Gélido (apenas Água) ou Ígneo (apenas Fogo)."
     },
     {
       "id": "guardian_of_faith",
@@ -9167,7 +9238,8 @@ const DND5E_DATA = {
         "warlock",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Aberrante. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Aberrante . Ao conjurar a magia, escolha entre Devorador de Mentes, Pseudo-observador ou Slaad. A criatura se assemelha a uma Aberração desse tipo, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Aberrante. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Aberrante . Ao conjurar a magia, escolha entre Devorador de Mentes, Pseudo-observador ou Slaad. A criatura se assemelha a uma Aberração desse tipo, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas.",
+      "bloco": "Espírito AberranteAberração Média, Neutra CA 11 + o círculo da magia PV 40 + 10 para cada círculo de magia acima de 4 Deslocamento 9 m; Voo 9 m (pairar; apenas Pseudoobservador) SGFor 16 +3 +3 Des 10 +0 +0 Con 15 +2 +2 Int 16 +3 +3 Sab 10 +0 +0 Car 6 –2 –2 Imunidades Psíquico Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Dialeto Obscuro, entende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosAura Sussurrante (Apenas Devorador de Mentes). No início de cada turno do espírito, ele emite energia psiônica se não tem a condição Incapacitado. Salvaguarda de Sabedoria: CD é igual a CD para evitar sua magia, cada criatura (exceto você) a até 1,5 metro do espírito. Falha: 2d6 pontos de dano Psíquico. Regeneração (Apenas Slaad). O espírito recupera 5 Pontos de Vida no início do turno dele se tiver pelo menos 1 Ponto de Vida.AçõesAtaques Múltiplos. O espírito realiza um número de ataques igual à metade do círculo da magia (arredondado para baixo). Garras (Apenas Slaad). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d10 + 3 mais o círculo da magia em pontos de dano Cortante, e o alvo não pode recuperar Pontos de Vida até o início do próximo turno do espírito. Pancada Psíquica (Apenas Devorador de Mentes). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 3 mais o círculo da magia em pontos de dano Psíquico. Raio Ocular (Somente Pseudo-observador). Jogada de Ataque à Distância: Bônus é igual ao seu modificador de ataque mágico, alcance 45 m. Dano: 1d8 + 3 mais o círculo da magia em pontos de dano Psíquico."
     },
     {
       "id": "invocar_constructo",
@@ -9181,7 +9253,8 @@ const DND5E_DATA = {
       "classes": [
         "wizard"
       ],
-      "desc": "Você invoca o espírito de um Construto. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito do Constructo . Ao conjurar a magia, escolha um material: Argila, Metal ou Pedra. A criatura se assemelha a uma estátua animada (você determina a aparência) composto do material escolhido, que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca o espírito de um Construto. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito do Constructo . Ao conjurar a magia, escolha um material: Argila, Metal ou Pedra. A criatura se assemelha a uma estátua animada (você determina a aparência) composto do material escolhido, que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas.",
+      "bloco": "Espírito do ConstructoConstructo Médio, Neutro CA 13 + o círculo da magia PV 40 + 15 para cada círculo de magia acima de 4 Deslocamento 9 m SGFor 18 +4 +4 Des 10 +0 +0 Con 18 +4 +4 Int 14 +2 +2 Sab 11 +0 +0 Car 5 –3 –3 Resistências Venenoso Imunidades Amedrontado, Enfeitiçado, Envenenado, Exaustão, Paralisado Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosCorpo Aquecido (Apenas Metal). Uma criatura que atinge o espírito com um ataque corpo a corpo ou que inicia seu turno imobilizando o espírito sofre 1d10 pontos de dano Ígneo. Letargia Empedernida (Apenas Pedra). Quando uma criatura começa o turno dela a até 3 metros do espírito, o espírito pode atacá-la com energia mágica se o espírito puder vêla. Salvaguarda de Sabedoria: CD é igual a CD para evitar sua magia. Falha: Até o início do próximo turno do espírito, o alvo não pode realizar Ataques de Oportunidade e seu Deslocamento é reduzido pela metade.AçõesAtaques Múltiplos. O espírito realiza um número de ataques de Pancada igual à metade do círculo da magia (arredondado para baixo). Pancada. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 4 + o círculo da magia pontos de dano Contundente.ReaçõesReação Violenta (Apenas Argila). Gatilho: O espírito sofre dano de uma criatura. Reação: O espírito realiza um ataque de Pancada contra essa criatura, se possível, ou o espírito se move até metade do seu Deslocamento em direção a essa criatura sem provocar Ataques de Oportunidade."
     },
     {
       "id": "invocar_elementais_menores",
@@ -9516,7 +9589,8 @@ const DND5E_DATA = {
         "sorcerer",
         "wizard"
       ],
-      "desc": "Objetos são animados ao seu comando. Escolha uma série de objetos não mágicos no alcance da magia que não estejam sendo usados ou carregados, não estejam fixados a uma superfície e não sejam Colossais. O número máximo de objetos é igual ao seu modificador de atributo de conjuração. Para este número, um tamanho Médio ou menor conta como um objeto, um alvo Grande conta como dois e um alvo Enorme conta como três. Cada alvo se anima, faz brotar pernas e se torna um Constructo que usa o bloco de estatísticas do Objeto Animado ; esta criatura está sob seu controle até que a magia termine ou até que ela seja reduzida a 0 Pontos de Vida. Cada criatura que você anima com esta magia é uma aliada sua e de seus aliados. Em combate, ela compartilha a contagem de Iniciativa com você e tem o turno dela imediatamente após o seu. Até que a magia encerre, você pode executar uma Ação Bônus para comandar mentalmente qualquer criatura que tenha animado com essa magia se a criatura estiver a até 150 metros de você (se você controlar várias criaturas, pode comandar quaisquer delas ao mesmo tempo, emitindo o mesmo comando para cada uma). Se você não der nenhum comando, a criatura executa a ação Esquivar e se move apenas para evitar danos. Quando a criatura é reduzida a 0 Pontos de Vida, ela reverte para sua forma de objeto, e qualquer dano restante é transferido para essa forma. Usando um Espaço de Magia de Círculo Superior. O dano de Pancada da criatura aumenta em 1d4 (Médio ou menor), 1d6 (Grande) ou 1d12 (Enorme) para cada círculo de espaço de magia acima de 5."
+      "desc": "Objetos são animados ao seu comando. Escolha uma série de objetos não mágicos no alcance da magia que não estejam sendo usados ou carregados, não estejam fixados a uma superfície e não sejam Colossais. O número máximo de objetos é igual ao seu modificador de atributo de conjuração. Para este número, um tamanho Médio ou menor conta como um objeto, um alvo Grande conta como dois e um alvo Enorme conta como três. Cada alvo se anima, faz brotar pernas e se torna um Constructo que usa o bloco de estatísticas do Objeto Animado ; esta criatura está sob seu controle até que a magia termine ou até que ela seja reduzida a 0 Pontos de Vida. Cada criatura que você anima com esta magia é uma aliada sua e de seus aliados. Em combate, ela compartilha a contagem de Iniciativa com você e tem o turno dela imediatamente após o seu. Até que a magia encerre, você pode executar uma Ação Bônus para comandar mentalmente qualquer criatura que tenha animado com essa magia se a criatura estiver a até 150 metros de você (se você controlar várias criaturas, pode comandar quaisquer delas ao mesmo tempo, emitindo o mesmo comando para cada uma). Se você não der nenhum comando, a criatura executa a ação Esquivar e se move apenas para evitar danos. Quando a criatura é reduzida a 0 Pontos de Vida, ela reverte para sua forma de objeto, e qualquer dano restante é transferido para essa forma. Usando um Espaço de Magia de Círculo Superior. O dano de Pancada da criatura aumenta em 1d4 (Médio ou menor), 1d6 (Grande) ou 1d12 (Enorme) para cada círculo de espaço de magia acima de 5.",
+      "bloco": "Objetos AnimadosConstruto Grande ou Menor, Sem Alinhamento CA 15 PV 10 (Médio ou menor), 20 (Grande), 40 (Enorme) Deslocamento 9 m SGFor 16 +3 +3 Des 10 +0 +0 Con 10 +0 +0 Int 3 –4 –4 Sab 3 –4 –4 Car 1 –5 –5 Imunidades Psíquico, Venenoso; Amedrontado, Enfeitiçado, Envenenado, Exaustão, Paralisado Sentidos Visão às Cegas 9 m, Percepção Passiva 6 Idiomas Compreende os idiomas que você conhece ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)AçõesPancada. Jogada de Ataque Corpo a Corpo: Bônus igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: Energético igual a 1d4 + 3 (Médio ou menor), 2d6 + 3 + seu modificador de atributo de conjuração (Grande) ou 2d12 + 3 + seu modificador de atributo de conjuração (Enorme)."
     },
     {
       "id": "circulo_de_poder",
@@ -9667,7 +9741,8 @@ const DND5E_DATA = {
         "cleric",
         "paladin"
       ],
-      "desc": "Você invoca um Espírito Celestial. Ele se manifesta em uma forma angelical em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Celestial . Ao conjurar a magia, escolha Defensor ou Vingador. Sua escolha determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Celestial. Ele se manifesta em uma forma angelical em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Celestial . Ao conjurar a magia, escolha Defensor ou Vingador. Sua escolha determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas.",
+      "bloco": "Espírito CelestialCelestial Grande, Neutro CA 11 + o círculo da magia + 2 (apenas Defensor) PV 40 + 10 para cada círculo de magia acima de 5 Deslocamento 9 m, Voo 12 m SGFor 16 +3 +3 Des 14 +2 +2 Con 16 +3 +3 Int 10 +0 +0 Sab 14 +2 +2 Car 16 +3 +3 Resistências Radiante Imunidades Amedrontado, Enfeitiçado Sentidos Visão no Escuro 18 m, Percepção Passiva 12 Idiomas Celestial, compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)AçõesAtaques Múltiplos. O espírito realiza um número de ataques igual à metade do círculo da magia (arredondado para baixo). Arco Radiante (Apenas Vingador). Jogada de Ataque à Distância: Bônus é igual ao seu modificador de ataque mágico, alcance 180 m. Dano: 2d6 + 2 + o círculo da magia pontos de dano Radiante. Maça Radiante (Apenas Defensor). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d10 + 3 + o círculo da magia pontos de dano Radiante, e o espírito pode escolher a si mesmo ou outra criatura à vista dele a até 3 metros do alvo. A criatura escolhida obtém 1d10 Pontos de Vida Temporários. Toque Curativo (1/Dia). O espírito toca outra criatura. O alvo recupera Pontos de Vida iguais a 2d8 + o círculo da magia."
     },
     {
       "id": "criacao",
@@ -9848,7 +9923,8 @@ const DND5E_DATA = {
       "classes": [
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Dracônico. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Dracônico. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Dracônico. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Dracônico. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ele obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas.",
+      "bloco": "Espírito DracônicoDragão Grande, Neutro CA 14 + o círculo da magia PV 50 + 10 para cada círculo de magia acima de 5 Deslocamento 9 m, Natação 9 m; Voo 18 m SGFor 19 +4 +4 Des 14 +2 +2 Con 17 +3 +3 Int 10 +0 +0 Sab 14 +2 +2 Car 14 +2 +2 Resistências Ácido, Elétrico, Gélido, Ígneo, Venenoso Imunidades Amedrontado, Enfeitiçado, Envenenado Sentidos Visão às Cegas 9 m, Visão no Escuro 18 m, Percepção Passiva 12 Idiomas Dracônico, compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosResistências Compartilhadas. Ao invocar o espírito, escolha uma das resistências dele. Você tem Resistência ao tipo de dano escolhido até que a magia termine.AçõesAtaques Múltiplos. O espírito realiza um número de ataques de Dilacerar igual à metade do círculo da magia (arredondado para baixo) e usa o Ataque de Sopro. Ataque de Sopro. Salvaguarda de Destreza: CD é igual a CD para evitar sua magia, cada criatura em um Cone de 9 metros. Falha: 2d6 pontos de dano de um tipo ao qual o espírito tem Resistência (à sua escolha quando você conjura a magia). Sucesso: Metade do dano. Dilacerar. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 3 m. Dano: 1d6 + 4 + o círculo da magia pontos de dano Perfurante."
     },
     {
       "id": "invocar_elemental",
@@ -10505,7 +10581,8 @@ const DND5E_DATA = {
         "warlock",
         "wizard"
       ],
-      "desc": "Você invoca um Espírito Ínfero. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Ínfero. Ao conjurar a magia, escolha Demônio, Diabo ou Yugoloth. A criatura se assemelha a um Ínfero do tipo escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas."
+      "desc": "Você invoca um Espírito Ínfero. Ele se manifesta em um espaço desocupado à sua vista e no alcance da magia e usa o bloco de estatísticas do Espírito Ínfero. Ao conjurar a magia, escolha Demônio, Diabo ou Yugoloth. A criatura se assemelha a um Ínfero do tipo escolhido, o que determina certos detalhes no bloco de estatísticas da criatura. A criatura desaparece ao ser reduzida a 0 Pontos de Vida ou quando a magia termina. A criatura é uma aliada sua e de seus aliados. Em combate, ela compartilha sua contagem de Iniciativa, mas o turno dela é imediatamente após o seu. Ela obedece aos seus comandos verbais (nenhuma ação é necessária). Se você não emitir nenhum, ela executa a ação Esquivar e usa o movimento dela para evitar o perigo. Usando um Espaço de Magia de Círculo Superior. Use o círculo do espaço de magia para o círculo da magia no bloco de estatísticas.",
+      "bloco": "Espírito ÍnferoÍnfero Grande, Neutro CA 12 + o círculo da magia PV 50 (apenas Demônio) ou 40 (apenas Diabo) ou 60 (apenas Yugoloth) + 15 para cada círculo de magia acima de 6 Deslocamento 12 m; Escalada 12 m (apenas Demônio); Voo 18 m (apenas Diabo) SGFor 13 +1 +1 Des 16 +3 +3 Con 16 +2 +2 Int 10 +0 +0 Sab 10 +0 +0 Car 16 +3 +3 Resistências Ígneo Imunidades Venenoso; Envenenado Sentidos Visão no Escuro 18 m, Percepção Passiva 10 Idiomas Abissal, Infernal, Telepatia 18 m ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosEspasmos da Morte (Apenas Demônio). Quando o espírito é reduzido a 0 Pontos de Vida ou a magia terminar, o espírito explode. Salvaguarda de Destreza: CD é igual a CD para evitar sua magia, cada criatura em uma Emanação de 3 metros originada a partir do espírito. Falha: 2d10 mais o círculo da magia em pontos de dano Ígneo. Sucesso: Metade do dano. Resistência à Magia. O espírito tem Vantagem em salvaguardas contra magias e outros efeitos mágicos. Visão Diabólica (Apenas Diabo). Escuridão Mágica não impede a Visão no Escuro do espírito.AçõesAtaques Múltiplos. O espírito realiza um número de ataques igual à metade do círculo da magia (arredondado para baixo). Arremesso de Chamas (Apenas Diabo). Jogada de Ataque à Distância: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m ou alcance 45 m. Dano: 2d6 + 3 mais o círculo da magia em pontos de dano pontos de dano Ígneo. Garras (Apenas Yugoloth). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 3 mais o círculo da magia em pontos de dano Cortante. Imediatamente após o ataque acertar ou errar, o espírito pode se teleportar até 9 metros para um espaço desocupado à vista dele. Mordida (Apenas Demônio). Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d12 + 3 mais o círculo da magia em pontos de dano Necrótico. Espírito Ínfero (Diabo) Espírito BestialFera Pequena, Neutra CA 11 + o círculo da magia PV 20 (apenas Ar) ou 30 (apenas Água e Terra) + 5 para cada círculo de magia acima de 2 Deslocamento 9 m; Escalada 9 m (Apenas Terra); Natação 9 m (Apenas água); Voo 18 m (Apenas Ar) SGFor 13 +1 +1 Des 16 +3 +3 Con 15 +2 +2 Int 10 +0 +0 Sab 10 +0 +0 Car 16 +3 +3 Sentidos: Visão no Escuro 18 m, Percepção Passiva 12 Idiomas: Compreende os idiomas que você fala ND Nenhum (XP 0; BP é igual ao seu Bônus de Proficiência)TraçosRespirar na Água (Apenas Água). O espírito só pode respirar debaixo d’água. Sobrevoo (Apenas Ar). O espírito não provoca Ataques de Oportunidade quando voa para fora do alcance de um inimigo. Táticas de Grupo (Apenas Água e Terra). O espírito tem Vantagem em uma jogada de ataque contra uma criatura se pelo menos um dos aliados do espírito estiver a até 1,5 metro da criatura e o aliado não tem a condição Incapacitado.AçõesAtaques Múltiplos. O espírito realiza um número de ataques de Dilacerar igual à metade do círculo da magia (arredondado para baixo). Dilacerar. Jogada de Ataque Corpo a Corpo: Bônus é igual ao seu modificador de ataque mágico, alcance 1,5 m. Dano: 1d8 + 4 mais o círculo da magia em pontos de dano Perfurante."
     },
     {
       "id": "mau_olhado",

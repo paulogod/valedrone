@@ -2268,6 +2268,22 @@ select.form-control option {
   color: #94a3b8;
 }
 
+/* Resumo curto do talento, acima do texto completo do livro */
+.feat-info-resumo {
+  font-size: 0.78rem;
+  color: #fbbf24;
+  font-style: italic;
+}
+
+.feat-info-completo {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 0.4rem;
+}
+
+.feat-info-completo p { margin: 0 0 0.4rem 0; }
+.feat-info-completo p:last-child { margin-bottom: 0; }
+.feat-info-completo strong { color: #e2e8f0; }
+
 /* ==========================================================================
    TABELA DE MAGIAS (nome / nível / classes / info / adicionar)
    ========================================================================== */
@@ -2503,6 +2519,42 @@ select.form-control option {
   margin: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   padding-top: 0.45rem;
+}
+
+.spell-info-desc p { margin: 0 0 0.4rem 0; }
+.spell-info-desc p:last-child { margin-bottom: 0; }
+.spell-info-desc strong { color: #e2e8f0; }
+
+/* Bloco de estatísticas da criatura invocada por magias de Invocar/Convocar */
+.spell-info-bloco {
+  margin-top: 0.55rem;
+  padding: 0.5rem 0.7rem;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.spell-info-bloco p { margin: 0 0 0.3rem 0; }
+.spell-info-bloco p:last-child { margin-bottom: 0; }
+.spell-info-bloco strong { color: #e2e8f0; }
+
+.spell-info-bloco-titulo {
+  margin: 0 0 0.4rem 0;
+  font-size: 0.78rem;
+  color: #c084fc;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bloco-secao {
+  margin: 0.5rem 0 0.25rem 0;
+  font-size: 0.76rem;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 /* ==========================================================================

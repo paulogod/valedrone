@@ -3767,7 +3767,9 @@ function updateFeatsList() {
     if (soMeus && !meu) return false;
     if (tipo !== "all" && f.type !== tipo) return false;
     if (!busca) return true;
-    return f.name.toLowerCase().includes(busca) || (f.desc || "").toLowerCase().includes(busca);
+    // A busca também varre o texto completo do livro, não só o resumo.
+    const texto = `${f.desc || ""} ${f.full || ""}`.toLowerCase();
+    return f.name.toLowerCase().includes(busca) || texto.includes(busca);
   });
 
   const GRUPOS = [
@@ -5666,10 +5668,114 @@ function featTypeLabel(type) {
 /**
  * Conteúdo do painel "i" de um talento
  */
+/* Conectivos que ainda deixam um título parecer título ("Magia de 1º Círculo.") */
+const CONECTIVOS_DE_TITULO = new Set(["de", "do", "da", "dos", "das", "em", "e", "ou", "a", "o",
+  "à", "às", "ao", "aos", "com", "no", "na", "nos", "nas", "por", "para", "um", "uma", "seu",
+  "sua", "apenas", "após", "the"]);
+
+/** Um trecho é título de benefício quando toda palavra é maiúscula ou conectivo */
+function pareceTituloDeRegra(frase) {
+  const palavras = frase.replace(/\.$/, "").split(/\s+/);
+  if (!palavras.length || palavras.length > 9) return false;
+  return palavras.every((p, i) => {
+    const limpa = p.replace(/^[("']+|[)"',;:]+$/g, "");
+    if (!limpa) return true;
+    if (/^[0-9]/.test(limpa)) return true;                       // "1º", "1/Dia"
+    if (i > 0 && CONECTIVOS_DE_TITULO.has(limpa.toLowerCase())) return true;
+    return /^[A-ZÀ-Ú]/.test(limpa);
+  });
+}
+
+/**
+ * Texto de regra do livro em parágrafos legíveis.
+ *
+ * O livro escreve cada benefício como "Título. Texto do benefício." tudo
+ * corrido. Aqui o título vira negrito e abre parágrafo — o painel do "i" fica
+ * parecido com a página impressa em vez de um bloco único de texto.
+ */
+function formatarTextoDeRegras(txt) {
+  if (!txt) return "";
+  const escapado = String(txt)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const partes = escapado.split(/(?<=\.)\s+/);
+  const paragrafos = [];
+  partes.forEach(parte => {
+    const m = parte.match(/^([^.]{2,48}\.)\s*([\s\S]*)$/);
+    if (m && pareceTituloDeRegra(m[1])) {
+      paragrafos.push(`<p><strong>${m[1]}</strong>${m[2] ? ` ${m[2]}` : ""}</p>`);
+    } else if (paragrafos.length) {
+      const ultimo = paragrafos.pop();
+      paragrafos.push(ultimo.replace(/<\/p>$/, ` ${parte}</p>`));
+    } else {
+      paragrafos.push(`<p>${parte}</p>`);
+    }
+  });
+  return paragrafos.join("");
+}
+
+/* Rótulos que abrem uma linha própria no bloco de estatísticas */
+const ROTULOS_DE_BLOCO = ["CA", "PV", "Deslocamento", "Resistências", "Imunidades",
+  "Vulnerabilidades", "Sentidos", "Idiomas", "ND"];
+const SECOES_DE_BLOCO = ["Traços", "Ações Bônus", "Ações", "Reações"];
+
+/**
+ * Bloco de estatísticas da criatura invocada, em linhas.
+ *
+ * No livro isso é uma tabela; extraído, vira uma linha só ("CA 12 + o círculo
+ * da magia PV 50 Deslocamento 12 m ..."). Aqui cada rótulo volta a abrir a sua
+ * linha, e Traços/Ações passam pelo formatador de regras.
+ */
+function formatarBlocoDeCriatura(txt) {
+  if (!txt) return "";
+  let t = String(txt).replace(/\s+/g, " ").trim();
+
+  // O nome vem colado no tipo ("Espírito ÍnferoÍnfero Grande, Neutro")
+  t = t.replace(/^(.+?)((?:Aberração|Besta|Fera|Celestial|Constructo|Construto|Elemental|Feérico|Ínfero|Morto-vivo|Morto-Vivo|Planta|Humanoide|Monstruosidade|Dragão)\b)/,
+                (_, nome, tipo) => `${nome.trim()} — ${tipo}`);
+
+  // Separa a parte de tabela do texto de Traços/Ações
+  const secao = new RegExp(`(${SECOES_DE_BLOCO.join("|")})(?=[A-ZÀ-Ú])`, "g");
+  let corte = -1;
+  for (let m = secao.exec(t); m; m = secao.exec(t)) {
+    if (m.index === 0 || !/[A-Za-zÀ-ú]/.test(t[m.index - 1])) { corte = m.index; break; }
+  }
+
+  let tabela = corte >= 0 ? t.slice(0, corte) : t;
+  let resto = corte >= 0 ? t.slice(corte) : "";
+  tabela = tabela.trim();
+
+  ROTULOS_DE_BLOCO.forEach(r => {
+    tabela = tabela.replace(new RegExp(`\\s(${r})\\s`, "g"), `\n$1 `);
+  });
+  tabela = tabela.replace(/\sSG(?=For)/g, "\nAtributos ");
+
+  const linhas = tabela.split("\n").map(l => l.trim()).filter(Boolean)
+    .map(l => {
+      const m = l.match(/^(Atributos|CA|PV|Deslocamento|Resistências|Imunidades|Vulnerabilidades|Sentidos|Idiomas|ND)\s+([\s\S]*)$/);
+      return m ? `<p><strong>${m[1]}</strong> ${m[2]}</p>` : `<p>${l}</p>`;
+    }).join("");
+
+  SECOES_DE_BLOCO.forEach(sec => {
+    resto = resto.replace(new RegExp(`(^|[^A-Za-zÀ-ú])${sec}(?=[A-ZÀ-Ú])`, "g"), `\n### ${sec}\n`);
+  });
+  const corpo = resto.split("\n").map(p => p.trim()).filter(Boolean)
+    .map(p => p.startsWith("### ")
+      ? `<h6 class="bloco-secao">${p.slice(4)}</h6>`
+      : formatarTextoDeRegras(p)).join("");
+
+  return linhas + corpo;
+}
+
 function buildFeatInfoHtml(f) {
+  // `full` é o texto completo do livro; `desc` é o resumo curto que o app usa
+  // na busca e nas caixas de escolha. O painel mostra os dois: resumo em cima,
+  // regra inteira embaixo.
+  const completo = f.full && f.full !== f.desc ? formatarTextoDeRegras(f.full) : "";
   return `
     <p class="feat-info-meta"><strong>Tipo:</strong> ${featTypeLabel(f.type)}${f.prereq ? ` &nbsp;•&nbsp; <strong>Pré-requisito:</strong> ${f.prereq}` : ''}</p>
-    <p>${f.desc}</p>
+    ${completo ? `<p class="feat-info-resumo">${f.desc}</p><div class="feat-info-completo">${completo}</div>`
+               : `<p>${f.desc}</p>`}
   `;
 }
 
@@ -6263,7 +6369,11 @@ function buildSpellInfoHtml(sp) {
       <div><span class="spell-info-label">Duração</span><span class="spell-info-value">${sp.duration}</span></div>
       <div><span class="spell-info-label">Classes</span><span class="spell-info-value">${formatSpellClasses(sp)}</span></div>
     </div>
-    <p class="spell-info-desc">${sp.desc}</p>
+    <div class="spell-info-desc">${formatarTextoDeRegras(sp.desc)}</div>
+    ${sp.bloco ? `<div class="spell-info-bloco">
+      <h5 class="spell-info-bloco-titulo"><i class="fa-solid fa-paw"></i> Bloco de Estatísticas da Criatura</h5>
+      ${formatarBlocoDeCriatura(sp.bloco)}
+    </div>` : ""}
   `;
 }
 
