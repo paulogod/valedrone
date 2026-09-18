@@ -584,6 +584,7 @@ function mergeIntoBlankCharacter(data) {
 function applyLoadedCharacter(data) {
   _ofWeaponsSig = null;
   _ofSpellsSig = null;
+  _ultimoMaxHp = null;       // ficha nova na tela: o próximo recálculo só anota o máximo
   character = mergeIntoBlankCharacter(data);
   migrateLegacyCharacter(data);
 
@@ -1248,11 +1249,18 @@ function initCustomBackgroundPanel() {
     }
   }
 
-  const populateAttr = (id, curVal) => {
+  // Dois bônus de antecedente não podem cair no mesmo atributo: cada seletor
+  // só lista o que escolheu e o que os outros ainda não pegaram.
+  normalizeBackgroundBonuses(ALL_ABILITY_IDS.slice());
+
+  const populateAttr = (id, key) => {
     const el = document.getElementById(id);
     if (!el) return;
+    const curVal = character.backgroundBonuses[key];
+    const tomados = bgBonusKeys().filter(k => k !== key).map(k => character.backgroundBonuses[k]);
     el.innerHTML = "";
     DND5E_DATA.abilities.forEach(ab => {
+      if (ab.id !== curVal && tomados.includes(ab.id)) return;
       const opt = document.createElement("option");
       opt.value = ab.id;
       opt.textContent = `${ab.name} (${ab.abbr})`;
@@ -1261,9 +1269,9 @@ function initCustomBackgroundPanel() {
     });
   };
 
-  populateAttr("selectCustomBgAttr1", character.backgroundBonuses.primary);
-  populateAttr("selectCustomBgAttr2", character.backgroundBonuses.secondary);
-  populateAttr("selectCustomBgAttr3", character.backgroundBonuses.tertiary);
+  populateAttr("selectCustomBgAttr1", "primary");
+  populateAttr("selectCustomBgAttr2", "secondary");
+  populateAttr("selectCustomBgAttr3", "tertiary");
 
   const selectFeat = document.getElementById("selectCustomBgFeat");
   if (selectFeat) {
@@ -1414,6 +1422,56 @@ function listarNiveis(class1Obj, class2Obj) {
     }
   }
   return niveis.map((n, i) => ({ ...n, nivel: i + 1 }));
+}
+
+/* Último máximo conhecido, para saber de quanto o máximo mudou */
+let _ultimoMaxHp = null;
+
+/**
+ * Mantém os Pontos de Vida atuais coerentes com o máximo.
+ *
+ * Qualquer coisa que mexa no máximo — modo de vida, nível, classe,
+ * Constituição, talento, valor digitado num nível — passa por aqui. Quem
+ * estava ferido continua com o mesmo tanto de dano (o atual anda junto com o
+ * máximo), e o atual nunca fica acima do máximo nem abaixo de zero.
+ *
+ * A primeira passada só anota o máximo: abrir o app ou carregar uma ficha
+ * salva não é "mudança" e não pode mexer nos PV que o jogador tinha.
+ */
+function ajustarPvAtuaisAoMaximo(maxHp) {
+  if (!maxHp || maxHp < 1) return;
+
+  // Máximo digitado à mão na ficha manda mais que a conta automática.
+  const override = parseInt(hasOv("hpMax") ? sheetOv().hpMax : NaN, 10);
+  const teto = Number.isFinite(override) && override > 0 ? override : maxHp;
+
+  const anterior = _ultimoMaxHp;
+  _ultimoMaxHp = teto;
+
+  const atual = character.currentHp;
+
+  // Ficha ainda sem vida nenhuma registrada (personagem recém-criado): nasce
+  // com a vida cheia, não com 0.
+  if (atual === null || atual === undefined || (!atual && !(character.hpLog || []).length)) {
+    character.currentHp = teto;
+    return;
+  }
+
+  // Quem está caído a 0 PV continua caído: subir de nível não levanta ninguém.
+  if (atual === 0) return;
+
+  // Primeira passada (abrir o app, carregar ficha salva) só confere o teto.
+  if (anterior === null || anterior === teto) {
+    character.currentHp = Math.min(atual, teto);
+    return;
+  }
+
+  const antes = atual;
+  character.currentHp = Math.max(0, Math.min(teto, antes + (teto - anterior)));
+
+  if (character.currentHp !== antes) {
+    logHpEvent("edicao", `Máximo mudou para ${teto} PV — atuais ajustados`, character.currentHp);
+  }
 }
 
 /**
@@ -1675,7 +1733,16 @@ function atualizarResumoHp(resumo) {
     max: "Cada nível vale o Dado de Vida cheio. Vida bem mais alta — combine com a mesa antes.",
     manual: "Digite o resultado do dado de cada nível. O modificador de Constituição continua sendo somado por fora, então mudar Constituição depois já corrige a ficha sozinho. Campo vazio conta como metade + 1."
   };
-  resumo.textContent = porModo[character.hpMode || "average"];
+  const nivelTotal = character.level1 +
+    (character.class2 && character.class2 !== "none" ? character.level2 : 0);
+
+  // No 1º nível os três modos dão o mesmo número: o dado cheio. Dizer isso
+  // evita a impressão de que "vida completa" está sem efeito.
+  const aviso = nivelTotal <= 1
+    ? " No 1º nível o Dado de Vida sempre entra cheio, então este modo só passa a mudar alguma coisa a partir do 2º nível."
+    : "";
+
+  resumo.textContent = porModo[character.hpMode || "average"] + aviso;
 }
 
 /**
@@ -1719,6 +1786,70 @@ function getFormattedLanguages() {
 }
 
 /**
+ * As chaves de bônus do antecedente que valem no modo atual.
+ */
+function bgBonusKeys() {
+  return character.backgroundBonusMode === "+2/+1"
+    ? ["primary", "secondary"]
+    : ["primary", "secondary", "tertiary"];
+}
+
+/**
+ * Garante que cada bônus do antecedente caia num atributo diferente.
+ *
+ * O livro não deixa empilhar dois bônus de antecedente no mesmo atributo, então
+ * repetição aqui é estado inválido: a primeira escolha fica de pé e as demais
+ * são empurradas para o primeiro atributo ainda livre da lista do antecedente.
+ */
+function normalizeBackgroundBonuses(validAbilities) {
+  if (!validAbilities.length) return;
+  const bonuses = character.backgroundBonuses;
+  const usados = [];
+  bgBonusKeys().forEach(key => {
+    let valor = bonuses[key];
+    if (!validAbilities.includes(valor) || usados.includes(valor)) {
+      valor = validAbilities.find(a => !usados.includes(a)) || validAbilities[0];
+    }
+    bonuses[key] = valor;
+    usados.push(valor);
+  });
+}
+
+/**
+ * Quanto o Antecedente soma num atributo, já sem contar repetição.
+ *
+ * Os seletores não deixam escolher o mesmo atributo duas vezes, mas uma ficha
+ * antiga (ou salva antes disso) pode chegar com repetição. Aqui a segunda
+ * aparição simplesmente não conta: o bônus nunca empilha no mesmo atributo.
+ */
+function bonusDeAntecedente(abId) {
+  const bonuses = character.backgroundBonuses;
+  const usados = [];
+  let total = 0;
+  bgBonusKeys().forEach(key => {
+    const valor = bonuses[key];
+    if (!valor || valor === "none" || usados.includes(valor)) return;
+    usados.push(valor);
+    if (valor !== abId) return;
+    total += (character.backgroundBonusMode === "+2/+1" && key === "primary") ? 2 : 1;
+  });
+  return total;
+}
+
+/**
+ * As <option>s de um seletor de bônus, já sem os atributos que os outros
+ * seletores pegaram — escolher um atributo o tira das outras listas.
+ */
+function bgBonusOptions(validAbilities, key, sinal) {
+  const bonuses = character.backgroundBonuses;
+  const tomados = bgBonusKeys().filter(k => k !== key).map(k => bonuses[k]);
+  return validAbilities
+    .filter(a => a === bonuses[key] || !tomados.includes(a))
+    .map(a => `<option value="${a}" ${bonuses[key] === a ? 'selected' : ''}>${sinal} em ${DND5E_DATA.abilities.find(ab => ab.id === a).name}</option>`)
+    .join('');
+}
+
+/**
  * Atualiza os seletores de bônus de atributo (+2/+1 ou +1/+1/+1) do Antecedente (Passo 2)
  */
 function updateBackgroundBonusSelectors() {
@@ -1737,13 +1868,9 @@ function updateBackgroundBonusSelectors() {
   const validAbilities = bgObj.abilityOptions || [];
 
   // O personagem começa sem bônus escolhido ("none"). Assim que um antecedente
-  // entra, o estado passa a apontar para opções que existem no seletor.
-  const bonuses = character.backgroundBonuses;
-  if (validAbilities.length && !validAbilities.includes(bonuses.primary)) {
-    bonuses.primary = validAbilities[0];
-    bonuses.secondary = validAbilities[1] || validAbilities[0];
-    bonuses.tertiary = validAbilities[2] || validAbilities[0];
-  }
+  // entra, o estado passa a apontar para opções que existem no seletor — e
+  // nunca duas vezes para o mesmo atributo.
+  normalizeBackgroundBonuses(validAbilities);
   
   let html = `
     <div class="form-group">
@@ -1760,13 +1887,13 @@ function updateBackgroundBonusSelectors() {
       <div class="form-group">
         <label class="form-label">Atributo Primário (+2)</label>
         <select class="form-control" id="selectBgPrimary">
-          ${validAbilities.map(a => `<option value="${a}" ${character.backgroundBonuses.primary === a ? 'selected' : ''}>+2 em ${DND5E_DATA.abilities.find(ab => ab.id === a).name}</option>`).join('')}
+          ${bgBonusOptions(validAbilities, 'primary', '+2')}
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">Atributo Secundário (+1)</label>
         <select class="form-control" id="selectBgSecondary">
-          ${validAbilities.map(a => `<option value="${a}" ${character.backgroundBonuses.secondary === a ? 'selected' : ''}>+1 em ${DND5E_DATA.abilities.find(ab => ab.id === a).name}</option>`).join('')}
+          ${bgBonusOptions(validAbilities, 'secondary', '+1')}
         </select>
       </div>
     `;
@@ -1775,19 +1902,19 @@ function updateBackgroundBonusSelectors() {
       <div class="form-group">
         <label class="form-label">Primeiro (+1)</label>
         <select class="form-control" id="selectBgPrimary">
-          ${validAbilities.map(a => `<option value="${a}" ${character.backgroundBonuses.primary === a ? 'selected' : ''}>+1 em ${DND5E_DATA.abilities.find(ab => ab.id === a).name}</option>`).join('')}
+          ${bgBonusOptions(validAbilities, 'primary', '+1')}
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">Segundo (+1)</label>
         <select class="form-control" id="selectBgSecondary">
-          ${validAbilities.map(a => `<option value="${a}" ${character.backgroundBonuses.secondary === a ? 'selected' : ''}>+1 em ${DND5E_DATA.abilities.find(ab => ab.id === a).name}</option>`).join('')}
+          ${bgBonusOptions(validAbilities, 'secondary', '+1')}
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">Terceiro (+1)</label>
         <select class="form-control" id="selectBgTertiary">
-          ${validAbilities.map(a => `<option value="${a}" ${character.backgroundBonuses.tertiary === a ? 'selected' : ''}>+1 em ${DND5E_DATA.abilities.find(ab => ab.id === a).name}</option>`).join('')}
+          ${bgBonusOptions(validAbilities, 'tertiary', '+1')}
         </select>
       </div>
     `;
@@ -1803,29 +1930,21 @@ function updateBackgroundBonusSelectors() {
     recalculateCharacter();
   });
 
-  document.getElementById("selectBgPrimary").addEventListener("change", (e) => {
-    character.backgroundBonuses.primary = e.target.value;
+  // Escolher um atributo tem que tirá-lo das outras listas na hora, então cada
+  // troca remonta os seletores em vez de só guardar o valor.
+  const aoEscolher = (key) => (e) => {
+    character.backgroundBonuses[key] = e.target.value;
+    updateBackgroundBonusSelectors();
     initCustomBackgroundPanel();
     renderSpeciesBackgroundSummary();
     recalculateCharacter();
-  });
+  };
 
-  document.getElementById("selectBgSecondary").addEventListener("change", (e) => {
-    character.backgroundBonuses.secondary = e.target.value;
-    initCustomBackgroundPanel();
-    renderSpeciesBackgroundSummary();
-    recalculateCharacter();
-  });
+  document.getElementById("selectBgPrimary").addEventListener("change", aoEscolher("primary"));
+  document.getElementById("selectBgSecondary").addEventListener("change", aoEscolher("secondary"));
 
   const tertiaryEl = document.getElementById("selectBgTertiary");
-  if (tertiaryEl) {
-    tertiaryEl.addEventListener("change", (e) => {
-      character.backgroundBonuses.tertiary = e.target.value;
-      initCustomBackgroundPanel();
-      renderSpeciesBackgroundSummary();
-      recalculateCharacter();
-    });
-  }
+  if (tertiaryEl) tertiaryEl.addEventListener("change", aoEscolher("tertiary"));
 }
 
 /**
@@ -6180,14 +6299,7 @@ function recalculateCharacter() {
     let score = character.baseScores[ab.id] || 10;
     
     // Bônus do Antecedente 2024
-    if (character.backgroundBonusMode === "+2/+1") {
-      if (character.backgroundBonuses.primary === ab.id) score += 2;
-      if (character.backgroundBonuses.secondary === ab.id) score += 1;
-    } else {
-      if (character.backgroundBonuses.primary === ab.id) score += 1;
-      if (character.backgroundBonuses.secondary === ab.id) score += 1;
-      if (character.backgroundBonuses.tertiary === ab.id) score += 1;
-    }
+    score += bonusDeAntecedente(ab.id);
 
     // Bônus de Talentos Customizados (só os que estão no personagem)
     getSelectedCustomFeats().forEach(cf => {
@@ -6249,6 +6361,8 @@ function recalculateCharacter() {
   if (getActiveFeatIds().includes("tough")) {
     maxHp += totalLevel * 2;
   }
+
+  ajustarPvAtuaisAoMaximo(maxHp);
 
   // 5. Classe de Armadura (CA) Dinâmica + Itens Customizados
   const dexMod = finalMods["dex"];
@@ -7602,14 +7716,7 @@ function bindOfficialSheetEvents() {
 /** Valor de atributo atualmente exibido na ficha (base + bônus aplicados) */
 function getDisplayedAbilityScore(abId) {
   let score = character.baseScores[abId] || 10;
-  if (character.backgroundBonusMode === "+2/+1") {
-    if (character.backgroundBonuses.primary === abId) score += 2;
-    if (character.backgroundBonuses.secondary === abId) score += 1;
-  } else {
-    if (character.backgroundBonuses.primary === abId) score += 1;
-    if (character.backgroundBonuses.secondary === abId) score += 1;
-    if (character.backgroundBonuses.tertiary === abId) score += 1;
-  }
+  score += bonusDeAntecedente(abId);
   getSelectedCustomFeats().forEach(cf => { if (cf.abilityBonus === abId) score += 1; });
   return score;
 }
@@ -8027,7 +8134,10 @@ function bindEvents() {
   [["selectCustomBgAttr1", "primary"], ["selectCustomBgAttr2", "secondary"], ["selectCustomBgAttr3", "tertiary"]].forEach(([id, key]) => {
     bindCustomBg(id, "change", (e) => {
       character.backgroundBonuses[key] = e.target.value;
+      // Remonta os dois painéis para o atributo escolhido sair das outras listas
+      initCustomBackgroundPanel();
       updateBackgroundBonusSelectors();
+      renderSpeciesBackgroundSummary();
       recalculateCharacter();
     });
   });
@@ -8730,6 +8840,7 @@ function resetCharacter() {
   if (confirm("Deseja criar um novo personagem? As alterações não salvas serão perdidas.")) {
     _ofWeaponsSig = null;
     _ofSpellsSig = null;
+    _ultimoMaxHp = null;
     character = createBlankCharacter();
 
     localStorage.removeItem("dnd55_active_character");
