@@ -834,7 +834,7 @@ function subclassDescHtml(sub, nivel) {
     return `<details class="sub-feat${chegou ? "" : " is-futura"}">
         <summary><span class="sub-feat-nivel">Nv ${f.level}</span> <strong>${f.name}</strong>${chegou ? "" : " <em>(ainda não)</em>"}
           <span class="sub-feat-resumo">${f.resumo || ""}</span></summary>
-        <p>${f.desc}</p>
+        ${formatarTextoDeRegras(f.desc)}
       </details>`;
   }).join("");
   const jaTem = (sub.features || []).filter(f => f.level <= nivel).length;
@@ -847,6 +847,57 @@ function subclassDescHtml(sub, nivel) {
         padrao: false,
         corpo: `<div class="sub-feats">${caracteristicas}</div>`
       }) : "");
+}
+
+/**
+ * Painel das características de classe do personagem, no Passo 3.
+ *
+ * `featuresByLevel` só tem o nome da característica; o resumo de uma linha
+ * (featureSummaries) serve à ficha impressa, e o texto inteiro do livro
+ * (featureTexts) fica aqui, aberto no clique — é o mesmo "i" dos talentos e
+ * das magias, para não precisar do livro na mesa.
+ */
+function renderClassFeaturesPanel() {
+  const box = document.getElementById("classFeaturesPanel");
+  if (!box) return;
+
+  const partes = [];
+  [[resolveClassObj(character.class1, 1), character.level1 || 0, 1],
+   character.class2 && character.class2 !== "none"
+     ? [resolveClassObj(character.class2, 2), character.level2 || 0, 2] : null]
+    .filter(x => x && x[0] && x[0].id && x[0].id !== "none")
+    .forEach(([classObj, nivel]) => {
+      const linhas = [];
+      for (let l = 1; l <= 20; l++) {
+        (classObj.featuresByLevel?.[l] || []).forEach(nome => {
+          if (/^Característica de Subclasse/.test(nome)) return;   // sai na caixa da subclasse
+          const texto = (DND5E_DATA.featureTexts || {})[`${classObj.id}|${nome}`];
+          const resumo = (DND5E_DATA.featureSummaries || {})[nome] || "";
+          const chegou = l <= nivel;
+          linhas.push(`
+            <details class="sub-feat${chegou ? "" : " is-futura"}">
+              <summary><span class="sub-feat-nivel">Nv ${l}</span> <strong>${nome.split(" (")[0]}</strong>${chegou ? "" : " <em>(ainda não)</em>"}
+                <span class="sub-feat-resumo">${resumo}</span></summary>
+              ${texto ? formatarTextoDeRegras(texto)
+                      : `<p>${resumo || "Característica da classe personalizada."}</p>`}
+            </details>`);
+        });
+      }
+      if (!linhas.length) return;
+      const jaTem = Object.entries(classObj.featuresByLevel || {})
+        .filter(([l, arr]) => Number(l) <= nivel)
+        .reduce((n, [, arr]) => n + arr.filter(f => !/^Característica de Subclasse/.test(f)).length, 0);
+      partes.push(blocoHtml({
+        id: `caracteristicas-${classObj.id}`,
+        titulo: `Características de ${classObj.name.split(" (")[0]}`,
+        icone: "fa-shield-halved",
+        meta: `${jaTem} no seu nível`,
+        padrao: false,
+        corpo: `<div class="sub-feats">${linhas.join("")}</div>`
+      }));
+    });
+
+  box.innerHTML = partes.join("");
 }
 
 function preencherSubclasse(slot) {
@@ -1959,7 +2010,15 @@ function renderSpeciesBackgroundSummary() {
   if (!container) return;
   if (!speciesObj || !bgObj) { container.innerHTML = ""; return; }
 
-  let traitsHtml = speciesObj.traits.map(t => `<strong>${t.name}:</strong> ${t.desc}`).join("<br>");
+  // Cada traço abre no clique com o texto do livro (campo `full`); fechado,
+  // continua mostrando só o resumo de uma linha.
+  let traitsHtml = speciesObj.traits.map(t => t.full
+    ? `<details class="sub-feat">
+         <summary><strong>${t.name.split(" (")[0]}</strong>
+           <span class="sub-feat-resumo">${t.desc}</span></summary>
+         ${formatarTextoDeRegras(t.full)}
+       </details>`
+    : `<p><strong>${t.name}:</strong> ${t.desc}</p>`).join("");
 
   // Espécie personalizada não tem traços de tabela: o resumo mostra o texto
   // que o jogador escreveu, que é tudo o que o app sabe sobre ela.
@@ -1988,7 +2047,7 @@ function renderSpeciesBackgroundSummary() {
   if (bgObj.isCustom) {
     const chosenFeat = DND5E_DATA.feats.find(f => f.id === character.customBg.feat);
     featName = chosenFeat ? chosenFeat.name : "Talento Customizado";
-    featDesc = chosenFeat ? chosenFeat.desc : "";
+    featDesc = chosenFeat ? (chosenFeat.full || chosenFeat.desc) : "";
     const s1 = DND5E_DATA.skills.find(s => s.id === character.customBg.skill1);
     const s2 = DND5E_DATA.skills.find(s => s.id === character.customBg.skill2);
     skillsDesc = `${s1 ? s1.name : character.customBg.skill1}, ${s2 ? s2.name : character.customBg.skill2}`;
@@ -2007,7 +2066,7 @@ function renderSpeciesBackgroundSummary() {
   } else {
     const featObj = getOriginFeatObj();
     featName = featObj ? featObj.name : (bgObj.featChoice ? "— escolha o talento de origem —" : bgObj.featName);
-    featDesc = featObj ? featObj.desc : "";
+    featDesc = featObj ? (featObj.full || featObj.desc) : "";
     const ids = getBackgroundSkillIds();
     skillsDesc = ids.length
       ? ids.map(s => DND5E_DATA.skills.find(sk => sk.id === s)?.name || s).join(", ")
@@ -2018,9 +2077,9 @@ function renderSpeciesBackgroundSummary() {
 
   container.innerHTML = `
     <h4><i class="fa-solid fa-dna"></i> Traços da Espécie (${speciesObj.name})</h4>
-    <p style="margin-bottom: 0.6rem;">${traitsHtml}</p>
+    <div class="especie-tracos">${traitsHtml}</div>
     <h4><i class="fa-solid fa-scroll"></i> Antecedente (${getBackgroundLabel(bgObj)}) • Talento de Origem: ${featName}</h4>
-    <p>${featDesc}</p>
+    ${formatarTextoDeRegras(featDesc)}
     <p style="margin-top: 0.3rem; font-size: 0.8rem; color: #94a3b8;">
       <strong>Perícias:</strong> ${skillsDesc} | 
       <strong>Ferramentas:</strong> ${toolsDesc}
@@ -4958,7 +5017,7 @@ function renderInvocations() {
         <button type="button" class="feat-info-btn" data-invoc-info="${inv.id}" title="Mais informações"><i class="fa-solid fa-info"></i></button>
       </div>
       <div class="feat-info-panel" data-invoc-panel="${inv.id}" hidden>
-        <p>${inv.desc}</p>
+        ${formatarTextoDeRegras(inv.desc)}
         ${prereq ? `<p class="feat-info-meta"><strong>Pré-requisito:</strong> ${esc(prereq)}</p>` : ""}
       </div>
       ${caixas}
@@ -5711,7 +5770,12 @@ function formatarTextoDeRegras(txt) {
       paragrafos.push(`<p>${parte}</p>`);
     }
   });
-  return paragrafos.join("");
+  return paragrafos.join("").replace(/(?:\s*•\s*[^•<]+)+/g, trecho => {
+    // O livro usa marcadores "•" no meio do parágrafo; viram lista de verdade.
+    const itens = trecho.split("•").map(x => x.trim()).filter(Boolean);
+    return itens.length < 2 ? trecho : `</p><ul class="regra-lista">${
+      itens.map(x => `<li>${x}</li>`).join("")}</ul><p>`;
+  }).replace(/<p>\s*<\/p>/g, "");
 }
 
 /* Rótulos que abrem uma linha própria no bloco de estatísticas */
@@ -6400,6 +6464,7 @@ function recalculateCharacter() {
   // Mudou nível ou classe: a grade do modo manual ganha ou perde linhas, e o
   // dado de cada linha pode ter mudado junto.
   renderHpPorNivel();
+  renderClassFeaturesPanel();
 
   // 2. Atributos Finais
   const finalScores = {};
