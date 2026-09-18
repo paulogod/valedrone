@@ -2040,6 +2040,9 @@ select.form-control option {
 }
 .cc-opcao.is-on { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.18); }
 .cc-opcao.is-off { opacity: 0.5; cursor: not-allowed; }
+.cc-opcao-wrap { display: grid; gap: 0.2rem; }
+.cc-opcao-livro { margin-left: 1.6rem; }
+.cc-opcao-livro summary { font-size: 0.72rem; color: #94a3b8; }
 .cc-opcao input { margin-top: 0.2rem; accent-color: #8b5cf6; }
 .cc-opcao span { display: flex; flex-direction: column; gap: 0.1rem; font-size: 0.8rem; color: #e2e8f0; }
 .cc-opcao small { color: #94a3b8; font-size: 0.72rem; line-height: 1.35; }

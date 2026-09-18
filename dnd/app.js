@@ -2034,7 +2034,13 @@ function renderSpeciesBackgroundSummary() {
   if (character.lineage && character.lineage !== "none") {
     const linObj = speciesObj.lineages.find(l => l.id === character.lineage);
     if (linObj) {
-      traitsHtml += `<br><strong>Linhagem (${linObj.name}):</strong> ${linObj.desc}`;
+      traitsHtml += linObj.full
+        ? `<details class="sub-feat">
+             <summary><strong>Linhagem: ${linObj.name}</strong>
+               <span class="sub-feat-resumo">${linObj.desc}</span></summary>
+             ${formatarTextoDeRegras(linObj.full)}
+           </details>`
+        : `<p><strong>Linhagem (${linObj.name}):</strong> ${linObj.desc}</p>`;
     }
   }
 
@@ -4656,10 +4662,17 @@ function renderClassChoices() {
       corpo = `<div class="cc-opcoes cc-multi">${(ch.options || []).map(o => {
         const marcado = lista.includes(o.id);
         const cheio = !marcado && lista.filter(Boolean).length >= n;
-        return `<label class="cc-opcao${marcado ? " is-on" : ""}${cheio ? " is-off" : ""}">
-          <input type="checkbox" value="${o.id}" data-cc-multi="${ch.id}" ${marcado ? "checked" : ""} ${cheio ? "disabled" : ""}>
-          <span><strong>${o.name}</strong><small>${o.desc}</small></span>
-        </label>`;
+        // O texto do livro fica num <details> fora do <label>: dentro dele,
+        // qualquer clique marcaria a caixa de seleção.
+        return `<div class="cc-opcao-wrap">
+          <label class="cc-opcao${marcado ? " is-on" : ""}${cheio ? " is-off" : ""}">
+            <input type="checkbox" value="${o.id}" data-cc-multi="${ch.id}" ${marcado ? "checked" : ""} ${cheio ? "disabled" : ""}>
+            <span><strong>${o.name}</strong><small>${o.desc}</small></span>
+          </label>
+          ${o.full ? `<details class="sub-feat cc-opcao-livro">
+            <summary>Texto do livro</summary>${formatarTextoDeRegras(o.full)}
+          </details>` : ""}
+        </div>`;
       }).join("")}</div>`;
       corpo = blocoHtml({
         id: `cc-${ch.id}`,
