@@ -838,7 +838,11 @@ function subclassDescHtml(sub, nivel) {
       </details>`;
   }).join("");
   const jaTem = (sub.features || []).filter(f => f.level <= nivel).length;
-  return `<h4><i class="fa-solid fa-khanda"></i> ${sub.name}</h4><p>${sub.desc}</p>`
+  // `about` é a abertura da subclasse no livro (lema + parágrafo); `desc` é o
+  // resumo de uma linha que o app usa nas listas.
+  return `<h4><i class="fa-solid fa-khanda"></i> ${sub.name}</h4>`
+    + `<p class="feat-info-resumo">${sub.desc}</p>`
+    + (sub.about ? formatarTextoDeRegras(sub.about) : "")
     + subclassSpellsHtml(sub, nivel) + landSpellsHtml(sub, nivel)
     + (caracteristicas ? blocoHtml({
         id: `subclasse-${sub.id}`,
