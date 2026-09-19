@@ -4432,14 +4432,34 @@ function avancarPassoComAviso(destino) {
   const atual = passoAtualDoWizard();
   const itens = (pendenciasDoWizard()[atual] || []);
   const assinatura = itens.join("|");
+  // `destino` é o número do passo seguinte ou, no Finalizar, a ação de saída
+  const seguir = typeof destino === "function" ? destino : () => setWizardStep(destino);
   if (!itens.length || _pendenciasAceitas[atual] === assinatura) {
-    setWizardStep(destino);
+    seguir();
     return;
   }
   abrirModalPendencias(atual, itens, () => {
     _pendenciasAceitas[atual] = assinatura;
-    setWizardStep(destino);
+    seguir();
   });
+}
+
+/**
+ * Finalizar o assistente: a ficha está pronta, então o app passa para a aba
+ * Ficha Editável e mostra a página do começo.
+ */
+function finalizarAssistente() {
+  recalculateCharacter();
+  const btnSheet = document.getElementById("btnModeSheet");
+  if (btnSheet) btnSheet.click();
+  irParaOTopo();
+  showToast("✅ Personagem pronto — esta é a ficha editável.");
+}
+
+/** Topo da página: é por onde o passo novo (ou a ficha) começa a ser lido. */
+function irParaOTopo() {
+  const menosMovimento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: 0, behavior: menosMovimento ? "auto" : "smooth" });
 }
 
 /* ------------------------------------------------- BLOCOS QUE ABREM E FECHAM */
@@ -8113,7 +8133,7 @@ function bindEvents() {
 
   document.getElementById("btnNextStep").addEventListener("click", () => {
     const currentStep = passoAtualDoWizard();
-    if (currentStep < 6) avancarPassoComAviso(currentStep + 1);
+    avancarPassoComAviso(currentStep < 6 ? currentStep + 1 : finalizarAssistente);
   });
 
   // Caixa de pendências: ajustar (fica no passo) ou continuar assim
@@ -8982,16 +9002,6 @@ function ajustarAlturaDaNav() {
   document.documentElement.style.setProperty("--wizard-nav-h", `${Math.round(nav.getBoundingClientRect().height)}px`);
 }
 
-function scrollToWizardTop() {
-  const nav = document.getElementById("wizardNav");
-  const painel = document.getElementById("creatorPanel");
-  const alvo = nav || painel;
-  if (!alvo) return;
-  const menosMovimento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const topo = alvo.getBoundingClientRect().top + window.scrollY - 12;
-  window.scrollTo({ top: Math.max(0, topo), behavior: menosMovimento ? "auto" : "smooth" });
-}
-
 /**
  * Altera o passo ativo do Wizard
  */
@@ -9022,7 +9032,7 @@ function setWizardStep(stepNum, opcoes) {
     titulo.setAttribute("tabindex", "-1");
     if (!opcoes || opcoes.foco !== false) titulo.focus({ preventScroll: true });
   }
-  if (!opcoes || opcoes.rolar !== false) scrollToWizardTop();
+  if (!opcoes || opcoes.rolar !== false) irParaOTopo();
 }
 
 /**
