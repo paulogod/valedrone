@@ -141,6 +141,11 @@ function createBlankCharacter() {
     // (não no catálogo) e reinjetadas em DND5E_DATA.spells a cada carga.
     customSpells: [],
     customAttacks: [],
+
+    // Ajustes temporários de ataque: bônus de uma cena só (Bênção, Arma
+    // Mágica, veneno na lâmina) que somam no acerto e no dano de todas as
+    // armas e ataques personalizados enquanto estiverem ligados.
+    tempAttackMods: [],
     inventory: "",
     coins: { po: 0, pp: 0, pe: 0, pc: 0, pl: 0 },
 
@@ -501,6 +506,7 @@ function initUI() {
   renderAbilityInputs();
   renderSpellsCatalog();
   renderCustomItemsList();
+  renderTempAtkModsList();
   renderWeaponMasteryButtons();
 }
 
@@ -594,6 +600,7 @@ function applyLoadedCharacter(data) {
   renderAbilityInputs();
   renderSpellsCatalog();
   renderCustomItemsList();
+  renderTempAtkModsList();
   renderDeathSaves();
   renderWeaponMasteryButtons();
   recalculateCharacter();    // ficha oficial + todos os derivados
@@ -5956,6 +5963,97 @@ function renderCustomItemsList() {
 }
 
 /**
+ * Renderiza a lista de Ajustes Temporários de ataque e dano (Passo 5).
+ *
+ * Cada linha é editável na hora: o que o jogador digita já vale na ficha, sem
+ * abrir janela nenhuma — o efeito costuma durar uma cena e não compensa o
+ * caminho de um modal para ligar e desligar.
+ */
+function renderTempAtkModsList() {
+  const container = document.getElementById("tempAtkModsContainer");
+  if (!container) return;
+  if (!Array.isArray(character.tempAttackMods)) character.tempAttackMods = [];
+
+  container.innerHTML = "";
+
+  if (!character.tempAttackMods.length) {
+    container.innerHTML = `<p class="temp-atk-empty">Nenhum ajuste temporário. Clique em "+ Novo Ajuste" para somar um bônus no acerto e no dano de todos os ataques.</p>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="temp-atk-head">
+      <span>Nome</span><span>Acerto</span><span>Dano</span><span></span>
+    </div>
+  ` + character.tempAttackMods.map(a => `
+    <div class="temp-atk-row ${a.active === false ? 'is-off' : ''}" data-id="${escAttr(a.id)}">
+      <input type="text" class="form-control" data-f="name" value="${escAttr(a.name || '')}" placeholder="Ex: Bênção">
+      <input type="text" class="form-control" data-f="atk" value="${escAttr(a.atk || '')}" placeholder="+2 ou 1d4">
+      <input type="text" class="form-control" data-f="dmg" value="${escAttr(a.dmg || '')}" placeholder="+2 ou 1d6 Fogo">
+      <div class="temp-atk-actions">
+        <button type="button" class="btn btn-sm ${a.active === false ? 'btn-secondary' : 'btn-gold'}" data-act="toggle" title="${a.active === false ? 'Ligar ajuste' : 'Desligar ajuste'}">
+          <i class="fa-solid ${a.active === false ? 'fa-toggle-off' : 'fa-toggle-on'}"></i>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" data-act="del" style="color: #f87171;" title="Excluir ajuste">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
+
+/** O ajuste da linha clicada/editada */
+function acharAjusteTemporario(el) {
+  const linha = el.closest(".temp-atk-row");
+  if (!linha) return null;
+  return character.tempAttackMods.find(a => a.id === linha.getAttribute("data-id")) || null;
+}
+
+/** Liga os eventos da lista de ajustes temporários (uma vez, na carga) */
+function setupTempAtkMods() {
+  const container = document.getElementById("tempAtkModsContainer");
+  const btnAdd = document.getElementById("btnAddTempAtkMod");
+  if (!container || !btnAdd) return;
+
+  btnAdd.addEventListener("click", () => {
+    if (!Array.isArray(character.tempAttackMods)) character.tempAttackMods = [];
+    character.tempAttackMods.push({ id: "tmod_" + Date.now(), name: "", atk: "", dmg: "", active: true });
+    renderTempAtkModsList();
+    const ultimo = container.querySelector(".temp-atk-row:last-child input");
+    if (ultimo) ultimo.focus();
+    saveToLocalStorage();
+  });
+
+  container.addEventListener("input", (e) => {
+    const input = e.target.closest("[data-f]");
+    if (!input) return;
+    const ajuste = acharAjusteTemporario(input);
+    if (!ajuste) return;
+    ajuste[input.getAttribute("data-f")] = input.value;
+    recalculateCharacter();
+    saveToLocalStorage();
+  });
+
+  container.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const ajuste = acharAjusteTemporario(btn);
+    if (!ajuste) return;
+
+    if (btn.getAttribute("data-act") === "toggle") {
+      ajuste.active = ajuste.active === false;
+      showToast(`${ajuste.name || "Ajuste"} ${ajuste.active ? "ligado" : "desligado"}.`);
+    } else {
+      character.tempAttackMods = character.tempAttackMods.filter(a => a.id !== ajuste.id);
+      showToast("Ajuste temporário removido.");
+    }
+    renderTempAtkModsList();
+    recalculateCharacter();
+    saveToLocalStorage();
+  });
+}
+
+/**
  * Calcula a capacidade de magias
  */
 function getSpellCapacityInfo(finalMods) {
@@ -7076,6 +7174,101 @@ function renderOfStatStrip(ctx) {
   syncOfField("sheetPassivePerception", passivePerception, "passivePerception");
 }
 
+/* ------------------------------------ AJUSTES TEMPORÁRIOS DE ATAQUE */
+
+/*
+ * Bênção, Arma Mágica, veneno na lâmina: efeitos de uma cena só que somam no
+ * acerto e no dano de tudo que o personagem empunha. Sem isso o jogador
+ * reescrevia linha por linha da tabela de ataques — e, quando o efeito
+ * acabava, já não lembrava qual era o número original. O ajuste fica no
+ * Passo 5, liga e desliga, e a ficha refaz as contas sozinha.
+ */
+
+/** Ajustes ligados e que de fato mexem em alguma coluna */
+function ajustesTemporariosAtivos() {
+  return (character.tempAttackMods || []).filter(a => a && a.active !== false && (a.atk || a.dmg));
+}
+
+/** "+2" / "-1" / "2" → número; "1d4" e afins → null (entram como texto) */
+function ajusteNumerico(v) {
+  const t = String(v || "").trim();
+  return /^[+-]?\d+$/.test(t) ? parseInt(t, 10) : null;
+}
+
+/** Número com o sinal sempre à mostra: 2 → "+2" */
+function comSinal(n) {
+  return (n >= 0 ? "+" : "") + n;
+}
+
+/**
+ * Soma o ajuste na coluna de acerto.
+ *
+ * O bônus numérico entra no número que já está lá ("+5" vira "+7") para a
+ * coluna continuar com um valor só de ler; o que não é número (o 1d4 da
+ * Bênção) fica somando à parte, porque se rola na hora.
+ */
+function aplicarAjusteNoAcerto(atk, num, textos) {
+  let out = String(atk || "").trim();
+  if (num) {
+    if (/^[+-]?\d+/.test(out)) {
+      out = out.replace(/^([+-]?\d+)/, n => comSinal(parseInt(n, 10) + num));
+    } else {
+      out = out ? `${comSinal(num)} ${out}` : comSinal(num);
+    }
+  }
+  textos.forEach(t => { out = out ? `${out} + ${t}` : `+ ${t}`; });
+  return out;
+}
+
+/**
+ * Soma o ajuste na coluna de dano.
+ *
+ * O dano vem como "1d8 +3 Cortante": o número entra no modificador depois do
+ * dado, sem encostar no tipo de dano que fecha a linha.
+ */
+function aplicarAjusteNoDano(dmg, num, textos) {
+  let out = String(dmg || "").trim();
+  if (num) {
+    const m = out.match(/^(\d*d\d+)\s*([+-]\s*\d+)?/i);
+    if (m) {
+      const total = (m[2] ? parseInt(m[2].replace(/\s+/g, ""), 10) : 0) + num;
+      const resto = out.slice(m[0].length).trim();   // o tipo de dano, que fecha a linha
+      out = [m[1], total ? comSinal(total) : "", resto].filter(Boolean).join(" ");
+    } else {
+      out = out ? `${comSinal(num)} ${out}` : comSinal(num);
+    }
+  }
+  textos.forEach(t => { out = out ? `${out} + ${t}` : `+ ${t}`; });
+  return out;
+}
+
+/**
+ * Aplica os ajustes ligados nas linhas de arma e de ataque personalizado.
+ *
+ * Roda sobre as linhas recém-montadas a cada recálculo, então ligar e desligar
+ * um ajuste nunca acumula: o número de partida é sempre o da arma.
+ */
+function aplicarAjustesTemporarios(linhas) {
+  const ajustes = ajustesTemporariosAtivos();
+  if (!ajustes.length || !linhas.length) return;
+
+  let somaAtk = 0, somaDmg = 0;
+  const txtAtk = [], txtDmg = [], nomes = [];
+  ajustes.forEach(a => {
+    const nAtk = ajusteNumerico(a.atk);
+    const nDmg = ajusteNumerico(a.dmg);
+    if (a.atk) { if (nAtk === null) txtAtk.push(String(a.atk).trim()); else somaAtk += nAtk; }
+    if (a.dmg) { if (nDmg === null) txtDmg.push(String(a.dmg).trim()); else somaDmg += nDmg; }
+    nomes.push(String(a.name || "").trim() || "Ajuste");
+  });
+
+  linhas.forEach(r => {
+    r.atk = aplicarAjusteNoAcerto(r.atk, somaAtk, txtAtk);
+    r.damage = aplicarAjusteNoDano(r.damage, somaDmg, txtDmg);
+    r.notes = [r.notes, `Ajuste: ${nomes.join(", ")}`].filter(Boolean).join(" • ");
+  });
+}
+
 /* -------------------------------------------------- ARMAS & TRUQUES DE DANO */
 const OF_WEAPON_MIN_ROWS = 8;
 
@@ -7141,6 +7334,11 @@ function syncSheetWeaponRows(ctx) {
   character.customAttacks.forEach(ca => {
     auto.push({ srcId: "atk:" + ca.id, name: ca.name, atk: ca.bonus || "", damage: ca.damage || "", notes: "" });
   });
+
+  // Os ajustes temporários valem para arma, item e ataque personalizado —
+  // tudo que o jogador empunha. As magias ficam de fora: cada uma traz o
+  // próprio bônus de conjuração.
+  aplicarAjustesTemporarios(auto);
 
   // Tudo acima é arma; as magias vêm à parte porque disputam as mesmas linhas e
   // perdem a disputa. Uma arma equipada é escolha já feita pelo jogador; uma
@@ -8894,6 +9092,8 @@ function bindEvents() {
     }
   });
 
+  setupTempAtkMods();
+
   // Modal: Ataque Personalizado na Ficha
   const customAttackModal = document.getElementById("customAttackModal");
   const btnAddSheetAttack = document.getElementById("btnAddSheetAttackRowBtn");
@@ -9052,6 +9252,7 @@ function resetCharacter() {
     renderAbilityInputs();
     renderSpellsCatalog();
     renderCustomItemsList();
+    renderTempAtkModsList();
     updateFeatsList();
     renderDeathSaves();
     recalculateCharacter();
@@ -9185,6 +9386,7 @@ function generateRandomCharacter() {
   renderAbilityInputs();
   renderSpellsCatalog();
   renderCustomItemsList();
+  renderTempAtkModsList();
   recalculateCharacter();
   showToast(`🎲 Personagem aleatório gerado: ${randSpecies.name} ${randClass.name} Nvl ${character.level1}!`);
 }
