@@ -13141,6 +13141,10 @@ DND5E_DATA.classChoices = [
   { id: "elf_keen_senses", speciesId: "elf", level: 1, kind: "skill", count: 1, skills: ["insight", "perception", "survival"],
     label: "Elfo — Sentidos Aguçados",
     desc: "Proficiência em Intuição, Percepção ou Sobrevivência." },
+  { id: "high_elf_cantrip", speciesId: "elf", lineageId: "high_elf", level: 1, kind: "spell", count: 1,
+    spell: { level: 0, classes: ["wizard"] }, grantTipo: "Espécie", default: ["prestidigitation"],
+    label: "Alto Elfo — truque",
+    desc: "Você conhece Prestidigitação Arcana. Ao completar um Descanso Longo, pode trocá-lo por outro truque da lista de Mago." },
 
   // ---------------- Ladino ----------------
   { id: "rogue_expertise", classId: "rogue", level: 1, kind: "expertise", countByLevel: { 1: 2, 6: 4 },

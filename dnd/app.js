@@ -606,6 +606,22 @@ function mergeIntoBlankCharacter(data) {
       merged[k] = { ...base[k], ...(data[k] || {}) };
     }
   });
+  // Alto Elfo de antes da escolha de espécie: o truque era uma vaga livre do
+  // catálogo. O truque de Mago que nenhuma classe do personagem teria passa a
+  // ser a escolha da linhagem, e sai do catálogo para não contar duas vezes.
+  if (merged.species === "elf" && merged.lineage === "high_elf"
+      && !(merged.classChoices && merged.classChoices.high_elf_cantrip)) {
+    const classes = [merged.class1, merged.class2].filter(c => c && c !== "none");
+    const doElfo = (merged.spellsKnown || []).filter(id => {
+      const sp = DND5E_DATA.spells.find(x => x.id === id);
+      return sp && sp.level === 0 && (sp.classes || []).includes("wizard")
+        && !(sp.classes || []).some(c => classes.includes(c));
+    });
+    if (doElfo.length === 1) {
+      merged.classChoices = { ...(merged.classChoices || {}), high_elf_cantrip: [doElfo[0]] };
+      merged.spellsKnown = merged.spellsKnown.filter(id => id !== doElfo[0]);
+    }
+  }
   return merged;
 }
 
@@ -4930,7 +4946,14 @@ function classChoiceCount(ch) {
 /** Valor bruto guardado para a escolha */
 function classChoiceValue(id) {
   if (!character.classChoices || typeof character.classChoices !== "object") character.classChoices = {};
-  return character.classChoices[id];
+  const v = character.classChoices[id];
+  // Escolha que o livro já preenche (o Alto Elfo conhece Prestidigitação
+  // Arcana): vale o padrão até o jogador trocar.
+  if (v === undefined) {
+    const ch = (DND5E_DATA.classChoices || []).find(c => c.id === id);
+    if (ch && ch.default !== undefined) return Array.isArray(ch.default) ? ch.default.slice() : ch.default;
+  }
+  return v;
 }
 
 /** Valores de uma escolha de lista, cortados na quantidade que o nível permite */
@@ -4943,7 +4966,7 @@ function classChoiceList(ch) {
 /** A escolha vale agora? Nível na classe, subclasse certa e condição `showIf` */
 function isClassChoiceActive(ch) {
   // Escolha de espécie (Sentidos Aguçados do Elfo): vale enquanto a espécie for essa.
-  if (ch.speciesId) return character.species === ch.speciesId;
+  if (ch.speciesId) return character.species === ch.speciesId && (!ch.lineageId || character.lineage === ch.lineageId);
   const slot = classChoiceSlot(ch);
   if (!slot || classLevel(ch.classId) < ch.level) return false;
   if (ch.subclassId) {
@@ -5971,8 +5994,10 @@ function getGrantedSpellEntries() {
   if (class2Obj) somarClasse(class2Obj, character.level2);
 
   // Magias de espécie e linhagem: truque no nível 1 e magias nos níveis 3 e 5
-  // DE PERSONAGEM (não de classe). O truque do Alto Elfo é escolhido pelo
-  // jogador (vaga extra de truque), por isso não está aqui.
+  // DE PERSONAGEM (não de classe). O truque do Alto Elfo é uma escolha de
+  // espécie (high_elf_cantrip), que já vem com Prestidigitação Arcana e entra
+  // pelas escolhas de classe abaixo. Antes era uma vaga livre de truque, e a
+  // Prestidigitação que o livro dá no nível 1 não aparecia sozinha.
   const nivelPersonagem = (character.level1 || 0) + (class2Obj ? (character.level2 || 0) : 0);
   const chave = `${character.species}:${character.lineage}`;
   const magias = SPECIES_SPELLS[chave] || SPECIES_SPELLS[character.species];
@@ -6533,10 +6558,6 @@ function getSpellCapacityInfo(finalMods) {
 
   somaClasse(class1Obj, character.level1, "classe");
   somaClasse(class2Obj, character.level2, "multiclasse");
-
-  if (character.species === "elf" && character.lineage === "high_elf") {
-    soma("Alto Elfo", 1, 0, "linhagem");
-  }
 
   getChosenClassOptions().forEach(({ ch, op }) => {
     if (op.extraCantrips) soma(`${ch.label} (${op.name})`, op.extraCantrips, 0, "característica de classe");
