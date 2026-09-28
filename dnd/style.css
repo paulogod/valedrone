@@ -3783,3 +3783,20 @@ img, table, pre { max-width: 100%; }
   background: rgba(148, 163, 184, 0.08);
   border: 1px dashed rgba(148, 163, 184, 0.35);
 }
+
+/* Catálogo com grimório: "Grimório" e "Preparar" lado a lado na coluna Ficha */
+.spell-acoes { display: inline-flex; gap: 0.25rem; justify-content: center; flex-wrap: nowrap; }
+.spell-acoes .btn { white-space: nowrap; }
+.btn-prep-on {
+  color: #1a1206;
+  background: #fbbf24;
+  border: 1px solid #f59e0b;
+}
+.btn-prep-on:hover { background: #fcd34d; }
+.tem-grimorio .spells-table col.col-action { width: 6.9rem; }
+@media (min-width: 600px) {
+  .tem-grimorio .spells-table col.col-action { width: 14.5rem; }
+}
+@media (max-width: 599.98px) {
+  .spells-table .btn-prep-spell { min-width: 38px; padding: 0.4rem 0.5rem; }
+}

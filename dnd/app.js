@@ -5279,6 +5279,7 @@ function alternarPreparo(id) {
     lista.splice(i, 1);
     logHpEvent("magia", `Despreparou ${nome}`, character.currentHp || 0);
   } else {
+    if (!(character.spellsKnown || []).includes(id)) character.spellsKnown = [...(character.spellsKnown || []), id];
     lista.push(id);
     logHpEvent("magia", `Preparou ${nome}`, character.currentHp || 0);
     const cap = getSpellCapacityInfo(_ultimosMods || {});
@@ -6770,7 +6771,7 @@ function renderSpellsCatalog() {
   // Uma <table> por círculo dentro deste bloco (ver .spells-table no CSS). O
   // nome `table` ficou: os cliques continuam delegados a ele.
   const table = document.createElement("div");
-  table.className = "spells-table-groups";
+  table.className = "spells-table-groups" + (usaGrimorio() ? " tem-grimorio" : "");
   const colunas = `<colgroup><col class="col-name"><col class="col-school"><col class="col-classes"><col class="col-info"><col class="col-action"></colgroup>`;
 
   // De onde veio cada magia concedida, para a etiqueta na linha
@@ -6795,12 +6796,6 @@ function renderSpellsCatalog() {
         <td class="col-name">
           <span class="spell-row-name">${sp.name}</span>
           ${spellTagsHtml(sp, origem)}
-          ${noGrimorio && isKnown && !origem
-            ? `<button type="button" class="spell-prep-btn${preparada ? " is-on" : ""}" data-preparar="${sp.id}"
-                       title="${preparada ? "Preparada hoje — clique para despreparar" : "No grimório, não preparada — clique para preparar"}">
-                 <i class="fa-solid ${preparada ? "fa-check" : "fa-book"}"></i> ${preparada ? "Preparada" : "Preparar"}
-               </button>`
-            : ""}
           ${!origem && magiaAcimaDoCirculo(sp) ? `<span class="spell-tag is-acima" title="Seu personagem ainda não prepara magias de ${sp.level}º círculo (máximo: ${maiorCirculoPreparavel() ? maiorCirculoPreparavel() + "º" : "nenhum"})">acima do seu círculo</span>` : ""}
         </td>
         <td class="col-school">${spellSchoolHtml(sp.school)}</td>
@@ -6812,8 +6807,22 @@ function renderSpellsCatalog() {
         <td class="col-action">
           ${origem
             ? `<span class="spell-granted-lock" title="Concedida por ${String(origem.fonte).replace(/"/g, "&quot;")} — já vem na ficha"><i class="fa-solid fa-gift"></i><span class="btn-txt"> Concedida</span></span>`
+            : noGrimorio
+            /* Grimório: dois botões lado a lado. O livro guarda a magia; a
+               preparação é outra escolha, refeita a cada Descanso Longo.
+               Preparar uma que ainda não está no livro já a põe lá. */
+            ? `<div class="spell-acoes">
+                 <button type="button" class="btn btn-sm ${isKnown ? "btn-gold" : "btn-secondary"} btn-toggle-spell" data-id="${sp.id}"
+                         title="${isKnown ? "No grimório — clique para tirar do grimório" : "Pôr no grimório"}">
+                   <i class="fa-solid ${isKnown ? "fa-book" : "fa-plus"}"></i><span class="btn-txt"> Grimório</span>
+                 </button>
+                 <button type="button" class="btn btn-sm ${preparada ? "btn-prep-on" : "btn-secondary"} btn-prep-spell" data-preparar="${sp.id}"
+                         title="${preparada ? "Preparada — clique para despreparar" : isKnown ? "No grimório, não preparada — clique para preparar" : "Pôr no grimório e preparar"}">
+                   <i class="fa-solid ${preparada ? "fa-check" : "fa-hand-sparkles"}"></i><span class="btn-txt"> ${preparada ? "Preparada" : "Preparar"}</span>
+                 </button>
+               </div>`
             : `<button type="button" class="btn btn-sm ${isKnown ? "btn-gold" : "btn-secondary"} btn-toggle-spell" data-id="${sp.id}">
-                 <i class="fa-solid ${isKnown ? (noGrimorio ? "fa-book" : "fa-check") : "fa-plus"}"></i><span class="btn-txt"> ${isKnown ? (noGrimorio ? "No grimório" : "Na ficha") : (noGrimorio ? "Ao grimório" : "Adicionar")}</span>
+                 <i class="fa-solid ${isKnown ? "fa-check" : "fa-plus"}"></i><span class="btn-txt"> ${isKnown ? "Na ficha" : "Adicionar"}</span>
                </button>`}
         </td>
       </tr>
@@ -6938,15 +6947,10 @@ function renderSpellsCatalog() {
         character.spellsPrepared = (character.spellsPrepared || []).filter(id => id !== spId);
         logHpEvent("magia", `Removeu ${nomeMagia}`, character.currentHp || 0);
       } else if (usaGrimorio() && sp && sp.level > 0) {
-        // Entra no grimório e já fica preparada se ainda houver vaga
+        // Só entra no grimório; preparar é o botão ao lado
         character.spellsKnown.push(spId);
-        const cap = getSpellCapacityInfo(_ultimosMods || {});
-        const cabe = cap.currentPreparedCount < cap.maxPrepared;
-        if (cabe) character.spellsPrepared = [...(character.spellsPrepared || []), spId];
-        logHpEvent("magia", `${nomeMagia} no grimório${cabe ? " e preparada" : ""}`, character.currentHp || 0);
-        showToast(cabe
-          ? `📖 ${nomeMagia} entrou no grimório e já está preparada.`
-          : `📖 ${nomeMagia} entrou no grimório. As ${cap.maxPrepared} preparadas já estão ocupadas: despreparar outra para preparar esta.`);
+        logHpEvent("magia", `${nomeMagia} no grimório`, character.currentHp || 0);
+        showToast(`📖 ${nomeMagia} entrou no grimório. Use Preparar para levá-la à ficha.`);
       } else {
         character.spellsKnown.push(spId);
         logHpEvent("magia", `Adicionou ${nomeMagia}`, character.currentHp || 0);
