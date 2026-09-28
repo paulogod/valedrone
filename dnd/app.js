@@ -2398,7 +2398,10 @@ function getLimitedUses() {
     if (!sub || !Array.isArray(sub.limitedUses)) return;
     const nivel = (slot === 2 ? character.level2 : character.level1) || 0;
     sub.limitedUses.forEach(u => {
-      const max = (u.byLevel && u.byLevel[nivel]) || 0;
+      // "SAB vezes por Descanso Longo" e afins: sai do modificador, a partir de `level`
+      const max = u.perAbilityMod
+        ? (nivel >= (u.level || 3) ? Math.max(u.min || 1, (_ultimosMods || {})[u.perAbilityMod] || 0) : 0)
+        : (u.byLevel && u.byLevel[nivel]) || 0;
       if (!max || lista.some(x => x.id === u.id)) return;
       lista.push({
         id: u.id, name: u.name, classe: sub.name.split(" (")[0], max, recovery: u.recovery,
@@ -6782,6 +6785,8 @@ function recalculateCharacter() {
   if (getActiveFeatIds().includes("alert")) {
     init += pb;
   }
+  // Emboscador das Sombras (Vigilante das Sombras): soma SAB à Iniciativa
+  getActiveSubclassEffects().forEach(e => { if (e.initiative) init += finalMods[e.initiative] || 0; });
 
   let speed = speciesObj.speed || 9;
   if (character.species === "elf" && character.lineage === "wood_elf") speed = 10.5;

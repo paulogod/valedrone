@@ -189,7 +189,7 @@ const DND5E_DATA = {
         },
         {
           "id": "poisoners_kit",
-          "name": "Kit de Venenos"
+          "name": "Kit de Veneno"
         }
       ]
     },
@@ -206,7 +206,7 @@ const DND5E_DATA = {
         },
         {
           "id": "calligrapher_supplies",
-          "name": "Kit de Caligrafia"
+          "name": "Suprimentos de Calígrafo"
         },
         {
           "id": "carpenter_tools",
@@ -278,8 +278,20 @@ const DND5E_DATA = {
           "name": "Flauta"
         },
         {
+          "id": "pan_flute",
+          "name": "Flauta de Pan"
+        },
+        {
+          "id": "bagpipes",
+          "name": "Gaita de Foles"
+        },
+        {
           "id": "lyre",
           "name": "Lira"
+        },
+        {
+          "id": "shawm",
+          "name": "Oboé"
         },
         {
           "id": "drum",
@@ -287,15 +299,15 @@ const DND5E_DATA = {
         },
         {
           "id": "horn",
-          "name": "Trombeta / Berrante"
-        },
-        {
-          "id": "bagpipes",
-          "name": "Gaita de Foles"
+          "name": "Trombeta"
         },
         {
           "id": "viol",
-          "name": "Viola"
+          "name": "Violino"
+        },
+        {
+          "id": "dulcimer",
+          "name": "Xilofone"
         }
       ]
     },
@@ -304,19 +316,19 @@ const DND5E_DATA = {
       "items": [
         {
           "id": "dice_set",
-          "name": "Jogo de Dados"
+          "name": "Dados"
         },
         {
           "id": "playing_card_set",
-          "name": "Baralho de Cartas"
+          "name": "Baralho"
         },
         {
           "id": "dragonchess_set",
-          "name": "Xadrez do Dragão"
+          "name": "Xadrez-do-Dragão"
         },
         {
           "id": "three_dragon_ante",
-          "name": "Três Dragões (Three-Dragon Ante)"
+          "name": "Conjunto do Jogo dos Três Dragões"
         }
       ]
     }
@@ -559,6 +571,7 @@ const DND5E_DATA = {
           "name": "Trilha do Fanático (Path of the Zealot)",
           "features": [{"level": 3, "name": "Campeão dos Deuses", "resumo": "Reserva de d12s de cura gastos como Ação Bônus: 4 dados (5 no nível 6, 6 no 12, 7 no 17); volta no Descanso Longo.", "desc": "Uma entidade divina assegura que você possa continuar lutando. Você tem uma reserva de quatro d12s que pode gastar para se curar. Como uma Ação Bônus, você pode gastar dados da reserva, jogá-los e recuperar uma quantidade de Pontos de Vida igual ao total do resultado. Sua reserva restaura todos os dados gastos quando você completa um Descanso Longo. O número máximo de dados na reserva aumenta em um quando você atinge os níveis de Bárbaro 6 (5 dados), 12 (6 dados) e 17 (7 dados)."}, {"level": 3, "name": "Fúria Divina", "resumo": "Em Fúria, o primeiro acerto no turno causa +1d6 + metade do nível de Bárbaro em dano Necrótico ou Radiante.", "desc": "Você pode canalizar poder divino em seus golpes. Em cada um dos seus turnos, enquanto sua Fúria estiver ativa, a primeira criatura que você atingir com uma arma ou com um Ataque Desarmado sofre dano adicional igual a 1d6 pontos mais metade do seu nível de Bárbaro (arredondado para baixo). O dano adicional é do tipo Necrótico ou Radiante, à sua escolha, cada vez que causar dano."}, {"level": 6, "name": "Concentração Fanática", "resumo": "Uma vez por Fúria, repete uma salvaguarda falha somando o bônus de dano da Fúria.", "desc": "Uma vez por Fúria ativa, se você falhar em uma salvaguarda, pode jogá-la novamente com um bônus igual ao seu bônus de Dano da Fúria, e deve usar o novo resultado."}, {"level": 10, "name": "Presença Zelosa", "resumo": "Ação Bônus: até dez aliados a 18 m ganham Vantagem em ataques e salvaguardas até seu próximo turno; 1x por Descanso Longo ou gasta uma Fúria.", "desc": "Como uma Ação Bônus, você libera um grito de batalha infundido com energia divina. Até dez outras criaturas à sua escolha a até 18 metros de você obtêm Vantagem em jogadas de ataque e salvaguardas até o início do seu próximo turno. Uma vez que você usa essa característica, não pode usá-la novamente até completar um Descanso Longo, a menos que gaste um uso de sua Fúria (nenhuma ação é necessária) para restaurar o uso."}, {"level": 14, "name": "Fúria dos Deuses", "resumo": "Ao entrar em Fúria vira combatente divino por 1 minuto: voo, Resistência a Necrótico, Psíquico e Radiante e pode salvar aliados de cair a 0 PV; 1x por Descanso Longo.", "desc": "Quando você ativa sua Fúria, pode assumir a forma de um combatente divino. Essa forma dura 1 minuto ou até você atingir 0 Pontos de Vida. Uma vez que você use essa característica, não pode fazê-lo novamente até completar um Descanso Longo. Enquanto estiver nesta forma, você adquire os benefícios a seguir. Resistência. Você tem Resistência a dano Necrótico, Psíquico e Radiante. Revivificação. Quando uma criatura a até 9 metros de você atingir 0 Pontos de Vida, você pode executar uma Reação para gastar um uso da sua Fúria e, em vez disso, mudar os Pontos de Vida do alvo para um número igual ao seu nível de Bárbaro. Voo. Você tem um Deslocamento de Voo igual ao seu Deslocamento e pode pairar."}],
           "desc": "Abraçado pelo furor divino de uma divindade guerreira, causando dano radiante/necrótico e desafiando a morte.",
+          "limitedUses": [{"id": "zealot_pool", "name": "Campeão dos Deuses (reserva de d12)", "recovery": "longo", "byLevel": {"3": 4, "4": 4, "5": 4, "6": 5, "7": 5, "8": 5, "9": 5, "10": 5, "11": 5, "12": 6, "13": 6, "14": 6, "15": 6, "16": 6, "17": 7, "18": 7, "19": 7, "20": 7}}],
           "about": "Fúria em Êxtase com um Deus Bárbaros que seguem a Trilha do Fanático recebem bênçãos de um deus ou panteão. Esses Bárbaros experimentam sua Fúria como um episódio extático de união divina que os infunde com poder. Frequentemente, são aliados de sacerdotes e outros seguidores de sua divindade ou panteão."
         }
       ],
@@ -966,6 +979,7 @@ const DND5E_DATA = {
           "name": "Domínio da Luz (Light Domain)",
           "features": [{"level": 3, "name": "Brilho do Amanhecer", "resumo": "Canalizar Divindade: dissipa Escuridão mágica e causa 2d10 + nível de Clérigo Radiante numa Emanação de 9 m (salvaguarda de CON, metade).", "desc": "Como uma ação Usar Magia, você ergue seu Símbolo Sagrado e gasta o uso de seu Canalizar Divindade para emitir um feixe de luz em uma Emanação de 9 metros originada em você. Qualquer Escuridão mágica, como a criada pela magia Escuridão, nessa área é dissipada. Além disso, cada criatura à sua escolha nessa área deve realizar uma salvaguarda de Constituição, sofrendo dano Radiante igual a 2d10 mais seu nível de Clérigo se falhar ou metade desse dano em caso de sucesso."}, {"level": 3, "name": "Labareda Protetora", "resumo": "Reação: impõe Desvantagem num ataque de criatura a 9 m; SAB vezes por Descanso Longo.", "desc": "Quando uma criatura à sua vista a até 9 metros de você realiza uma jogada de ataque, você pode executar uma Reação para impor Desvantagem na jogada de ataque, fazendo com que a luz brilhe antes de acertar ou errar. Você pode usar essa característica um número de vezes igual ao seu modificador de Sabedoria (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo."}, {"level": 3, "name": "Magias de Domínio da Luz", "resumo": "Magias do Domínio da Luz sempre preparadas nos níveis 3, 5, 7 e 9.", "desc": "Sua conexão com este domínio divino garante que você sempre tenha certas magias preparadas. Ao atingir um nível de Clérigo especificado na tabela Magias de Domínio da Luz, você sempre tem as magias listadas preparadas."}, {"level": 6, "name": "Labareda Protetora Aprimorada", "resumo": "Labareda Protetora volta no Descanso Curto e dá 2d6 + SAB PV temporários ao alvo do ataque.", "desc": "Você restaura todos os usos gastos da sua Labareda Protetora ao completar um Descanso Curto ou Longo. Além disso, sempre que usar Labareda Protetora, você pode conceder ao alvo do ataque desencadeado um número de Pontos de Vida Temporários igual a 2d6 mais seu modificador de Sabedoria."}, {"level": 17, "name": "Coroa de Luz", "resumo": "Aura de luz solar de 18 m por 1 minuto: inimigos na luz têm Desvantagem contra Brilho do Amanhecer e magias Ígneas ou Radiantes; SAB vezes por Descanso Longo.", "desc": "Como uma ação Usar Magia, você emite uma aura de luz solar que dura 1 minuto ou até que você a encerre (nenhuma ação é necessária). Você emite Luz Plena em um raio de 18 metros e Meia-luz por mais 9 metros. Seus inimigos na Luz Plena têm Desvantagem em salvaguardas contra seu Brilho do Amanhecer e qualquer magia que cause dano Ígneo ou Radiante. Você pode usar esta característica um número de vezes igual ao seu modificador de Sabedoria (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo."}],
           "desc": "Canalizam o fogo sagrado e radiância solar para queimar as trevas e cegar inimigos com clarões divinos.",
+          "limitedUses": [{"id": "light_warding_flare", "name": "Labareda Protetora (volta no Descanso Curto a partir do 6º)", "recovery": "longo", "perAbilityMod": "wis", "min": 1, "level": 3}],
           "about": "Traga a Luz para Banir a Escuridão O Domínio da Luz destaca o poder divino de gerar labaredas e revelação. Seus Clérigos, almas iluminadas, possuem a visão clara de suas divindades, encarregados de afastar mentiras e dissipar as trevas. Este domínio está ligado a deuses da verdade, vigilância, beleza, percepção e renovação. Alguns desses deuses são identificados com o sol ou como condutores de carruagens que guiam o sol pelo céu. Outros atuam como sentinelas contra o engano, enquanto algumas divindades da beleza e da arte ensinam que a arte é um caminho para o aprimoramento da alma.",
           "bonusSpells": {
             "3": [
@@ -1020,6 +1034,7 @@ const DND5E_DATA = {
           "name": "Domínio da Guerra (War Domain)",
           "features": [{"level": 3, "name": "Magias de Domínio da Guerra", "resumo": "Magias do Domínio da Guerra sempre preparadas nos níveis 3, 5, 7 e 9.", "desc": "Sua conexão com este domínio divino garante que você sempre tenha certas magias preparadas. Ao atingir um nível de Clérigo especificado na tabela Magias de Domínio da Guerra, você sempre tem as magias listadas preparadas."}, {"level": 3, "name": "Ataque Direcionado", "resumo": "Canalizar Divindade: +10 numa jogada de ataque errada sua ou de criatura a 9 m (Reação para outra criatura).", "desc": "Quando você ou uma criatura a até 9 metros de você erra uma jogada de ataque, você pode gastar um uso de seu Canalizar Divindade e dar a essa jogada um bônus de +10, potencialmente fazendo-o acertar. Você usa sua Reação para conceder esse bônus a uma jogada de ataque a outra criatura."}, {"level": 3, "name": "Sacerdote da Guerra", "resumo": "Ação Bônus para atacar com arma ou desarmado, SAB vezes por Descanso Curto ou Longo.", "desc": "Como uma Ação Bônus, você pode realizar um ataque com uma arma ou um Ataque Desarmado. Você pode usar essa Ação Bônus um número de vezes igual ao seu modificador de Sabedoria (mínimo de uma vez). Você restaura todos os usos gastos ao completar um Descanso Curto ou Longo."}, {"level": 6, "name": "Bênção do Deus da Guerra", "resumo": "Canalizar Divindade para conjurar Arma Espiritual ou Escudo da Fé sem espaço e sem Concentração (1 minuto).", "desc": "Você pode gastar um uso de seu Canalizar Divindade para conjurar Arma Espiritual ou Escudo da Fé em vez de gastar um espaço de magia. Uma magia conjurada dessa maneira não requer Concentração. Em vez disso, a magia permanece por 1 minuto, mas encerra se você conjurá-la novamente, ter a condição Incapacitado ou morrer."}, {"level": 17, "name": "Avatar da Guerra", "resumo": "Resistência a dano Contundente, Cortante e Perfurante.", "desc": "Você adquire Resistência a dano Contundente, Cortante e Perfurante."}],
           "desc": "Campeões abençoados com proficiência em armas marciais e armaduras pesadas, desferindo ataques extras inspirados.",
+          "limitedUses": [{"id": "war_priest", "name": "Sacerdote da Guerra", "recovery": "curto", "perAbilityMod": "wis", "min": 1, "level": 3}],
           "about": "Inspire Bravura e Derrote Inimigos A guerra se manifesta de diversas formas, capaz de transformar pessoas comuns em heróis. Pode ser aterrorizante, com crueldades e covardias ofuscando atos de bravura e coragem. Os Clérigos do Domínio da Guerra se destacam em batalhas, inspirando outros a lutar pelo bem ou convertendo atos de violência em orações. Os Deuses do Domínio da Guerra observam e recompensam os guerreiros por suas conquistas. Eles incluem deuses de honra e cavalheirismo, assim como de destruição e pilhagem. Outros deuses da guerra adotam uma postura neutra, apoiando a belicosidade em todas as suas formas e incentivando os combatentes em todas as situações.",
           "bonusSpells": {
             "3": [
@@ -1224,6 +1239,7 @@ const DND5E_DATA = {
           "name": "Círculo da Lua (Circle of the Moon)",
           "features": [{"level": 3, "name": "Formas Animais dos Círculos Druídicos", "resumo": "Forma Selvagem de ND até nível/3, CA mínima 13 + SAB e PV temporários iguais a 3x o nível de Druida.", "desc": "Você pode canalizar a magia lunar ao assumir uma Forma Selvagem, obtendo os seguintes benefícios. Nível de Desafio. O Nível de Desafio máximo para a forma é igual ao seu nível de Druida dividido por 3 (arredondado para baixo). Classe de Armadura. Até sair da forma, sua CA passa a ser 13 + seu modificador de Sabedoria, se esse valor for maior que a CA da Fera. Pontos de Vida Temporários. Você adquire um número de Pontos de Vida Temporários igual a três vezes o seu nível de Druida."}, {"level": 3, "name": "Magias do Círculo da Lua", "resumo": "Magias do Círculo da Lua sempre preparadas e conjuráveis em Forma Selvagem.", "desc": "Ao atingir um nível de Druida detalhado na tabela Magias do Círculo da Lua, você tem a as magias da lista sempre preparadas. Além disso, você pode conjurar as magias dessa característica enquanto estiver em uma Forma Selvagem."}, {"level": 6, "name": "Formas Animais dos Círculos Druídicos Aprimorada", "resumo": "Ataques em Forma Selvagem podem causar Radiante e soma SAB às salvaguardas de CON.", "desc": "Enquanto estiver em uma Forma Selvagem, você adquire os seguintes benefícios. Radiância Lunar. Cada um de seus ataques na Forma Selvagem pode causar seu tipo de dano normal ou dano Radiante. Você escolhe cada vez que acerta com esses ataques. Vigor Aumentado. Você pode adicionar seu modificador de Sabedoria às suas salvaguardas de Constituição."}, {"level": 10, "name": "Passo Lunar", "resumo": "Ação Bônus: teleporta 9 m e ganha Vantagem no próximo ataque do turno; SAB vezes por Descanso Longo.", "desc": "Você se transporta magicamente, reaparecendo em meio a uma explosão de luar. Como uma Ação Bônus, você se teleporta até 9 metros para um espaço desocupado à sua vista e tem Vantagem na próxima jogada de ataque que realizar antes do final deste turno. Você pode usar essa característica um número de vezes igual ao seu modificador de Sabedoria (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo. Você também pode recuperar usos gastando um espaço de magia de 2º círculo ou superior para cada uso que deseja recuperar (nenhuma ação é necessária)."}, {"level": 14, "name": "Forma Lunar", "resumo": "Uma vez por turno +2d10 Radiante com ataque da Forma Selvagem; Passo Lunar leva um aliado.", "desc": "O poder da lua permeia você, concedendo os seguintes benefícios. Radiância Lunar Aprimorada. Uma vez por turno, você pode causar 2d10 pontos de dano Radiante adicional a um alvo que você acerta com o ataque da Forma Selvagem. Luar Compartilhado. Sempre que usar Passo Lunar, você também pode teleportar uma criatura voluntária. Essa criatura deve estar a até 3 metros de você, e você a teleporta para um espaço desocupado à sua vista a até 3 metros do seu destino."}],
           "desc": "Especialistas na Forma Selvagem em combate, transformando-se em feras vorazes e elementais com ação bônus.",
+          "limitedUses": [{"id": "moon_lunar_step", "name": "Passo Lunar", "recovery": "longo", "perAbilityMod": "wis", "min": 1, "level": 10}],
           "about": "Assuma Formas Animais para Proteger a Vida Selvagem Druidas do Círculo da Lua canalizam a magia lunar para se transformarem. A ordem se reúne sob a lua para compartilhar informações e realizar rituais. Assim como a lua é mutável, um Druida desse círculo pode espreitar como um grande felino em uma noite, sobrevoar as copas das árvores como uma águia no dia seguinte e, depois, atravessar a vegetação como um urso para afastar um monstro invasor. A vida selvagem corre no sangue do Druida.",
           "bonusSpells": {
             "3": [
@@ -1349,6 +1365,7 @@ const DND5E_DATA = {
           "features": [{"level": 3, "name": "Forma Estrelada", "resumo": "Forma Selvagem vira forma estrelada por 10 minutos: Arqueiro (ataque de 1d8 + SAB Radiante), Taça (cura extra) ou Dragão (mínimo 10 em INT, SAB e Concentração).", "desc": "Como uma Ação Bônus, você pode gastar um uso de sua característica Forma Selvagem para assumir uma forma estrelada em vez de multimorfar. Enquanto em sua forma estrelada, você mantém suas estatísticas de jogo, mas seu corpo se torna luminoso, com articulações que brilham como estrelas e linhas brilhantes conectando-as, como em um mapa estelar. Essa forma emite Luz Plena em um raio de 3 metros e Meia-luz por mais 3 metros. A forma dura 10 minutos e encerra se você a dispensar (nenhuma ação é necessária), ter a condição Incapacitado ou se você usar essa característica novamente. Sempre que você assumir sua forma estrelada, escolha qual das constelações a seguir brilha em seu corpo; sua escolha concede certos benefícios enquanto estiver na forma. Arqueiro. Uma constelação de um arqueiro aparece em você. Ao ativar e nos turnos subsequentes como uma Ação Bônus, você pode realizar um ataque mágico à distância, disparando uma flecha luminosa que atinge uma criatura a até 18 metros. Em caso de acerto, o ataque causa 1d8 pontos de dano Radiante + seu modificador de Sabedoria. Dragão. Uma constelação de um dragão sábio aparece em você. Quando realizar um teste de Inteligência ou Sabedoria, ou uma salvaguarda de Constituição para manter a Concentração, você trata um resultado 9 ou menor no d20 como um 10. Taça. Uma constelação de um cálice vivificante aparece em você. Sempre que você conjurar uma magia, usando um espaço de que restaure Pontos de Vida em uma criatura, você ou outra criatura a até 9 metros de você pode restaurar Pontos de Vida iguais a 1d8 + seu modificador de Sabedoria."}, {"level": 3, "name": "Mapa Estelar", "resumo": "Foco de conjuração; Orientação e Raio Guia preparadas e Raio Guia sem espaço SAB vezes por Descanso Longo.", "desc": "Você cria um mapa estelar como parte de seus estudos celestiais. Ele é um objeto Minúsculo, e você pode usá-lo como Foco de Conjuração para suas magias de Druida. Você determina sua forma jogando na tabela Mapa Estelar ou escolhendo uma. Enquanto estiver segurando o mapa, você tem as magias Orientação e Raio Guia preparadas, e pode conjurar Raio Guia sem gastar um espaço de magia. Você pode conjurá-la dessa forma um número de vezes igual ao seu modificador de Sabedoria (mínimo de uma vez), e restaura todos os usos gastos ao completar um Descanso Longo. Se você perder o mapa, pode realizar uma cerimônia de 1 hora para criar magicamente um substituto. Essa cerimônia pode ser realizada durante um Descanso Curto ou Longo e destrói o mapa anterior."}, {"level": 6, "name": "Presságio Cósmico", "resumo": "Após Descanso Longo, par ou ímpar: Reação para somar ou subtrair 1d6 de Testes de D20 de criaturas a 9 m, SAB vezes.", "desc": "Sempre que você completar um Descanso Longo, pode consultar seu Mapa Estelar em busca de presságios e jogar um dado. Até completar o próximo Descanso Longo, você tem acesso a uma Reação especial com base no número que obteve: Prosperidade (par). Sempre que uma criatura à sua vista a até 9 metros de você realizar um Teste de D20, você pode executar uma Reação para jogar 1d6 e adicionar o resultado jogado ao total. Infortúnio (ímpar). Sempre que uma criatura à sua vista a até 9 metros de você realizar um Teste de D20, você pode executar uma Reação para jogar 1d6 e subtrair o resultado jogado do total. Você pode usar essa Reação um número de vezes igual ao seu modificador de Sabedoria (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo."}, {"level": 10, "name": "Constelações Cintilantes", "resumo": "Arqueiro e Taça passam a 2d8; Dragão dá voo de 6 m; troca a constelação a cada turno.", "desc": "As constelações da sua Forma Estrelada melhoram. O 1d8 do Arqueiro e da Taça torna-se 2d8, e enquanto o Dragão estiver ativo, você adquire um Deslocamento de Voo de 6 metros e pode pairar. Além disso, no início de cada um dos seus turnos enquanto estiver na sua Forma Estrelada, você pode alterar qual constelação brilha em seu corpo."}, {"level": 14, "name": "Repleto de Estrelas", "resumo": "Na Forma Estrelada, Resistência a dano Contundente, Cortante e Perfurante.", "desc": "Enquanto estiver em sua Forma Estrelada, você se torna parcialmente incorpóreo e tem Resistência a dano Contundente, Cortante e Perfurante."}],
           "featureSpells": {"3": ["guidance", "guiding_bolt"]},
           "desc": "Mapeiam as constelações celestes em um mapa estelar, assumindo formas estelares (Arqueiro, Cálice, Dragão).",
+          "limitedUses": [{"id": "stars_guiding_bolt", "name": "Mapa Estelar — Raio Guia grátis", "recovery": "longo", "perAbilityMod": "wis", "min": 1, "level": 3}, {"id": "stars_cosmic_omen", "name": "Presságio Cósmico", "recovery": "longo", "perAbilityMod": "wis", "min": 1, "level": 6}],
           "about": "Domine os Segredos Ocultos nas Constelações O Círculo das Estrelas segue os padrões celestiais desde tempos imemoriais, descobrindo segredos ocultos entre as constelações. Ao compreender esses segredos, os druidas deste círculo buscam dominar os poderes do cosmos."
         }
       ],
@@ -1708,6 +1725,7 @@ const DND5E_DATA = {
           "name": "Combatente da Mão Espalmada (Warrior of the Open Hand)",
           "features": [{"level": 3, "name": "Técnica da Mão Espalmada", "resumo": "Ataques da Torrente de Golpes podem Derrubar (DES), Desorientar (sem Ataques de Oportunidade) ou Empurrar 4,5 m (FOR).", "desc": "Ao atingir uma criatura com um ataque concedido por sua Torrente de Golpes, você pode impor um dos seguintes efeitos ao alvo. Derrubar. O alvo deve ser bem-sucedido em uma salvaguarda de Destreza ou tem a condição Caído. Desorientar. O alvo não pode realizar Ataques de Oportunidade até o início do próximo turno dele. Empurrar. O alvo deve ser bem-sucedido em uma salvaguarda de Força ou é empurrado até 4,5 metros para longe de você."}, {"level": 6, "name": "Integridade Corporal", "resumo": "Ação Bônus: recupera dado de Artes Marciais + SAB PV, SAB vezes por Descanso Longo.", "desc": "Você adquire a capacidade de se curar. Como uma Ação Bônus, você pode jogar seu dado de Artes Marciais. Você recupera um número de Pontos de Vida igual ao resultado mais seu modificador de Sabedoria (mínimo de 1 Ponto de Vida recuperado). Você pode usar essa característica um número de vezes igual ao seu modificador de Sabedoria (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo."}, {"level": 11, "name": "Passo Veloz", "resumo": "Após uma Ação Bônus que não seja Passo do Vento, usa Passo do Vento em seguida.", "desc": "Ao executar uma Ação Bônus diferente de Passo do Vento, você também pode usar Passo do Vento imediatamente após essa Ação Bônus."}, {"level": 17, "name": "Palma Vibrante", "resumo": "4 Pontos de Foco ao acertar desarmado: depois encerra as vibrações e o alvo faz salvaguarda de CON contra 10d12 Energético.", "desc": "Você obtém a habilidade de infligir vibrações letais no corpo de outra pessoa. Ao acertar uma criatura com um Ataque Desarmado, você pode gastar 4 Pontos de Foco para iniciar essas vibrações imperceptíveis, que duram por um número de dias igual ao seu nível de Monge. As vibrações são inofensivas, a menos que você execute uma Ação para encerrá-las. Como alternativa, ao executar a ação Atacar no seu turno, você pode renunciar a um dos ataques para acabar com as vibrações. Para encerrá-las, você e o alvo devem estar no mesmo plano de existência. Ao fazer isso, o alvo deve realizar uma salvaguarda de Constituição, sofrendo 10d12 pontos de dano Energético se falhar ou metade do dano em caso de sucesso. Você pode ter apenas uma criatura sob o efeito desta característica por vez. Você pode encerrar as vibrações inofensivamente (nenhuma ação é necessária)."}],
           "desc": "Mestres do combate desarmado puro, derrubando, empurrando ou desabilitando reações inimigas com a Rajada de Golpes.",
+          "limitedUses": [{"id": "open_hand_wholeness", "name": "Integridade Corporal", "recovery": "longo", "perAbilityMod": "wis", "min": 1, "level": 6}],
           "about": "Domine as Técnicas de Combate Desarmado Os Combatentes da Mão Espalmada são mestres do combate desarmado. Eles aprendem técnicas para empurrar e derrubar seus oponentes e manipular sua própria energia para se proteger de danos."
         },
         {
@@ -1731,6 +1749,7 @@ const DND5E_DATA = {
           "name": "Combatente da Misericórdia (Warrior of Mercy)",
           "features": [{"level": 3, "name": "Implementos de Misericórdia", "resumo": "Proficiência em Intuição, Medicina e Kit de Herbalismo.", "desc": "Você adquire proficiência nas perícias Intuição e Medicina e proficiência com o Kit de Herbalismo."}, {"level": 3, "name": "Mão de Cura", "resumo": "1 Ponto de Foco: cura dado de Artes Marciais + SAB; pode trocar um golpe da Torrente de Golpes por ela sem gastar Foco.", "desc": "Com uma ação Usar Magia, você pode gastar 1 Ponto de Foco para tocar uma criatura e restaurar um número de Pontos de Vida igual a uma jogada de seu dado de Artes Marciais mais seu modificador de Sabedoria. Ao usar sua Torrente de Golpes, você pode substituir um dos Ataques Desarmados pelo uso dessa característica sem gastar um Ponto de Foco para a cura."}, {"level": 3, "name": "Mão de Dolo", "resumo": "Uma vez por turno, 1 Ponto de Foco ao acertar desarmado: + dado de Artes Marciais + SAB Necrótico.", "desc": "Uma vez por turno, ao atingir uma criatura com um Ataque Desarmado e causar dano, você pode gastar 1 Ponto de Foco para causar dano Necrótico adicional igual a uma jogada de seu dado de Artes Marciais mais seu modificador de Sabedoria."}, {"level": 6, "name": "Toque de Médico", "resumo": "Mão de Cura encerra Atordoado, Cego, Envenenado, Paralisado ou Surdo; Mão de Dolo Envenena.", "desc": "Sua Mão de Cura e Mão de Dolo melhoram, conforme detalhado abaixo. Mão de Cura. Ao usar Mão de Cura, você também pode encerrar uma das seguintes condições na criatura que você curar: Atordoado, Cego, Envenenado, Paralisado ou Surdo. Mão de Dolo. Ao usar Mão de Dolo em uma criatura, você também pode impor a ela a condição Envenenado até o final do seu próximo turno."}, {"level": 11, "name": "Torrente de Cura e Dolo", "resumo": "Na Torrente de Golpes, cura e causa dano sem gastar Foco, SAB vezes por Descanso Longo.", "desc": "Ao usar Torrente de Golpes, você pode substituir cada um dos Ataques Desarmados pelo uso da Mão de Cura sem gastar Pontos de Foco para a cura. Além disso, ao realizar um Ataque Desarmado com Torrente de Golpes e causar dano, você pode usar Mão de Dolo com esse ataque sem gastar um Ponto de Foco para Mão de Dolo. Você ainda pode usar Mão de Dolo apenas uma vez por turno. Você pode usar esses benefícios um número de vezes igual ao seu modificador de Sabedoria (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo."}, {"level": 17, "name": "Mão da Misericórdia Final", "resumo": "5 Pontos de Foco: revive criatura morta há até 24 h com 4d10 + SAB PV; 1x por Descanso Longo.", "desc": "Seu domínio da energia vital abre a porta para a misericórdia final. Como uma ação Usar Magia, você pode tocar o cadáver de uma criatura que morreu nas últimas 24 horas e gastar 5 Pontos de Foco. A criatura então retorna à vida com um número de Pontos de Vida igual a 4d10 mais seu modificador de Sabedoria. Se a criatura morreu com quaisquer condições a seguir, a criatura revive com as condições removidas: Atordoado, Cego, Envenenado, Paralisado e Surdo. Após usar essa característica, você não pode usá-la novamente até completar um Descanso Longo."}],
           "desc": "Manipuladores da força vital para curar ferimentos de aliados ou infligir toques necróticos debilitantes.",
+          "limitedUses": [{"id": "mercy_flurry", "name": "Torrente de Cura e Dolo", "recovery": "longo", "perAbilityMod": "wis", "min": 1, "level": 11}],
           "about": "Manipule as Forças de Vida e da Morte Os Combatentes da Misericórdia controlam a força vital dos outros. Esses monges errantes atuam como curandeiros, mas eliminam rapidamente seus inimigos. Geralmente, usam máscaras, surgindo como portadores sem rosto da vida e da morte."
         }
       ],
@@ -2012,6 +2031,7 @@ const DND5E_DATA = {
           "features": [{"level": 3, "name": "Atleta Inigualável", "resumo": "Canalizar Divindade: por 1 hora, Vantagem em Atletismo e Acrobacia e +3 m em saltos.", "desc": "Como uma Ação Bônus, você pode gastar um uso do seu Canalizar Divindade para aprimorar seu atletismo. Por 1 hora, você tem Vantagem em testes de Força (Atletismo) e Destreza (Acrobacia), e a distância de seus Saltos Longos e Salto em Altura aumenta em 3 metros (essa distância adicional custa movimento padrão)."}, {"level": 3, "name": "Destruição Inspiradora", "resumo": "Após Destruição Divina, Canalizar Divindade divide 2d8 + nível de Paladino em PV temporários a 9 m.", "desc": "Imediatamente após conjurar Destruição Divina, você pode gastar um uso do seu Canalizar Divindade e distribuir Pontos de Vida Temporários para criaturas à sua escolha a até 9 metros de si, incluindo você. O número total de Pontos de Vida Temporários é igual a 2d8 mais o seu nível de Paladino, dividido entre as criaturas escolhidas, como preferir."}, {"level": 3, "name": "Magias do Juramento da Glória", "resumo": "Magias do Juramento sempre preparadas nos níveis 3, 5, 9, 13 e 17.", "desc": "A magia do seu juramento garante que você sempre tenha certas magias prontas; ao atingir um nível de Paladino detalhado na tabela Magias do Juramento da Glória, você sempre tem as magias apresentadas preparadas."}, {"level": 7, "name": "Aura de Vivacidade", "resumo": "Seu Deslocamento +3 m e aliados na Aura de Proteção também ganham +3 m.", "desc": "Seu Deslocamento aumenta em 3 metros. Além disso, sempre que um aliado entra em sua Aura de Proteção pela primeira vez em um turno ou inicia o turno dele na aura, o Deslocamento do aliado aumenta em 3 metros até o final do próximo turno dele."}, {"level": 15, "name": "Defesa Gloriosa", "resumo": "Reação: soma CAR à CA de você ou aliado a 3 m contra um ataque e contra-ataca se errar; CAR vezes por Descanso Longo.", "desc": "Você pode transformar a defesa em um ataque repentino. Quando você ou outra criatura à sua vista a até 3 metros de você é atingida por uma jogada de ataque, você pode executar uma Reação para conceder um bônus à CA do alvo contra esse ataque, fazendo potencialmente com que o ataque erre. O bônus é igual ao seu modificador de Carisma (mínimo de +1). Se o ataque falhar, você pode realizar um ataque com uma arma contra o atacante como parte desta Reação se o atacante estiver no alcance da sua arma. Você pode usar essa característica um número de vezes igual ao seu modificador de Carisma (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo."}, {"level": 20, "name": "Lenda Viva", "resumo": "Ação Bônus por 10 minutos: Vantagem em testes de CAR, transforma um ataque errado em acerto e repete salvaguardas falhas; 1x por Descanso Longo.", "desc": "Você pode se fortalecer com as lendas — verdadeiras ou exageradas — de seus grandes feitos. Como uma Ação Bônus, você recebe os benefícios abaixo por 10 minutos. Após usar essa característica, você não pode utilizá-la novamente até completar um Descanso Longo. Você também pode recuperar seu uso gastando um espaço de magia de 5º círculo (nenhuma ação é necessária). Carismático. Você é abençoado com uma presença sobrenatural e tem Vantagem em todos os testes de Carisma. Golpe Infalível. Uma vez em cada um dos seus turnos, ao realizar uma jogada de ataque com uma arma e errar, você pode fazer com que esse ataque atinja. Jogar Novamente a Salvaguarda. Se você falhar em uma salvaguarda, pode usar sua Reação para jogá-la novamente. Você deve usar o novo resultado."}],
           "effects": [{"level": 7, "speed": 3, "note": "Aura de Vivacidade"}],
           "desc": "Heroísmo lendário e feitos atléticos épicos, inspirando aliados com velocidade e vigor inabaláveis.",
+          "limitedUses": [{"id": "glory_defense", "name": "Defesa Gloriosa", "recovery": "longo", "perAbilityMod": "cha", "min": 1, "level": 15}],
           "about": "Aspire às Alturas do Heroísmo Os paladinos que fazem o Juramento de Glória acreditam que eles e seus companheiros estão destinados à glória por meio de atos heroicos. Treinam com afinco e encorajam seus companheiros, sempre prontos para atender ao chamado do destino. Esses Paladinos compartilham os seguintes princípios: • Esforce-se para ser conhecido por seus atos. • Enfrente as dificuldades com coragem. • Inspire os outros a buscar a glória.",
           "bonusSpells": {
             "3": [
@@ -2266,8 +2286,9 @@ const DND5E_DATA = {
           "id": "gloom_stalker",
           "name": "Vigilante das Sombras (Gloom Stalker)",
           "features": [{"level": 3, "name": "Emboscador das Sombras", "resumo": "Soma SAB à Iniciativa, +3 m de Deslocamento no primeiro turno e Golpe Terrível de 2d6 Psíquico (SAB vezes por Descanso Longo).", "desc": "Você dominou a arte de criar emboscadas temíveis, concedendo-lhe os seguintes benefícios. Bônus de Iniciativa. Ao jogar Iniciativa, pode adicionar seu modificador de Sabedoria à jogada. Golpe Terrível. Ao atacar e atingir uma criatura com uma arma, você pode causar 2d6 pontos de dano Psíquico adicional. Você pode usar este benefício uma vez por turno e um número de vezes igual ao seu modificador de Sabedoria (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo. Impulso do Emboscador. No início do seu primeiro turno de cada combate, seu Deslocamento aumenta em 3 metros até o final deste turno."}, {"level": 3, "name": "Magias do Vigilante das Sombras", "resumo": "Magias do Vigilante das Sombras sempre preparadas nos níveis 3, 5, 9, 13 e 17.", "desc": "Ao atingir um nível de Guardião detalhado na tabela Magias do Vigilante das Sombras, você tem a lista de magias sempre preparadas."}, {"level": 3, "name": "Visão Umbrosa", "resumo": "Visão no Escuro de 18 m (ou +18 m) e Invisível para quem depende de Visão no Escuro na Escuridão.", "desc": "Você adquire Visão no Escuro com um alcance de 18 metros. Se você já tem Visão no Escuro, o alcance aumenta em 18 metros. Você também se torna capaz de escapar de criaturas que utilizem Visão no Escuro. Enquanto estiver inteiramente na Escuridão, você tem a condição Invisível para qualquer criatura que dependa da Visão no Escuro para vê-lo nessa Escuridão."}, {"level": 7, "name": "Mente de Ferro", "resumo": "Proficiência em salvaguardas de Sabedoria (ou INT ou CAR, se já tiver).", "desc": "Você desenvolveu a capacidade de resistir a poderes que alteram a mente. Você adquire proficiência em salvaguardas de Sabedoria. Se você já tem essa proficiência, adquire proficiência em salvaguardas de Carisma ou Inteligência (à sua escolha)."}, {"level": 11, "name": "Torrente do Vigilante", "resumo": "Golpe Terrível passa a 2d8 e pode dar ataque extra em alvo próximo ou Amedrontar criaturas perto do alvo.", "desc": "O dano psíquico do seu Golpe Terrível se torna 2d8. Além disso, ao usar o efeito Golpe Terrível da sua característica Emboscador das Sombras, você pode causar um dos seguintes efeitos adicionais. Golpe Repentino. Você pode realizar outro ataque com a mesma arma contra uma criatura diferente que esteja a até 1,5 metro do alvo original e que esteja dentro do alcance da arma. Medo em Massa. O alvo e cada criatura a até 3 metros dele deve realizar uma salvaguarda de Sabedoria contra a CD para evitar sua magia. Ao falhar, uma criatura tem a condição Amedrontado até o início do seu próximo turno."}, {"level": 15, "name": "Esquiva Sombria", "resumo": "Reação: impõe Desvantagem num ataque contra você e teleporta até 9 m.", "desc": "Quando uma criatura realiza uma jogada de ataque contra você, você pode executar uma Reação para impor Desvantagem nessa jogada. Se o ataque acertar ou errar, você pode se teleportar até 9 metros para um espaço desocupado à sua vista."}],
-          "effects": [{"level": 7, "saves": ["wis"], "note": "Mente de Ferro"}],
+          "effects": [{"level": 3, "initiative": "wis", "note": "Emboscador das Sombras"}, {"level": 7, "saves": ["wis"], "note": "Mente de Ferro"}],
           "desc": "Predador das trevas do Subterrâneo, invisível para criaturas com visão no escuro e com ataques rápidos no 1º turno.",
+          "limitedUses": [{"id": "gloom_dreadful_strike", "name": "Golpe Terrível", "recovery": "longo", "perAbilityMod": "wis", "min": 1, "level": 3}],
           "about": "Aproveite a Magia das Sombras para Lutar contra Seus Inimigos Vigilantes das Sombras estão nos lugares mais sombrios, empunhando magia extraída do Sombral para combater inimigos que se escondem na escuridão.",
           "bonusSpells": {
             "3": [
@@ -2293,6 +2314,7 @@ const DND5E_DATA = {
           "features": [{"level": 3, "name": "Glamour Transcendental", "resumo": "Soma SAB (mín. +1) aos testes de Carisma e ganha proficiência em Atuação, Enganação ou Persuasão.", "desc": "Sempre que você realiza um teste de Carisma, recebe um bônus no teste igual ao seu modificador de Sabedoria (mínimo de +1). Você também adquire proficiência em uma dessas perícias à sua escolha: Atuação, Enganação ou Persuasão."}, {"level": 3, "name": "Golpes Terríveis", "resumo": "Uma vez por turno ao acertar com arma, +1d4 Psíquico (1d6 no nível 11).", "desc": "Você pode potencializar seus golpes com arma com a magia traumatizante tirada dos cantos sombrios de Faéria. Uma vez por turno, ao atingir uma criatura com uma arma, você pode causar 1d4 pontos de dano Psíquico adicional ao alvo. O dano adicional aumenta para 1d6 quando você atinge o nível 11 de Guardião."}, {"level": 3, "name": "Magias do Andarilho Feérico", "resumo": "Magias do Andarilho Feérico sempre preparadas nos níveis 3, 5, 9, 13 e 17.", "desc": "Ao atingir um nível de Guardião detalhado na tabela Magias do Andarilho Feérico, você tem a lista de magias sempre preparadas."}, {"level": 7, "name": "Detalhe Sedutor", "resumo": "Vantagem contra Amedrontado e Enfeitiçado; quando alguém passa nessas salvaguardas, Reação para Enfeitiçar ou Amedrontar outro alvo.", "desc": "A magia de Faéria protege sua mente. Você tem Vantagem nas salvaguardas para evitar ou encerrar a condição Amedrontado ou Enfeitiçado. Além disso, sempre que você ou uma criatura à sua vista a até 36 metros de você for bem-sucedido em uma salvaguarda para evitar ou encerrar a condição Amedrontado ou Enfeitiçado, você pode executar uma Reação para forçar uma criatura diferente à sua vista a até 36 metros de você realizar uma salvaguarda de Sabedoria contra a CD para evitar sua magia. Se falhar, o alvo tem a condição Amedrontado ou Enfeitiçado (à sua escolha) por 1 minuto. O alvo repete a salvaguarda no final de cada um dos turnos dele, encerrando o efeito em si em caso de sucesso."}, {"level": 11, "name": "Reforços Feéricos", "resumo": "Convocar Feérico sem componente Material e 1x sem espaço (sem Concentração, 1 minuto) por Descanso Longo.", "desc": "Você pode conjurar a magia Convocar Feérico sem um componente Material. Você também pode conjurá-la uma vez sem um espaço de magia, e restaura a capacidade de conjurá-la deste modo ao completar um Descanso Longo. Ao começar a conjurar a magia, você pode modificá-la para não exigir Concentração e a duração da magia se torna 1 minuto para esta conjuração."}, {"level": 15, "name": "Andarilho Nebuloso", "resumo": "Passo Nebuloso sem espaço SAB vezes por Descanso Longo, levando uma criatura voluntária.", "desc": "Você pode conjurar Passo Nebuloso sem gastar um espaço de magia. Você pode fazer isso um número de vezes igual ao seu modificador de Sabedoria (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo. Além disso, sempre que você conjurar Passo Nebuloso pode levar junto uma criatura voluntária à sua vista a até 1,5 metro de você. Essa criatura se teleporta para um espaço desocupado à sua escolha a até 1,5 metro do seu destino."}],
           "effects": [{"level": 3, "skillBonus": {"skills": ["deception", "intimidation", "performance", "persuasion"], "ability": "wis", "min": 1}, "note": "Glamour Transcendental"}],
           "desc": "Imbuído com os dons do Feywild, somando Sabedoria em testes de Carisma e aterrorizando ou encantando inimigos.",
+          "limitedUses": [{"id": "fey_misty_wanderer", "name": "Andarilho Nebuloso — Passo Nebuloso grátis", "recovery": "longo", "perAbilityMod": "wis", "min": 1, "level": 15}],
           "about": "Empunhe o Deleite e a Fúria Feérica Uma mística feérica o envolve, graças à bênção de uma arquifada ou a um local em Faéria que o transformou. Agora, como um Andarilho Feérico, você possui magia feérica. Sua risada alegre ilumina os corações dos oprimidos, enquanto suas habilidades marciais infundem terror em seus inimigos, pois a alegria dos feéricos é imensa e sua fúria, temível.",
           "bonusSpells": {
             "3": [
@@ -2745,6 +2767,7 @@ const DND5E_DATA = {
           "name": "Feitiçaria Mecânica (Clockwork Sorcery)",
           "features": [{"level": 3, "name": "Magias Mecânicas", "resumo": "Magias Mecânicas sempre preparadas nos níveis 3, 5, 7 e 9.", "desc": "Ao atingir um nível de Feiticeiro detalhado na tabela Magias Mecânicas, você tem as magias listadas sempre preparadas."}, {"level": 3, "name": "Restaurar Equilíbrio", "resumo": "Reação: anula Vantagem ou Desvantagem de um d20 de criatura a 18 m; CAR vezes por Descanso Longo.", "desc": "Sua conexão com o plano de ordem absoluta permite equalizar momentos caóticos. Quando uma criatura à sua vista a até 18 metros de você estiver prestes a jogar um d20 com Vantagem ou Desvantagem, você pode executar uma Reação para evitar que o teste seja afetado por Vantagem e Desvantagem. Você pode usar essa característica um número de vezes igual ao seu modificador de Carisma (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo."}, {"level": 6, "name": "Bastião da Lei", "resumo": "Ação Usar Magia e 1 a 5 PF: proteção de d8s que absorvem dano em você ou aliado a 9 m.", "desc": "Você pode acessar a grande equação da existência para imbuir uma criatura com um escudo cintilante de ordem. Como uma ação Usar Magia, você pode gastar de 1 a 5 Pontos de Feitiçaria para criar uma proteção mágica ao seu redor ou de outra criatura à sua vista a até 9 metros de você. A proteção é representada por um número de d8s igual ao número de Pontos de Feitiçaria gastos para criá-la. Quando a criatura protegida sofre dano, ela pode gastar um número desses dados, jogá-los e reduzir o dano sofrido pelo resultado desses dados. A proteção dura até você completar um Descanso Longo ou até usar esta característica novamente."}, {"level": 14, "name": "Transe da Ordem", "resumo": "Ação Bônus por 1 minuto: ataques contra você sem Vantagem e mínimo 10 nos seus Testes de D20; 1x por Descanso Longo ou 5 PF.", "desc": "Você adquire a capacidade de alinhar sua consciência com os infinitos cálculos de Mecânos. Como uma Ação Bônus, você pode entrar neste estado por 1 minuto. Pela duração, as jogadas de ataque contra você não podem se beneficiar de Vantagem e sempre que você realizar um Teste de D20, você pode tratar um resultado de 9 ou menor no d20 como um 10. Você pode usar esta característica novamente após completar um Descanso Longo ou gastando 5 Pontos de Feitiçaria (nenhuma ação é necessária) para restaurar seu uso."}, {"level": 18, "name": "Cavalgada Mecânica", "resumo": "Cubo de 9 m: cura 100 PV divididos, conserta objetos e dissipa magias de 6º círculo ou menor; 1x por Descanso Longo ou 7 PF.", "desc": "Você invoca momentaneamente espíritos de ordem para eliminar a desordem ao seu redor. Como uma ação Usar Magia, você convoca os espíritos em um Cubo de 9 metros de lado originado em você. Os espíritos se parecem com modrons ou outros Construtos à sua escolha. Os espíritos são intangíveis e invulneráveis e criam os efeitos a seguir no Cubo antes de desaparecerem. Você pode executar esta ação novamente após completar um Descanso Longo ou gastando 7 Pontos de Feitiçaria (nenhuma ação é necessária) para restaurar seu uso. Cura. Os espíritos restauram até 100 Pontos de Vida, divididos conforme você escolher entre qualquer número de criaturas à sua escolha no Cubo. Dissipar. Cada magia de 6º círculo ou inferior encerra em criaturas e objetos à sua escolha no Cubo. Reparar. Quaisquer objetos danificados inteiramente no Cubo são reparados instantaneamente."}],
           "desc": "Conexão com a ordem perfeita de Mechanus, neutralizando vantagens e desvantagens com engrenagens cósmicas.",
+          "limitedUses": [{"id": "clockwork_restore_balance", "name": "Restaurar Equilíbrio", "recovery": "longo", "perAbilityMod": "cha", "min": 1, "level": 3}],
           "about": "Canalize as Forças Cósmicas da Ordem A força cósmica da ordem o envolveu em magia. Esse poder provém de Mecanos ou de um reino semelhante — um plano de existência moldado inteiramente pela eficiência de um relógio. Você ou alguém de sua linhagem pode ter se envolvido nas maquinações dos modrons, os seres ordenados que habitam Mecanos. Talvez seu antepassado tenha até participado da Grande Marcha dos Modrons. Seja qual for sua origem, o poder da ordem pode parecer estranho para os outros, mas, para você, ele é parte de um sistema vasto e glorioso.",
           "bonusSpells": {
             "3": [
@@ -2947,6 +2970,7 @@ const DND5E_DATA = {
           "name": "Patrono Ínfero (Fiend Patron)",
           "features": [{"level": 3, "name": "Bênção do Tenebroso", "resumo": "Ao reduzir inimigo a 0 PV (ou alguém a 3 m de você), ganha PV temporários iguais a CAR + nível de Bruxo.", "desc": "Ao reduzir um inimigo a 0 Pontos de Vida, você adquire Pontos de Vida Temporários iguais ao seu modificador de Carisma mais seu nível de Bruxo (mínimo de 1 Ponto de Vida Temporário). Você também recebe esse benefício se outra pessoa reduzir um inimigo a até 3 metros de você a 0 Pontos de Vida."}, {"level": 3, "name": "Magias de Pacto do Ínfero", "resumo": "Magias do Ínfero sempre preparadas nos níveis 3, 5, 7 e 9.", "desc": "A magia do seu patrono assegura que você sempre tenha algumas magias disponíveis; ao atingir um nível de Bruxo indicado na tabela Magias do Ínfero, você sempre tem essas magias preparadas."}, {"level": 6, "name": "A Sorte do Próprio Tenebroso", "resumo": "Soma 1d10 a um teste de atributo ou salvaguarda depois de ver a jogada; CAR vezes por Descanso Longo, uma vez por turno.", "desc": "Você pode chamar seu patrono Ínfero para alterar o destino a seu favor. Ao realizar um teste de atributo ou uma salvaguarda, você pode usar essa característica para adicionar 1d10 à sua jogada. Você pode fazer isso após ver a jogada, mas antes que qualquer um dos efeitos da jogada ocorra. Você pode usar essa característica um número de vezes igual ao seu modificador de Carisma (mínimo de uma vez), no máximo uma vez por jogada, e restaura todos os usos gastos ao completar um Descanso Longo."}, {"level": 10, "name": "Resistência Ínfera", "resumo": "Ao terminar um descanso, escolhe um tipo de dano (exceto Energético) para ter Resistência.", "desc": "Ao completar um Descanso Curto ou Longo, escolha um tipo de dano, exceto Energético. Você tem Resistência a esse tipo de dano até escolher um tipo de dano diferente com esta característica."}, {"level": 14, "name": "Lançar no Inferno", "resumo": "Uma vez por turno ao acertar: salvaguarda de CAR ou o alvo some até o fim do seu próximo turno e sofre 8d10 Psíquico; 1x por Descanso Longo ou espaço de Pacto.", "desc": "Uma vez por turno, ao atingir uma criatura com uma jogada de ataque, você pode tentar transportar instantaneamente o alvo para os Planos Inferiores. O alvo deve ser bem-sucedido em uma salvaguarda de Carisma contra a CD para evitar sua magia, ou ele desaparece e atravessa uma paisagem de pesadelo. O alvo sofre 8d10 pontos de dano Psíquico se não for um Ínfero e t em a condição Incapacitado até o final do seu próximo turno, quando retorna ao espaço que ocupava anteriormente ou ao espaço desocupado mais próximo. Você pode usar esta característica novamente após completar um Descanso Longo, a menos que gaste um espaço de Magia de Pacto (nenhuma ação é necessária) para restaurar seu uso."}],
           "desc": "Pacto com lordes dos Nove Infernos ou Abismo, ganhando PV temporários ao abater inimigos e bênção da sorte infernal.",
+          "limitedUses": [{"id": "fiend_dark_luck", "name": "A Sorte do Próprio Tenebroso", "recovery": "longo", "perAbilityMod": "cha", "min": 1, "level": 6}],
           "about": "Realize um Pacto com os Planos Inferiores Seu pacto se fundamenta nos Planos Inferiores, reinos de perdição. Você pode negociar com um lorde demônio como Demogorgon ou Orcus; um arquidiabo como Asmodeus; ou um Diabo do Fosso, balor, yugoloth ou uma poderosa megera da noite. Os objetivos desse patrono são malignos — visam à corrupção ou destruição de tudo, inclusive você — e seu caminho é determinado pelo seu esforço em se opor a esses objetivos.",
           "bonusSpells": {
             "3": [
@@ -2974,6 +2998,7 @@ const DND5E_DATA = {
           "name": "Patrono Arquifada (Archfey Patron)",
           "features": [{"level": 3, "name": "Magias de Pacto da Arquifada", "resumo": "Magias da Arquifada sempre preparadas nos níveis 3, 5, 7 e 9.", "desc": "A magia do seu patrono assegura que você sempre tenha algumas magias disponíveis; ao atingir um nível de Bruxo indicado na tabela Magias da Arquifada, você sempre tem essas magias preparadas."}, {"level": 3, "name": "Passos Feéricos", "resumo": "Passo Nebuloso sem espaço, CAR vezes por Descanso Longo, com efeito extra (Provocante ou Revigorante).", "desc": "Seu patrono lhe confere a habilidade de transitar entre os planos. Você pode conjurar Passo Nebuloso sem gastar um espaço de magia um número de vezes igual ao seu modificador de Carisma (mínimo de uma vez) e restaura todos os usos gastos ao completar um Descanso Longo. Além disso, ao conjurar essa magia, você pode escolher um dos seguintes efeitos adicionais. Passo Provocante. Criaturas a até 1,5 metro do espaço que você deixou devem ser bem-sucedidas em uma salvaguarda de Sabedoria contra a CD para evitar sua magia ou têm Desvantagem em jogadas de ataque contra criaturas diferentes de você até o início do seu próximo turno. Passo Revigorante. Imediatamente após você se teleportar, você ou uma criatura à sua vista a até 3 metros de você, adquire 1d10 Pontos de Vida Temporários."}, {"level": 6, "name": "Fuga em Névoa", "resumo": "Passo Nebuloso como Reação ao sofrer dano; novas opções de Passos Feéricos (Desvanecedor e Terrível).", "desc": "Você pode conjurar Passo Nebuloso como uma Reação ao sofrer dano. Além disso, os seguintes efeitos agora estão entre suas opções de Passos Feéricos. Passo Desvanecedor. Você tem a condição Invisível até o início do seu próximo turno ou até imediatamente após realizar uma jogada de ataque, causar dano ou conjurar uma magia. Passo Terrível. Criaturas a até 1,5 metro do espaço que você deixou ou do espaço em que você aparece (à sua escolha) devem ser bem-sucedidas em uma salvaguarda de Sabedoria contra a CD para evitar sua magia ou sofrem 2d10 pontos de dano Psíquico."}, {"level": 10, "name": "Defesas Sedutoras", "resumo": "Imune a Enfeitiçado; Reação ao ser atingido: reduz o dano à metade e o atacante faz salvaguarda de SAB ou sofre Psíquico igual.", "desc": "Seu patrono ensina como proteger sua mente e corpo. Você é imune à condição Enfeitiçado. Além disso, imediatamente após uma criatura à sua vista acertar você com uma jogada de ataque, você pode executar uma Reação para reduzir o dano sofrido pela metade (arredondado para baixo) e pode forçar quem o atacou a realizar uma salvaguarda de Sabedoria contra a CD para evitar sua magia. Se falhar, o atacante sofre dano Psíquico igual ao dano que você sofreu. Após executar esta Reação, você não pode usá-la novamente até completar um Descanso Longo, a menos que gaste um espaço de Magia de Pacto (nenhuma ação é necessária) para restaurar seu uso."}, {"level": 14, "name": "Magia Sedutora", "resumo": "Após magia de Encantamento ou Ilusão com ação e espaço, conjura Passo Nebuloso sem espaço.", "desc": "Seu patrono concede a você a capacidade de tecer sua magia com teleporte. Imediatamente após conjurar uma magia de Encantamento ou Ilusão usando uma ação e um espaço de magia, você pode conjurar Passo Nebuloso como parte da mesma ação e sem gastar um espaço de magia."}],
           "desc": "Pacto com seres caprichosos do Feywild com passos enevoados constantes, presenças aterrorizantes ou encantadoras.",
+          "limitedUses": [{"id": "archfey_steps", "name": "Passos Feéricos — Passo Nebuloso grátis", "recovery": "longo", "perAbilityMod": "cha", "min": 1, "level": 3}],
           "about": "Faça Acordos com Feéricos Excêntricos Seu pacto é fundamentado no poder de Faéria. Ao escolher essa subclasse, você pode realizar um pacto com uma Arquifada, como o Príncipe do Gelo, a Rainha do Ar e das Trevas, Titânia da Corte de Verão ou uma megera antiga. Outra opção é invocar um espectro Feérico, criando uma rede de favores e dívidas. Em qualquer caso, seu patrono tende a ser enigmático e excêntrico.",
           "bonusSpells": {
             "3": [
@@ -3192,7 +3217,7 @@ const DND5E_DATA = {
         {
           "id": "abjuration",
           "name": "Abjurador (Abjurer)",
-          "features": [{"level": 3, "name": "Proteção Arcana", "resumo": "Ao conjurar Abjuração com espaço, cria proteção de 2x nível de Mago + INT PV que absorve dano; recarrega com magias de Abjuração.", "desc": "Você pode tecer magia ao seu redor para se proteger. Ao conjurar uma magia de Abjuração com um espaço de magia, você pode usar simultaneamente um fio da magia para criar uma proteção mágica em si que dura até você completar um Descanso Longo. A proteção tem Pontos de Vida máximos iguais ao dobro do seu nível de Mago mais seu modificador de Inteligência. Ao sofrer dano, a proteção o absorve em vez de você. Aplique qualquer Resistência ou Vulnerabilidade antes de reduzir os Pontos de Vida da proteção. Se o dano reduzir a proteção a 0 Pontos de Vida, você sofre o dano restante. Com 0 Pontos de Vida, a proteção não pode mais absorver dano, mas sua magia permanece. Ao conjurar uma magia Abjuração com um espaço de magia, a proteção restaura um número de Pontos de Vida igual ao dobro do nível do espaço de magia. Você também pode, como uma Ação Bônus, gastar um espaço de magia, e a proteção recupera um número de Pontos de Vida igual ao dobro do nível do espaço de magia gasto. Após conjurar a proteção, você não pode conjurá-la novamente até completar um Descanso Longo."}, {"level": 3, "name": "Versado em Abjuração", "resumo": "Duas magias de Abjuração de até 2º círculo grátis no livro e mais uma a cada novo círculo.", "desc": "Escolha duas magias de Mago da escola de Abjuração, cada uma deve ser de 2º círculo ou inferior e adicione-as gratuitamente ao seu livro de magias. Além disso, ao adquirir acesso a um novo círculo de espaços de magia nesta classe, você pode adicionar gratuitamente uma magia de Mago da escola de Abjuração ao seu livro de magias. A magia escolhida deve ser de um círculo para o qual você tenha espaços de magia."}, {"level": 6, "name": "Proteção Projetada", "resumo": "Reação: a Proteção Arcana absorve dano de criatura a 9 m.", "desc": "Quando uma criatura à sua vista a até 9 metros de você sofrer dano, você pode executar uma Reação para que sua Proteção Arcana absorva esse dano. Caso isto reduza a proteção a 0 Pontos de Vida, a criatura protegida sofre qualquer dano restante. Se essa criatura tiver alguma Resistência ou Vulnerabilidade, aplique-as antes de reduzir os Pontos de Vida da proteção."}, {"level": 10, "name": "Rompe-Magia", "resumo": "Contramagia e Dissipar Magia sempre preparadas; Dissipar como Ação Bônus, soma BP e não gasta espaço se falhar.", "desc": "Você sempre tem as magias Contramagia e Dissipar Magia preparadas. Além disso, você pode conjurar Dissipar Magia como uma Ação Bônus e pode adicionar seu Bônus de Proficiência ao seu teste de atributo. Ao conjurar uma das magias com um espaço de magia, esse espaço não é gasto se a magia falhar em interromper uma magia."}, {"level": 14, "name": "Resistência à Magia", "resumo": "Vantagem em salvaguardas contra magias e Resistência ao dano delas.", "desc": "Você tem Vantagem em salvaguardas contra magias e Resistência ao dano proveniente de magias."}],
+          "features": [{"level": 3, "name": "Proteção Arcana", "resumo": "Ao conjurar Abjuração com espaço, cria proteção de 2x nível de Mago + INT PV que absorve dano; recarrega com magias de Abjuração.", "desc": "Você pode tecer magia ao seu redor para se proteger. Ao conjurar uma magia de Abjuração com um espaço de magia, você pode usar simultaneamente um fio da magia para criar uma proteção mágica em si que dura até você completar um Descanso Longo. A proteção tem Pontos de Vida máximos iguais ao dobro do seu nível de Mago mais seu modificador de Inteligência. Ao sofrer dano, a proteção o absorve em vez de você. Aplique qualquer Resistência ou Vulnerabilidade antes de reduzir os Pontos de Vida da proteção. Se o dano reduzir a proteção a 0 Pontos de Vida, você sofre o dano restante. Com 0 Pontos de Vida, a proteção não pode mais absorver dano, mas sua magia permanece. Ao conjurar uma magia Abjuração com um espaço de magia, a proteção restaura um número de Pontos de Vida igual ao dobro do nível do espaço de magia. Você também pode, como uma Ação Bônus, gastar um espaço de magia, e a proteção recupera um número de Pontos de Vida igual ao dobro do nível do espaço de magia gasto. Após conjurar a proteção, você não pode conjurá-la novamente até completar um Descanso Longo."}, {"level": 3, "name": "Versado em Abjuração", "resumo": "Duas magias de Abjuração de até 2º círculo grátis no livro e mais uma a cada novo círculo.", "desc": "Escolha duas magias de Mago da escola de Abjuração, cada uma deve ser de 2º círculo ou inferior e adicione-as gratuitamente ao seu livro de magias. Além disso, ao adquirir acesso a um novo círculo de espaços de magia nesta classe, você pode adicionar gratuitamente uma magia de Mago da escola de Abjuração ao seu livro de magias. A magia escolhida deve ser de um círculo para o qual você tenha espaços de magia."}, {"level": 6, "name": "Proteção Projetada", "resumo": "Reação: a Proteção Arcana absorve dano de criatura a 9 m.", "desc": "Quando uma criatura à sua vista a até 9 metros de você sofrer dano, você pode executar uma Reação para que sua Proteção Arcana absorva esse dano. Caso isto reduza a proteção a 0 Pontos de Vida, a criatura protegida sofre qualquer dano restante. Se essa criatura tiver alguma Resistência ou Vulnerabilidade, aplique-as antes de reduzir os Pontos de Vida da proteção."}, {"level": 10, "name": "Rompe-Magia", "resumo": "Contramagia e Dissipar Magia sempre preparadas; Dissipar como Ação Bônus, soma PB e não gasta espaço se falhar.", "desc": "Você sempre tem as magias Contramagia e Dissipar Magia preparadas. Além disso, você pode conjurar Dissipar Magia como uma Ação Bônus e pode adicionar seu Bônus de Proficiência ao seu teste de atributo. Ao conjurar uma das magias com um espaço de magia, esse espaço não é gasto se a magia falhar em interromper uma magia."}, {"level": 14, "name": "Resistência à Magia", "resumo": "Vantagem em salvaguardas contra magias e Resistência ao dano delas.", "desc": "Você tem Vantagem em salvaguardas contra magias e Resistência ao dano proveniente de magias."}],
           "featureSpells": {"10": ["counterspell", "dispel_magic"]},
           "desc": "Especialistas em proteção e barreiras protetoras, erguendo um Égide Arcano que absorve dano direcionado ao mago e aliados.",
           "about": "Proteja seus Companheiros e Bana Inimigos Seu estudo da magia concentra-se em magias de bloqueio, banimento e proteção, eliminando efeitos nocivos, repelindo influências malignas e defendendo os fracos. Abjuradores são chamados para exorcizar espíritos malignos, proteger locais contra espionagem mágica e fechar portais para outros planos de existência. Grupos de aventureiros valorizam os Abjuradores por sua proteção contra diversas magias hostis e ataques."
@@ -4790,7 +4815,7 @@ const DND5E_DATA = {
     },
     {
       "id": "quarterstaff",
-      "name": "Bordão",
+      "name": "Cajado",
       "category": "Simples",
       "type": "Corpo a Corpo",
       "cost": "2 PP",
@@ -5402,7 +5427,7 @@ const DND5E_DATA = {
       "maxDex": null,
       "minStr": 0,
       "stealthDisadv": false,
-      "weight": 6,
+      "weight": 6.5,
       "cost": "45 PO"
     },
     {
@@ -5419,7 +5444,7 @@ const DND5E_DATA = {
     },
     {
       "id": "chain_shirt",
-      "name": "Camisa de Cota de Malha",
+      "name": "Cota de Malha Parcial",
       "category": "Média",
       "baseAC": 13,
       "dexMod": "cap2",
@@ -5431,19 +5456,19 @@ const DND5E_DATA = {
     },
     {
       "id": "scale_mail",
-      "name": "Cota de Escamas",
+      "name": "Loriga de Escamas",
       "category": "Média",
       "baseAC": 14,
       "dexMod": "cap2",
       "maxDex": 2,
       "minStr": 0,
       "stealthDisadv": true,
-      "weight": 20,
+      "weight": 22,
       "cost": "50 PO"
     },
     {
       "id": "breastplate",
-      "name": "Peitoral de Aço",
+      "name": "Couraça Peitoral",
       "category": "Média",
       "baseAC": 14,
       "dexMod": "cap2",
@@ -5455,14 +5480,14 @@ const DND5E_DATA = {
     },
     {
       "id": "half_plate",
-      "name": "Meia-Armadura",
+      "name": "Placas Parcial",
       "category": "Média",
       "baseAC": 15,
       "dexMod": "cap2",
       "maxDex": 2,
       "minStr": 0,
       "stealthDisadv": true,
-      "weight": 18,
+      "weight": 20,
       "cost": "750 PO"
     },
     {
@@ -5474,19 +5499,19 @@ const DND5E_DATA = {
       "maxDex": 0,
       "minStr": 0,
       "stealthDisadv": true,
-      "weight": 18,
+      "weight": 20,
       "cost": "30 PO"
     },
     {
       "id": "chain_mail",
-      "name": "Cota de Malha Completa",
+      "name": "Cota de Malha",
       "category": "Pesada",
       "baseAC": 16,
       "dexMod": "none",
       "maxDex": 0,
       "minStr": 13,
       "stealthDisadv": true,
-      "weight": 25,
+      "weight": 27,
       "cost": "75 PO"
     },
     {
@@ -5498,19 +5523,19 @@ const DND5E_DATA = {
       "maxDex": 0,
       "minStr": 15,
       "stealthDisadv": true,
-      "weight": 27,
+      "weight": 30,
       "cost": "200 PO"
     },
     {
       "id": "plate",
-      "name": "Placas Completas (Armadura Completa)",
+      "name": "Placas",
       "category": "Pesada",
       "baseAC": 18,
       "dexMod": "none",
       "maxDex": 0,
       "minStr": 15,
       "stealthDisadv": true,
-      "weight": 30,
+      "weight": 32,
       "cost": "1500 PO"
     }
   ],
@@ -12422,16 +12447,16 @@ DND5E_DATA.featureSummaries = {
   "Aura Expandida (Aura Expansion)": "As suas auras passam de 3 m para 9 m de raio.",
 
   // ---- Guardião ----
-  "Inimigo Favorito (Favored Enemy)": "Você sempre tem Marca do Caçador preparada e a conjura de graça algumas vezes por descanso longo.",
+  "Inimigo Favorito (Favored Enemy)": "Você sempre tem Marca do Predador preparada e a conjura de graça algumas vezes por descanso longo.",
   "Explorador Hábil (Deft Explorer)": "Especialização em uma perícia e dois idiomas a mais.",
   "Subclasse de Guardião (Ranger Subclass)": "Escolha a sua subclasse (Andarilho Feérico, Caçador, Senhor das Feras ou Vigilante das Sombras): ela concede características neste e nos níveis seguintes.",
   "Errante (Roving)": "+3 m de deslocamento e deslocamentos de escalada e natação iguais ao seu.",
   "Incansável (Tireless)": "Ação Usar Magia: PV temporários de 1d8 + SAB (SAB vezes por Descanso Longo); cada Descanso Curto reduz a Exaustão em 1.",
-  "Predador Implacável (Relentless Hunter)": "Sofrer dano não quebra a sua concentração em Marca do Caçador.",
+  "Predador Implacável (Relentless Hunter)": "Sofrer dano não quebra a sua concentração em Marca do Predador.",
   "Véu da Natureza (Nature's Veil)": "Ação bônus: fique Invisível até o fim do próximo turno, algumas vezes por descanso longo.",
-  "Caçador Preciso (Precise Hunter)": "Vantagem nos ataques contra a criatura marcada pela sua Marca do Caçador.",
+  "Caçador Preciso (Precise Hunter)": "Vantagem nos ataques contra a criatura marcada pela sua Marca do Predador.",
   "Sentidos Selvagens (Feral Senses)": "Percepção às cegas de 9 m: você não fica desprevenido contra criaturas invisíveis.",
-  "Matador de Inimigos Favoritos (Foe Slayer)": "O dado da Marca do Caçador sobe para d10.",
+  "Matador de Inimigos Favoritos (Foe Slayer)": "O dado da Marca do Predador sobe para d10.",
 
   // ---- Ladino ----
   "Ataque Furtivo (Sneak Attack)": "1x por turno, dano extra com arma de Acuidade ou à distância quando tem Vantagem ou um aliado está a 1,5 m do alvo: 1d6 no nível 1, +1d6 a cada nível ímpar (2d6 no 3º … 10d6 no 19º).",
