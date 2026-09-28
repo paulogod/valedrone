@@ -3295,6 +3295,7 @@ function renderHpTracker() {
   }
 
   renderHpLog();
+  renderCombatSummary();
   renderConditions();
   renderFeatureUses();
   renderSpellSlots();
@@ -3314,6 +3315,221 @@ function renderHpTracker() {
         </div>`;
       }).join("")
     : '<p class="hp-dado-vazio">Escolha a classe no Passo 1 para o app saber os seus Dados de Vida.</p>';
+}
+
+/* ------------------------------------------- RESUMO DE COMBATE (PAINEL DE PV) */
+
+let _editandoCombate = false;
+
+const escHtml = (t) => String(t ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+/**
+ * Rola ataque e dano de uma linha da tabela de ataques.
+ * O dano vem como "1d6 +5 Perfurante" ou "1d8 +3 + 1d4 Cortante": a expressão
+ * inteira é rolada (antes só o primeiro dado, e o +5 ficava de fora).
+ */
+function rolarLinhaDeAtaque(row) {
+  const texto = String(row.damage || "");
+  const m = texto.match(/^([\dd+\-\s]+?)\s*([A-Za-zÀ-ú]{2,}.*)?$/);
+  const expr = m ? m[1].replace(/\s+/g, "") : "";
+  const tipo = m && m[2] ? m[2].trim() : "";
+  const parsed = parseDiceExpression(expr);
+  const d20 = Math.floor(Math.random() * 20) + 1;
+  const atk = parseInt(row.atk, 10) || 0;
+  const atkStr = atk >= 0 ? `+${atk}` : `${atk}`;
+  const tag = d20 === 20 ? " 🌟 CRÍTICO!" : d20 === 1 ? " 💀 FALHA CRÍTICA!" : "";
+  let danoTxt = "";
+  if (parsed) {
+    let total = parsed.fixo;
+    const partes = parsed.dados.map(d => {
+      const rolls = Array.from({ length: d.qtd }, () => Math.floor(Math.random() * d.faces) + 1);
+      total += d.sinal * rolls.reduce((a, b) => a + b, 0);
+      return `${d.qtd}d${d.faces}[${rolls.join(",")}]`;
+    });
+    const fixo = parsed.fixo ? (parsed.fixo > 0 ? ` +${parsed.fixo}` : ` ${parsed.fixo}`) : "";
+    danoTxt = `<br>💥 <strong>Dano:</strong> ${partes.join(" + ")}${fixo} = <strong>${Math.max(1, total)} ${escHtml(tipo)}</strong>`;
+  } else if (texto) {
+    danoTxt = `<br>💥 ${escHtml(texto)}`;
+  }
+  showToast(`⚔️ <strong>${escHtml(row.name)}:</strong> d20(${d20}) ${atkStr} = <strong>${d20 + atk}</strong>${tag}${danoTxt}`);
+}
+
+/** Linhas de ataque com nome (armas, itens, ataques e magias da ficha) */
+function linhasDeAtaqueDaFicha() {
+  return (sheetOv().weaponRows || []).filter(r => r.name && r.name.trim());
+}
+
+/** Salvaguardas como estão na ficha (com proficiência e edição manual) */
+function salvaguardasDaFicha() {
+  return DND5E_DATA.abilities.map(ab => {
+    const el = document.querySelector(`.of-prof-line-item.is-save .of-prof-bonus[data-roll="Salvaguarda de ${ab.name}"]`);
+    const mod = el ? parseInt(el.getAttribute("data-mod"), 10) || 0 : 0;
+    const prof = !!el && !!el.parentElement.querySelector(".of-prof-mark.is-prof");
+    const manual = (sheetOv().saveOv || {})[ab.id];
+    return { id: ab.id, abbr: ab.abbr, nome: ab.name, mod, prof, manual: manual !== undefined && manual !== null && manual !== "" };
+  });
+}
+
+/**
+ * Quadro logo abaixo dos PV com o que se consulta a cada turno: CA,
+ * Iniciativa, Deslocamento, salvaguardas e ataques. Tudo vem da ficha, então
+ * edições feitas lá aparecem aqui e vice-versa.
+ */
+function renderCombatSummary(forcar = false) {
+  const box = document.getElementById("combatSummary");
+  if (!box) return;
+  // Um recálculo no meio da edição não pode apagar o que está sendo digitado
+  if (_editandoCombate && !forcar && box.querySelector(".combate-edit")) return;
+  const val = (id) => (document.getElementById(id)?.value || "").trim();
+  const ca = val("sheetAC"), init = val("sheetInitiative"), desloc = val("sheetSpeed");
+  const saves = salvaguardasDaFicha();
+  const ataques = linhasDeAtaqueDaFicha();
+  const sinal = (n) => (n >= 0 ? `+${n}` : `${n}`);
+  const caManual = hasOv("ac");
+
+  if (!character.class1 || character.class1 === "none") {
+    box.innerHTML = "";
+    box.hidden = true;
+    return;
+  }
+  box.hidden = false;
+
+  if (_editandoCombate) {
+    box.innerHTML = `
+      <div class="cond-cabeca"><span>Combate — editando</span></div>
+      <div class="combate-edit">
+        <label class="combate-edit-campo"><span>CA</span>
+          <input type="number" class="hp-edit-num" id="combEditCA" inputmode="numeric" value="${escHtml(ca)}"></label>
+        ${saves.map(s => `<label class="combate-edit-campo"><span>${s.abbr}</span>
+          <input type="text" class="hp-edit-num" data-comb-save="${s.id}" inputmode="numeric" value="${sinal(s.mod)}"
+                 title="Salvaguarda de ${s.nome}"></label>`).join("")}
+      </div>
+      ${ataques.length ? `<div class="combate-edit-ataques">
+        ${ataques.map(r => `<div class="combate-edit-ataque" data-comb-row="${escHtml(r.uid)}">
+          <span class="combate-atk-nome">${escHtml(r.name)}</span>
+          <input type="text" class="hp-edit-num" data-comb-field="atk" value="${escHtml(r.atk)}" title="Bônus de ataque ou CD">
+          <input type="text" class="combate-edit-dano" data-comb-field="damage" value="${escHtml(r.damage)}" title="Dano e tipo">
+        </div>`).join("")}
+      </div>` : ""}
+      <div class="combate-edit-acoes">
+        <button type="button" class="hp-edit-btn is-ok" id="btnCombEditOk" title="Salvar (Enter)"><i class="fa-solid fa-check"></i></button>
+        <button type="button" class="hp-edit-btn" id="btnCombEditCancelar" title="Cancelar (Esc)"><i class="fa-solid fa-xmark"></i></button>
+        <button type="button" class="hp-edit-btn combate-auto" id="btnCombEditAuto"
+                title="Descarta as edições manuais de CA, salvaguardas e ataques e volta à conta do app">
+          <i class="fa-solid fa-rotate-left"></i> Automático</button>
+      </div>`;
+    ligarEdicaoDeCombate();
+    return;
+  }
+
+  box.innerHTML = `
+    <div class="cond-cabeca">
+      <span>Combate</span>
+      <button type="button" class="hp-editar" id="btnCombateEditar" title="Editar CA, salvaguardas e ataques" aria-label="Editar combate">
+        <i class="fa-solid fa-pen-to-square"></i>
+      </button>
+    </div>
+    <div class="combate-stats">
+      <span class="combate-stat${caManual ? " is-manual" : ""}" title="Classe de Armadura${caManual ? " (editada à mão)" : ""}">
+        <i class="fa-solid fa-shield-halved"></i><strong>${escHtml(ca || "—")}</strong><small>CA</small></span>
+      <button type="button" class="combate-stat is-rola" data-comb-roll="Iniciativa" data-comb-mod="${parseInt(init, 10) || 0}" title="Rolar Iniciativa">
+        <i class="fa-solid fa-bolt"></i><strong>${escHtml(init || "—")}</strong><small>Iniciativa</small></button>
+      <span class="combate-stat" title="Deslocamento"><i class="fa-solid fa-person-running"></i><strong>${escHtml(desloc || "—")}</strong><small>Desloc.</small></span>
+    </div>
+    <div class="combate-saves">
+      ${saves.map(s => `<button type="button" class="combate-save${s.prof ? " is-prof" : ""}${s.manual ? " is-manual" : ""}"
+          data-comb-roll="Salvaguarda de ${s.nome}" data-comb-mod="${s.mod}"
+          title="Rolar salvaguarda de ${s.nome}${s.prof ? " (proficiente)" : ""}${s.manual ? " — editada à mão" : ""}">
+          <small>${s.abbr}</small><strong>${sinal(s.mod)}</strong></button>`).join("")}
+    </div>
+    ${ataques.length ? `<div class="combate-ataques">
+      ${ataques.map(r => `<button type="button" class="combate-ataque${r.edited ? " is-manual" : ""}" data-comb-atk="${escHtml(r.uid)}"
+          title="Rolar ataque e dano${r.edited ? " (linha editada à mão)" : ""}">
+        <span class="combate-atk-nome">${escHtml(r.name)}</span>
+        <span class="combate-atk-bonus">${escHtml(r.atk || "—")}</span>
+        <span class="combate-atk-dano">${escHtml(r.damage || "")}</span>
+        ${r.notes ? `<span class="combate-atk-notas">${escHtml(r.notes)}</span>` : ""}
+      </button>`).join("")}
+    </div>` : '<p class="hp-dado-vazio">Nenhum ataque na ficha ainda — equipe armas no Passo 5.</p>'}`;
+
+  const caneta = document.getElementById("btnCombateEditar");
+  if (caneta) caneta.addEventListener("click", () => { _editandoCombate = true; renderCombatSummary(true); });
+  box.querySelectorAll("[data-comb-roll]").forEach(b => b.addEventListener("click", () =>
+    rollDiceCheck(b.getAttribute("data-comb-roll"), parseInt(b.getAttribute("data-comb-mod"), 10) || 0)));
+  box.querySelectorAll("[data-comb-atk]").forEach(b => b.addEventListener("click", () => {
+    const row = linhasDeAtaqueDaFicha().find(r => r.uid === b.getAttribute("data-comb-atk"));
+    if (row) rolarLinhaDeAtaque(row);
+  }));
+}
+
+function ligarEdicaoDeCombate() {
+  const box = document.getElementById("combatSummary");
+  if (!box.dataset.teclas) {
+    box.dataset.teclas = "1";
+    box.addEventListener("keydown", (e) => {
+      if (!_editandoCombate) return;
+      if (e.key === "Enter") { e.preventDefault(); salvarEdicaoDeCombate(); }
+      if (e.key === "Escape") { e.preventDefault(); _editandoCombate = false; renderCombatSummary(); }
+    });
+  }
+  document.getElementById("btnCombEditOk").addEventListener("click", salvarEdicaoDeCombate);
+  document.getElementById("btnCombEditCancelar").addEventListener("click", () => { _editandoCombate = false; renderCombatSummary(); });
+  document.getElementById("btnCombEditAuto").addEventListener("click", () => {
+    const ov = sheetOv();
+    delete ov.ac;
+    ov.saveOv = {};
+    ov.weaponRows.forEach(r => { if (r.srcId) r.edited = false; });
+    _editandoCombate = false;
+    logHpEvent("edicao", "Combate voltou ao cálculo automático (CA, salvaguardas e ataques)", character.currentHp || 0);
+    recalculateCharacter();
+    showToast("CA, salvaguardas e ataques voltaram ao cálculo do app.");
+  });
+  const ca = document.getElementById("combEditCA");
+  if (ca) { ca.focus(); ca.select(); }
+}
+
+/**
+ * Grava o que foi digitado como edição manual da ficha — o mesmo caminho de
+ * quem digita direto na ficha A4 —, para sobreviver ao próximo recálculo.
+ */
+function salvarEdicaoDeCombate() {
+  const ov = sheetOv();
+  const mudancas = [];
+  const caEl = document.getElementById("combEditCA");
+  const caAtual = (document.getElementById("sheetAC")?.value || "").trim();
+  if (caEl && caEl.value.trim() !== caAtual) {
+    ov.ac = caEl.value.trim();
+    mudancas.push(`CA ${ov.ac}`);
+  }
+  const saves = salvaguardasDaFicha();
+  document.querySelectorAll("[data-comb-save]").forEach(inp => {
+    const id = inp.getAttribute("data-comb-save");
+    const antes = saves.find(s => s.id === id);
+    const n = parseInt(String(inp.value).replace(/\s/g, ""), 10);
+    if (!Number.isFinite(n) || !antes || n === antes.mod) return;
+    if (!ov.saveOv || typeof ov.saveOv !== "object") ov.saveOv = {};
+    ov.saveOv[id] = n >= 0 ? `+${n}` : `${n}`;
+    mudancas.push(`Salv. ${antes.abbr} ${ov.saveOv[id]}`);
+  });
+  document.querySelectorAll("[data-comb-row]").forEach(linha => {
+    const row = (ov.weaponRows || []).find(r => r.uid === linha.getAttribute("data-comb-row"));
+    if (!row) return;
+    linha.querySelectorAll("[data-comb-field]").forEach(inp => {
+      const f = inp.getAttribute("data-comb-field");
+      if ((row[f] || "") === inp.value) return;
+      row[f] = inp.value;
+      row.edited = true;
+      mudancas.push(`${row.name}: ${f === "atk" ? "acerto" : "dano"} ${inp.value}`);
+    });
+  });
+  _editandoCombate = false;
+  if (mudancas.length) {
+    logHpEvent("edicao", `Combate ajustado à mão — ${mudancas.join("; ")}`, character.currentHp || 0);
+    recalculateCharacter();
+    showToast(`✏️ ${mudancas.join(" · ")}`);
+  } else {
+    renderCombatSummary();
+  }
 }
 
 /* ------------------------------------ MAGIAS NA TABELA DE ATAQUES */
@@ -4412,11 +4628,35 @@ function renderWizardPendencias() {
     }
     marca.hidden = itens.length === 0;
     marca.textContent = itens.length ? String(itens.length) : "";
+
+    // Aviso visível embaixo do passo, com o texto do que falta (a bolinha só
+    // dá o número, e o title não aparece no celular).
+    // Número, título e bolinha ficam juntos numa linha; o aviso vai embaixo.
+    let cabeca = btn.querySelector(".step-head");
+    if (!cabeca) {
+      cabeca = document.createElement("span");
+      cabeca.className = "step-head";
+      [...btn.childNodes].forEach(n => cabeca.appendChild(n));
+      btn.appendChild(cabeca);
+    }
+    if (marca.parentNode !== cabeca) cabeca.appendChild(marca);
+    let aviso = btn.querySelector(".step-alert");
+    if (!aviso) {
+      aviso = document.createElement("span");
+      aviso.className = "step-alert";
+      btn.appendChild(aviso);
+    }
+    aviso.hidden = itens.length === 0;
+    aviso.innerHTML = itens.length
+      ? `<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span class="step-alert-txt">${itens.map(t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;")).join(" · ")}</span>`
+      : "";
     if (itens.length) {
       marca.title = `Falta escolher: ${itens.join(" · ")}`;
       btn.setAttribute("aria-description", `${itens.length} escolha(s) em aberto: ${itens.join("; ")}`);
+      btn.title = `Falta escolher: ${itens.join(" · ")}`;
     } else {
       btn.removeAttribute("aria-description");
+      btn.removeAttribute("title");
     }
   });
 }
@@ -6404,9 +6644,9 @@ function renderSpellsCatalog() {
         </td>
         <td class="col-action">
           ${origem
-            ? `<span class="spell-granted-lock" title="Concedida por ${String(origem.fonte).replace(/"/g, "&quot;")} — já vem na ficha"><i class="fa-solid fa-gift"></i> Concedida</span>`
+            ? `<span class="spell-granted-lock" title="Concedida por ${String(origem.fonte).replace(/"/g, "&quot;")} — já vem na ficha"><i class="fa-solid fa-gift"></i><span class="btn-txt"> Concedida</span></span>`
             : `<button type="button" class="btn btn-sm ${isKnown ? "btn-gold" : "btn-secondary"} btn-toggle-spell" data-id="${sp.id}">
-                 <i class="fa-solid ${isKnown ? "fa-check" : "fa-plus"}"></i> ${isKnown ? "Na ficha" : "Adicionar"}
+                 <i class="fa-solid ${isKnown ? "fa-check" : "fa-plus"}"></i><span class="btn-txt"> ${isKnown ? "Na ficha" : "Adicionar"}</span>
                </button>`}
         </td>
       </tr>
@@ -7043,6 +7283,9 @@ function renderOfficialSheet(ctx) {
   renderOfSideColumn(ctx);
   _larguraDoUltimoAjuste = null;   // valores novos: refazer mesmo sem redimensionar
   ajustarTextoDaFicha();
+  // O painel de PV é desenhado no cabeçalho, antes das salvaguardas e ataques:
+  // o resumo de combate precisa ser refeito com a ficha já pronta.
+  renderCombatSummary();
 }
 
 /* ---------------------------------------------------------------- CABEÇALHO */
@@ -7165,7 +7408,11 @@ function renderOfAbilities(ctx) {
       const mod = finalMods[abId];
       const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
       const isSaveProf = saveProfs.includes(abId);
-      const saveBonus = mod + (isSaveProf ? pb : 0) + getAuraOfProtectionBonus(finalMods);
+      const saveAuto = mod + (isSaveProf ? pb : 0) + getAuraOfProtectionBonus(finalMods);
+      // Valor digitado à mão no resumo de combate vale sobre a conta
+      const saveManual = (sheetOv().saveOv || {})[abId];
+      const saveBonus = saveManual !== undefined && saveManual !== null && saveManual !== ""
+        ? (parseInt(saveManual, 10) || 0) : saveAuto;
       const skills = DND5E_DATA.skills.filter(sk => sk.ability === abId);
 
       const show = v => _ofBlank ? "" : v;   // ficha em branco: caixas vazias
@@ -8131,9 +8378,7 @@ function bindOfficialSheetEvents() {
       if (rollBtn) {
         const tr = rollBtn.closest("tr");
         const row = findSheetRow(sheetOv().weaponRows, tr);
-        if (row && row.name) {
-          rollAttackAndDamage(row.name, parseInt(row.atk) || 0, row.damage || "1d6", 0, "");
-        }
+        if (row && row.name) rolarLinhaDeAtaque(row);
         return;
       }
       const delBtn = e.target.closest(".of-row-del");
@@ -9317,6 +9562,12 @@ function ajustarAlturaDaNav() {
   const nav = document.getElementById("wizardNav");
   if (!nav) return;
   document.documentElement.style.setProperty("--wizard-nav-h", `${Math.round(nav.getBoundingClientRect().height)}px`);
+  // Os avisos de pendência mudam a altura sem redimensionar a janela:
+  // o observador remede sempre que a trilha cresce ou encolhe.
+  if (!nav._observada && typeof ResizeObserver === "function") {
+    nav._observada = true;
+    new ResizeObserver(() => ajustarAlturaDaNav()).observe(nav);
+  }
 }
 
 /**

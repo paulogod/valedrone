@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260928b";
+    var APP_VERSION = "20260928d";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -884,17 +884,17 @@
             <textarea class="form-control" id="textInventory" rows="4" placeholder="Mochila, corda, tochas, rações de viagem..."></textarea>
           </div>
 
-          <div class="form-grid-3">
+          <div class="form-grid-3 coins-grid">
             <div class="form-group">
-              <label class="form-label" for="inputGoldPO">Peças de Ouro (PO)</label>
+              <label class="form-label" for="inputGoldPO"><span class="lbl-long">Peças de Ouro </span>(PO)</label>
               <input type="number" class="form-control" id="inputGoldPO" value="0" min="0">
             </div>
             <div class="form-group">
-              <label class="form-label" for="inputSilverPP">Peças de Prata (PP)</label>
+              <label class="form-label" for="inputSilverPP"><span class="lbl-long">Peças de Prata </span>(PP)</label>
               <input type="number" class="form-control" id="inputSilverPP" value="0" min="0">
             </div>
             <div class="form-group">
-              <label class="form-label" for="inputCopperPC">Peças de Cobre (PC)</label>
+              <label class="form-label" for="inputCopperPC"><span class="lbl-long">Peças de Cobre </span>(PC)</label>
               <input type="number" class="form-control" id="inputCopperPC" value="0" min="0">
             </div>
           </div>
@@ -1036,6 +1036,10 @@
                 <i class="fa-solid fa-shield-halved"></i> Temp
               </button>
             </div>
+            <!-- Resumo de combate: CA, salvaguardas e ataques da ficha. A caneta
+                 edita como a dos PV (vira edição manual da ficha). -->
+            <div class="combate-bloco" id="combatSummary"></div>
+
             <!-- Condições: escolher e adicionar, com as ativas logo abaixo.
                  Ficam aqui em cima porque mudam rolagem e movimento. -->
             <div class="cond-bloco">

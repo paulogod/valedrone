@@ -407,6 +407,43 @@ body {
 
 .step-pend[hidden] { display: none; }
 
+/* Aviso embaixo do passo: símbolo de atenção + o que falta preencher */
+.step-tab-btn { flex-direction: column; align-items: flex-start; justify-content: center; }
+
+.step-head { display: flex; align-items: center; gap: 0.4rem; }
+
+.step-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+  width: 12.5rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #fbbf24;
+  white-space: normal;
+  text-align: left;
+}
+
+.step-alert i { font-size: 0.7rem; line-height: 1.3; flex-shrink: 0; }
+
+/* No celular a trilha fica presa no topo: até 3 linhas por aviso */
+.step-alert-txt {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.step-alert[hidden] { display: none; }
+
+@media (min-width: 1024px) {
+  .wizard-nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
+  .step-tab-btn { justify-content: flex-start; white-space: normal; }
+  .step-alert { width: auto; }
+  .step-alert-txt { display: block; -webkit-line-clamp: unset; overflow: visible; }
+}
+
 .step-tab-btn.active .step-pend { background: #fbbf24; }
 
 .step-tab-btn:hover {
@@ -2341,11 +2378,13 @@ select.form-control option {
   background: linear-gradient(180deg, rgba(58, 24, 13, 0.98), rgba(40, 16, 9, 0.98));
   border-top: 1px solid rgba(192, 132, 252, 0.28);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.6rem;
+  /* Continua célula de tabela: com display flex o <th> perdia o colspan e o
+     cabeçalho do círculo ocupava só a primeira coluna. */
+  display: table-cell;
 }
+
+.spell-group-head .bloco-seta { margin-right: 0.35rem; }
+.spell-group-head .spell-group-count { float: right; margin-left: 0.6rem; line-height: 1.6; }
 
 .spell-group-title {
   font-family: var(--font-display, inherit);
@@ -3468,4 +3507,193 @@ img, table, pre { max-width: 100%; }
   .temp-atk-actions {
     justify-content: flex-end;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   RESUMO DE COMBATE (abaixo dos PV)
+   CA, Iniciativa, Deslocamento, salvaguardas e ataques da ficha. Clicar rola;
+   a caneta edita como a dos PV. Valores editados à mão ganham borda roxa.
+--------------------------------------------------------------------------- */
+.combate-bloco { border-top: 1px solid rgba(255, 255, 255, 0.07); padding-top: 0.45rem; }
+.combate-bloco[hidden] { display: none; }
+.combate-bloco .cond-cabeca { align-items: center; }
+.combate-bloco .hp-editar { min-width: 30px; min-height: 30px; }
+
+.combate-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.combate-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  padding: 0.4rem 0.3rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  font: inherit;
+  min-width: 0;
+}
+.combate-stat i { font-size: 0.72rem; color: var(--primary-accent); }
+.combate-stat strong { font-family: var(--font-mono); font-size: 1.05rem; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.combate-stat small { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.combate-stat.is-rola { cursor: pointer; }
+.combate-stat.is-rola:hover, .combate-save:hover, .combate-ataque:hover { background: rgba(139, 92, 246, 0.18); }
+
+.combate-saves {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+@media (max-width: 380px) { .combate-saves { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.combate-save {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.3rem 0.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.45);
+  color: #cbd5e1;
+  font: inherit;
+  cursor: pointer;
+}
+.combate-save small { font-size: 0.62rem; letter-spacing: 0.04em; color: var(--text-muted); }
+.combate-save strong { font-family: var(--font-mono); font-size: 0.9rem; }
+.combate-save.is-prof { border-color: rgba(34, 197, 94, 0.45); color: #bbf7d0; }
+.combate-save.is-prof small::after { content: " ●"; color: #22c55e; }
+
+.combate-ataques { display: grid; gap: 0.3rem; margin-top: 0.4rem; }
+
+.combate-ataque {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 0.5rem;
+  align-items: baseline;
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.45);
+  color: #e2e8f0;
+  font: inherit;
+  cursor: pointer;
+}
+.combate-atk-nome { font-weight: 700; font-size: 0.82rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.combate-atk-bonus { font-family: var(--font-mono); font-weight: 700; color: #fbbf24; font-size: 0.82rem; }
+.combate-atk-dano { grid-column: 1 / -1; font-size: 0.76rem; color: #cbd5e1; }
+.combate-atk-notas { grid-column: 1 / -1; font-size: 0.68rem; color: var(--text-muted); }
+
+/* Editado à mão: mesmo roxo da caneta */
+.combate-stat.is-manual, .combate-save.is-manual, .combate-ataque.is-manual { border-color: rgba(192, 132, 252, 0.6); }
+
+/* Modo de edição */
+.combate-edit {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(3.6rem, 1fr));
+  gap: 0.35rem;
+}
+.combate-edit-campo { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+.combate-edit-campo span { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.combate-edit-campo .hp-edit-num { width: 100%; }
+
+.combate-edit-ataques { display: grid; gap: 0.3rem; margin-top: 0.45rem; }
+.combate-edit-ataque {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4rem minmax(0, 1.4fr);
+  gap: 0.3rem;
+  align-items: center;
+}
+@media (max-width: 480px) {
+  .combate-edit-ataque { grid-template-columns: minmax(0, 1fr) 4rem; }
+  .combate-edit-dano { grid-column: 1 / -1; }
+}
+.combate-edit-ataque .hp-edit-num { width: 100%; }
+.combate-edit-dano {
+  min-width: 0;
+  min-height: 34px;
+  padding: 0.25rem 0.45rem;
+  font-size: 16px;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(192, 132, 252, 0.45);
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+.combate-edit-dano:focus { border-color: #c084fc; box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.25); }
+
+.combate-edit-acoes { display: flex; gap: 0.35rem; margin-top: 0.45rem; }
+.combate-auto { margin-left: auto; padding: 0 0.6rem; gap: 0.35rem; font-size: 0.75rem; }
+
+/* ===========================================================================
+   AJUSTES PARA CELULAR E TABLET (28/09/2026)
+   =========================================================================== */
+
+/* Barra do topo: no celular a faixa rolava escondida e só 3 botões e meio
+   apareciam. Agora é uma grade de 3 colunas com tudo à vista. */
+@media (max-width: 767.98px) {
+  .header-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+  .header-actions > * { width: 100%; min-width: 0; }
+  .header-actions > [hidden] { display: none; }
+  .header-actions .btn {
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.3rem;
+    font-size: 0.74rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .header-actions .restore-session-name { display: none; }
+}
+
+/* PV: Valor + Dano, Cura e Temp numa linha só, em qualquer largura */
+.hp-tracker-acoes { grid-template-columns: 4.6rem repeat(3, minmax(0, 1fr)); align-items: center; }
+@media (max-width: 420px) {
+  .hp-tracker-acoes .btn { padding: 0.45rem 0.2rem; gap: 0.3rem; font-size: 0.74rem; }
+}
+
+/* Perícias do Passo 3: duas colunas no celular em vez de uma lista de 18 linhas */
+#skillsSelectorGrid { grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); }
+@media (max-width: 480px) {
+  #skillsSelectorGrid .skill-select-item { padding: 0.45rem 0.5rem; font-size: 0.78rem; align-items: flex-start; }
+  #skillsSelectorGrid .skill-select-item small { display: block; }
+}
+
+/* Moedas lado a lado; no celular o rótulo encurta para (PO), (PP), (PC) */
+.coins-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+@media (max-width: 599.98px) { .coins-grid .lbl-long { display: none; } }
+
+/* Catálogo de magias: filtros em 2 colunas já no celular, e o botão da
+   linha vira só o ícone para a coluna caber sem rolar para o lado. */
+@media (min-width: 360px) and (max-width: 639.98px) {
+  .spells-filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .spells-filter-bar > .form-group:last-child { grid-column: 1 / -1; }
+  .spells-filter-bar .form-label { font-size: 0.72rem; }
+}
+@media (max-width: 599.98px) {
+  .spells-table .btn-txt { display: none; }
+  .spells-table .btn-toggle-spell { min-width: 38px; padding: 0.4rem 0.5rem; }
+  .spells-table td.col-name { min-width: 0; }
+  .spells-table th.col-action, .spells-table th.col-info { font-size: 0; }
+}
+
+/* A tabela de magias agora cabe em qualquer largura (botão só com ícone no
+   celular, coluna Classes a partir de 900px). Com overflow-x: auto o
+   contêiner virava a referência do cabeçalho grudado do círculo, que descia
+   para o meio da lista; clip corta sem criar área de rolagem. */
+@supports (overflow-x: clip) {
+  .spells-catalog-grid { overflow-x: clip; }
 }
