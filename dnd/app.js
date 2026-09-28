@@ -383,6 +383,24 @@ function resolveSpeciesObj(id) {
   };
 }
 
+/**
+ * Magias que a espécie concede, por nível de personagem. A chave com linhagem
+ * ("elf:drow") vale antes da chave só da espécie.
+ */
+const SPECIES_SPELLS = {
+  "elf:high_elf":     { fonte: "Alto Elfo", porNivel: { 3: ["detect_magic"], 5: ["misty_step"] } },
+  "elf:wood_elf":     { fonte: "Elfo da Floresta", porNivel: { 1: ["druidcraft"], 3: ["passos_largos"], 5: ["pass_without_trace"] } },
+  "elf:drow":         { fonte: "Drow", porNivel: { 1: ["dancing_lights"], 3: ["faerie_fire"], 5: ["darkness"] } },
+  "tiefling:infernal": { fonte: "Legado Infernal", porNivel: { 1: ["fire_bolt"], 3: ["repreensao_diabolica"], 5: ["darkness"] } },
+  "tiefling:abyssal": { fonte: "Legado Abissal", porNivel: { 1: ["poison_spray"], 3: ["raio_nauseante"], 5: ["hold_person"] } },
+  "tiefling:cthonic": { fonte: "Legado Ctônico", porNivel: { 1: ["chill_touch"], 3: ["vitalidade_vazia"], 5: ["raio_do_enfraquecimento"] } },
+  "gnome:forest_gnome": { fonte: "Gnomo do Bosque", porNivel: { 1: ["minor_illusion", "falar_com_animais"] } },
+  "gnome:rock_gnome": { fonte: "Gnomo das Rochas", porNivel: { 1: ["prestidigitation", "mending"] } },
+  "aasimar":          { fonte: "Aasimar", porNivel: { 1: ["light"] } }
+};
+/** Truques de traço da espécie que se somam às magias da linhagem */
+const SPECIES_SPELLS_BASE = { tiefling: ["thaumaturgy"] };
+
 /** Só os traços da espécie que o personagem já alcançou pelo nível total */
 function traitsDaEspecieNoNivel(speciesObj, nivelTotal) {
   return (speciesObj.traits || []).filter(t => !t.level || t.level <= nivelTotal);
@@ -781,6 +799,9 @@ function updateLineagesDropdown() {
   const currentSpeciesObj = DND5E_DATA.species.find(s => s.id === selectSpecies);
 
   selectLineage.innerHTML = "";
+
+  const rotulo = lineageGroup.querySelector("label");
+  if (rotulo) rotulo.textContent = (currentSpeciesObj && currentSpeciesObj.lineageLabel) || "Linhagem";
 
   if (currentSpeciesObj && currentSpeciesObj.lineages && currentSpeciesObj.lineages.length > 0) {
     lineageGroup.style.display = "flex";
@@ -2047,11 +2068,11 @@ function renderSpeciesBackgroundSummary() {
     if (linObj) {
       traitsHtml += linObj.full
         ? `<details class="sub-feat">
-             <summary><strong>Linhagem: ${linObj.name}</strong>
+             <summary><strong>${speciesObj.lineageLabel || "Linhagem"}: ${linObj.name}</strong>
                <span class="sub-feat-resumo">${linObj.desc}</span></summary>
              ${formatarTextoDeRegras(linObj.full)}
            </details>`
-        : `<p><strong>Linhagem (${linObj.name}):</strong> ${linObj.desc}</p>`;
+        : `<p><strong>${speciesObj.lineageLabel || "Linhagem"} (${linObj.name}):</strong> ${linObj.desc}</p>`;
     }
   }
 
@@ -2352,6 +2373,24 @@ function getLimitedUses() {
   };
   daClasse(character.class1, character.level1);
   if (character.class2 && character.class2 !== "none") daClasse(character.class2, character.level2);
+
+  // Espécie e linhagem: Ataque de Sopro, Pico de Adrenalina, Mãos Curativas...
+  // `max: "pb"` = tantos quanto o Bônus de Proficiência; `level` = nível de personagem.
+  const especie = DND5E_DATA.species.find(s => s.id === character.species);
+  if (especie) {
+    const nivelTotal = (character.level1 || 0) + (character.class2 && character.class2 !== "none" ? (character.level2 || 0) : 0);
+    const pbTotal = 2 + Math.floor((Math.max(1, nivelTotal) - 1) / 4);
+    const lin = (especie.lineages || []).find(l => l.id === character.lineage);
+    [...(especie.limitedUses || []), ...((lin && lin.limitedUses) || [])].forEach(u => {
+      if (u.level && nivelTotal < u.level) return;
+      const max = u.max === "pb" ? pbTotal : u.max || 0;
+      if (!max || lista.some(x => x.id === u.id)) return;
+      lista.push({
+        id: u.id, name: u.name, classe: especie.name.split(" (")[0], max, recovery: u.recovery,
+        gastos: (character.featureUses && character.featureUses[u.id]) || 0
+      });
+    });
+  }
 
   // Subclasses com recurso próprio (Dados de Superioridade do Mestre da Batalha)
   [1, 2].forEach(slot => {
@@ -3507,8 +3546,10 @@ function getWeaponMasteryLimit() {
     return c.weaponMasteryByLevel[nivel] || 0;
   };
   // Em multiclasse vale a maior das duas, não a soma: a característica é a mesma.
+  // O talento Mestre das Armas soma mais um tipo de arma.
   return Math.max(conta(character.class1, character.level1),
-                  conta(character.class2, character.level2));
+                  conta(character.class2, character.level2))
+    + (getActiveFeatIds().includes("weapon_master") ? 1 : 0);
 }
 
 function isMasteryActive(weaponId) {
@@ -4134,12 +4175,24 @@ const FEAT_EXTRA_CHOICES = {
   },
   telekinetic: { grants: ["mage_hand"] },
   telepathic: { grants: ["detect_thoughts"], grantNames: { detect_thoughts: "Detectar Pensamentos (Detect Thoughts)" } },
-  spell_sniper: { spells: [{ key: "c1", label: "Truque com jogada de ataque", level: 0 }] },
+  // Conjurador Ritualista: tantas magias de ritual quanto o Bônus de Proficiência.
   ritual_caster: {
-    spells: [
-      { key: "r1", label: "Magia de Ritual (1º Círculo)", level: 1, ritual: true },
-      { key: "r2", label: "Segunda Magia de Ritual (1º Círculo)", level: 1, ritual: true }
-    ]
+    get spells() {
+      const nivel = (character.level1 || 0) + (character.class2 && character.class2 !== "none" ? (character.level2 || 0) : 0);
+      const pb = 2 + Math.floor((Math.max(1, nivel) - 1) / 4);
+      return Array.from({ length: pb }, (_, i) =>
+        ({ key: `r${i + 1}`, label: `Magia de Ritual ${i + 1} (1º Círculo)`, level: 1, ritual: true }));
+    }
+  },
+
+  observant: {
+    skills: [{ key: "s1", label: "Observador Atento (proficiência, ou Especialização se já tiver)", only: ["insight", "investigation", "perception"], upgrade: true }]
+  },
+  keen_mind: {
+    skills: [{ key: "s1", label: "Conhecimento Vasto (proficiência, ou Especialização se já tiver)", only: ["arcana", "history", "investigation", "nature", "religion"], upgrade: true }]
+  },
+  boon_skill: {
+    expertise: { key: "exp", label: "Especialização (dobro do PB) em 1 perícia" }
   },
 
   skilled: {
@@ -4563,6 +4616,8 @@ function classChoiceList(ch) {
 
 /** A escolha vale agora? Nível na classe, subclasse certa e condição `showIf` */
 function isClassChoiceActive(ch) {
+  // Escolha de espécie (Sentidos Aguçados do Elfo): vale enquanto a espécie for essa.
+  if (ch.speciesId) return character.species === ch.speciesId;
   const slot = classChoiceSlot(ch);
   if (!slot || classLevel(ch.classId) < ch.level) return false;
   if (ch.subclassId) {
@@ -4753,12 +4808,12 @@ function renderClassChoices() {
 
     const feitas = ch.kind === "option" ? (classChoiceValue(ch.id) ? 1 : 0) : lista.slice(0, n).filter(Boolean).length;
     if (ch.kind !== "option" && n > 0 && feitas < n) avisos.push(`Faltam ${n - feitas} de ${n}.`);
-    const classe = classLabelOf(ch.classId);
+    const classe = ch.speciesId ? "Espécie" : `${classLabelOf(ch.classId)} ${ch.level}`;
 
     return `<div class="feat-choice-box invoc-box cc-box">
       <div class="feat-choice-title">
         <i class="fa-solid fa-sliders"></i> ${ch.label}
-        <span class="cc-origem">${classe} ${ch.level}${n > 1 && ch.kind !== "option" ? ` · ${feitas}/${n}` : ""}</span>
+        <span class="cc-origem">${classe}${n > 1 && ch.kind !== "option" ? ` · ${feitas}/${n}` : ""}</span>
       </div>
       ${ch.desc ? `<p class="cc-desc">${ch.desc}</p>` : ""}
       ${corpo}
@@ -4767,7 +4822,7 @@ function renderClassChoices() {
   };
 
   box.innerHTML = `
-    <h4 class="feat-block-title"><i class="fa-solid fa-list-check"></i> Escolhas de Classe</h4>
+    <h4 class="feat-block-title"><i class="fa-solid fa-list-check"></i> Escolhas de Classe e Espécie</h4>
     <p class="feat-slots-note">O que as características da sua classe pedem para escolher até o nível atual. Tudo o que for escolhido aqui vai direto para a ficha.</p>
     ${ativas.map(caixa).join("")}
   `;
@@ -5248,7 +5303,7 @@ function buildFeatChoiceBoxHtml(feat, isActive) {
   });
 
   spec.skills.forEach(slot => {
-    const opts = DND5E_DATA.skills.map(sk => {
+    const opts = DND5E_DATA.skills.filter(sk => !slot.only || slot.only.includes(sk.id)).map(sk => {
       const ab = DND5E_DATA.abilities.find(a => a.id === sk.ability);
       return `<option value="${sk.id}"${ch.skills[slot.key] === sk.id ? " selected" : ""}>${sk.name} (${ab ? ab.abbr : ""})</option>`;
     }).join("");
@@ -5259,7 +5314,7 @@ function buildFeatChoiceBoxHtml(feat, isActive) {
   });
 
   if (spec.expertise) {
-    const trained = DND5E_DATA.skills.filter(sk => character.trainedSkills.includes(sk.id));
+    const trained = DND5E_DATA.skills.filter(sk => feat.id === "boon_skill" || character.trainedSkills.includes(sk.id));
     const pool = trained.length ? trained : DND5E_DATA.skills;
     const opts = pool.map(sk =>
       `<option value="${sk.id}"${ch.expertise === sk.id ? " selected" : ""}>${sk.name}</option>`).join("");
@@ -5369,10 +5424,21 @@ function describeFeatChoices(feat) {
 function getFeatGrantedSkills() {
   const trained = [];
   const expert = [];
+  // Mente Aguçada e Analítico: proficiência na perícia ou, se já tiver,
+  // Especialização. Só olha as fontes "de base" para não entrar em ciclo.
+  const jaTreinadas = new Set([...(character.trainedSkills || []), ...getBackgroundSkillIds()]);
   getActiveFeatIds().forEach(fid => {
     const ch = featChoicesFor(fid);
-    Object.values(ch.skills || {}).forEach(s => { if (s) trained.push(s); });
+    const slots = (FEAT_EXTRA_CHOICES[fid] || {}).skills || [];
+    Object.entries(ch.skills || {}).forEach(([key, s]) => {
+      if (!s) return;
+      const slot = slots.find(x => x.key === key);
+      if (slot && slot.upgrade && jaTreinadas.has(s)) expert.push(s);
+      else trained.push(s);
+    });
     if (ch.expertise) expert.push(ch.expertise);
+    // Dádiva da Proficiência em Perícia: todas as perícias
+    if (fid === "boon_skill") DND5E_DATA.skills.forEach(sk => trained.push(sk.id));
   });
   return { trained, expert };
 }
@@ -5527,15 +5593,19 @@ function getGrantedSpellEntries() {
   somarClasse(class1Obj, character.level1);
   if (class2Obj) somarClasse(class2Obj, character.level2);
 
-  if (character.species === "elf" && character.lineage === "high_elf") {
-    if (character.level1 >= 3) push("misty_step", "Alto Elfo", null, "Espécie");
-  } else if (character.species === "tiefling") {
-    push("thaumaturgy", "Tiefling", null, "Espécie");
-  } else if (character.species === "aasimar") {
-    push("light", "Aasimar", null, "Espécie");
-  } else if (character.species === "gnome" && character.lineage === "forest_gnome") {
-    push("minor_illusion", "Gnomo da Floresta", null, "Espécie");
+  // Magias de espécie e linhagem: truque no nível 1 e magias nos níveis 3 e 5
+  // DE PERSONAGEM (não de classe). O truque do Alto Elfo é escolhido pelo
+  // jogador (vaga extra de truque), por isso não está aqui.
+  const nivelPersonagem = (character.level1 || 0) + (class2Obj ? (character.level2 || 0) : 0);
+  const chave = `${character.species}:${character.lineage}`;
+  const magias = SPECIES_SPELLS[chave] || SPECIES_SPELLS[character.species];
+  if (magias) {
+    Object.keys(magias.porNivel).map(Number).filter(n => n <= nivelPersonagem)
+      .forEach(n => magias.porNivel[n].forEach(id => push(id, magias.fonte, null, "Espécie")));
   }
+  // Traço da espécie que vale junto com a linhagem (Taumaturgia do Tiferino)
+  (SPECIES_SPELLS_BASE[character.species] || []).forEach(id =>
+    push(id, (resolveSpeciesObj(character.species) || {}).name?.split(" (")[0] || "Espécie", null, "Espécie"));
 
   // O talento de origem do antecedente aparece como "Antecedente": para o
   // jogador ele veio da escolha do Passo 1, não de uma escolha de talento.
@@ -6716,6 +6786,11 @@ function recalculateCharacter() {
   let speed = speciesObj.speed || 9;
   if (character.species === "elf" && character.lineage === "wood_elf") speed = 10.5;
   speed += getClassSpeedBonus(armorObj, shieldObj);
+  // Talentos que aumentam o Deslocamento base: Velocista (+3 m) e Dádiva da
+  // Velocidade (+9 m).
+  const featIds = getActiveFeatIds();
+  if (featIds.includes("speedster")) speed += 3;
+  if (featIds.includes("boon_speed")) speed += 9;
 
   // 7. Salvaguardas & Perícias
   const proficientSaves = class1Obj.savingThrows || ["str", "con"];
@@ -7133,6 +7208,14 @@ function renderOfAbilities(ctx) {
 }
 
 /* --------------------------------------- EQUIPAMENTO, TREINO & PROFICIÊNCIAS */
+/** Treinamento com armadura e arma que os talentos concedem. */
+const FEAT_PROFICIENCIES = {
+  lightly_armored: { armor: ["Leves", "Escudos"] },
+  moderately_armored: { armor: ["Armadura Média"] },
+  heavily_armored: { armor: ["Armadura Pesada"] },
+  martial_weapon_training: { weapons: ["Armas Marciais"] }
+};
+
 function renderOfProficienciesBox(ctx) {
   const { class1Obj, class2Obj, bgObj, speciesObj } = ctx;
   const armorProfs = [
@@ -7140,6 +7223,7 @@ function renderOfProficienciesBox(ctx) {
     ...(class2Obj ? class2Obj.armorProficiencies || [] : []),
     ...getChosenClassOptions().flatMap(({ op }) => op.armor || []),
     ...getActiveSubclassEffects().flatMap(e => e.armor || []),
+    ...getActiveFeatIds().flatMap(fid => (FEAT_PROFICIENCIES[fid] || {}).armor || []),
     ...(speciesObj && speciesObj.isCustom ? speciesObj.armorProficiencies || [] : [])
   ].join(" ").toLowerCase();
 
@@ -7153,15 +7237,17 @@ function renderOfProficienciesBox(ctx) {
     ...(class2Obj ? class2Obj.weaponProficiencies || [] : []),
     ...getChosenClassOptions().flatMap(({ op }) => op.weapons || []),
     ...getActiveSubclassEffects().flatMap(e => e.weapons || []),
+    ...getActiveFeatIds().flatMap(fid => (FEAT_PROFICIENCIES[fid] || {}).weapons || []),
     ...(speciesObj && speciesObj.isCustom ? speciesObj.weaponProficiencies || [] : [])
   ])].join(", ");
   syncOfField("sheetWeaponProfs", weaponAuto, "weaponProfs");
 
-  const toolAuto = [
+  const toolAuto = [...new Set([
     ...(class1Obj.toolProficiencies || []),
+    ...getActiveSubclassEffects().flatMap(e => e.tools || []),
     ...(speciesObj && speciesObj.isCustom ? speciesObj.toolProficiencies || [] : []),
     ...(bgObj.isCustom ? [getCustomBgToolName()] : bgObj.tools || [])
-  ].filter(Boolean).join(", ");
+  ])].filter(Boolean).join(", ");
   syncOfField("sheetToolProfs", toolAuto, "toolProfs");
 }
 
@@ -7317,6 +7403,21 @@ function syncSheetWeaponRows(ctx) {
   if (getMonkMartialArtsDie() && !character.weapons.includes("unarmed")) {
     const punho = DND5E_DATA.weapons.find(w => w.id === "unarmed");
     if (punho) auto.push(linhaDeAtaqueSemArma(punho, finalMods, pb));
+  }
+
+  // Adaga Espiritual: as Lâminas Psíquicas entram sozinhas (Acuidade, Psíquico,
+  // maestria Afligir). Se o jogador já cadastrou a lâmina como item ou ataque
+  // próprio, a dele prevalece e esta não se repete.
+  const temLaminaPropria = [...character.customItems.filter(i => i.equipped), ...character.customAttacks]
+    .some(x => /l[aâ]mina ps[ií]quica/i.test(x.name || ""));
+  if ([1, 2].some(slot => (subclasseEscolhida(slot) || {}).id === "soulknife") && !temLaminaPropria) {
+    const ab = dexMod > finalMods["str"] ? dexMod : finalMods["str"];
+    const atk = ab + pb;
+    const dano = (dado) => `${dado}${ab !== 0 ? (ab > 0 ? " +" + ab : " " + ab) : ""} Psíquico`;
+    auto.push({ srcId: "feature:psychic_blade", name: "Lâmina Psíquica", atk: `${atk >= 0 ? "+" : ""}${atk}`,
+      damage: dano("1d6"), notes: "Arremesso 18/36 m • Maestria: Afligir" });
+    auto.push({ srcId: "feature:psychic_blade_bonus", name: "Lâmina Psíquica (Ação Bônus)", atk: `${atk >= 0 ? "+" : ""}${atk}`,
+      damage: dano("1d4"), notes: "Após atacar com a primeira lâmina; outra mão livre" });
   }
 
   character.customItems.filter(i => i.equipped && (i.type === "weapon" || i.damage)).forEach(item => {
@@ -7567,7 +7668,7 @@ function renderOfFeatureAreas(ctx) {
   }
   // O texto livre da classe personalizada entra junto das características:
   // é o único lugar da ficha onde essa descrição tem onde caber.
-  getActiveClassChoices().forEach(ch => {
+  getActiveClassChoices().filter(ch => !ch.speciesId).forEach(ch => {
     const texto = describeClassChoice(ch);
     if (texto) classFeatures.push(`[Escolha] ${ch.label}: ${texto}`);
   });
@@ -7593,6 +7694,17 @@ function renderOfFeatureAreas(ctx) {
   const traitLines = traitsDaEspecieNoNivel(speciesObj, totalLevel)
     .map(t => `${t.level > 1 ? `[Nvl ${t.level}] ` : ""}${t.name}: ${t.desc}`);
   if (speciesObj.isCustom && speciesObj.about) traitLines.unshift(speciesObj.about);
+  if (!speciesObj.isCustom) {
+    // Visão no Escuro e linhagem não estão na lista de traços da espécie
+    const visao = character.species === "elf" && character.lineage === "drow" ? 36 : speciesObj.darkvision || 0;
+    if (visao) traitLines.unshift(`Visão no Escuro: ${visao} m.`);
+    const lin = (speciesObj.lineages || []).find(l => l.id === character.lineage);
+    if (lin) traitLines.push(`${speciesObj.lineageLabel || "Linhagem"} (${lin.name}): ${lin.desc}`);
+  }
+  getActiveClassChoices().filter(ch => ch.speciesId).forEach(ch => {
+    const texto = describeClassChoice(ch);
+    if (texto) traitLines.push(`${ch.label.split(" — ").pop()}: ${texto}`);
+  });
   const traits = traitLines.join("\n");
   syncOfField("sheetSpeciesTraits", traits, "speciesTraits");
 

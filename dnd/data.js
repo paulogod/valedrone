@@ -468,6 +468,10 @@ const DND5E_DATA = {
           "Fúria (Rage)",
           "Maestria em Arma (Weapon Mastery)"
         ],
+        "2": [
+          "Ataque Imprudente (Reckless Attack)",
+          "Sentido de Perigo (Danger Sense)"
+        ],
         "3": [
           "Conhecimento Primordial (Primal Knowledge)",
           "Subclasse Bárbaro (Barbarian Subclass)"
@@ -1084,7 +1088,6 @@ const DND5E_DATA = {
       ],
       "armorProficiencies": [
         "Leves",
-        "Médias",
         "Escudos"
       ],
       "weaponProficiencies": [
@@ -1411,6 +1414,7 @@ const DND5E_DATA = {
           "insight",
           "intimidation",
           "perception",
+          "persuasion",
           "survival"
         ]
       },
@@ -1527,6 +1531,7 @@ const DND5E_DATA = {
           "featureSpells": {"18": ["telekinesis"]},
           "featureSpellsMode": "gratis",
           "desc": "Canaliza a energia psíquica para impulsionar seus golpes, erguer barreiras telecinéticas e movimentar objetos.",
+          "limitedUses": [{"id": "psi_warrior_dice", "name": "Dados de Energia Psiônica (d6 no 3º, d8 no 5º, d10 no 11º, d12 no 17º; 1 volta no Descanso Curto)", "recovery": "longo", "byLevel": {"3": 4, "4": 4, "5": 6, "6": 6, "7": 6, "8": 6, "9": 8, "10": 8, "11": 8, "12": 8, "13": 10, "14": 10, "15": 10, "16": 10, "17": 12, "18": 12, "19": 12, "20": 12}}],
           "about": "Aprimore o Poder Físico com Poder Psiônico Combatentes Psíquicos despertam o poder de suas mentes para aprimorar suas habilidades físicas, infundindo ataques com energia psiônica, usando telecinesia e criando barreiras de força mental."
         }
       ],
@@ -2479,21 +2484,22 @@ const DND5E_DATA = {
           "id": "thief",
           "name": "Ladrão (Thief)",
           "features": [{"level": 3, "name": "Andarilho de Telhados", "resumo": "Deslocamento de Escalada igual ao Deslocamento e salto calculado com Destreza.", "desc": "Você treinou para entrar em lugares especialmente difíceis de alcançar, concedendo-lhe esses benefícios. Escalador. Você adquire um Deslocamento de Escalada igual ao seu Deslocamento. Saltador. Você pode determinar sua distância de salto usando sua Destreza em vez de sua Força."}, {"level": 3, "name": "Mão Leve", "resumo": "Ação Bônus para Prestidigitação (fechaduras, armadilhas, bolsos) ou Usar Objeto.", "desc": "Como uma Ação Bônus, você pode executar uma das seguintes coisas. Prestidigitação. Realize um teste de Destreza (Prestidigitação) para abrir uma fechadura ou desarmar uma armadilha com Ferramentas de Ladrão, ou para roubar um bolso. Usar Objeto. Execute a ação Usar Objeto ou a ação Usar Magia para utilizar um item mágico que exija essa ação."}, {"level": 9, "name": "Furtividade Suprema", "resumo": "Nova opção de Golpe Astuto: Ataque Escondido (1d6) não encerra a Invisibilidade de Esconder.", "desc": "Você adquire a seguinte opção de Golpe Astuto. Ataque Escondido (Custo: 1d6). Se você tem a condição Invisível da ação Esconder, este ataque não encerra essa condição se você encerrar seu turno atrás da Cobertura de Três Quartos ou Cobertura Total."}, {"level": 13, "name": "Usar Dispositivo Mágico", "resumo": "Sintoniza até quatro itens, chance de não gastar cargas e usa qualquer Pergaminho Mágico com INT.", "desc": "Você aprendeu a maximizar o uso de itens mágicos, concedendo-lhe os seguintes benefícios. Sintonização. Você pode sintonizar até quatro itens mágicos ao mesmo tempo. Cargas. Sempre que você usar uma propriedade de item mágico que gaste cargas, jogue 1d6. Em um resultado de 6, você usa a propriedade sem gastar as cargas. Pergaminhos. Você pode usar qualquer Pergaminho Mágico usando Inteligência como seu atributo de conjuração para a magia. Se a magia for um truque ou uma magia de 1º círculo, você pode conjurá-la de forma confiável. Se o pergaminho possuir uma magia de círculo superior, você deve primeiro ser bem-sucedido em um teste de Inteligência (Arcanismo) (CD 10 mais o círculo da magia). Em caso de sucesso, você conjura a magia do pergaminho. Se falhar, o pergaminho se desintegra."}, {"level": 17, "name": "Reflexos de Ladrão", "resumo": "Na primeira rodada de combate age duas vezes (Iniciativa e Iniciativa − 10).", "desc": "Você é habilidoso em emboscadas e rápida fuga do perigo. Em combate, você realiza dois turnos na primeira rodada: o primeiro conforme sua Iniciativa normal e o segundo em sua Iniciativa menos 10."}],
-          "desc": "Mãos rápidas para usar itens ou gazuas como ação bônus, escalada veloz e uso irrestrito de qualquer item mágico.",
-          "about": "Você aprendeu vários idiomas nas comunidades onde usou seus talentos gatunos. Você conhece a Gíria dos Ladrões e outro idioma à sua escolha, que você escolhe nas tabelas de idiomas no capítulo 2."
+          "desc": "Mão Leve como Ação Bônus, Deslocamento de Escalada, ataques escondidos e uso aprimorado de itens mágicos e pergaminhos.",
+          "about": "Cace Tesouros como um Clássico Aventureiro Uma mistura de ladrão, caçador de tesouros e explorador, você é o resumo de um aventureiro. Além de melhorar sua agilidade e furtividade, você obtém habilidades úteis para adentrar em ruínas e obter o máximo benefício dos itens mágicos que encontrar lá."
         },
         {
           "id": "assassin",
           "name": "Assassino (Assassin)",
           "features": [{"level": 3, "name": "Assassinar", "resumo": "Vantagem na Iniciativa e, na primeira rodada, Vantagem contra quem não agiu; Ataque Furtivo nela soma o nível de Ladino ao dano.", "desc": "Você é adepto de emboscar um alvo, concedendo-lhe os seguintes benefícios. Iniciativa. Você tem Vantagem nas jogadas de Iniciativa. Golpe Surpreendente. Durante a primeira rodada de cada combate, você tem Vantagem em jogadas de ataque contra qualquer criatura que não tenha realizado o turno. Caso seu Ataque Furtivo atinja qualquer alvo na rodada, o alvo sofre dano adicional do tipo da arma igual ao seu nível de Ladino."}, {"level": 3, "name": "Ferramentas de Assassino", "resumo": "Ganha Kit de Disfarce e Kit de Veneno, com proficiência.", "desc": "Você adquire um Kit de Disfarce e um Kit de Veneno, e tem proficiência com eles."}, {"level": 9, "name": "Especialista em Infiltração", "resumo": "Imita fala e caligrafia após 1 hora de estudo; Mira Firme não zera o Deslocamento.", "desc": "Você é especialista nas seguintes técnicas que auxiliam suas infiltrações. Mimetismo Magistral. Você pode imitar perfeitamente a fala, a caligrafia ou ambos de outra pessoa se tiver passado pelo menos 1 hora estudando-os. Mira Móvel. Ao usar Mira Firme, seu Deslocamento não é reduzido a 0."}, {"level": 13, "name": "Armas Venenosas", "resumo": "A opção Envenenar do Golpe Astuto também causa 2d6 Venenoso, ignorando Resistência.", "desc": "Ao usar a opção Envenenar do seu Golpe Astuto, o alvo também sofre 2d6 pontos de dano Venenoso sempre que falhar na salvaguarda. Este dano ignora Resistência a dano Venenoso."}, {"level": 17, "name": "Golpe Mortal", "resumo": "Ataque Furtivo na primeira rodada: salvaguarda de CON ou o dano do ataque dobra.", "desc": "Ao acertar com seu Ataque Furtivo na primeira rodada de um combate, o alvo deve ser bem-sucedido em uma salvaguarda de Constituição (CD 8 mais seu modificador de Destreza e seu Bônus de Proficiência) ou o dano do ataque é dobrado contra o alvo."}],
           "desc": "Mestre dos disfarces, venenos e assassinatos fulminantes contra oponentes surpresos no primeiro turno.",
+          "effects": [{"level": 3, "tools": ["Kit de Disfarce", "Kit de Veneno"], "note": "Ferramentas de Assassino"}],
           "about": "Pratique a Arte Sombria da Morte O treinamento de um Assassino se concentra em usar furtividade, veneno e disfarce para eliminar inimigos com eficiência mortal. Enquanto alguns Ladinos que seguem este caminho são assassinos contratados, espiões ou caçadores de recompensas, as capacidades desta subclasse são igualmente úteis para aventureiros que enfrentam uma variedade de inimigos monstruosos."
         },
         {
           "id": "arcane_trickster",
           "name": "Trapaceiro Arcano (Arcane Trickster)",
           "features": [{"level": 3, "name": "Conjuração", "resumo": "Conjura magias de Mago com Inteligência (1/3 de conjurador): Mãos Mágicas + 2 truques (3 no nível 10) e magias preparadas pela tabela.", "desc": "Você aprendeu a conjurar magias. Veja o capítulo 7 para as regras sobre conjuração de magias. As informações abaixo detalham como você usa essas regras como um Trapaceiro Arcano. Truques. Você conhece três truques: Mãos Mágicas e dois outros truques à sua escolha da lista de magias de Mago (veja a seção desta classe para sua lista). Ilusão Menor e Talho Mental são recomendadas. Ao alcançar um nível de Ladino, você pode substituir um dos seus truques, exceto Mãos Mágicas, por outro truque de Mago à sua escolha. Ao atingir o nível 10 de Ladino, você aprende mais um truque de Mago à sua escolha. Espaços de Magia. A tabela Conjuração de Trapaceiro Arcano apresenta quantos espaços de magia você tem para conjurar suas magias de 1º círculo ou superior. Você restaura todos os espaços gastos ao completar um Descanso Longo. Magias Preparadas de 1º Círculo ou Superior. Você prepara a lista de magias de 1º Círculo ou superior que estão disponíveis para você conjurar com esta característica. Para começar, escolha três magias de Mago de 1º círculo. Disfarçar-se, Enfeitiçar Pessoa e Névoa Obscurecente são recomendadas. O número de magias em sua lista aumenta à medida que você atinge níveis de Ladino, conforme mostrado na coluna Magias Preparadas da tabela Conjuração de Trapaceiro Arcano. Sempre que esse número aumentar, escolha magias adicionais da lista de magias de Mago até que o número de magias em sua lista corresponda ao número da tabela do Trapaceiro Arcano. As magias escolhidas devem ser de um círculo para o qual você possui espaços de magia. Por exemplo, se você é um Ladino de nível 7, sua lista de magias preparadas pode incluir cinco magias de Mago de 1º ou 2º círculo em qualquer combinação. Mudando Suas Magias Preparadas. Sempre que você atinge um nível de Ladino, pode substituir uma magia em sua lista por outra magia de Mago para a qual você tem espaços de magia. Atributo de Conjuração. Inteligência é seu atributo de conjuração para suas magias de Mago. Foco de Conjuração. Você pode usar um Foco Arcano como um Foco de Conjuração para suas magias de Mago."}, {"level": 3, "name": "Mãos Mágicas Ligeiras", "resumo": "Mãos Mágicas como Ação Bônus, invisível, e faz testes de Prestidigitação por ela.", "desc": "Ao conjurar Mãos Mágicas, você pode conjurá-la como uma Ação Bônus e pode tornar a mão espectral Invisível. Você pode controlar a mão como uma Ação Bônus e, através dela, pode realizar testes de Destreza (Prestidigitação)."}, {"level": 9, "name": "Emboscada Mágica", "resumo": "Invisível ao conjurar, o alvo tem Desvantagem na salvaguarda contra a magia.", "desc": "Se você tem a condição de Invisível quando conjura uma magia em uma criatura, ela tem Desvantagem em qualquer salvaguarda que fizer contra a magia no mesmo turno."}, {"level": 13, "name": "Trapaceiro Versátil", "resumo": "Ao usar Golpe Astuto, aplica a opção também em outra criatura a 1,5 m das Mãos Mágicas.", "desc": "Você adquire a capacidade de distrair os alvos com suas Mãos Mágicas. Ao usar a opção Golpe Astuto em seu Ataque em uma criatura, você também pode usar essa opção em outra criatura a até 1,5 metro da mão espectral."}, {"level": 17, "name": "Ladrão de Magias", "resumo": "Reação quando uma magia o afeta: salvaguarda de INT ou você a nega e a rouba por 8 horas; 1x por Descanso Longo.", "desc": "Você adquire a capacidade de roubar magicamente o conhecimento de como conjurar uma magia de outro conjurador. Imediatamente após uma criatura conjurar uma magia que tenha como alvo você ou a inclua em sua área de efeito, você pode executar uma Reação para forçá-la a realizar uma salvaguarda de Inteligência, com CD equivalente à sua CD para evitar sua magia. Se a criatura falhar, você nega o efeito da magia contra si e rouba seu conhecimento se a magia for de 1º círculo ou de um círculo que você possa conjurar (não precisa ser uma magia de Mago). Por 8 horas, você a terá preparada, e a criatura não poderá conjurá-la durante esse período. Após roubar uma magia com essa característica, você não pode usar esta característica novamente até completar um Descanso Longo."}],
-          "desc": "Usa ilusão e encantamento para trapaças mágicas, controlando umas Mãos Mágicas invisíveis e furtiva.",
+          "desc": "Conjura magias de Mago com Inteligência e controla Mãos Mágicas invisíveis como Ação Bônus para trapaças e furtos.",
           "about": "Aprimore a Furtividade com Magias Arcanas Alguns Ladinos aprimoram suas habilidades de furtividade e agilidade com magia, aprendendo truques que os auxiliam em seu ofício. Alguns Trapaceiros Arcanos utilizam seus talentos para furtos ou assaltos, enquanto outros se dedicam a travessuras.",
           "bonusSpells": { "3": ["mage_hand"] },
           "spellcasting": { "type": "third", "ability": "int", "spellList": "wizard", "fromLevel": 3, "feature": "Trapaceiro Arcano",
@@ -2504,7 +2510,9 @@ const DND5E_DATA = {
           "id": "soulknife",
           "name": "Adaga Espiritual (Soulknife)",
           "features": [{"level": 3, "name": "Lâminas Psíquicas", "resumo": "Lâmina Psíquica (1d6 Psíquico, Acuidade, Arremesso 18/36 m, maestria Afligir); segunda lâmina de 1d4 como Ação Bônus.", "desc": "Você pode manifestar lâminas cintilantes de energia psíquica. Ao executar a ação Atacar ou realizar um Ataque de Oportunidade, você pode manifestar uma Lâmina Psíquica em sua mão livre e atacar com essa lâmina. A lâmina mágica tem as seguintes características: Categoria de Arma: Simples Corpo a Corpo Dano em Caso de Acerto: 1d6 Psíquico mais o modificador de atributo usado na jogada de ataque Propriedades: Acuidade, Arremesso (alcance 18/36 metros) Maestria: Afligir (você pode usar esta propriedade, e ela não conta para o número de propriedades que você pode usar com Maestria em Armas) A lâmina desaparece imediatamente após atingir ou errar o alvo, e não deixa marca se causar dano. Após atacar com a lâmina no seu turno, você pode realizar um ataque corpo a corpo ou à distância com uma segunda lâmina psíquica como uma Ação Bônus no mesmo turno, se sua outra mão estiver livre para criá-la. O dado de dano deste ataque bônus é 1d4 em vez de 1d6."}, {"level": 3, "name": "Poder Psiônico", "resumo": "Dados de Energia Psiônica (4d6 no nível 3): soma a testes de perícia que falharam e cria telepatia com Sussurros Psíquicos.", "desc": "Você possui uma fonte de energia psiônica, representada pelos seus Dados de Energia Psiônica, que alimenta certos poderes desta subclasse. A tabela Dados de Energia do Adaga Espiritual indica o tipo e a quantidade desses dados conforme você atinge certos níveis de Ladino. Qualquer característica desta subclasse que utilize um Dado de Energia Psiônica emprega apenas os dados dessa subclasse. Alguns poderes consomem esse Dado, conforme detalhado na respectiva descrição, e você não pode usar um poder se ele exigir um dado e todos os seus Dados de Energia Psiônica estiverem esgotados. Você recupera um de seus Dados de Energia Psiônica gastos ao completar um Descanso Curto, e restaura todos ao completar um Descanso Longo. Aptidão Reforçada Psiquicamente. Ao falhar em um teste de atributo usando uma perícia ou ferramenta com a qual você tem proficiência, você pode jogar um Dado de Energia Psiônica e adicionar o resultado do teste, transformando potencialmente a falha em sucesso. O dado é gasto apenas se o teste for bem-sucedido. Sussurros Psíquicos. Você pode estabelecer comunicação telepática com outras criaturas. Como uma ação Usar Magia, escolha até um número de criaturas igual ao seu Bônus de Proficiência que estejam à vista e jogue um Dado de Energia Psiônica. Por um número de horas igual ao resultado, essas criaturas podem se comunicar telepaticamente com você e vice-versa. Para enviar ou receber mensagens (nenhuma ação é necessária), você e a outra criatura devem estar a até 1,5 km de distância. Qualquer criatura pode encerrar a conexão telepática a qualquer momento (nenhuma ação é necessária). Na primeira vez que você usa este poder após um Descanso Longo, não gasta o Dado de Energia Psiônica; nas demais vezes, você o gasta."}, {"level": 9, "name": "Lâminas da Alma", "resumo": "Soma um dado psiônico a ataque errado com a lâmina e pode arremessá-la para se teleportar.", "desc": "Agora você pode usar os seguintes poderes com suas Lâminas Psíquicas. Golpes Teleguiados. Ao realizar uma jogada de ataque com sua Lâmina Psíquica e errar o alvo, você pode jogar um Dado de Energia Psiônica e adicionar o resultado jogado à jogada de ataque. Caso o ataque atinja devido a este bônus, o dado é gasto. Teleporte Psíquico. Como uma Ação Bônus, você manifesta uma Lâmina Psíquica, gasta um dado de Energia Psíquica e o joga, então arremessa a lâmina em um espaço desocupado à sua vista e a até uma distância em metros igual a 3 vezes o resultado do dado. Você então se teleporta para esse espaço, e a lâmina desaparece."}, {"level": 13, "name": "Véu Psíquico", "resumo": "Ação Usar Magia: Invisível por 1 hora (acaba ao causar dano); 1x por Descanso Longo ou um dado.", "desc": "Você pode tecer um véu de estática psíquica para se mascarar. Como uma ação Usar Magia, você tem a condição Invisível por 1 hora ou até encerrar este efeito (nenhuma ação é necessária). Essa invisibilidade encerra se você causar dano a uma criatura ou forçar uma criatura a realizar uma salvaguarda. Você pode usar esta característica novamente gastando um Dado de Energia Psiônica (nenhuma ação é necessária) ou após completar um Descanso Longo."}, {"level": 17, "name": "Rasgar Mente", "resumo": "Ao causar Ataque Furtivo com a lâmina, salvaguarda de SAB ou Atordoado por 1 minuto; 1x por Descanso Longo ou 3 dados.", "desc": "Você pode passar suas Lâminas Psíquicas diretamente pela mente de uma criatura. Ao causar dano de Ataque Furtivo com uma das suas Lâminas Psíquicas a uma criatura, você pode forçá-la a realizar uma salvaguarda de Sabedoria (CD 8 + seu modificador de Destreza + seu Bônus de Proficiência). O alvo tem a condição Atordoado por 1 minuto se falhar, e repete a salvaguarda no final de cada um dos turnos dele, encerrando o efeito sobre si em caso de sucesso. Você pode usar esta característica novamente gastando três Dados de Energia Psiônica (nenhuma ação é necessária) ou após completar um Descanso Longo."}],
-          "desc": "Materializa adagas psíquicas de energia mental para atacar à distância e telepatia silenciosa com aliados.",
+          "desc": "Manifesta Lâminas Psíquicas (corpo a corpo ou arremessadas) e usa Dados de Energia Psiônica para perícias, telepatia e teleporte.",
+          "limitedUses": [{"id": "soulknife_psionic_dice", "name": "Dados de Energia Psiônica (d6 no 3º, d8 no 5º, d10 no 11º, d12 no 17º; 1 volta no Descanso Curto)", "recovery": "longo",
+            "byLevel": {"3": 4, "4": 4, "5": 6, "6": 6, "7": 6, "8": 6, "9": 8, "10": 8, "11": 8, "12": 8, "13": 10, "14": 10, "15": 10, "16": 10, "17": 12, "18": 12, "19": 12, "20": 12}}],
           "about": "Ataque Inimigos com Lâminas Psiônicas Um Adaga Espiritual ataca mentalmente, rompendo barreiras físicas e psíquicas. Esses Ladinos descobrem poder psiônico em si próprios e o canalizam para realizar atos ardilosos. Desde a infância, suas habilidades, psiônicas podem ter se manifestado, revelando todo o seu potencial sob estresse em aventuras. Ou então, você pode ter buscado uma ordem de adeptos psíquicos, dedicando anos a aprender a manifestar seu poder."
         }
       ],
@@ -2994,6 +3002,7 @@ const DND5E_DATA = {
           "name": "Patrono Celestial (Celestial Patron)",
           "features": [{"level": 3, "name": "Luz Medicinal", "resumo": "Reserva de d6s (1 + nível de Bruxo) para curar como Ação Bônus a 18 m, até CAR dados por vez; volta no Descanso Longo.", "desc": "Você adquire a habilidade de canalizar energia celestial para curar feridas. Você tem uma reserva de d6s que podem ser gastos nessa cura. O número de dados na reserva é igual a 1 mais seu nível de Bruxo. Como uma Ação Bônus, você pode curar a si ou uma criatura à sua vista a até 18 metros de você, gastando dados da reserva. O número máximo de dados que você pode gastar de uma só vez é igual ao seu modificador de Carisma (mínimo de um dado). Jogue os dados que deseja e restaure um número de Pontos de Vida igual ao resultado. Sua reserva recupera todos os dados gastos ao completar um Descanso Longo."}, {"level": 3, "name": "Magia de Pacto do Celestial", "resumo": "Magias do Celestial sempre preparadas nos níveis 3, 5, 7 e 9.", "desc": "A magia do seu patrono assegura que você sempre tenha algumas magias disponíveis; ao atingir um nível de Bruxo indicado na tabela Magias do Celestial, você sempre tem essas magias preparadas."}, {"level": 6, "name": "Alma Radiante", "resumo": "Resistência a Radiante; uma vez por turno soma CAR ao dano de magia Ígnea ou Radiante contra um alvo.", "desc": "Seu vínculo com seu patrono permite que você sirva como condutor de energia radiante. Você tem Resistência a Dano Radiante. Uma vez por turno, quando conjurar uma magia que cause dano Ígneo ou Radiante, você pode adicionar seu modificador de Carisma ao dano dessa magia contra um dos alvos da magia."}, {"level": 10, "name": "Resiliência Celestial", "resumo": "Ao usar Astúcia Mágica ou descansar, ganha PV temporários (nível + CAR) e dá metade a até cinco criaturas.", "desc": "Você recebe Pontos de Vida Temporários sempre que usar sua característica Astúcia Mágica ou completar um Descanso Curto ou Longo. Esses Pontos de Vida Temporários são iguais ao seu nível de Bruxo mais seu modificador de Carisma. Além disso, escolha até cinco criaturas à sua vista quando receber os pontos. Cada uma dessas criaturas recebe Pontos de Vida Temporários iguais à metade do seu nível de Bruxo mais seu modificador de Carisma."}, {"level": 14, "name": "Vingança Calcinante", "resumo": "Quando você ou aliado a 18 m vai fazer Salvaguarda Contra Morte: recupera metade dos PV e explode 2d8 + CAR Radiante em inimigos; 1x por Descanso Longo.", "desc": "Quando você ou um aliado a até 18 metros de você estiver prestes a realizar uma Salvaguarda Contra Morte, você pode liberar energia radiante para salvar a criatura. A criatura restaura Pontos de Vida iguais à metade de seus Pontos de Vida máximos e pode encerrar a condição Caído em si. Cada criatura à sua escolha que esteja a até 9 metros da criatura sofre dano Radiante igual a 2d8 mais seu modificador de Carisma e cada uma tem a condição Cego até o final do turno atual. Você pode usar esta característica novamente após completar um Descanso Longo."}],
           "desc": "Pacto com anjos e seres das esferas superiores, concedendo luz e uma reserva de dados de cura por luz celestial.",
+          "limitedUses": [{"id": "celestial_healing_light", "name": "Luz Medicinal (reserva de d6)", "recovery": "longo", "byLevel": {"3": 4, "4": 5, "5": 6, "6": 7, "7": 8, "8": 9, "9": 10, "10": 11, "11": 12, "12": 13, "13": 14, "14": 15, "15": 16, "16": 17, "17": 18, "18": 19, "19": 20, "20": 21}}],
           "about": "Invoque o Poder dos Céus Seu pacto é fundamentado nos Planos Superiores, os reinos da felicidade eterna. Você pode firmar um acordo com um empiriano, um couatl, uma esfinge, um unicórnio ou outra entidade celestial, ou invocar vários desses seres enquanto persegue objetivos que se alinham aos deles. O pacto permite que você experimente uma fração da luz sagrada que ilumina o multiverso.",
           "bonusSpells": {
             "3": [
@@ -3073,6 +3082,7 @@ const DND5E_DATA = {
           "insight",
           "investigation",
           "medicine",
+          "nature",
           "religion"
         ]
       },
@@ -3217,16 +3227,23 @@ const DND5E_DATA = {
       "id": "human",
       "name": "Humano (Human)",
       "speed": 9,
-      "size": "Médio",
+      "size": "Médio ou Pequeno",
       "darkvision": 0,
       "traits": [
         {
-          "name": "Versátil (Versatile)",
-          "desc": "Ganha proficiência em uma perícia à sua escolha e um Talento de Origem adicional à sua escolha.", "full": "Você adquire um talento de Origem à sua escolha (veja o capítulo 5). Habilidoso é recomendado."
+          "name": "Eficiente (Resourceful)",
+          "desc": "Ganha Inspiração Heroica ao completar cada Descanso Longo.",
+          "full": "Você adquire Inspiração Heroica sempre que completar um Descanso Longo."
         },
         {
-          "name": "Inspiração Heroica (Heroic Inspiration)",
-          "desc": "Ganha Inspiração Heroica no final de cada descanso longo.", "full": "Você adquire Inspiração Heroica sempre que completar um Descanso Longo."
+          "name": "Hábil (Skillful)",
+          "desc": "Proficiência em uma perícia à sua escolha.",
+          "full": "Você adquire proficiência em uma perícia à sua escolha."
+        },
+        {
+          "name": "Versátil (Versatile)",
+          "desc": "Um Talento de Origem adicional à sua escolha (Habilidoso é recomendado).",
+          "full": "Você adquire um talento de Origem à sua escolha (veja o capítulo 5). Habilidoso é recomendado."
         }
       ],
       "lineages": []
@@ -3240,37 +3257,41 @@ const DND5E_DATA = {
       "traits": [
         {
           "name": "Ancestralidade Feérica (Fey Ancestry)",
-          "desc": "Vantagem em salvaguardas para evitar ou encerrar a condição Enfeitiçado.", "full": "Você tem Vantagem ao realizar salvaguardas para evitar ou encerrar a condição Enfeitiçado."
+          "desc": "Vantagem em salvaguardas para evitar ou encerrar a condição Enfeitiçado.",
+          "full": "Você tem Vantagem ao realizar salvaguardas para evitar ou encerrar a condição Enfeitiçado."
         },
         {
           "name": "Sentidos Aguçados (Keen Senses)",
-          "desc": "Proficiência gratuita na perícia Percepção.", "full": "Você tem proficiência na perícia Intuição, Percepção ou Sobrevivência."
+          "desc": "Proficiência em Intuição, Percepção ou Sobrevivência (à sua escolha).",
+          "full": "Você tem proficiência na perícia Intuição, Percepção ou Sobrevivência."
         },
         {
           "name": "Transe (Trance)",
-          "desc": "Não precisa dormir; medita por 4 horas para ter os benefícios de um descanso longo.", "full": "Você pode completar um Descanso Longo em 4 horas ao meditar, sem a necessidade de dormir, mantendo a consciência, e magia não pode forçá-lo a dormir. Linhagem ÉlficaLinhagem Nível 1 Nível 3 Nível 5 Alto Elfo Você conhece o truque Prestidigitação Arcana. Sempre que completar um Descanso Longo, você pode substituir este truque por um truque diferente da lista de magias de Mago. Detectar Magia Passo Nebuloso Drow O alcance da sua Visão no Escuro aumenta para 36 metros. Você também conhece o truque Luzes Dançantes. Fogo das Fadas Escuridão Elfo Silvestre Seu Deslocamento aumenta para 10,5 metros. Você também conhece o truque Arte Druídica. Passos Largos Passos Sem Rastro Um navio parte de uma cidade construída pelos altos elfos."
+          "desc": "Completa um Descanso Longo em 4 horas de meditação, consciente; magia não pode forçá-lo a dormir.",
+          "full": "Você pode completar um Descanso Longo em 4 horas ao meditar, sem a necessidade de dormir, mantendo a consciência, e magia não pode forçá-lo a dormir."
         }
       ],
       "lineages": [
         {
           "id": "high_elf",
           "name": "Alto Elfo",
-          "desc": "Ganha um Truque de Mago à sua escolha e pode trocá-lo a cada descanso longo. No 3º nível conjura Passo Nebuloso.",
+          "desc": "Ganha um Truque de Mago à sua escolha e pode trocá-lo a cada descanso longo. No 3º nível aprende Detectar Magia e no 5º Passo Nebuloso.",
           "full": "Nível 1: Você conhece o truque Prestidigitação Arcana. Sempre que completar um Descanso Longo, você pode substituir este truque por um truque diferente da lista de magias de Mago. Nível 3: você aprende a magia Detectar Magia. Nível 5: você aprende a magia Passo Nebuloso. A magia de nível 3 e a de nível 5 ficam sempre preparadas: você pode conjurar cada uma sem gastar espaço de magia uma vez por Descanso Longo e, além disso, com qualquer espaço de magia apropriado."
         },
         {
           "id": "wood_elf",
           "name": "Elfo da Floresta",
-          "desc": "Deslocamento base aumentado para 10,5m (35 pés). No 3º nível conjura Passos Longos e no 5º Passos Sem Pegadas.",
+          "desc": "Deslocamento base aumentado para 10,5m (35 pés). No 3º nível aprende Passos Largos e no 5º Passos Sem Rastro.",
           "full": "Nível 1: Seu Deslocamento aumenta para 10,5 metros. Você também conhece o truque Arte Druídica. Nível 3: você aprende a magia Passos Largos. Nível 5: você aprende a magia Passos Sem Rastro. A magia de nível 3 e a de nível 5 ficam sempre preparadas: você pode conjurar cada uma sem gastar espaço de magia uma vez por Descanso Longo e, além disso, com qualquer espaço de magia apropriado."
         },
         {
           "id": "drow",
           "name": "Drow (Elfo Negro)",
-          "desc": "Visão no Escuro aumentada para 36 metros (120 pés). Conhece Luzes Dançantes, no 3º nível Escuridão e no 5º Fogo das Fadas.",
+          "desc": "Visão no Escuro aumentada para 36 metros (120 pés). Conhece Luzes Dançantes, no 3º nível Fogo das Fadas e no 5º Escuridão.",
           "full": "Nível 1: O alcance da sua Visão no Escuro aumenta para 36 metros. Você também conhece o truque Luzes Dançantes. Nível 3: você aprende a magia Fogo das Fadas. Nível 5: você aprende a magia Escuridão. A magia de nível 3 e a de nível 5 ficam sempre preparadas: você pode conjurar cada uma sem gastar espaço de magia uma vez por Descanso Longo e, além disso, com qualquer espaço de magia apropriado."
         }
-      ]
+      ],
+      "lineageLabel": "Linhagem Élfica"
     },
     {
       "id": "dwarf",
@@ -3280,63 +3301,60 @@ const DND5E_DATA = {
       "darkvision": 36,
       "traits": [
         {
-          "name": "Resiliência Anã (Dwarven Resilience)",
-          "desc": "Resistência a dano de veneno e vantagem em salvaguardas contra veneno.", "full": "Você tem Resistência a Dano Venenoso. Você também tem Vantagem nas salvaguardas que realizar para evitar ou encerrar a condição Envenenado."
+          "name": "Resistência a Toxinas (Dwarven Resilience)",
+          "desc": "Resistência a dano Venenoso e Vantagem nas salvaguardas contra a condição Envenenado.",
+          "full": "Você tem Resistência a Dano Venenoso. Você também tem Vantagem nas salvaguardas que realizar para evitar ou encerrar a condição Envenenado."
         },
         {
           "name": "Tenacidade Anã (Dwarven Toughness)",
-          "desc": "Seus pontos de vida máximos aumentam em 1 por nível.", "full": "Seus Pontos de Vida máximos aumentam em 1, e novamente em 1, sempre que você atinge um nível de personagem."
+          "desc": "PV máximos +1 por nível de personagem.",
+          "full": "Seus Pontos de Vida máximos aumentam em 1, e novamente em 1, sempre que você atinge um nível de personagem."
         },
         {
-          "name": "Sentido nas Rochas (Stonecunning)",
-          "desc": "Visão no escuro ampliada e sentido sísmico em terreno de pedra.", "full": "Como uma Ação Bônus, você adquire Sismiconsciência com um alcance de 18 metros por 10 minutos. Você deve estar em, ou tocar, uma superfície de pedra para usar a Sismiconsciência. A pedra pode ser natural ou trabalhada. Você pode usar essa Ação Bônus um número de vezes igual ao seu Bônus de Proficiência, e você restaura todos os usos gastos quando completa um Descanso Longo."
+          "name": "Conhecimento de Pedras (Stonecunning)",
+          "desc": "Ação Bônus: Sismiconsciência de 18 m por 10 minutos, tocando pedra; usos iguais ao PB por Descanso Longo.",
+          "full": "Como uma Ação Bônus, você adquire Sismiconsciência com um alcance de 18 metros por 10 minutos. Você deve estar em, ou tocar, uma superfície de pedra para usar a Sismiconsciência. A pedra pode ser natural ou trabalhada. Você pode usar essa Ação Bônus um número de vezes igual ao seu Bônus de Proficiência, e você restaura todos os usos gastos quando completa um Descanso Longo."
         }
       ],
-      "lineages": [
+      "lineages": [],
+      "limitedUses": [
         {
-          "id": "hill_dwarf",
-          "name": "Anão da Colina",
-          "desc": "Sabedoria afiada e intuição profunda com o mundo subterrâneo."
-        },
-        {
-          "id": "mountain_dwarf",
-          "name": "Anão da Montanha",
-          "desc": "Físico portentoso talhado nas forjas e fortalezas montanhosas."
+          "id": "dwarf_stonecunning",
+          "name": "Conhecimento de Pedras",
+          "recovery": "longo",
+          "max": "pb"
         }
       ]
     },
     {
       "id": "halfling",
-      "name": "Halfling",
+      "name": "Pequenino (Halfling)",
       "speed": 9,
       "size": "Pequeno",
       "darkvision": 0,
       "traits": [
         {
-          "name": "Sortudo (Lucky)",
-          "desc": "Ao tirar 1 em um d20 de ataque, teste ou salvaguarda, pode rolar novamente o dado.", "full": "Ao tirar 1 no D20 de um Teste de D20, você pode jogar novamente o dado e deve usar a nova jogada."
+          "name": "Corajoso (Brave)",
+          "desc": "Vantagem nas salvaguardas contra a condição Amedrontado.",
+          "full": "Você tem Vantagem nas salvaguardas que realizar para evitar ou encerrar a condição Amedrontado."
         },
         {
-          "name": "Bravura (Brave)",
-          "desc": "Vantagem em salvaguardas para evitar ou encerrar a condição Amedrontado.", "full": "Você tem Vantagem nas salvaguardas que realizar para evitar ou encerrar a condição Amedrontado."
+          "name": "Agilidade Pequenina (Halfling Nimbleness)",
+          "desc": "Atravessa o espaço de criaturas um tamanho maior que você (sem parar nele).",
+          "full": "Você pode se mover pelo espaço de qualquer criatura que seja um tamanho maior que você, mas você não pode parar no mesmo espaço."
         },
         {
-          "name": "Agilidade Halfling (Halfling Nimbleness)",
-          "desc": "Pode se mover através do espaço de qualquer criatura de tamanho maior que o seu.", "full": "Você pode se mover pelo espaço de qualquer criatura que seja um tamanho maior que você, mas você não pode parar no mesmo espaço."
+          "name": "Sorte (Luck)",
+          "desc": "Ao tirar 1 no d20 de um Teste de D20, joga de novo e usa a nova jogada.",
+          "full": "Ao tirar 1 no D20 de um Teste de D20, você pode jogar novamente o dado e deve usar a nova jogada."
+        },
+        {
+          "name": "Furtividade Natural (Naturally Stealthy)",
+          "desc": "Pode Esconder-se mesmo encoberto só por uma criatura pelo menos um tamanho maior.",
+          "full": "Você pode executar a ação Esconder mesmo quando estiver encoberto apenas por uma criatura que seja pelo menos um tamanho maior que você."
         }
       ],
-      "lineages": [
-        {
-          "id": "lightfoot",
-          "name": "Pés-Leves",
-          "desc": "Furtividade Natural: pode tentar se esconder mesmo estando atrás de uma criatura maior."
-        },
-        {
-          "id": "stout",
-          "name": "Robusto",
-          "desc": "Resiliência robusta contra venenos herdada de ancestrais anões."
-        }
-      ]
+      "lineages": []
     },
     {
       "id": "dragonborn",
@@ -3346,54 +3364,98 @@ const DND5E_DATA = {
       "darkvision": 18,
       "traits": [
         {
-          "name": "Arma de Sopro (Breath Weapon)",
-          "desc": "Exala energia dracônica em cone de 4,5m ou linha de 9m (dano escala com o nível: 1d10 a 4d10).", "full": "Ao executar a ação Atacar no seu turno, você pode substituir um de seus ataques por uma emissão de energia mágica em um Cone de 4,5 metros ou em uma Linha de 9 metros de comprimento e 1,5 metros de largura (escolha a forma a cada vez). Cada criatura nessa área deve realizar uma salvaguarda de Destreza (CD 8 + seu modificador de Constituição e seu Bônus de Proficiência). Se falhar, uma criatura sofre 1d10 pontos de dano do tipo determinado por seu traço Herança Dracônica. Em caso de sucesso, uma criatura sofre metade do dano. Esse dano aumenta em 1d10 quando você atinge os níveis de personagem 5 (2d10), 11 (3d10) e 17 (4d10). Você pode usar esse Ataque de Sopro um número de vezes igual ao seu Bônus de Proficiência, e você restaura todos os usos gastos quando completa um Descanso Longo."
+          "name": "Ataque de Sopro (Breath Weapon)",
+          "desc": "No lugar de um ataque da ação Atacar: Cone de 4,5 m ou Linha de 9 m, salvaguarda de DES (CD 8 + CON + PB), 1d10 (2d10 no 5º, 3d10 no 11º, 4d10 no 17º); usos iguais ao PB por Descanso Longo.",
+          "full": "Ao executar a ação Atacar no seu turno, você pode substituir um de seus ataques por uma emissão de energia mágica em um Cone de 4,5 metros ou em uma Linha de 9 metros de comprimento e 1,5 metros de largura (escolha a forma a cada vez). Cada criatura nessa área deve realizar uma salvaguarda de Destreza (CD 8 + seu modificador de Constituição e seu Bônus de Proficiência). Se falhar, uma criatura sofre 1d10 pontos de dano do tipo determinado por seu traço Herança Dracônica. Em caso de sucesso, uma criatura sofre metade do dano. Esse dano aumenta em 1d10 quando você atinge os níveis de personagem 5 (2d10), 11 (3d10) e 17 (4d10). Você pode usar esse Ataque de Sopro um número de vezes igual ao seu Bônus de Proficiência, e você restaura todos os usos gastos quando completa um Descanso Longo."
         },
         {
-          "name": "Resistência Dracônica (Damage Resistance)",
-          "desc": "Resistência ao tipo de dano associado à sua cor ancestral.", "full": "Você tem Resistência ao tipo de dano determinado por seu traço Herança Dracônica."
+          "name": "Resistência a Dano (Damage Resistance)",
+          "desc": "Resistência ao tipo de dano da sua Herança Dracônica.",
+          "full": "Você tem Resistência ao tipo de dano determinado por seu traço Herança Dracônica."
         },
         {
-          "name": "Voo Dracônico (Nível 5)",
-          "desc": "Pode manifestar asas espectrais e voar com ação bônus por 10 minutos.", "full": "No nível 5 do personagem, você pode canalizar magia dracônica para beneficiar de um voo temporário. Como uma Ação Bônus, você cria asas espectrais nas costas que duram 10 minutos ou até que você as retraia (nenhuma ação é necessária) ou tem a condição Incapacitado. Pela duração, você tem um Deslocamento de Voo igual ao seu Deslocamento. Suas asas parecem feitas da mesma energia que o seu Ataque de Sopro. Após usar esse traço, você não pode usá-lo novamente até completar um Descanso Longo."
+          "name": "Voo Dracônico (Draconic Flight)",
+          "desc": "Ação Bônus: asas espectrais dão Deslocamento de Voo igual ao Deslocamento por 10 minutos; 1x por Descanso Longo.",
+          "full": "No nível 5 do personagem, você pode canalizar magia dracônica para beneficiar de um voo temporário. Como uma Ação Bônus, você cria asas espectrais nas costas que duram 10 minutos ou até que você as retraia (nenhuma ação é necessária) ou tem a condição Incapacitado. Pela duração, você tem um Deslocamento de Voo igual ao seu Deslocamento. Suas asas parecem feitas da mesma energia que o seu Ataque de Sopro. Após usar esse traço, você não pode usá-lo novamente até completar um Descanso Longo.",
+          "level": 5
         }
       ],
       "lineages": [
         {
-          "id": "red_dragon",
-          "name": "Dragão Vermelho (Fogo)",
-          "desc": "Sopro de Fogo em Cone (4,5m).",
-          "full": "Tabela Herança Dracônica: o dragão Vermelho tem o tipo de dano Ígneo. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
-        },
-        {
-          "id": "gold_dragon",
-          "name": "Dragão Dourado (Fogo)",
-          "desc": "Sopro de Fogo em Cone (4,5m).",
-          "full": "Tabela Herança Dracônica: o dragão Ouro tem o tipo de dano Ígneo. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
+          "id": "black_dragon",
+          "name": "Dragão Negro (Ácido)",
+          "desc": "Resistência e Ataque de Sopro de dano Ácido.",
+          "full": "Tabela Herança Dracônica: o dragão Negro tem o tipo de dano Ácido. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
         },
         {
           "id": "blue_dragon",
           "name": "Dragão Azul (Elétrico)",
-          "desc": "Sopro de Eletricidade em Linha (9m).",
+          "desc": "Resistência e Ataque de Sopro de dano Elétrico.",
           "full": "Tabela Herança Dracônica: o dragão Azul tem o tipo de dano Elétrico. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
         },
         {
-          "id": "silver_dragon",
-          "name": "Dragão Prateado (Frio)",
-          "desc": "Sopro de Gelo em Cone (4,5m).",
-          "full": "Tabela Herança Dracônica: o dragão Prata tem o tipo de dano Gélido. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
+          "id": "brass_dragon",
+          "name": "Dragão Latão (Ígneo)",
+          "desc": "Resistência e Ataque de Sopro de dano Ígneo.",
+          "full": "Tabela Herança Dracônica: o dragão Latão tem o tipo de dano Ígneo. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
         },
         {
-          "id": "black_dragon",
-          "name": "Dragão Negro (Ácido)",
-          "desc": "Sopro de Ácido em Linha (9m).",
-          "full": "Tabela Herança Dracônica: o dragão Negro tem o tipo de dano Ácido. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
+          "id": "bronze_dragon",
+          "name": "Dragão Bronze (Elétrico)",
+          "desc": "Resistência e Ataque de Sopro de dano Elétrico.",
+          "full": "Tabela Herança Dracônica: o dragão Bronze tem o tipo de dano Elétrico. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
+        },
+        {
+          "id": "copper_dragon",
+          "name": "Dragão Cobre (Ácido)",
+          "desc": "Resistência e Ataque de Sopro de dano Ácido.",
+          "full": "Tabela Herança Dracônica: o dragão Cobre tem o tipo de dano Ácido. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
+        },
+        {
+          "id": "gold_dragon",
+          "name": "Dragão Ouro (Ígneo)",
+          "desc": "Resistência e Ataque de Sopro de dano Ígneo.",
+          "full": "Tabela Herança Dracônica: o dragão Ouro tem o tipo de dano Ígneo. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
         },
         {
           "id": "green_dragon",
-          "name": "Dragão Verde (Veneno)",
-          "desc": "Sopro de Veneno em Cone (4,5m).",
+          "name": "Dragão Verde (Venenoso)",
+          "desc": "Resistência e Ataque de Sopro de dano Venenoso.",
           "full": "Tabela Herança Dracônica: o dragão Verde tem o tipo de dano Venenoso. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
+        },
+        {
+          "id": "red_dragon",
+          "name": "Dragão Vermelho (Ígneo)",
+          "desc": "Resistência e Ataque de Sopro de dano Ígneo.",
+          "full": "Tabela Herança Dracônica: o dragão Vermelho tem o tipo de dano Ígneo. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
+        },
+        {
+          "id": "silver_dragon",
+          "name": "Dragão Prata (Gélido)",
+          "desc": "Resistência e Ataque de Sopro de dano Gélido.",
+          "full": "Tabela Herança Dracônica: o dragão Prata tem o tipo de dano Gélido. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
+        },
+        {
+          "id": "white_dragon",
+          "name": "Dragão Branco (Gélido)",
+          "desc": "Resistência e Ataque de Sopro de dano Gélido.",
+          "full": "Tabela Herança Dracônica: o dragão Branco tem o tipo de dano Gélido. Essa escolha determina o dano do seu Ataque de Sopro e o tipo de dano da sua Resistência a Dano, além da sua aparência."
+        }
+      ],
+      "lineageLabel": "Herança Dracônica",
+      "limitedUses": [
+        {
+          "id": "dragonborn_breath",
+          "name": "Ataque de Sopro",
+          "recovery": "longo",
+          "max": "pb"
+        },
+        {
+          "id": "dragonborn_flight",
+          "name": "Voo Dracônico",
+          "recovery": "longo",
+          "max": 1,
+          "level": 5
         }
       ]
     },
@@ -3405,24 +3467,34 @@ const DND5E_DATA = {
       "darkvision": 18,
       "traits": [
         {
-          "name": "Esperteza Gnômica (Gnomish Cunning)",
-          "desc": "Vantagem em todas as salvaguardas de Inteligência, Sabedoria e Carisma.", "full": "Você tem Vantagem em salvaguardas de Inteligência, Sabedoria e Carisma."
+          "name": "Astúcia de Gnomo (Gnomish Cunning)",
+          "desc": "Vantagem em todas as salvaguardas de Inteligência, Sabedoria e Carisma.",
+          "full": "Você tem Vantagem em salvaguardas de Inteligência, Sabedoria e Carisma."
         }
       ],
       "lineages": [
         {
           "id": "forest_gnome",
-          "name": "Gnomo da Floresta",
-          "desc": "Conhece Ilusão Menor e pode falar com pequenos animais da floresta.",
-          "full": "Você conhece o truque Ilusão Menor. Você também sempre tem a magia Falar com Animais preparada. É possível conjurá-la sem um espaço de magia um número de vezes igual ao seu Bônus de Proficiência, e você restaura todos os usos gastos quando completa um Descanso Longo. Você também pode usar qualquer espaço de magia que tiver para conjurá-la."
+          "name": "Gnomo do Bosque",
+          "desc": "Conhece Ilusão Menor e tem Falar com Animais sempre preparada (grátis PB vezes por Descanso Longo).",
+          "full": "Você conhece o truque Ilusão Menor. Você também sempre tem a magia Falar com Animais preparada. É possível conjurá-la sem um espaço de magia um número de vezes igual ao seu Bônus de Proficiência, e você restaura todos os usos gastos quando completa um Descanso Longo. Você também pode usar qualquer espaço de magia que tiver para conjurá-la.",
+          "limitedUses": [
+            {
+              "id": "gnome_speak_animals",
+              "name": "Falar com Animais (grátis)",
+              "recovery": "longo",
+              "max": "pb"
+            }
+          ]
         },
         {
           "id": "rock_gnome",
           "name": "Gnomo das Rochas",
-          "desc": "Conhece Prestidigitação Arcana e Ferramentas de Engenhoqueiro para criar artefatos mecânicos.",
+          "desc": "Conhece Prestidigitação Arcana e Reparar; fabrica até três dispositivos mecânicos minúsculos com a Prestidigitação.",
           "full": "Você conhece os truques Prestidigitação Arcana e Reparar. Além disso, você pode gastar 10 minutos conjurando Prestidigitação Arcana para fabricar um dispositivo mecânico minúsculo (CA 5, 1 PV), como um brinquedo, isqueiro mecânico ou caixa de música. Ao fabricar o dispositivo, você determina a função dele escolhendo um efeito de Prestidigitação Arcana; o dispositivo produz esse efeito sempre que você ou outra criatura executa uma Ação Bônus para ativá-lo com um toque. Se o efeito escolhido tiver opções possíveis, você escolhe uma dessas opções para o dispositivo ao fabricá-lo. Por exemplo, se você escolher o efeito de Brincar com Fogo da magia, você determina se o dispositivo acende ou extingue fogo; o dispositivo não faz ambas as coisas. Você pode ter três desses dispositivos ao mesmo tempo, e cada um se desfaz 8 horas após ser fabricado ou quando você o desmonta com um toque como uma ação Usar Objeto."
         }
-      ]
+      ],
+      "lineageLabel": "Linhagem Gnômica"
     },
     {
       "id": "goliath",
@@ -3433,37 +3505,68 @@ const DND5E_DATA = {
       "traits": [
         {
           "name": "Porte Poderoso (Powerful Build)",
-          "desc": "Conta como uma categoria de tamanho maior para capacidade de carga e arrasto.", "full": "Você tem Vantagem em qualquer teste de atributo que realizar para encerrar a condição Imobilizado. Você também conta como um tamanho maior ao determinar sua capacidade de carga."
+          "desc": "Vantagem nos testes para encerrar a condição Imobilizado e conta como um tamanho maior para capacidade de carga.",
+          "full": "Você tem Vantagem em qualquer teste de atributo que realizar para encerrar a condição Imobilizado. Você também conta como um tamanho maior ao determinar sua capacidade de carga."
         },
         {
-          "name": "Forma de Gigante (Nível 5)",
-          "desc": "Torna-se Grande como Ação Bônus por 10 minutos, ganhando vantagem em testes de Força e +3m de velocidade.", "full": "A partir do nível 5 de personagem, você pode alterar seu tamanho para Grande como uma Ação Bônus se estiver em um espaço grande o suficiente. Essa transformação se mantém por 10 minutos ou até que você a encerrar (nenhuma ação é necessária). Pela duração, você tem Vantagem em testes de Força, e seu Deslocamento aumenta em 3 metros. Após usar este traço, você não pode utilizá-lo novamente até completar um Descanso Longo."
+          "name": "Forma Grande (Large Form)",
+          "desc": "Ação Bônus: fica Grande por 10 minutos, com Vantagem em testes de Força e +3 m de Deslocamento; 1x por Descanso Longo.",
+          "full": "A partir do nível 5 de personagem, você pode alterar seu tamanho para Grande como uma Ação Bônus se estiver em um espaço grande o suficiente. Essa transformação se mantém por 10 minutos ou até que você a encerrar (nenhuma ação é necessária). Pela duração, você tem Vantagem em testes de Força, e seu Deslocamento aumenta em 3 metros. Após usar este traço, você não pode utilizá-lo novamente até completar um Descanso Longo.",
+          "level": 5
         }
       ],
       "lineages": [
         {
           "id": "cloud_giant",
           "name": "Ascendência de Gigante das Nuvens",
-          "desc": "Salto Nebuloso: Teletransporta-se até 9 metros como Ação Bônus.",
+          "desc": "Salto da Nuvem: Ação Bônus para se teleportar até 9 m. Usos iguais ao PB por Descanso Longo.",
           "full": "Como uma Ação Bônus, você se teleporta magicamente até 9 metros para um espaço desocupado à sua vista."
         },
         {
           "id": "fire_giant",
           "name": "Ascendência de Gigante do Fogo",
-          "desc": "Golpe de Fogo: Causa 1d10 de dano de fogo adicional ao acertar um ataque.",
+          "desc": "Queimadura de Fogo: ao acertar um ataque, +1d10 de dano Ígneo. Usos iguais ao PB por Descanso Longo.",
           "full": "Ao atingir um alvo com uma jogada de ataque e causar dano a ele, você também pode causar 1d10 pontos de dano Ígneo a esse alvo."
         },
         {
           "id": "frost_giant",
           "name": "Ascendência de Gigante do Gelo",
-          "desc": "Frio Cortante: Causa 1d6 de dano de frio e reduz a velocidade do alvo em 3m.",
+          "desc": "Arrepio do Gelo: ao acertar um ataque, +1d6 de dano Gélido e −3 m no Deslocamento do alvo. Usos iguais ao PB por Descanso Longo.",
           "full": "Ao atingir um alvo com uma jogada de ataque e causar dano a ele, você também pode infligir 1d6 pontos de dano Gélido a esse alvo e reduzir o Deslocamento dele em 3 metros até o início do seu próximo turno."
         },
         {
           "id": "stone_giant",
           "name": "Ascendência de Gigante da Pedra",
-          "desc": "Resistência de Pedra: Reduz o dano recebido em 1d12 + CON como reação.",
+          "desc": "Resistência da Pedra: Reação ao sofrer dano, reduz 1d12 + CON. Usos iguais ao PB por Descanso Longo.",
           "full": "Ao sofrer dano, pode executar uma Reação para jogar 1d12. Adicione seu modificador de Constituição ao número obtido e reduza o dano desse total."
+        },
+        {
+          "id": "hill_giant",
+          "name": "Ascendência de Gigante da Colina",
+          "desc": "Tombo da Colina: ao acertar criatura Grande ou menor, impõe a condição Caído. Usos iguais ao PB por Descanso Longo.",
+          "full": "Ao atingir uma criatura Grande ou menor com uma jogada de ataque e causar dano a ela, você pode impor a esse alvo a condição Caído."
+        },
+        {
+          "id": "storm_giant",
+          "name": "Ascendência de Gigante da Tempestade",
+          "desc": "Trovão da Tempestade: Reação ao sofrer dano de criatura a até 18 m, causa 1d8 Trovejante nela. Usos iguais ao PB por Descanso Longo.",
+          "full": "Ao sofrer dano de uma criatura a até 18 metros de você, você pode executar uma Reação para causar 1d8 pontos de dano Trovejante a essa criatura."
+        }
+      ],
+      "lineageLabel": "Ancestralidade Gigante",
+      "limitedUses": [
+        {
+          "id": "goliath_ancestry",
+          "name": "Ancestralidade Gigante",
+          "recovery": "longo",
+          "max": "pb"
+        },
+        {
+          "id": "goliath_large_form",
+          "name": "Forma Grande",
+          "recovery": "longo",
+          "max": 1,
+          "level": 5
         }
       ]
     },
@@ -3475,95 +3578,115 @@ const DND5E_DATA = {
       "darkvision": 36,
       "traits": [
         {
-          "name": "Adrenalina (Rush)",
-          "desc": "Pode Disparar como Ação Bônus e ganha pontos de vida temporários iguais ao Bônus de Proficiência.", "full": "Você pode executar a ação Correr como uma Ação Bônus. Ao executar isso, você adquire um número de Pontos de Vida Temporários igual ao seu Bônus de Proficiência. Você pode usar este traço um número de vezes igual ao seu Bônus de Proficiência, e você restaura todos os usos gastos quando completa um Descanso Curto ou Longo."
+          "name": "Pico de Adrenalina (Adrenaline Rush)",
+          "desc": "Correr como Ação Bônus, ganhando PV temporários iguais ao PB; usos iguais ao PB por Descanso Curto ou Longo.",
+          "full": "Você pode executar a ação Correr como uma Ação Bônus. Ao executar isso, você adquire um número de Pontos de Vida Temporários igual ao seu Bônus de Proficiência. Você pode usar este traço um número de vezes igual ao seu Bônus de Proficiência, e você restaura todos os usos gastos quando completa um Descanso Curto ou Longo."
         },
         {
-          "name": "Resistência Implacável (Relentless Endurance)",
-          "desc": "Ao ser reduzido a 0 PV mas não morrer imediatamente, fica com 1 PV (1 vez por descanso longo).", "full": "Ao ser reduzido a 0 Pontos de Vida, mas não morto imediatamente, você fica com 1 Ponto de Vida. Após usar este traço, você não pode fazê-lo novamente até completar um Descanso Longo."
-        },
-        {
-          "name": "Físico Poderoso (Powerful Build)",
-          "desc": "Capacidade de carga dobrada."
+          "name": "Vigor Implacável (Relentless Endurance)",
+          "desc": "Ao ser reduzido a 0 PV mas não morrer imediatamente, fica com 1 PV (1 vez por descanso longo).",
+          "full": "Ao ser reduzido a 0 Pontos de Vida, mas não morto imediatamente, você fica com 1 Ponto de Vida. Após usar este traço, você não pode fazê-lo novamente até completar um Descanso Longo."
         }
       ],
-      "lineages": []
+      "lineages": [],
+      "limitedUses": [
+        {
+          "id": "orc_adrenaline",
+          "name": "Pico de Adrenalina",
+          "recovery": "curto",
+          "max": "pb"
+        },
+        {
+          "id": "orc_relentless",
+          "name": "Vigor Implacável",
+          "recovery": "longo",
+          "max": 1
+        }
+      ]
     },
     {
       "id": "tiefling",
-      "name": "Tiefling",
+      "name": "Tiferino (Tiefling)",
       "speed": 9,
-      "size": "Médio",
+      "size": "Médio ou Pequeno",
       "darkvision": 18,
       "traits": [
         {
-          "name": "Herança Sobrenatural (Fiendish Legacy)",
-          "desc": "Resistência a dano elemental e magias inatas conforme a linhagem.", "full": "Você é o portador de um legado que lhe confere poderes sobrenaturais. Escolha um legado da tabela Legados Ínferos. Você adquire o benefício de nível 1 do legado escolhido. Ao atingir os níveis de personagem 3 e 5, você aprende magias de círculo superior, conforme indicado na tabela. Cada uma dessas magias fica sempre preparada: você pode conjurá-la uma vez sem gastar espaço de magia por Descanso Longo e também com qualquer espaço de magia apropriado. Inteligência, Sabedoria ou Carisma é seu atributo de conjuração para essas magias (escolha ao selecionar o legado)."
+          "name": "Legado Ínfero (Fiendish Legacy)",
+          "desc": "Resistência e truque do legado no nível 1; magias do legado nos níveis 3 e 5 (1x grátis por Descanso Longo cada).",
+          "full": "Você é o portador de um legado que lhe confere poderes sobrenaturais. Escolha um legado da tabela Legados Ínferos. Você adquire o benefício de nível 1 do legado escolhido. Ao atingir os níveis de personagem 3 e 5, você aprende magias de círculo superior, conforme indicado na tabela. Cada uma dessas magias fica sempre preparada: você pode conjurá-la uma vez sem gastar espaço de magia por Descanso Longo e também com qualquer espaço de magia apropriado. Inteligência, Sabedoria ou Carisma é seu atributo de conjuração para essas magias (escolha ao selecionar o legado)."
         },
         {
-          "name": "Taumaturgia (Thaumaturgy)",
-          "desc": "Conhece o truque Taumaturgia gratuitamente.", "full": "Você conhece o truque Taumaturgia. Ao conjurar com este traço, a magia usa o mesmo atributo de conjuração que você usa para sua Característica Legado Ínfero."
+          "name": "Presença Sobrenatural (Otherworldly Presence)",
+          "desc": "Conhece o truque Taumaturgia.",
+          "full": "Você conhece o truque Taumaturgia. Ao conjurar com este traço, a magia usa o mesmo atributo de conjuração que você usa para sua Característica Legado Ínfero."
         }
       ],
       "lineages": [
         {
           "id": "infernal",
-          "name": "Linhagem Infernal",
-          "desc": "Resistência a dano de Fogo. Conjura Repreensão Infernal no 3º nível e Escuridão no 5º nível.",
+          "name": "Legado Infernal",
+          "desc": "Resistência a dano Ígneo e truque Raio de Fogo; Repreensão Diabólica no 3º nível e Escuridão no 5º.",
           "full": "Nível 1: Você tem Resistência a dano Ígneo. Você também conhece o truque Raio de Fogo. Nível 3: você aprende a magia Repreensão Diabólica. Nível 5: você aprende a magia Escuridão. A magia de nível 3 e a de nível 5 ficam sempre preparadas: você pode conjurar cada uma sem gastar espaço de magia uma vez por Descanso Longo e, além disso, com qualquer espaço de magia apropriado."
         },
         {
           "id": "abyssal",
-          "name": "Linhagem Abissal",
-          "desc": "Resistência a dano de Veneno. Conjura Raio de Doença no 3º nível e Manter Pessoa no 5º nível.",
+          "name": "Legado Abissal",
+          "desc": "Resistência a dano Venenoso e truque Rajada de Veneno; Raio Nauseante no 3º nível e Paralisar Pessoa no 5º.",
           "full": "Nível 1: Você tem Resistência a dano Venenoso. Você também conhece o truque Rajada de Veneno. Nível 3: você aprende a magia Raio Nauseante. Nível 5: você aprende a magia Paralisar Pessoa. A magia de nível 3 e a de nível 5 ficam sempre preparadas: você pode conjurar cada uma sem gastar espaço de magia uma vez por Descanso Longo e, além disso, com qualquer espaço de magia apropriado."
         },
         {
           "id": "cthonic",
-          "name": "Linhagem Ctoniana",
-          "desc": "Resistência a dano Necrótico. Conjura Vitalidade Falsa no 3º nível e Raio do Enfraquecimento no 5º nível.",
+          "name": "Legado Ctônico",
+          "desc": "Resistência a dano Necrótico e truque Toque Necrótico; Vitalidade Vazia no 3º nível e Raio do Enfraquecimento no 5º.",
           "full": "Nível 1: Você tem Resistência a dano Necrótico. Você também conhece o truque Toque Necrótico. Nível 3: você aprende a magia Vitalidade Vazia. Nível 5: você aprende a magia Raio do Enfraquecimento. A magia de nível 3 e a de nível 5 ficam sempre preparadas: você pode conjurar cada uma sem gastar espaço de magia uma vez por Descanso Longo e, além disso, com qualquer espaço de magia apropriado."
         }
-      ]
+      ],
+      "lineageLabel": "Legado Ínfero"
     },
     {
       "id": "aasimar",
       "name": "Aasimar",
       "speed": 9,
-      "size": "Médio",
+      "size": "Médio ou Pequeno",
       "darkvision": 18,
       "traits": [
         {
           "name": "Resistência Celestial (Celestial Resistance)",
-          "desc": "Resistência a dano Necrótico e dano Radiante.", "full": "Você tem Resistência a dano Necrótico e Radiante."
+          "desc": "Resistência a dano Necrótico e dano Radiante.",
+          "full": "Você tem Resistência a dano Necrótico e Radiante."
         },
         {
-          "name": "Mãos Que Curam (Healing Hands)",
-          "desc": "Com uma ação, toca uma criatura e restaura PV iguais a rolagens de d4s iguais ao seu Bônus de Proficiência.", "full": "Você executa uma ação Usar Magia, toca uma criatura e joga um número de d4s igual ao seu Bônus de Proficiência. A criatura restaura número de Pontos de Vida igual ao total jogado. Após usar esse traço, você não pode usá-lo novamente até completar um Descanso Longo."
+          "name": "Mãos Curativas (Healing Hands)",
+          "desc": "Ação Usar Magia: toca uma criatura, que recupera PV iguais a um número de d4 igual ao seu PB; 1x por Descanso Longo.",
+          "full": "Você executa uma ação Usar Magia, toca uma criatura e joga um número de d4s igual ao seu Bônus de Proficiência. A criatura restaura número de Pontos de Vida igual ao total jogado. Após usar esse traço, você não pode usá-lo novamente até completar um Descanso Longo."
         },
         {
-          "name": "Luz Divina (Light Bearer)",
-          "desc": "Conhece o truque Luz.", "full": "Você conhece o truque Luz. Carisma é seu atributo de conjuração para isso."
+          "name": "Portador da Luz (Light Bearer)",
+          "desc": "Conhece o truque Luz (Carisma).",
+          "full": "Você conhece o truque Luz. Carisma é seu atributo de conjuração para isso."
+        },
+        {
+          "name": "Revelação Celestial (Celestial Revelation)",
+          "level": 3,
+          "desc": "Ação Bônus, 1 minuto, 1x por Descanso Longo: Asas Celestiais (voo), Manto Necrótico (Amedrontado a 3 m) ou Transfiguração Radiante (luz e dano a 3 m); 1x por turno, +PB de dano Necrótico ou Radiante.",
+          "full": "No nível 3 de personagem, você pode se transformar como uma Ação Bônus usando uma das opções abaixo (escolha a opção cada vez que você se transformar). A transformação se mantém por 1 minuto ou até você a encerrar (nenhuma ação é necessária). Uma vez que você se transforma, não pode fazê-lo novamente até completar um Descanso Longo. Uma vez em cada um dos seus turnos, até que a transformação termine, você pode infligir dano adicional a um alvo ao causar dano a ele com um ataque ou uma magia. O dano adicional é igual ao seu Bônus de Proficiência, e o tipo de dano adicional é Necrótico para Manto Necrótico ou Radiante para Asas Celestiais e Transfiguração Radiante. Asas Celestiais. Duas asas espectrais brotam em suas costas temporariamente. Até que a transformação se encerre, você tem um Deslocamento de Voo igual ao seu Deslocamento. Manto Necrótico. Seus olhos se tornam brevemente poças de escuridão, e asas que não voam brotam em suas costas temporariamente. Criaturas que não sejam seus aliados a até 3 metros de você devem ser bem-sucedidas em uma salvaguarda de Carisma (CD 8 + seu modificador de Carisma e seu Bônus de Proficiência) ou têm a condição Amedrontado até o final do seu próximo turno. Transfiguração Radiante. Luz abrasadora irradia temporariamente de seus olhos e boca. Pela duração da transformação, você emite Luz Plena em um raio de 3 metros e Meia-luz por mais 3 metros, e no fim de cada um de seus turnos, cada criatura a até 3 metros de você sofre dano Radiante igual ao seu Bônus de Proficiência."
         }
       ],
-      "lineages": [
+      "lineages": [],
+      "limitedUses": [
         {
-          "id": "necrotic_shroud",
-          "name": "Mortalha Necrótica",
-          "desc": "Asas esqueléticas e olhos negros, aterrorizando inimigos próximos e causando dano necrótico extra.",
-          "full": "Seus olhos se tornam brevemente poças de escuridão, e asas que não voam brotam em suas costas temporariamente. Criaturas que não sejam seus aliados a até 3 metros de você devem ser bem-sucedidas em uma salvaguarda de Carisma (CD 8 + seu modificador de Carisma e seu Bônus de Proficiência) ou têm a condição Amedrontado até o final do seu próximo turno."
+          "id": "aasimar_healing_hands",
+          "name": "Mãos Curativas",
+          "recovery": "longo",
+          "max": 1
         },
         {
-          "id": "radiant_consumption",
-          "name": "Consumo Radiante",
-          "desc": "Irradia calor solar intenso, causando dano radiante a si e aos inimigos no raio.",
-          "full": "Luz abrasadora irradia temporariamente de seus olhos e boca. Pela duração da transformação, você emite Luz Plena em um raio de 3 metros e Meia-luz por mais 3 metros, e no fim de cada um de seus turnos, cada criatura a até 3 metros de você sofre dano Radiante igual ao seu Bônus de Proficiência."
-        },
-        {
-          "id": "radiant_soul",
-          "name": "Alma Radiante",
-          "desc": "Manifesta asas luminosas com velocidade de voo e dano radiante adicional em um ataque por turno.",
-          "full": "Duas asas espectrais brotam em suas costas temporariamente. Até que a transformação se encerre, você tem um Deslocamento de Voo igual ao seu Deslocamento."
+          "id": "aasimar_revelation",
+          "name": "Revelação Celestial",
+          "recovery": "longo",
+          "max": 1,
+          "level": 3
         }
       ]
     }
@@ -3605,14 +3728,14 @@ const DND5E_DATA = {
         "religion"
       ],
       "tools": [
-        "Kit de Caligrafia"
+        "Suprimentos de Calígrafo"
       ],
-      "equipmentDesc": "Símbolo Sagrado, Kit de Caligrafia, Livro de Orações, Manto de Cerimônia, 8 PO.",
+      "equipmentDesc": "Suprimentos de Calígrafo, Livro (orações), Símbolo Sagrado, Pergaminho (10 folhas), Túnica, 8 PO.",
       "startingGold": 50
     },
     {
       "id": "artisan",
-      "name": "Artesão da Guilda (Guild Artisan)",
+      "name": "Artesão (Artisan)",
       "abilityOptions": [
         "str",
         "dex",
@@ -3625,9 +3748,9 @@ const DND5E_DATA = {
         "persuasion"
       ],
       "tools": [
-        "Um conjunto de Ferramentas de Artesão à escolha"
+        "Um tipo de Ferramentas de Artesão à escolha"
       ],
-      "equipmentDesc": "Ferramentas de Artesão, Carta de Apresentação da Guilda, Roupas de Viagem, 15 PO.",
+      "equipmentDesc": "Ferramentas de Artesão (as mesmas escolhidas), 2 Algibeiras, Roupas de Viagem, 32 PO.",
       "startingGold": 50
     },
     {
@@ -3645,10 +3768,9 @@ const DND5E_DATA = {
         "sleight_of_hand"
       ],
       "tools": [
-        "Kit de Disfarce",
         "Kit de Falsificação"
       ],
-      "equipmentDesc": "Kit de Disfarce, Ferramentas de Trapaça (dados viciados), Roupas Finas, 15 PO.",
+      "equipmentDesc": "Kit de Falsificação, Fantasia, Roupas Finas, 15 PO.",
       "startingGold": 50
     },
     {
@@ -3666,10 +3788,9 @@ const DND5E_DATA = {
         "sleight_of_hand"
       ],
       "tools": [
-        "Ferramentas de Ladrão",
-        "Um jogo de dados"
+        "Ferramentas de Ladrão"
       ],
-      "equipmentDesc": "Ferramentas de Ladrão, Pé de Cabra, Roupas Escuras com Capuz, 16 PO.",
+      "equipmentDesc": "2 Adagas, Ferramentas de Ladrão, 2 Algibeiras, Pé de Cabra, Roupas de Viagem, 16 PO.",
       "startingGold": 50
     },
     {
@@ -3687,10 +3808,9 @@ const DND5E_DATA = {
         "performance"
       ],
       "tools": [
-        "Kit de Disfarce",
-        "Um instrumento musical"
+        "Um tipo de Instrumento Musical à escolha"
       ],
-      "equipmentDesc": "Instrumento Musical, Roupas Teatrais, Traje Elegante, 18 PO.",
+      "equipmentDesc": "Instrumento Musical (o mesmo escolhido), Espelho, 2 Fantasias, Perfume, Roupas de Viagem, 11 PO.",
       "startingGold": 50
     },
     {
@@ -3710,7 +3830,7 @@ const DND5E_DATA = {
       "tools": [
         "Ferramentas de Carpinteiro"
       ],
-      "equipmentDesc": "Ferramentas Agrícolas, Foice, Roupas de Trabalho Pesado, 15 PO.",
+      "equipmentDesc": "Foice, Ferramentas de Carpinteiro, Kit de Curandeiro, Balde de Ferro, Pá, 30 PO.",
       "startingGold": 50
     },
     {
@@ -3728,9 +3848,9 @@ const DND5E_DATA = {
         "perception"
       ],
       "tools": [
-        "Um conjunto de Jogos"
+        "Um tipo de Kit de Jogos à escolha"
       ],
-      "equipmentDesc": "Lança, Apito de Guarda, Manilhas, Roupas de Patrulha, 12 PO.",
+      "equipmentDesc": "Lança, Besta Leve, 20 Virotes, Kit de Jogos (o mesmo escolhido), Aljava, Grilhões, Lanterna Coberta, Roupas de Viagem, 12 PO.",
       "startingGold": 50
     },
     {
@@ -3748,10 +3868,9 @@ const DND5E_DATA = {
         "survival"
       ],
       "tools": [
-        "Kit de Navegação",
-        "Kit de Cartógrafo"
+        "Ferramentas de Cartógrafo"
       ],
-      "equipmentDesc": "Bússola/Kit de Navegação, Roupas de Viagem para Todo Clima, Cajado, 12 PO.",
+      "equipmentDesc": "Arco Curto, 20 Flechas, Ferramentas de Cartógrafo, Aljava, Roupas de Viagem, Saco de Dormir, Tenda, 3 PO.",
       "startingGold": 50
     },
     {
@@ -3771,7 +3890,7 @@ const DND5E_DATA = {
       "tools": [
         "Kit de Herbalismo"
       ],
-      "equipmentDesc": "Kit de Herbalismo, Notas de Descoberta Espiritual, Cobertor de Inverno, 15 PO.",
+      "equipmentDesc": "Cajado, Kit de Herbalismo, Lâmpada, Livro (filosofia), Óleo (3 frascos), Roupas de Viagem, Saco de Dormir, 16 PO.",
       "startingGold": 50
     },
     {
@@ -3789,9 +3908,29 @@ const DND5E_DATA = {
         "persuasion"
       ],
       "tools": [
-        "Um jogo de Xadrez do Dragão"
+        "Um tipo de Kit de Jogos à escolha"
       ],
-      "equipmentDesc": "Roupas da Alta Aristocracia, Anel com Selo de Brasão Nobre, Pergaminho Genealógico, 25 PO.",
+      "equipmentDesc": "Kit de Jogos (o mesmo escolhido), Perfume, Roupas Finas, 29 PO.",
+      "startingGold": 50
+    },
+    {
+      "id": "merchant",
+      "name": "Mercador (Merchant)",
+      "abilityOptions": [
+        "con",
+        "int",
+        "cha"
+      ],
+      "feat": "lucky",
+      "featName": "Sortudo (Lucky)",
+      "skills": [
+        "animal_handling",
+        "persuasion"
+      ],
+      "tools": [
+        "Ferramentas de Navegador"
+      ],
+      "equipmentDesc": "Ferramentas de Navegador, 2 Algibeiras, Roupas de Viagem, 22 PO.",
       "startingGold": 50
     },
     {
@@ -3835,13 +3974,33 @@ const DND5E_DATA = {
       "feat": "tavern_brawler",
       "featName": "Lutador de Taverna (Tavern Brawler)",
       "skills": [
-        "athletics",
+        "acrobatics",
         "perception"
       ],
       "tools": [
         "Ferramentas de Navegador"
       ],
-      "equipmentDesc": "Ferramentas de Navegador, Corda de Seda (15m), Amuleto da Sorte, 10 PO.",
+      "equipmentDesc": "Adaga, Ferramentas de Navegador, Corda, Roupas de Viagem, 20 PO.",
+      "startingGold": 50
+    },
+    {
+      "id": "scribe",
+      "name": "Escriba (Scribe)",
+      "abilityOptions": [
+        "dex",
+        "int",
+        "wis"
+      ],
+      "feat": "skilled",
+      "featName": "Habilidoso (Skilled)",
+      "skills": [
+        "investigation",
+        "perception"
+      ],
+      "tools": [
+        "Suprimentos de Calígrafo"
+      ],
+      "equipmentDesc": "Suprimentos de Calígrafo, Lâmpada, Óleo (3 frascos), Pergaminho (12 folhas), Roupas Finas, 23 PO.",
       "startingGold": 50
     },
     {
@@ -3859,9 +4018,9 @@ const DND5E_DATA = {
         "history"
       ],
       "tools": [
-        "Kit de Caligrafia"
+        "Suprimentos de Calígrafo"
       ],
-      "equipmentDesc": "Vidro de Tinta Preta, Pena, Pequena Faca, Carta com Pergunta Filosófica Não Respondida, 10 PO.",
+      "equipmentDesc": "Cajado, Suprimentos de Calígrafo, Livro (história), Pergaminho (8 folhas), Túnica, 8 PO.",
       "startingGold": 50
     },
     {
@@ -3879,30 +4038,29 @@ const DND5E_DATA = {
         "intimidation"
       ],
       "tools": [
-        "Um conjunto de Jogos (Cartas)"
+        "Um tipo de Kit de Jogos à escolha"
       ],
-      "equipmentDesc": "Insígnia de Posto Militar, Adaga, Troféu de Guerra, Baralho de Cartas, 14 PO.",
+      "equipmentDesc": "Lança, Arco Curto, 20 Flechas, Kit de Curandeiro, Kit de Jogos (o mesmo escolhido), Aljava, Roupas de Viagem, 14 PO.",
       "startingGold": 50
     },
     {
       "id": "urchin",
-      "name": "Órfão / Moleque de Rua (Urchin)",
+      "name": "Andarilho (Wayfarer)",
       "abilityOptions": [
         "dex",
-        "con",
-        "wis"
+        "wis",
+        "cha"
       ],
       "feat": "lucky",
       "featName": "Sortudo (Lucky)",
       "skills": [
-        "sleight_of_hand",
+        "insight",
         "stealth"
       ],
       "tools": [
-        "Kit de Disfarce",
         "Ferramentas de Ladrão"
       ],
-      "equipmentDesc": "Faca Pequena, Mapa da Cidade Natal, Rato de Estimação / Token Familiar, 10 PO.",
+      "equipmentDesc": "2 Adagas, Ferramentas de Ladrão, Kit de Jogos (qualquer um), 2 Algibeiras, Roupas de Viagem, Saco de Dormir, 16 PO.",
       "startingGold": 50
     }
   ],
@@ -3920,7 +4078,7 @@ const DND5E_DATA = {
       "name": "Artesão (Crafter)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Ganha proficiência em 3 ferramentas de artesão. Pode produzir itens rapidamente durante descansos com 20% de desconto nos custos de matéria-prima.",
+      "desc": "Proficiência em 3 Ferramentas de Artesão, 20% de desconto em itens não mágicos e, ao fim de cada Descanso Longo, fabrica um item temporário da tabela Fabricação Rápida.",
       "full": "Você adquire os seguintes benefícios. Proficiência com Ferramentas. Você adquire proficiência com três Ferramentas de Artesão diferentes à sua escolha na tabela Fabricação Rápida. Desconto. Sempre que você compra um item não mágico, recebe um desconto de 20% nele. Fabricação Rápida. Quando completa um Descanso Longo, você pode fabricar uma peça de equipamento da tabela Fabricação Rápida, se tiver as Ferramentas de Artesão associadas a esse item e tenha proficiência com essas ferramentas. O item permanece até que você complete outro Descanso Longo, momento em que o item se desfaz."
     },
     {
@@ -3928,7 +4086,7 @@ const DND5E_DATA = {
       "name": "Curandeiro (Healer)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Ao usar um Kit de Primeiros Socorros para estabilizar, a criatura recupera 1 PV. Pode gastar 1 uso do kit para curar 1d6 + 4 + PB de uma criatura uma vez por descanso.",
+      "desc": "Com um Kit de Curandeiro (ação Usar Objeto), a criatura gasta um Dado de Vida e recupera o resultado + seu PB. Você joga de novo os 1 nos dados de cura.",
       "full": "Você adquire os seguintes benefícios. Médico de Combate. Caso tenha um Kit de Curandeiro, você pode gastar um uso e cuidar de uma criatura a até 1,5 metro de você como uma ação Usar Objeto. Essa criatura pode gastar um dos Dados de Pontos de Vida dela e você joga esse dado. A criatura recupera um número de Pontos de Vida igual à jogada mais o seu Bônus de Proficiência. Cura Garantida. Sempre que jogar um dado para determinar o número de Pontos de Vida que você recupera com uma magia ou com o benefício do talento Médico de Combate, você pode jogar novamente o dado se o resultado for 1, e você deve usar a nova jogada."
     },
     {
@@ -3944,7 +4102,7 @@ const DND5E_DATA = {
       "name": "Iniciado em Magia (Clérigo)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Aprende 2 Truques e 1 Magia de 1º círculo da lista do Clérigo (Sabedoria). A magia pode ser conjurada 1 vez grátis por descanso longo ou com espaços de magia.",
+      "desc": "Aprende 2 truques e 1 magia de 1º círculo da lista do Clérigo, com INT, SAB ou CAR como atributo de conjuração. A magia fica sempre preparada: 1x grátis por Descanso Longo ou com espaços de magia.",
       "full": "Você adquire os seguintes benefícios. Dois Truques. Você aprende dois truques à sua escolha na lista de magias de Clérigo, Druida ou Mago. Inteligência, Sabedoria ou Carisma é seu atributo de conjuração para as magias deste talento (escolha quando selecionar este talento). Magia de 1º Círculo. Escolha uma magia de 1º círculo da mesma lista que você selecionou para os truques deste talento. Você tem essa magia sempre preparada. Você pode conjurá-la uma vez sem um espaço de magia, e você restaura a capacidade de conjurá-la dessa maneira quando completa um Descanso Longo. Você também pode conjurar a magia usando qualquer espaço de magia que tiver. Substituição de Magia. Sempre que você alcança um novo nível, pode substituir uma das magias que escolheu para este talento por uma magia diferente do mesmo círculo da lista de magias escolhida. Repetível. Você pode adquirir este talento mais de uma vez, mas deve escolher uma lista de magias diferente a cada vez."
     },
     {
@@ -3952,7 +4110,7 @@ const DND5E_DATA = {
       "name": "Iniciado em Magia (Druida)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Aprende 2 Truques e 1 Magia de 1º círculo da lista do Druida (Sabedoria). A magia pode ser conjurada 1 vez grátis por descanso longo ou com espaços de magia.",
+      "desc": "Aprende 2 truques e 1 magia de 1º círculo da lista do Druida, com INT, SAB ou CAR como atributo de conjuração. A magia fica sempre preparada: 1x grátis por Descanso Longo ou com espaços de magia.",
       "full": "Você adquire os seguintes benefícios. Dois Truques. Você aprende dois truques à sua escolha na lista de magias de Clérigo, Druida ou Mago. Inteligência, Sabedoria ou Carisma é seu atributo de conjuração para as magias deste talento (escolha quando selecionar este talento). Magia de 1º Círculo. Escolha uma magia de 1º círculo da mesma lista que você selecionou para os truques deste talento. Você tem essa magia sempre preparada. Você pode conjurá-la uma vez sem um espaço de magia, e você restaura a capacidade de conjurá-la dessa maneira quando completa um Descanso Longo. Você também pode conjurar a magia usando qualquer espaço de magia que tiver. Substituição de Magia. Sempre que você alcança um novo nível, pode substituir uma das magias que escolheu para este talento por uma magia diferente do mesmo círculo da lista de magias escolhida. Repetível. Você pode adquirir este talento mais de uma vez, mas deve escolher uma lista de magias diferente a cada vez."
     },
     {
@@ -3960,7 +4118,7 @@ const DND5E_DATA = {
       "name": "Iniciado em Magia (Mago)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Aprende 2 Truques e 1 Magia de 1º círculo da lista do Mago (Inteligência). A magia pode ser conjurada 1 vez grátis por descanso longo ou com espaços de magia.",
+      "desc": "Aprende 2 truques e 1 magia de 1º círculo da lista do Mago, com INT, SAB ou CAR como atributo de conjuração. A magia fica sempre preparada: 1x grátis por Descanso Longo ou com espaços de magia.",
       "full": "Você adquire os seguintes benefícios. Dois Truques. Você aprende dois truques à sua escolha na lista de magias de Clérigo, Druida ou Mago. Inteligência, Sabedoria ou Carisma é seu atributo de conjuração para as magias deste talento (escolha quando selecionar este talento). Magia de 1º Círculo. Escolha uma magia de 1º círculo da mesma lista que você selecionou para os truques deste talento. Você tem essa magia sempre preparada. Você pode conjurá-la uma vez sem um espaço de magia, e você restaura a capacidade de conjurá-la dessa maneira quando completa um Descanso Longo. Você também pode conjurar a magia usando qualquer espaço de magia que tiver. Substituição de Magia. Sempre que você alcança um novo nível, pode substituir uma das magias que escolheu para este talento por uma magia diferente do mesmo círculo da lista de magias escolhida. Repetível. Você pode adquirir este talento mais de uma vez, mas deve escolher uma lista de magias diferente a cada vez."
     },
     {
@@ -3968,7 +4126,7 @@ const DND5E_DATA = {
       "name": "Músico (Musician)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Ao final de um descanso curto ou longo, toque uma canção para conceder Inspiração Heroica a um número de aliados igual ao seu Bônus de Proficiência.",
+      "desc": "Proficiência em 3 Instrumentos Musicais. Ao fim de um Descanso Curto ou Longo, toca e concede Inspiração Heroica a aliados em número igual ao seu PB.",
       "full": "Você adquire os seguintes benefícios. Treinamento em Instrumentos. Você adquire proficiência com três Instrumentos Musicais à sua escolha. Canção Encorajadora. Ao completar um Descanso Curto ou Longo, você pode tocar uma música em um Instrumento Musical com o qual tem proficiência e conceder Inspiração Heroica a aliados que ouvem a música. O número de aliados que você pode afetar desse modo é igual ao seu Bônus de Proficiência."
     },
     {
@@ -3992,7 +4150,7 @@ const DND5E_DATA = {
       "name": "Lutador de Taverna (Tavern Brawler)",
       "type": "origin",
       "prereq": "Nenhum (Talento de Origem)",
-      "desc": "Ataques desarmados causam 1d4 + FOR de dano. Pode empurrar alvos 1,5m após acertar um ataque desarmado e rolar novamente 1s no dano.",
+      "desc": "Ataque Desarmado causa 1d4 + FOR Contundente e rejoga os 1 no dano; proficiência com armas improvisadas; 1x por turno, ao acertar um Ataque Desarmado, também empurra o alvo 1,5 m.",
       "full": "Você adquire os seguintes benefícios. Ataque Desarmado Aprimorado. Quando você atinge com seu Ataque Desarmado e causar dano, pode causar dano Contundente igual a 1d4 pontos mais seu modificador de Força em vez do dano normal de um Ataque Desarmado. Dano Garantido. Sempre que você joga um dado de dano para seu Ataque Desarmado, pode jogar novamente o dado se o resultado for 1, e deve usar a nova jogada. Armamento Improvisado. Você tem proficiência com armas improvisadas. Empurrar. Quando você atinge uma criatura com um Ataque Desarmado como parte da ação Atacar no seu turno, pode causar dano ao alvo e também empurrá-lo 1,5 metro para longe de você. Você pode usar esse benefício apenas uma vez por turno."
     },
     {
@@ -4040,7 +4198,7 @@ const DND5E_DATA = {
       "name": "Estilo: Grandes Armas (Great Weapon)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Ao rolar 1 ou 2 em dado de dano de ataque com arma de duas mãos, pode rolar o dado novamente.",
+      "desc": "Com arma Corpo a Corpo de Duas Mãos ou Versátil empunhada com as duas mãos, trata 1 ou 2 nos dados de dano como 3.",
       "full": "Quando você joga dano para um ataque que realiza com uma arma Corpo a Corpo que está empunhando com as duas mãos, pode tratar qualquer 1 ou 2 em um dado de dano como um 3. A arma deve ter a propriedade Duas Mãos ou Versátil para obter este benefício."
     },
     {
@@ -4048,7 +4206,7 @@ const DND5E_DATA = {
       "name": "Estilo: Interceptação (Interception)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Quando uma criatura a 1,5m sofrer dano, use sua Reação com escudo ou arma para reduzir o dano em 1d10 + PB.",
+      "desc": "Reação quando uma criatura a 1,5 m é atingida: reduz o dano em 1d10 + PB. Exige Escudo ou arma Simples ou Marcial na mão.",
       "full": "Quando uma criatura à sua vista atinge outra criatura a até 1,5 metro de você com uma jogada de ataque, você pode executar uma Reação para reduzir o dano causado ao alvo em 1d10 mais seu Bônus de Proficiência. Você deve estar segurando um Escudo ou uma arma Simples ou Marcial para executar esta Reação."
     },
     {
@@ -4056,7 +4214,7 @@ const DND5E_DATA = {
       "name": "Estilo: Proteção (Protection)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Quando um inimigo atacar um aliado a 1,5m de você, use sua Reação com escudo para impor Desvantagem no ataque.",
+      "desc": "Reação com Escudo quando um aliado a 1,5 m é atacado: Desvantagem nesse ataque e nos demais contra ele até o início do seu próximo turno.",
       "full": "Quando uma criatura à sua vista ataca um alvo que não é você e que está a até 1,5 metro de distância, você pode executar uma Reação para interpor seu Escudo, se o estiver segurando. Isso impõe Desvantagem na jogada de ataque que acionou a reação e em todas as jogadas contra o alvo até o início do seu próximo turno, enquanto você estiver a até 1,5 metro do alvo."
     },
     {
@@ -4064,7 +4222,7 @@ const DND5E_DATA = {
       "name": "Estilo: Armas de Arremesso (Thrown Weapon)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Pode sacar uma arma arremessável como parte do ataque e ganha +2 de bônus nas jogadas de dano.",
+      "desc": "+2 no dano de ataques à distância com armas de Arremesso.",
       "full": "Quando você atinge com uma jogada de ataque à distância usando uma arma com a propriedade Arremesso, você obtém um bônus de +2 na jogada de dano."
     },
     {
@@ -4080,7 +4238,7 @@ const DND5E_DATA = {
       "name": "Estilo: Combate Desarmado (Unarmed Fighting)",
       "type": "fighting_style",
       "prereq": "Característica Estilo de Luta",
-      "desc": "Ataques desarmados causam 1d6 + FOR (ou 1d8 se ambas as mãos estiverem livres). Causa 1d4 de dano automático no início do turno a quem agarrar.",
+      "desc": "Ataque Desarmado causa 1d6 + FOR Contundente (1d8 sem arma nem Escudo nas mãos). No início do seu turno, causa 1d4 Contundente em quem você imobiliza.",
       "full": "Quando você atinge com seu Ataque Desarmado e causa dano, pode causar dano Contundente igual a 1d6 mais seu modificador de Força em vez do dano normal de um Ataque Desarmado. Se você não estiver segurando nenhuma arma ou Escudo quando realizar a jogada de ataque, o d6 se torna um d8. No início de cada um dos seus turnos, você pode causar 1d4 pontos de dano Contundente a uma criatura Imobilizada por você."
     },
     {
@@ -4097,7 +4255,7 @@ const DND5E_DATA = {
       "name": "Ator (Actor)",
       "type": "general",
       "prereq": "Nível 4+, Carisma 13+",
-      "desc": "+1 em CAR. Vantagem em testes de Enganação e Atuação para se passar por outra pessoa; mimetiza vozes e sons de criaturas.",
+      "desc": "+1 em CAR. Disfarçado, Vantagem em Atuação e Enganação para se passar por outra pessoa; imita sons e vozes (Intuição CD 8 + CAR + PB para perceber).",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Carisma em 1, até no máximo 20. Personificação. Enquanto está disfarçado como uma pessoa real ou fictícia, você tem Vantagem em testes de Carisma (Atuação ou Enganação) para convencer os outros de que você é essa pessoa. Mimetismo. Você pode imitar os sons de outras criaturas, incluindo a fala. Uma criatura que ouve a imitação deve ser bem-sucedida em um teste de Sabedoria (Intuição) para determinar que o efeito é falso (CD 8 mais seu modificador de Carisma e seu Bônus de Proficiência)."
     },
     {
@@ -4105,7 +4263,7 @@ const DND5E_DATA = {
       "name": "Atleta (Athlete)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Levantar do chão custa apenas 1,5m de deslocamento, escalar não custa movimento extra e salto em distância requer apenas 1,5m de corrida.",
+      "desc": "+1 em FOR ou DES. Deslocamento de Escalada igual ao Deslocamento; levantar de Caído custa 1,5 m; salto com corrida após só 1,5 m.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Deslocamento de Escalada. Você adquire Deslocamento de Escalada igual ao seu Deslocamento. Levantar. Quando você tem a condição Caído, pode se reerguer com apenas 1,5 metro de movimento. Saltar. Você pode realizar um Salto em Distância ou Salto em Altura correndo após mover-se apenas 1,5 metro."
     },
     {
@@ -4113,15 +4271,15 @@ const DND5E_DATA = {
       "name": "Investida Poderosa (Charger)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Se mover pelo menos 3 metros em linha reta antes de atacar, causa +1d8 de dano extra ou empurra o alvo 3 metros.",
+      "desc": "+1 em FOR ou DES. Correr dá +3 m de Deslocamento; após mover 3 m em linha reta e acertar corpo a corpo na ação Atacar, +1d8 de dano ou empurra 3 m (1x por turno).",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Corrida Aprimorada. Quando você executa a ação Correr, seu Deslocamento aumenta em 3 metros para esta ação. Ataque em Investida. Se você se mover pelo menos 3 metros em linha reta em direção a um alvo imediatamente antes de atingi-lo com uma jogada de ataque corpo a corpo como parte da ação Atacar, escolha um dos seguintes efeitos: obter um bônus de +1d8 na jogada de dano do ataque ou empurrar o alvo até 3 metros se ele não for um tamanho maior que você. Você pode usar esse benefício apenas uma vez em cada um dos seus turnos."
     },
     {
       "id": "chef",
       "name": "Chef de Cozinha (Chef)",
       "type": "general",
-      "prereq": "Nível 4+, Constituição ou Sabedoria 13+",
-      "desc": "+1 em CON ou SAB. Prepara refeições especiais em descanso curto que curam 1d8 PV adicionais, e produz guloseimas que concedem PV temporários iguais a PB.",
+      "prereq": "Nível 4+",
+      "desc": "+1 em CON ou SAB. Proficiência com Utensílios de Cozinheiro; refeição no Descanso Curto dá +1d8 PV a quem gastar Dados de Vida (4 + PB criaturas); guloseimas (PB por vez) dão PV temporários iguais ao PB.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Constituição ou Sabedoria em 1, até no máximo 20. Utensílios de Cozinheiro. Você adquire proficiência com Utensílios de Cozinheiro se ainda não o tiver. Refeição Satisfatória. Como parte de um Descanso Curto, você pode cozinhar alimentos especiais se tiver ingredientes e Utensílios de Cozinheiro à mão. Você pode preparar comida suficiente para um número de criaturas igual a 4 mais seu Bônus de Proficiência. No final do Descanso Curto, qualquer criatura que comer a comida e gastar um ou mais Dados de Vida para recuperar Pontos de Vida recupera 1d8 Pontos de Vida adicionais. Guloseimas Revigorantes. Com 1 hora de trabalho ou quando completar um Descanso Longo, você pode cozinhar um número de guloseimas igual ao seu Bônus de Proficiência se tiver ingredientes e Utensílios de Cozinheiro à mão. Essas guloseimas especiais permanecem por 8 horas após serem feitas. Uma criatura pode executar uma Ação Bônus para comer uma dessas guloseimas e obter um número de Pontos de Vida Temporários igual ao seu Bônus de Proficiência."
     },
     {
@@ -4129,15 +4287,15 @@ const DND5E_DATA = {
       "name": "Especialista em Besta (Crossbow Expert)",
       "type": "general",
       "prereq": "Nível 4+, Destreza 13+",
-      "desc": "+1 em DES. Ignora a propriedade de recarga de bestas, pode atirar corpo a corpo sem desvantagem e dispara besta de mão com Ação Bônus.",
+      "desc": "+1 em DES. Ignora a propriedade Recarga das bestas, sem Desvantagem a 1,5 m de inimigos e soma o modificador de atributo ao ataque extra da propriedade Leve feito com besta.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza em 1, até no máximo 20. Ignorar Recarga. Você ignora a propriedade Recarga da Besta de Mão, Besta Leve e Besta Pesada (todas chamadas de bestas em outras partes deste talento). Se estiver segurando uma dessas bestas, você pode carregar uma peça de munição nela mesmo sem ter uma mão livre. Disparo à Queima-Roupa. Estar a 1,5 metro de um inimigo não impõe Desvantagem em suas jogadas de ataque com bestas. Combate com Duas Armas. Ao realizar o ataque adicional da propriedade Leve, você pode adicionar seu modificador de atributo ao dano do ataque adicional se esse ataque for com uma besta que tenha a propriedade Leve e você ainda não estiver adicionando esse modificador ao dano."
     },
     {
       "id": "crusher",
       "name": "Esmagador (Crusher)",
       "type": "general",
-      "prereq": "Nível 4+, Força ou Constituição 13+",
-      "desc": "+1 em FOR ou CON. 1x/turno ao causar dano de concussão empurra o alvo 1,5m; crítico concede Vantagem em todos os ataques contra o alvo até seu próximo turno.",
+      "prereq": "Nível 4+",
+      "desc": "+1 em FOR ou CON. 1x por turno, ao acertar com dano Contundente, move o alvo 1,5 m; no crítico Contundente, ataques contra o alvo têm Vantagem até o início do seu próximo turno.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Constituição em 1, até no máximo 20. Empurrar. Uma vez por turno, quando você atinge uma criatura com um ataque que causa dano Contundente, você pode movê-la 1,5 metro para um espaço desocupado se o alvo não for um tamanho maior que você. Crítico Melhorado. Ao obter um Acerto Crítico que causa dano Contundente a uma criatura, jogadas de ataque contra essa criatura tem Vantagem até o início do seu próximo turno."
     },
     {
@@ -4145,15 +4303,15 @@ const DND5E_DATA = {
       "name": "Duelista Defensivo (Defensive Duelist)",
       "type": "general",
       "prereq": "Nível 4+, Destreza 13+",
-      "desc": "+1 em DES. Ao empunhar arma com Acuidade e ser atingido corpo a corpo, use sua Reação para somar seu PB na CA contra aquele ataque.",
+      "desc": "+1 em DES. Segurando arma de Acuidade, Reação ao ser atingido corpo a corpo: soma o PB na CA contra ataques corpo a corpo até o início do seu próximo turno.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza em 1, até no máximo 20. Aparar. Se estiver segurando uma arma de Acuidade e outra criatura acertar você com um ataque corpo a corpo, você pode executar uma Reação para adicionar seu Bônus de Proficiência à sua Classe de Armadura, potencialmente fazendo com que o ataque erre. Você obtém este bônus na sua CA contra ataques corpo a corpo até o início do seu próximo turno."
     },
     {
       "id": "elemental_adept",
       "name": "Conjurador Elemental (Elemental Adept)",
       "type": "general",
-      "prereq": "Nível 4+, Conjurador",
-      "desc": "+1 em INT, SAB ou CAR. Suas magias do elemento escolhido (Fogo, Frio, Elétrico, Ácido ou Trovão) ignoram resistência e tratam 1s no dano como 2s.",
+      "prereq": "Nível 4+, Conjuração ou Magia de Pacto",
+      "desc": "+1 em INT, SAB ou CAR. Suas magias do tipo escolhido (Ácido, Elétrico, Gélido, Ígneo ou Trovejante) ignoram Resistência, e você trata 1 nos dados de dano como 2.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Domínio Elemental. Escolha um dos seguintes tipos de dano: Ácido, Elétrico, Gélido, Ígneo ou Trovejante. Magias que você conjura ignoram a Resistência a dano do tipo escolhido. Além disso, ao jogar dano para uma magia que causa dano deste tipo, você pode tratar qualquer 1 em um dado de dano como um 2. Repetível. Você pode adquirir este talento mais de uma vez, mas deve escolher um tipo de dano diferente a cada vez para Domínio Elemental."
     },
     {
@@ -4169,7 +4327,7 @@ const DND5E_DATA = {
       "name": "Especialista em Agarrar (Grappler)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Vantagem em jogadas de ataque contra criatura agarrada por você; seu deslocamento não é reduzido ao arrastar criaturas agarradas.",
+      "desc": "+1 em FOR ou DES. Ao acertar Ataque Desarmado na ação Atacar, usa Dano e Imobilizar juntos (1x por turno); Vantagem contra quem você imobiliza; movê-lo não custa movimento extra.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Socar e Imobilizar. Quando você atinge uma criatura com um Ataque Desarmado como parte da ação Atacar no seu turno, pode usar as opções Dano e Imobilizar apenas uma vez por turno. Vantagem no Ataque. Você tem Vantagem em jogadas de ataque contra uma criatura Imobilizada por você. Imobilizador Veloz. Você não precisa gastar movimento adicional para se mover enquanto estiver imobilizando uma criatura Imobilizada, desde que ela seja do seu tamanho ou menor."
     },
     {
@@ -4177,15 +4335,15 @@ const DND5E_DATA = {
       "name": "Mestre em Armas Grandes (Great Weapon Master)",
       "type": "general",
       "prereq": "Nível 4+, Força 13+",
-      "desc": "+1 em FOR. Soma seu PB ao dano com armas pesadas. Ao acertar um acerto crítico ou reduzir criatura a 0 PV, desfere um ataque adicional com Ação Bônus.",
+      "desc": "+1 em FOR. Ao acertar com arma Pesada na ação Atacar, dano extra igual ao PB; após crítico ou reduzir a 0 PV com arma corpo a corpo, ataque extra como Ação Bônus.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força em 1, até no máximo 20. Maestria em Armas Pesadas. Quando você atinge uma criatura com uma arma que tem a propriedade Pesada como parte da ação Atacar no seu turno, você pode causar dano adicional ao alvo com a arma. O dano adicional é igual ao seu Bônus de Proficiência. Cortar. Imediatamente após obter um Acerto Crítico ou reduzir uma criatura a 0 Pontos de Vida com uma arma Corpo a Corpo, você pode realizar um ataque com a mesma arma como uma Ação Bônus."
     },
     {
       "id": "heavy_armor_master",
       "name": "Mestre em Armaduras Pesadas (Heavy Armor Master)",
       "type": "general",
-      "prereq": "Nível 4+, Proficiência com Armaduras Pesadas",
-      "desc": "+1 em FOR. Reduz todo dano não-mágico cortante, perfurante e de concussão recebido em valor igual ao seu Bônus de Proficiência.",
+      "prereq": "Nível 4+, Treinamento com Armadura Pesada",
+      "desc": "+1 em FOR ou CON. Vestindo armadura Pesada, o dano Contundente, Cortante e Perfurante de cada ataque que o atinge é reduzido pelo seu PB.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Constituição em 1, até no máximo 20. Redução de Dano. Quando você é atingido por um ataque enquanto está vestido com uma armadura Pesada, qualquer dano Contundente, Cortante e Perfurante causado a você por esse ataque é reduzido em uma quantidade de pontos igual ao seu Bônus de Proficiência."
     },
     {
@@ -4193,23 +4351,23 @@ const DND5E_DATA = {
       "name": "Líder Inspirador (Inspiring Leader)",
       "type": "general",
       "prereq": "Nível 4+, Sabedoria ou Carisma 13+",
-      "desc": "+1 em SAB ou CAR. Discurso de 10 min concede PV temporários iguais a Nível + Modificador a até 6 aliados por descanso.",
+      "desc": "+1 em SAB ou CAR. Ao fim de um Descanso Curto ou Longo, até 6 aliados a 9 m recebem PV temporários iguais ao seu nível + modificador do atributo aumentado.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Sabedoria ou Carisma em 1, até no máximo 20. Atuação Encorajadora. Ao completar um Descanso Curto ou Longo, você pode fazer uma atuação encorajadora: um discurso, música ou dança. Ao realizar isso, escolha até seis aliados (você pode se incluir) a até 9 metros de você que presenciaram a atuação. Criaturas escolhidas recebem Pontos de Vida Temporários iguais ao seu nível de personagem mais o modificador do atributo que você aumentou com este talento."
     },
     {
       "id": "mage_slayer",
       "name": "Matador de Magos (Mage Slayer)",
       "type": "general",
-      "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Reação para atacar criatura que conjurar magia adjacente a você, impõe desvantagem na concentração e ganha vantagem em salvaguardas mágicas.",
+      "prereq": "Nível 4+",
+      "desc": "+1 em FOR ou DES. Quem se concentra e sofre seu dano tem Desvantagem na salvaguarda de Concentração; 1x por Descanso Curto ou Longo, transforma uma falha em salvaguarda de INT, SAB ou CAR em sucesso.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Quebrador de Concentração. Quando você causa dano a uma criatura que está se concentrando em uma magia, ela tem Desvantagem na salvaguarda que realiza para manter a Concentração. Resguardo Mental. Se falhar em uma salvaguarda de Inteligência, Sabedoria ou Carisma, em vez disso você escolhe ser bem-sucedido. Após usar esse benefício, você não pode usá-lo novamente até completar um Descanso Curto ou Longo."
     },
     {
       "id": "medium_armor_master",
       "name": "Mestre em Armaduras Médias (Medium Armor Master)",
       "type": "general",
-      "prereq": "Nível 4+, Proficiência com Armaduras Médias",
-      "desc": "+1 em FOR ou DES. Permite somar até +3 de Destreza na CA usando armadura média e elimina a desvantagem em testes de Furtividade.",
+      "prereq": "Nível 4+, Treinamento com Armadura Média",
+      "desc": "+1 em FOR ou DES. Com armadura Média e Destreza 16 ou mais, soma 3 (em vez de 2) de Destreza na CA.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Portador Ágil. Enquanto estiver usando armadura Média, você pode adicionar 3, em vez de 2, à sua CA se tiver um valor de Destreza 16 ou superior."
     },
     {
@@ -4217,7 +4375,7 @@ const DND5E_DATA = {
       "name": "Combatente Montado (Mounted Combatant)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 em FOR, DES ou SAB. Vantagem em ataques corpo a corpo contra criaturas menores que sua montaria, e pode forçar ataques contra a montaria a mirarem em você.",
+      "desc": "+1 em FOR, DES ou SAB. Montado, Vantagem contra criaturas desmontadas menores que a montaria a até 1,5 m dela; a montaria evita dano em salvaguardas de DES; pode redirecionar para você ataques contra ela.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força, Destreza ou Sabedoria em 1, até no máximo 20. Golpe Montado. Enquanto estiver montado, você tem Vantagem em jogadas de ataque contra qualquer criatura desmontada a até 1,5 metro de sua montaria que seja pelo menos um tamanho menor que a montaria. Pulo Lateral. Se sua montaria for submetida a um efeito que lhe permita realizar uma salvaguarda de Destreza para sofrer apenas metade do dano, ela não sofre dano em caso de sucesso, e apenas metade do dano se falhar. Para que sua montaria obtenha esse benefício, você deve estar montando-a, e nenhum de vocês pode ter a condição Incapacitado. Redirecionar Ataque. Enquanto estiver montado, você pode forçar um ataque que atinge sua montaria a atingi-lo se você não tem a condição Incapacitado."
     },
     {
@@ -4225,23 +4383,23 @@ const DND5E_DATA = {
       "name": "Observador (Observant)",
       "type": "general",
       "prereq": "Nível 4+, Inteligência ou Sabedoria 13+",
-      "desc": "+1 em INT ou SAB. Ganha +5 de bônus permanente em Percepção Passiva e Investigação Passiva; leitura labial precisa.",
+      "desc": "+1 em INT ou SAB. Proficiência em Intuição, Investigação ou Percepção (ou Especialização, se já tiver) e a ação Procurar como Ação Bônus.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência ou Sabedoria em 1, até no máximo 20. Observador Atento. Escolha uma das seguintes perícias: Intuição, Investigação ou Percepção. Se não tiver proficiência na perícia escolhida, você a adquire; se já for proficiente, adquire Especialização. Pesquisa Rápida. Você pode executar a ação Procurar como uma Ação Bônus."
     },
     {
       "id": "piercer",
       "name": "Perfurador (Piercer)",
       "type": "general",
-      "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. 1x/turno rola novamente um dado de dano perfurante; no acerto crítico adiciona 1 dado extra de dano da arma.",
+      "prereq": "Nível 4+",
+      "desc": "+1 em FOR ou DES. 1x por turno, ao acertar com dano Perfurante, rejoga um dos dados de dano; no crítico Perfurante, joga um dado de dano adicional.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Punção. Uma vez por turno, quando você atinge uma criatura com um ataque que causa dano Perfurante, pode jogar novamente um dos dados de dano do ataque, e você deve usar a nova jogada. Crítico Melhorado. Ao obter um Acerto Crítico que causa dano Perfurante a uma criatura, você pode jogar um dado de dano adicional ao determinar o dano Perfurante adicional que o alvo sofre."
     },
     {
       "id": "poisoner",
       "name": "Mestre dos Venenos (Poisoner)",
       "type": "general",
-      "prereq": "Nível 4+, Destreza ou Inteligência 13+",
-      "desc": "+1 em DES ou INT. Seus danos de veneno ignoram resistência; aplica veneno em armas como Ação Bônus e produz venenos potentes.",
+      "prereq": "Nível 4+",
+      "desc": "+1 em DES ou INT. Dano Venenoso ignora Resistência; proficiência com Kit de Veneno, fabrica doses (PB por 50 PO) e aplica como Ação Bônus: salvaguarda de CON ou 2d8 Venenoso e Envenenado.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza ou Inteligência em 1, até no máximo 20. Veneno Potente. Ao realizar uma jogada de dano que causa dano Venenoso, você ignora Resistência a dano Venenoso. Preparar Veneno. Você adquire proficiência com o Kit de Veneno. Com 1 hora de trabalho usando esse kit e gastando 50 PO em materiais, você pode fabricar um número de doses de veneno igual ao seu Bônus de Proficiência. Como uma Ação Bônus, você pode aplicar uma dose de veneno a uma arma ou peça de munição. Uma vez aplicado, o veneno retém sua potência por 1 minuto ou até você causar dano com o item envenenado, o que for mais curto. Ao sofrer dano do item envenenado, uma criatura deve ser bem-sucedida em uma salvaguarda de Constituição (CD 8 mais o modificador do atributo aumentado por este talento e seu Bônus de Proficiência) ou sofre 2d8 pontos de dano Venenoso e está com a condição Envenenado até o final do seu próximo turno."
     },
     {
@@ -4249,7 +4407,7 @@ const DND5E_DATA = {
       "name": "Mestre de Armas de Haste (Polearm Master)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Ao atacar com alabarda, glaive ou bordão, faz ataque bônus com a outra ponta (1d4) e ataca criaturas que entram no seu alcance.",
+      "desc": "+1 em FOR ou DES. Após atacar com Cajado, Lança ou arma Pesada com Extensão, ataque bônus com a outra ponta (1d4 Contundente); Reação para atacar quem entra no seu alcance.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Golpe de Haste. Como uma ação, imediatamente após atacar com um Cajado, Lança ou uma arma que tenha a propriedade Extensão e Pesado, você pode executar uma Ação Bônus para realizar um ataque corpo a corpo com a extremidade oposta da arma. A arma causa dano Contundente, e o dado de dano da arma para este ataque é um d4. Golpe Reativo. Ao empunhar um Cajado, Lança ou uma arma que tenha as propriedades Extensão e Pesado, você pode executar uma Reação para realizar um ataque corpo a corpo com essa arma contra uma criatura que entra no seu alcance."
     },
     {
@@ -4264,8 +4422,8 @@ const DND5E_DATA = {
       "id": "ritual_caster",
       "name": "Conjurador de Rituais (Ritual Caster)",
       "type": "general",
-      "prereq": "Nível 4+, Inteligência ou Sabedoria 13+",
-      "desc": "+1 em INT, SAB ou CAR. Ganha um Grimório de Rituais podendo conjurar magias com a tag Ritual sem gastar espaços de magia.",
+      "prereq": "Nível 4+, Inteligência, Sabedoria ou Carisma 13+",
+      "desc": "+1 em INT, SAB ou CAR. Magias de ritual de 1º círculo em número igual ao PB, sempre preparadas; 1x por Descanso Longo conjura um ritual no tempo normal sem gastar espaço.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Magias Rituais. Escolha um número de magias de 1º círculo igual ao seu Bônus de Proficiência que tem o marcador Ritual. Você tem essas magias sempre preparadas e pode conjurá-las com qualquer espaço de magia que tiver. O atributo de conjuração das magias é o atributo aumentado por este talento. Sempre que seu Bônus de Proficiência aumentar depois disso, você pode adicionar uma magia de 1º círculo com o marcador Ritual às magias sempre preparadas com esta característica. Ritual Rápido. Com este benefício, você pode conjurar uma magia Ritual que tem preparada usando seu tempo de conjuração normal, em vez do tempo prolongado para um Ritual. Realizar isso não requer um espaço de magia. Após conjurar a magia desse modo, você não pode usar esse benefício novamente até completar um Descanso Longo."
     },
     {
@@ -4273,7 +4431,7 @@ const DND5E_DATA = {
       "name": "Sentinela (Sentinel)",
       "type": "general",
       "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. Acertar ataque de oportunidade reduz a velocidade do alvo para 0. Desfere ataques de oportunidade mesmo se o alvo Desengajar.",
+      "desc": "+1 em FOR ou DES. Ataque de Oportunidade quando criatura a 1,5 m Desengaja ou ataca outro alvo; acertar um Ataque de Oportunidade zera o Deslocamento dela no turno.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Diligente. Imediatamente após uma criatura em até 1,5 metro de você executar a ação Desengajar ou atingir um alvo diferente de você com um ataque, você pode realizar um Ataque de Oportunidade contra essa criatura. Deter. Ao atingir uma criatura com um Ataque de Oportunidade, o Deslocamento da criatura se torna 0 pelo resto do turno atual."
     },
     {
@@ -4289,15 +4447,15 @@ const DND5E_DATA = {
       "name": "Atirador Aguçado (Sharpshooter)",
       "type": "general",
       "prereq": "Nível 4+, Destreza 13+",
-      "desc": "+1 em DES. Ataques à distância ignoram meia e 3/4 de cobertura, alcance longo não impõe desvantagem e pode disparar corpo a corpo sem penalidade.",
+      "desc": "+1 em DES. Ataques à distância com armas ignoram Cobertura Parcial e de Três Quartos, sem Desvantagem a 1,5 m de inimigos nem no alcance máximo.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza em 1, até no máximo 20. Ignorar Cobertura. Seus ataques à distância com armas ignoram Cobertura Parcial e Cobertura de Três Quartos. Disparo à Queima-Roupa. Estar a 1,5 metro de um inimigo não impõe Desvantagem em suas jogadas de ataque com armas à Distância. Tiro Longo. Atacar com alcance máximo não impõe Desvantagem em suas jogadas de ataque com armas à Distância."
     },
     {
       "id": "shield_master",
       "name": "Mestre em Escudos (Shield Master)",
       "type": "general",
-      "prereq": "Nível 4+, Proficiência com Escudos",
-      "desc": "+1 em FOR. Empurra ou derruba inimigos com escudo como Ação Bônus, soma bônus do escudo em salvaguardas de DES e usa Reação para anular dano em sucesso de DES.",
+      "prereq": "Nível 4+, Treinamento com Escudo",
+      "desc": "+1 em FOR. 1x por turno, ao acertar corpo a corpo na ação Atacar, golpe de Escudo (salvaguarda de FOR) empurra 1,5 m ou derruba; Reação para não sofrer dano ao passar numa salvaguarda de DES de metade do dano.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força em 1, até no máximo 20. Golpe de Escudo. Ao atacar uma criatura a até 1,5 metro de você como parte da ação Atacar e atingir com uma arma Corpo a Corpo, você pode atacar imediatamente o alvo com seu Escudo se ele estiver equipado, forçando o alvo a realizar uma salvaguarda de Força (CD 8 mais seu modificador de Força e seu Bônus de Proficiência). Se falhar, você empurra o alvo a 1,5 metro de você ou impõe a ele a condição Caído (à sua escolha). Você pode usar esse benefício apenas uma vez em cada um dos seus turnos. Interpor Escudo. Se você for submetido a um efeito que lhe permita realizar uma salvaguarda de Destreza para sofrer apenas metade do dano, pode usar uma Reação para não sofrer dano se você for bem-sucedido na salvaguarda e estiver segurando um Escudo."
     },
     {
@@ -4312,24 +4470,24 @@ const DND5E_DATA = {
       "id": "slasher",
       "name": "Cortador (Slasher)",
       "type": "general",
-      "prereq": "Nível 4+, Força ou Destreza 13+",
-      "desc": "+1 em FOR ou DES. 1x/turno ao causar dano cortante reduz a velocidade do alvo em 3 metros; acerto crítico impõe Desvantagem em todos os ataques dele.",
+      "prereq": "Nível 4+",
+      "desc": "+1 em FOR ou DES. 1x por turno, ao causar dano Cortante, reduz o Deslocamento do alvo em 3 m até o início do seu próximo turno; no crítico Cortante, o alvo tem Desvantagem nos ataques até lá.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Debilitar. Uma vez por turno, quando você atinge uma criatura com um ataque que causa dano Cortante, você pode reduzir o Deslocamento dessa criatura em 3 metros até o início do seu próximo turno. Crítico Melhorado. Ao obter um Acerto Crítico que causa dano Cortante a uma criatura, ela tem Desvantagem nas jogadas de ataque até o início do seu próximo turno."
     },
     {
       "id": "speedster",
-      "name": "Velocista / Mobilidade (Speedster)",
+      "name": "Velocista (Speedy)",
       "type": "general",
       "prereq": "Nível 4+, Destreza ou Constituição 13+",
-      "desc": "+1 em DES ou CON. Seu deslocamento aumenta em +3 metros; ao correr em Disparada ignora terreno difícil e atacar uma criatura impede ataques de oportunidade dela.",
+      "desc": "+1 em DES ou CON. Deslocamento +3 m; ao Correr, Terreno Difícil não custa movimento extra no turno; Ataques de Oportunidade têm Desvantagem contra você.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza ou Constituição em 1, até no máximo 20. Aumento de Deslocamento. Seu Deslocamento aumenta em 3 metros. Correr em Terreno Difícil. Ao executar a ação Correr no seu turno, Terreno Difícil não custa movimento adicional pelo resto deste turno. Movimentação Ágil. Ataques de Oportunidade têm Desvantagem contra você."
     },
     {
       "id": "spell_sniper",
       "name": "Franco-Atirador Arcano (Spell Sniper)",
       "type": "general",
-      "prereq": "Nível 4+, Conjurador",
-      "desc": "+1 em INT, SAB ou CAR. Dobra o alcance de magias com jogadas de ataque, ignora meia e 3/4 de cobertura e pode conjurar ataques mágicos corpo a corpo sem desvantagem.",
+      "prereq": "Nível 4+, Conjuração ou Magia de Pacto",
+      "desc": "+1 em INT, SAB ou CAR. Ataques com magia ignoram Cobertura Parcial e de Três Quartos, sem Desvantagem a 1,5 m de inimigos, e +18 m de alcance em magias de ataque com alcance de 3 m ou mais.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Ignorar Cobertura. Jogadas de ataque com magias ignoram Cobertura Parcial e Cobertura de Três Quartos. Conjuração à Queima-Roupa. Estar a 1,5 metro de um inimigo não impõe Desvantagem em suas jogadas de ataque com magias. Alcance Aumentado. Ao conjurar uma magia que tem um alcance de pelo menos 3 metros e exija realizar uma jogada de ataque, você pode aumentar o alcance da magia em 18 metros."
     },
     {
@@ -4337,7 +4495,7 @@ const DND5E_DATA = {
       "name": "Telecinético (Telekinetic)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 em INT, SAB ou CAR. Aprende Mãos Mágicas invisível com alcance dobrado e usa Ação Bônus para empurrar ou puxar criaturas a até 9 metros.",
+      "desc": "+1 em INT, SAB ou CAR. Aprende Mãos Mágicas (sem V/S, invisível, +9 m de alcance); Ação Bônus: move 1,5 m uma criatura a até 9 m (salvaguarda de FOR).",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Telecinese Menor. Você aprende a magia Mãos Mágicas. Você pode conjurá-la sem componentes Verbais ou Somáticos, pode usar a mão espectral Invisível e o alcance dela e a distância que ela pode estar de você aumentam em 9 metros ao conjurá-la. O atributo de conjuração da magia é o atributo aumentado por este talento. Empurrão Telecinético. Como uma Ação Bônus, você pode empurrar telecinéticamente uma criatura à sua vista a até 9 metros de você. Ao realizar isso, o alvo deve ser bem-sucedido em uma salvaguarda de Força (CD 8 mais o modificador de atributo do aumento por este talento e seu Bônus de Proficiência) ou é movido 1,5 metro na sua direção ou para longe de você."
     },
     {
@@ -4345,23 +4503,95 @@ const DND5E_DATA = {
       "name": "Telepata (Telepathic)",
       "type": "general",
       "prereq": "Nível 4+",
-      "desc": "+1 em INT, SAB ou CAR. Fala telepaticamente com criaturas a até 18 metros e conjura Detectar Pensamentos 1x ao dia sem gastar espaços de magia.",
+      "desc": "+1 em INT, SAB ou CAR. Fala telepaticamente com criaturas a até 18 m; Detectar Pensamentos sempre preparada, 1x grátis por Descanso Longo ou com espaços.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Enunciado Telepático. Você pode falar telepaticamente com qualquer criatura à sua vista a até 18 metros de você. Seus enunciados telepáticos estão em um idioma que você conhece, e a criatura só o entende se souber esse idioma. Sua comunicação não dá à criatura a capacidade de responder a você telepaticamente. Detectar Pensamentos. Você tem a magia Detectar Pensamentos sempre preparada. Você pode conjurá-la sem um espaço de magia ou componentes de magia, não podendo conjurá-la dessa forma novamente antes de completar um Descanso Longo. Além disso, pode conjurá-la gastando o espaço de magia que você tem do círculo apropriado. Seu atributo de conjuração para a magia é o atributo aumentado por este talento."
     },
     {
       "id": "war_caster",
       "name": "Conjurador de Guerra (War Caster)",
       "type": "general",
-      "prereq": "Nível 4+, Conjurador",
-      "desc": "+1 em INT, SAB ou CAR. Vantagem em salvaguardas de CON para concentração, realiza componentes somáticos com armas em mãos e conjura magias como Reação de oportunidade.",
+      "prereq": "Nível 4+, Conjuração ou Magia de Pacto",
+      "desc": "+1 em INT, SAB ou CAR. Vantagem em salvaguardas de CON para Concentração, conjura uma magia no lugar de um Ataque de Oportunidade e faz componentes somáticos com armas ou Escudo nas mãos.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 20. Concentração. Você tem Vantagem em salvaguardas de Constituição que realiza para manter a Concentração. Magia Reativa. Quando uma criatura provocar um Ataque de Oportunidade a você ao sair do seu alcance, você pode executar uma Reação para conjurar uma magia contra a criatura, em vez de realizar o Ataque de Oportunidade. A magia deve ter um tempo de conjuração de uma ação e deve ter como alvo apenas aquela criatura. Componentes Somáticos. Você pode realizar os componentes somáticos de magias mesmo quando estiver com armas ou um Escudo em uma ou ambas as mãos."
+    },
+    {
+      "id": "dual_wielder",
+      "name": "Especialista Ambidestro (Dual Wielder)",
+      "type": "general",
+      "prereq": "Nível 4+, Força ou Destreza 13+",
+      "desc": "+1 em FOR ou DES. Ao atacar com arma Leve na ação Atacar, ataque extra como Ação Bônus com outra arma corpo a corpo sem Duas Mãos (sem somar o modificador); saca ou guarda duas armas de uma vez.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Combate com Duas Armas Aprimorado. Quando você executa a ação Atacar no seu turno com uma arma que tenha a propriedade Leve, pode realizar um ataque adicional como uma Ação Bônus no mesmo turno com uma arma diferente, que deve ser uma arma Corpo a Corpo que não possua a propriedade Duas Mãos. Você não pode adicionar o seu modificador de atributo ao dano do ataque adicional, a menos que o modificador seja negativo. Saque Rápido. Você pode desembainhar ou embainhar duas armas que não possuam a propriedade Duas Mãos quando normalmente poderia desembainhar ou embainhar apenas uma."
+    },
+    {
+      "id": "lightly_armored",
+      "name": "Especialista em Armaduras Leves (Lightly Armored)",
+      "type": "general",
+      "prereq": "Nível 4+",
+      "desc": "+1 em FOR ou DES. Treinamento com Armadura Leve e Escudos.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Treinamento com Armadura. Você obtém treinamento com Armadura Leve e Escudos."
+    },
+    {
+      "id": "moderately_armored",
+      "name": "Especialista em Armaduras Médias (Moderately Armored)",
+      "type": "general",
+      "prereq": "Nível 4+, Treinamento com Armadura Leve",
+      "desc": "+1 em FOR ou DES. Treinamento com Armadura Média.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Treinamento com Armadura. Você obtém treinamento com Armadura Média."
+    },
+    {
+      "id": "heavily_armored",
+      "name": "Especialista em Armaduras Pesadas (Heavily Armored)",
+      "type": "general",
+      "prereq": "Nível 4+, Treinamento com Armadura Média",
+      "desc": "+1 em CON ou FOR. Treinamento com Armadura Pesada.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Constituição ou Força em 1, até no máximo 20. Treinamento com Armadura. Você adquire treinamento com Armadura Pesada."
+    },
+    {
+      "id": "keen_mind",
+      "name": "Mente Aguçada (Keen Mind)",
+      "type": "general",
+      "prereq": "Nível 4+, Inteligência 13+",
+      "desc": "+1 em INT. Proficiência em Arcanismo, História, Investigação, Natureza ou Religião (ou Especialização, se já tiver) e a ação Analisar como Ação Bônus.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência em 1, até no máximo 20. Conhecimento Vasto. Escolha uma das seguintes perícias: Arcanismo, História, Investigação, Natureza ou Religião. Se não tiver proficiência na perícia escolhida, você a adquire; se já for proficiente, adquire Especialização. Análise Rápida. Você pode executar a ação Analisar como uma Ação Bônus."
+    },
+    {
+      "id": "weapon_master",
+      "name": "Mestre das Armas (Weapon Master)",
+      "type": "general",
+      "prereq": "Nível 4+",
+      "desc": "+1 em FOR ou DES. Usa a propriedade de maestria de mais um tipo de arma Simples ou Marcial com que tenha proficiência; pode trocá-lo a cada Descanso Longo.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Propriedade de Maestria. Seu treinamento com armas permite que você use a propriedade de maestria de um tipo de arma Simples ou Marcial à sua escolha, desde que você tenha proficiência com ela. Sempre que completar um Descanso Longo, você pode trocar o tipo de arma por outro elegível."
+    },
+    {
+      "id": "durable",
+      "name": "Resistente (Durable)",
+      "type": "general",
+      "prereq": "Nível 4+",
+      "desc": "+1 em CON. Vantagem em Salvaguardas Contra Morte; como Ação Bônus, gasta um Dado de Vida e recupera o resultado em PV.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Constituição em 1, até no máximo 20. Desafie a Morte. Você tem Vantagem em Salvaguardas Contra Morte. Recuperação Rápida. Como uma Ação Bônus, você pode gastar um de seus Dados de Pontos de Vida, jogar o dado e recuperar um número de Pontos de Vida igual ao resultado."
+    },
+    {
+      "id": "skulker",
+      "name": "Sorrateiro (Skulker)",
+      "type": "general",
+      "prereq": "Nível 4+, Destreza 13+",
+      "desc": "+1 em DES. Visão às Cegas de 3 m; Vantagem em Furtividade ao Esconder-se em combate; errar um ataque escondido não revela sua posição.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Destreza em 1, até no máximo 20. Visão às Cegas. Você tem Visão às Cegas com um alcance de 3 metros. Névoa de Guerra. Você explora as distrações da batalha e tem Vantagem em qualquer teste de Destreza (Furtividade) que realiza como parte da ação Esconder durante o combate. Atirador. Se você realizar uma jogada de ataque enquanto estiver escondido e errar a jogada, realizar a jogada de ataque não revela sua localização."
+    },
+    {
+      "id": "martial_weapon_training",
+      "name": "Treinamento com Armas Marciais (Martial Weapon Training)",
+      "type": "general",
+      "prereq": "Nível 4+",
+      "desc": "+1 em FOR ou DES. Proficiência com armas Marciais.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 20. Proficiência com Armas. Você adquire proficiência com armas Marciais."
     },
     {
       "id": "boon_combat_prowess",
       "name": "Dádiva da Proeza de Combate (Boon of Combat Prowess)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). 1 vez por turno, ao errar uma jogada de ataque, você pode transformá-la em um acerto.",
+      "desc": "+1 em um atributo (máximo 30). Quando erra uma jogada de ataque, acerta em vez disso; não pode repetir até o início do seu próximo turno.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Pontaria Inigualável. Quando você erra uma jogada de ataque, em vez disso você acerta. Após usar este benefício, você não pode utilizá-lo novamente até o início do seu próximo turno."
     },
     {
@@ -4369,7 +4599,7 @@ const DND5E_DATA = {
       "name": "Dádiva da Viagem Dimensional (Boon of Dimensional Travel)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Imediatamente após realizar a ação de Ataque ou Magia, pode se teletransportar até 9 metros sem gastar movimento.",
+      "desc": "+1 em um atributo (máximo 30). Logo após a ação Atacar ou Usar Magia, teleporta-se até 9 m para um espaço à sua vista.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Passos Fugazes. Imediatamente após executar a ação Atacar ou Usar Magia, você pode se teleportar até 9 metros para um espaço desocupado à sua vista."
     },
     {
@@ -4377,7 +4607,7 @@ const DND5E_DATA = {
       "name": "Dádiva da Resistência Energética (Boon of Energy Resistance)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Ganha resistência permanente a 2 tipos de dano elemental à sua escolha (podendo trocar ao fim de descanso longo).",
+      "desc": "+1 em um atributo (máximo 30). Resistência a dois tipos de dano (troca no Descanso Longo); Reação ao sofrer um deles: outra criatura a 18 m faz salvaguarda de DES ou sofre 2d12 + CON.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Resistências à Energia. Você obtém Resistência a dois dos seguintes tipos de dano à sua escolha: Ácido, Elétrico, Gélido, Ígneo, Necrótico, Psíquico, Radiante, Trovejante ou Venenoso. Sempre que completar um Descanso Longo, você pode mudar suas escolhas. Redirecionamento de Energia. Ao sofrer dano de um dos tipos escolhidos para o benefício Resistências à Energia, você pode executar uma Reação para direcionar o dano do mesmo tipo para outra criatura à sua vista a até 18 metros de você que não esteja sob Cobertura Total. Se você fizer isso, essa criatura deve ser bem-sucedida em uma salvaguarda de Destreza (CD 8 mais seu modificador de Constituição e seu Bônus de Proficiência) ou sofre dano igual a 2d12 mais seu modificador de Constituição."
     },
     {
@@ -4385,7 +4615,7 @@ const DND5E_DATA = {
       "name": "Dádiva do Destino (Boon of Fate)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Quando você ou criatura a 18m rolar um d20, pode adicionar ou subtrair 2d4 do resultado final como Reação.",
+      "desc": "+1 em um atributo (máximo 30). Quando você ou criatura a 18 m passa ou falha num Teste de D20, joga 2d4 como bônus ou penalidade; 1x até jogar Iniciativa ou descansar.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Aprimorar Destino. Quando você ou outra criatura a até 18 metros de você for bem-sucedida ou falhar em um Teste D20, você pode jogar 2d4 e aplicar os resultados como bônus ou penalidade na jogada de d20. Após usar este benefício, você não pode utilizá-lo novamente até jogar Iniciativa ou completar um Descanso Curto ou Longo."
     },
     {
@@ -4393,7 +4623,7 @@ const DND5E_DATA = {
       "name": "Dádiva da Fortitude Épica (Boon of Fortitude)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Seus PV máximos aumentam em 40; ao receber qualquer cura, recupera PV adicionais iguais ao seu modificador de Constituição.",
+      "desc": "+1 em um atributo (máximo 30). PV máximos +40; 1x por rodada, ao recuperar PV, recupera PV adicionais iguais ao modificador de CON.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Saúde Fortalecida. Seus Pontos de Vida máximos aumentam em 40. Além disso, sempre que você recuperar Pontos de Vida, pode recuperar Pontos de Vida adicionais iguais ao seu modificador de Constituição. Após recuperar esses Pontos de Vida adicionais, você não pode fazer isso novamente até o início do seu próximo turno."
     },
     {
@@ -4401,7 +4631,7 @@ const DND5E_DATA = {
       "name": "Dádiva da Ofensiva Irresistível (Boon of Irresistible Offense)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Todos os seus ataques e danos ignoram completamente resistências a dano; em acerto crítico causa dano extra igual ao seu valor de atributo.",
+      "desc": "+1 em FOR ou DES (máximo 30). Seu dano Contundente, Cortante e Perfurante ignora Resistência; ao tirar 20 num ataque, dano extra igual ao valor do atributo aumentado.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Força ou Destreza em 1, até no máximo 30. Superar Defesas. O dano Contundente, Cortante e Perfurante que você causa sempre ignora Resistência. Golpe Devastador. Quando você tira 20 no d20 para uma jogada de ataque, pode causar dano adicional ao alvo igual ao valor do atributo aumentado por este talento. O tipo de dano adicional é o mesmo do ataque."
     },
     {
@@ -4409,7 +4639,7 @@ const DND5E_DATA = {
       "name": "Dádiva do Espírito Noturno (Boon of the Night Spirit)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Enquanto estiver em penumbra ou escuridão, fica Invisível como Ação Bônus e ganha resistência a todos os danos exceto psíquico e radiante.",
+      "desc": "+1 em um atributo (máximo 30). Em Meia-luz ou Escuridão: Invisível como Ação Bônus (acaba ao agir) e Resistência a todo dano exceto Psíquico e Radiante.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Fundir-se com Sombras. Enquanto estiver em Meia-luz ou Escuridão, você pode se conceder a condição Invisível como uma Ação Bônus. A condição encerra imediatamente após você executar uma ação, uma Ação Bônus ou uma Reação. Forma Sombria. Enquanto estiver em Meia-luz ou Escuridão, você tem Resistência a todos os danos, exceto Psíquico e Radiante."
     },
     {
@@ -4417,7 +4647,7 @@ const DND5E_DATA = {
       "name": "Dádiva da Recuperação Heroica (Boon of Recovery)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Ao cair a 0 PV, você pode recuperar instantaneamente metade dos seus pontos de vida máximos (1 vez por descanso longo).",
+      "desc": "+1 em um atributo (máximo 30). Ao cair a 0 PV, fica com 1 e recupera metade dos PV máximos (1x por Descanso Longo); reserva de 10d10 para se curar como Ação Bônus.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Até a Morte. Quando você for reduzido a 0 Pontos de Vida, pode escolher ficar com 1 Ponto de Vida e recuperar um número de Pontos de Vida igual à metade dos seus Pontos de Vida máximos. Após usar esse benefício, você não pode usá-lo novamente até completar um Descanso Longo. Recuperar Vitalidade. Você tem uma reserva de dez d10s. Como uma Ação Bônus, você pode gastar dados da reserva, jogá-los e recuperar um número de Pontos de Vida igual ao total do resultado. Você restaura todos os dados gastos quando você completa um Descanso Longo."
     },
     {
@@ -4425,7 +4655,7 @@ const DND5E_DATA = {
       "name": "Dádiva da Velocidade Suprema (Boon of Speed)",
       "type": "epic_boon",
       "prereq": "Nível 19+",
-      "desc": "+1 em um atributo (máximo 30). Seu deslocamento aumenta em +9 metros; você pode realizar a ação de Desengajar como Ação Bônus.",
+      "desc": "+1 em um atributo (máximo 30). Deslocamento +9 m; Desengajar como Ação Bônus, que também encerra Imobilizado.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Artista de Fuga. Como uma Ação Bônus, você pode executar a ação Desengajar, que também encerra a condição Imobilizado em você. Agilidade. Seu Deslocamento aumenta em 9 metros."
     },
     {
@@ -4435,6 +4665,22 @@ const DND5E_DATA = {
       "prereq": "Nível 19+",
       "desc": "+1 em um atributo (máximo 30). Você ganha Visão da Verdade (Truesight) permanente com alcance de 18 metros.",
       "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Visão Verdadeira. Você tem Visão Verdadeira com um alcance de 18 metros."
+    },
+    {
+      "id": "boon_skill",
+      "name": "Dádiva da Proficiência em Perícia (Boon of Skill)",
+      "type": "epic_boon",
+      "prereq": "Nível 19+",
+      "desc": "+1 em um atributo (máximo 30). Proficiência em todas as perícias e Especialização em uma delas.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente um valor de atributo à sua escolha em 1, até no máximo 30. Assecla Completo. Você adquire proficiência em todas as perícias. Especialização. Escolha uma perícia na qual você tenha proficiência, mas não tenha Especialização. Você obtém Especialização nessa perícia."
+    },
+    {
+      "id": "boon_spell_recall",
+      "name": "Dádiva da Recordação de Magia (Boon of Spell Recall)",
+      "type": "epic_boon",
+      "prereq": "Nível 19+, Conjuração",
+      "desc": "+1 em INT, SAB ou CAR (máximo 30). Ao conjurar com espaço de 1º a 4º círculo, jogue 1d4: se sair o círculo do espaço, ele não é gasto.",
+      "full": "Você adquire os seguintes benefícios. Aumento no Valor de Atributo. Aumente seu valor de Inteligência, Sabedoria ou Carisma em 1, até no máximo 30. Conjuração Livre. Sempre que você conjurar uma magia com um espaço de magia de 1º a 4º círculo, jogue 1d4. Se o resultado que você tirar for o mesmo que o círculo do espaço, o espaço não é gasto."
     }
   ],
   "weaponMasteries": [
@@ -12084,16 +12330,18 @@ DND5E_DATA.featureSummaries = {
 
   // ---- Bárbaro ----
   "Defesa sem Armadura (Unarmored Defense)": "Sem armadura, sua CA é 10 + mod. de DES + mod. de CON (escudo permitido).",
-  "Fúria (Rage)": "Como ação bônus: dano extra corpo a corpo com FOR, resistência a concussão/cortante/perfurante e vantagem em testes e salvaguardas de FOR.",
+  "Ataque Imprudente (Reckless Attack)": "No primeiro ataque do turno: Vantagem nos ataques com Força até o seu próximo turno, mas ataques contra você também têm Vantagem.",
+  "Sentido de Perigo (Danger Sense)": "Vantagem em salvaguardas de Destreza, a menos que esteja Incapacitado.",
+  "Fúria (Rage)": "Ação Bônus, sem armadura Pesada: bônus no dano de ataques com Força, Resistência a Contundente, Cortante e Perfurante e Vantagem em testes e salvaguardas de FOR.",
   "Conhecimento Primordial (Primal Knowledge)": "Mais uma perícia de bárbaro, e em Fúria você pode usar FOR em alguns testes de DES, INT, SAB e CAR.",
-  "Subclasse Bárbaro (Barbarian Subclass)": "Escolha o seu Caminho Primitivo: ele concede características neste e nos níveis seguintes.",
+  "Subclasse Bárbaro (Barbarian Subclass)": "Escolha a sua Trilha (Berserker, Coração Selvagem, Árvore do Mundo ou Fanático): ela concede características neste e nos níveis seguintes.",
   "Movimento Rápido (Fast Movement)": "+3 m de deslocamento enquanto não estiver usando armadura pesada.",
   "Instintos Primitivos (Feral Instinct)": "Vantagem em iniciativa.",
   "Bote Instintivo (Instinctive Pounce)": "Ao entrar em Fúria, mova-se até metade do seu deslocamento de graça.",
-  "Golpe Brutal (Brutal Strike)": "Em Fúria, abra mão da vantagem para causar 1d10 de dano extra e aplicar um efeito (empurrar ou reduzir o deslocamento).",
-  "Fúria Implacável (Relentless Rage)": "Caindo a 0 PV em Fúria, uma salvaguarda de CON deixa você com PV em vez de cair.",
-  "Golpe Brutal Fortalecido (Improved Brutal Strike)": "Mais opções de efeito e mais dados de dano no Golpe Brutal.",
-  "Fúria Persistente (Persistent Rage)": "A Fúria só acaba se você ficar Inconsciente ou decidir encerrá-la; recupera usos no descanso curto.",
+  "Golpe Brutal (Brutal Strike)": "Com Ataque Imprudente, abre mão da Vantagem num ataque de Força: se acertar, +1d10 de dano e um efeito (Golpe Poderoso empurra 4,5 m; Golpe Debilitador reduz o Deslocamento em 4,5 m).",
+  "Fúria Implacável (Relentless Rage)": "Caindo a 0 PV em Fúria, salvaguarda de CON (CD 10, +5 a cada uso) para ficar com PV iguais ao dobro do nível de Bárbaro.",
+  "Golpe Brutal Fortalecido (Improved Brutal Strike)": "Novos efeitos no Golpe Brutal (nível 13); no 17, o dano sobe para 2d10 e você aplica dois efeitos diferentes.",
+  "Fúria Persistente (Persistent Rage)": "Ao jogar Iniciativa, recupera todos os usos de Fúria (1x por Descanso Longo); a Fúria dura 10 minutos sem precisar ser estendida.",
   "Força Indomável (Indomitable Might)": "Se o total de um teste de FOR for menor que o seu valor de FOR, use o valor de FOR.",
   "Campeão Primitivo (Primal Champion)": "+4 em Força e +4 em Constituição, com máximo 25 nesses atributos.",
 
@@ -12101,32 +12349,32 @@ DND5E_DATA.featureSummaries = {
   "Inspiração de Bardo (Bardic Inspiration)": "Ação bônus: dê um dado a um aliado, que o soma a um teste, ataque ou salvaguarda.",
   "Especialista (Expertise)": "Duas perícias treinadas passam a somar o dobro do bônus de proficiência.",
   "Pau pra Toda Obra (Jack of All Trades)": "Metade do bônus de proficiência em testes de atributo em que você não é treinado.",
-  "Subclasse de Bardo (Bard Subclass)": "Escolha o seu Colégio de Bardo: ele concede características neste e nos níveis seguintes.",
-  "Fonte de Inspiração (Font of Inspiration)": "Você recupera todos os usos de Inspiração de Bardo em qualquer descanso.",
-  "Contra-Encantamento (Countercharm)": "Reação: dá vantagem na salvaguarda de quem seria Amedrontado ou Enfeitiçado.",
-  "Segredos Mágicos (Magical Secrets)": "Você pode aprender magias das listas de clérigo, druida e mago.",
-  "Inspiração Superior (Superior Inspiration)": "Na iniciativa, recupere usos de Inspiração de Bardo se estiver sem eles.",
-  "Palavras de Criação (Words of Creation)": "Você aprende Palavra de Poder: Curar e Palavra de Poder: Matar.",
+  "Subclasse de Bardo (Bard Subclass)": "Escolha o seu Colégio (Bravura, Conhecimento, Dança ou Glamour): ele concede características neste e nos níveis seguintes.",
+  "Fonte de Inspiração (Font of Inspiration)": "Recupera todos os usos de Inspiração de Bardo no Descanso Curto ou Longo, e pode gastar um espaço de magia para recuperar um uso.",
+  "Contra-Encantamento (Countercharm)": "Reação quando você ou criatura a 9 m falha numa salvaguarda contra Amedrontado ou Enfeitiçado: joga de novo com Vantagem.",
+  "Segredos Mágicos (Magical Secrets)": "As novas magias preparadas podem vir das listas de Bardo, Clérigo, Druida e Mago.",
+  "Inspiração Superior (Superior Inspiration)": "Ao jogar Iniciativa, recupera usos de Inspiração de Bardo até ter dois.",
+  "Palavras de Criação (Words of Creation)": "Palavra de Poder: Salvar e Palavra de Poder: Matar sempre preparadas, podendo atingir uma segunda criatura.",
 
   // ---- Clérigo ----
-  "Ordem Divina (Divine Order)": "Escolha Protetor (armadura pesada e armas marciais) ou Taumaturgo (mais um truque e bônus em Religião).",
-  "Canalizar Divindade (Channel Divinity)": "Poder divino recarregável: Expulsar Mortos-Vivos, Intervenção Divina e o que a sua subclasse der.",
-  "Subclasse Clérigo (Cleric Subclass)": "Escolha o seu Domínio Divino: ele concede características neste e nos níveis seguintes.",
+  "Ordem Divina (Divine Order)": "Escolha Protetor (armas Marciais e Armadura Pesada) ou Taumaturgo (mais um truque e SAB em Arcanismo e Religião).",
+  "Canalizar Divindade (Channel Divinity)": "Poder divino com usos por Descanso Curto: Centelha Divina, Expulsar Mortos-Vivos e o que a sua subclasse der.",
+  "Subclasse Clérigo (Cleric Subclass)": "Escolha o seu Domínio (Guerra, Luz, Trapaça ou Vida): ele concede características neste e nos níveis seguintes.",
   "Fulminar Mortos-Vivos (Sear Undead)": "Expulsar Mortos-Vivos também causa dano radiante aos mortos-vivos afetados.",
   "Golpes Abençoados (Blessed Strikes)": "Dano extra com truques ou com ataques de arma, à sua escolha na hora de ganhar a característica.",
-  "Intervenção Divina (Divine Intervention)": "Como ação, peça ajuda à sua divindade e conjure uma magia de clérigo de até 5º círculo sem gastar espaço.",
+  "Intervenção Divina (Divine Intervention)": "Ação Usar Magia: conjura uma magia de Clérigo de até 5º círculo sem espaço nem componentes; 1x por Descanso Longo.",
   "Golpes Abençoados Aprimorado (Improved Blessed Strikes)": "O dano extra de Golpes Abençoados aumenta.",
-  "Intervenção Divina Maior (Greater Divine Intervention)": "A Intervenção Divina pode conjurar Desejo, uma vez por descanso longo.",
+  "Intervenção Divina Maior (Greater Divine Intervention)": "A Intervenção Divina pode conjurar Desejo; depois disso, só volta após 2d4 Descansos Longos.",
 
   // ---- Druida ----
   "Idioma Druídico (Druidic)": "Você fala o idioma secreto dos druidas e deixa mensagens ocultas nele.",
-  "Ordem Primal (Primal Order)": "Escolha Guardião (armas marciais e proficiência em CON) ou Mago (mais um truque e bônus em Natureza/Arcanismo).",
+  "Ordem Primal (Primal Order)": "Escolha Protetor (armas Marciais e armadura Média) ou Xamã (mais um truque e SAB em Arcanismo e Natureza).",
   "Companheiro Selvagem (Wild Companion)": "Gaste um uso de Forma Selvagem para conjurar Encontrar Familiar sem componentes.",
   "Forma Selvagem (Wild Shape)": "Ação bônus: transforme-se em uma besta que você conheça, mantendo mente e usando os PV da forma.",
-  "Subclasse de Druida (Druid Subclass)": "Escolha o seu Círculo Druídico: ele concede características neste e nos níveis seguintes.",
+  "Subclasse de Druida (Druid Subclass)": "Escolha o seu Círculo (Estrelas, Lua, Mar ou Terra): ele concede características neste e nos níveis seguintes.",
   "Ressurgimento Selvagem (Wild Resurgence)": "Troque usos de Forma Selvagem por espaços de magia e vice-versa.",
-  "Fúria Elemental (Elemental Fury)": "Escolha dano extra nos truques (Fúria Primal) ou cura extra nas magias (Potência da Natureza).",
-  "Fúria Elemental Aprimorada (Improved Elemental Fury)": "O bônus escolhido em Fúria Elemental aumenta.",
+  "Fúria Elemental (Elemental Fury)": "Escolha Ataque Primal (+1d8 Elétrico, Gélido, Ígneo ou Trovejante 1x por turno) ou Conjuração Poderosa (SAB no dano dos truques de Druida).",
+  "Fúria Elemental Aprimorada (Improved Elemental Fury)": "Ataque Primal sobe para 2d8; Conjuração Poderosa leva truques com alcance de 3 m ou mais a 90 m.",
   "Magias Bestiais (Beast Spells)": "Você conjura magias mesmo em Forma Selvagem, sem componentes materiais.",
   "Arquidruida (Archdruid)": "Recupera usos de Forma Selvagem na iniciativa, e pode trocar componentes de magia por usos dela.",
 
@@ -12134,10 +12382,10 @@ DND5E_DATA.featureSummaries = {
   "Recuperar Fôlego (Second Wind)": "Ação bônus: recupere 1d10 + nível de guerreiro pontos de vida.",
   "Mente Tática (Tactical Mind)": "Ao falhar em um teste de atributo, gaste Recuperar Fôlego para somar 1d10 sem perder o uso se ainda assim falhar.",
   "Surto de Ação (Action Surge)": "Uma ação extra no seu turno, uma vez por descanso curto ou longo.",
-  "Subclasse de Guerreiro (Fighter Subclass)": "Escolha o seu Arquétipo Marcial: ele concede características neste e nos níveis seguintes.",
+  "Subclasse de Guerreiro (Fighter Subclass)": "Escolha a sua subclasse (Campeão, Cavaleiro Místico, Combatente Psíquico ou Mestre da Batalha): ela concede características neste e nos níveis seguintes.",
   "Ajuste Tático (Tactical Shift)": "Ao usar Recuperar Fôlego, mova-se metade do deslocamento sem provocar ataques de oportunidade.",
   "Indomável (Indomitable)": "Refaça uma salvaguarda falhada, somando o seu nível de guerreiro.",
-  "Mestre Tático (Tactical Master)": "Ao atacar com uma arma que você domina, troque a maestria dela por Empurrar, Vexar ou Lentidão.",
+  "Mestre Tático (Tactical Master)": "Ao atacar com arma cuja maestria você usa, troque a maestria dela por Empurrar, Drenar ou Lentidão.",
   "Dois Ataques Extras (Extra Attack (two))": "Sobe para três ataques por ação de Ataque.",
   "Ataques Estudados (Studied Attacks)": "Errou um ataque no alvo? O próximo ataque nele neste ou no próximo turno tem vantagem.",
   "Três Ataques Extras (Extra Attack (three))": "Sobe para quatro ataques por ação de Ataque.",
@@ -12148,23 +12396,23 @@ DND5E_DATA.featureSummaries = {
   "Movimento sem Armadura (Unarmored Movement)": "Deslocamento extra sem armadura nem escudo (+3 m no nível 2, subindo com o nível).",
   "Metabolismo Incomum (Uncanny Metabolism)": "Na iniciativa, recupere todos os Pontos de Foco e cure alguns pontos de vida (1x por descanso longo).",
   "Defletir Ataques (Deflect Attacks)": "Reação: reduza o dano de um ataque e, gastando Foco, devolva-o ao atacante.",
-  "Subclasse de Monge (Monk Subclass)": "Escolha a sua Tradição Monástica: ela concede características neste e nos níveis seguintes.",
+  "Subclasse de Monge (Monk Subclass)": "Escolha a sua subclasse (Combatente da Mão Espalmada, das Sombras, dos Elementos ou da Misericórdia): ela concede características neste e nos níveis seguintes.",
   "Queda Lenta (Slow Fall)": "Reação ao cair: reduza o dano da queda em cinco vezes o seu nível de monge.",
-  "Golpe Atordoante (Stunning Strike)": "Gaste 1 Foco ao acertar: salvaguarda de CON ou o alvo fica Atordoado até o fim do seu próximo turno.",
-  "Ataques Potencializados (Empowered Strikes)": "Seus ataques desarmados podem causar dano radiante em vez de concussão.",
+  "Golpe Atordoante (Stunning Strike)": "1x por turno, gaste 1 Foco ao acertar: salvaguarda de CON ou Atordoado até o início do seu próximo turno (no sucesso, Deslocamento pela metade e Vantagem no próximo ataque contra ele).",
+  "Ataques Potencializados (Empowered Strikes)": "Seu Ataque Desarmado pode causar dano Energético em vez do tipo normal.",
   "Movimento Acrobático (Acrobatic Movement)": "Sem armadura, você se move por paredes e pela água sem cair.",
   "Autocura (Self-Restoration)": "Você remove a condição Enfeitiçado ou Amedrontado no fim do turno e não sofre exaustão por fome ou sede.",
   "Foco Aprimorado (Heightened Focus)": "Rajada de Golpes, Defesa Paciente e Passo do Vento ficam mais fortes.",
   "Defletir Energia (Deflect Energy)": "Defletir Ataques passa a valer contra qualquer tipo de dano.",
   "Sobrevivente Disciplinado (Disciplined Survivor)": "Proficiência em todas as salvaguardas; gaste Foco para refazer uma que falhou.",
-  "Foco Perfeito (Perfect Focus)": "Na iniciativa com 3 Pontos de Foco ou menos, suba para metade do máximo.",
-  "Defesa Superior (Superior Defense)": "No começo do turno, gaste 3 Foco para ter resistência a todo dano (menos o de força) por 1 minuto.",
+  "Foco Perfeito (Perfect Focus)": "Ao jogar Iniciativa sem usar Metabolismo Incomum, com 3 Pontos de Foco ou menos, recupera até ter 4.",
+  "Defesa Superior (Superior Defense)": "No início do turno, gaste 3 Foco: Resistência a todo dano exceto Energético por 1 minuto.",
   "Corpo e Mente (Body and Mind)": "+4 em Destreza e +4 em Sabedoria, com máximo 25 nesses atributos.",
 
   // ---- Paladino ----
   "Mãos Consagradas (Lay On Hands)": "Uma reserva de cura igual a cinco vezes o seu nível, que também remove a condição Envenenado.",
   "Destruição do Paladino (Paladin's Smite)": "Você sempre tem Destruição Divina preparada e pode conjurá-la de graça uma vez por descanso longo.",
-  "Subclasse de Paladino (Paladin Subclass)": "Escolha o seu Juramento Sagrado: ele concede características neste e nos níveis seguintes.",
+  "Subclasse de Paladino (Paladin Subclass)": "Escolha o seu Juramento (Anciões, Devoção, Glória ou Vingança): ele concede características neste e nos níveis seguintes.",
   "Montaria Fiel (Faithful Steed)": "Você sempre tem Encontrar Corcel preparada e a conjura de graça uma vez por descanso longo.",
   "Aura de Proteção (Aura of Protection)": "Você e os aliados a 3 m somam o seu mod. de CAR (mín. +1) nas salvaguardas.",
   "Repudiar Inimigos (Abjure Foes)": "Canalizar Divindade: alvos próximos ficam Amedrontados e perdem parte do turno.",
@@ -12176,9 +12424,9 @@ DND5E_DATA.featureSummaries = {
   // ---- Guardião ----
   "Inimigo Favorito (Favored Enemy)": "Você sempre tem Marca do Caçador preparada e a conjura de graça algumas vezes por descanso longo.",
   "Explorador Hábil (Deft Explorer)": "Especialização em uma perícia e dois idiomas a mais.",
-  "Subclasse de Guardião (Ranger Subclass)": "Escolha o seu Arquétipo de Guardião: ele concede características neste e nos níveis seguintes.",
+  "Subclasse de Guardião (Ranger Subclass)": "Escolha a sua subclasse (Andarilho Feérico, Caçador, Senhor das Feras ou Vigilante das Sombras): ela concede características neste e nos níveis seguintes.",
   "Errante (Roving)": "+3 m de deslocamento e deslocamentos de escalada e natação iguais ao seu.",
-  "Incansável (Tireless)": "Como ação mágica, ganhe PV temporários e reduza a sua exaustão; recupera-se no descanso curto.",
+  "Incansável (Tireless)": "Ação Usar Magia: PV temporários de 1d8 + SAB (SAB vezes por Descanso Longo); cada Descanso Curto reduz a Exaustão em 1.",
   "Predador Implacável (Relentless Hunter)": "Sofrer dano não quebra a sua concentração em Marca do Caçador.",
   "Véu da Natureza (Nature's Veil)": "Ação bônus: fique Invisível até o fim do próximo turno, algumas vezes por descanso longo.",
   "Caçador Preciso (Precise Hunter)": "Vantagem nos ataques contra a criatura marcada pela sua Marca do Caçador.",
@@ -12186,28 +12434,28 @@ DND5E_DATA.featureSummaries = {
   "Matador de Inimigos Favoritos (Foe Slayer)": "O dado da Marca do Caçador sobe para d10.",
 
   // ---- Ladino ----
-  "Ataque Furtivo (Sneak Attack)": "Dano extra (1d6 por nível ímpar) quando você tem vantagem ou um aliado está junto do alvo.",
+  "Ataque Furtivo (Sneak Attack)": "1x por turno, dano extra com arma de Acuidade ou à distância quando tem Vantagem ou um aliado está a 1,5 m do alvo: 1d6 no nível 1, +1d6 a cada nível ímpar (2d6 no 3º … 10d6 no 19º).",
   "Gíria dos Ladrões (Thieves' Cant)": "Você fala o código secreto do submundo e conhece mais um idioma.",
   "Especialização (Expertise)": "Duas perícias treinadas passam a somar o dobro do bônus de proficiência.",
   "Ação Ardilosa (Cunning Action)": "Como ação bônus: Correr, Desengajar ou Esconder-se.",
   "Mira Firme (Steady Aim)": "Ação bônus parado no lugar: vantagem no próximo ataque deste turno.",
-  "Subclasse Ladino (Rogue Subclass)": "Escolha o seu Arquétipo Ladino: ele concede características neste e nos níveis seguintes.",
+  "Subclasse Ladino (Rogue Subclass)": "Escolha a sua subclasse de Ladino (Adaga Espiritual, Assassino, Ladrão ou Trapaceiro Arcano): ela concede características neste e nos níveis seguintes.",
   "Esquiva Sobrenatural (Uncanny Dodge)": "Reação: reduza à metade o dano de um ataque que você enxergou.",
-  "Golpe Astuto (Cunning Strike)": "Troque dados de Ataque Furtivo por efeitos: Envenenar, Derrubar, Desarmar, Retirada…",
-  "Talento Confiável (Reliable Talent)": "Em perícias treinadas, qualquer rolagem menor que 10 no d20 conta como 10.",
+  "Golpe Astuto (Cunning Strike)": "Troque dados do Ataque Furtivo por efeitos: Envenenar, Retirada ou Tropeço (1d6 cada; CD 8 + DES + PB).",
+  "Talento Confiável (Reliable Talent)": "Em testes que somam proficiência em perícia ou ferramenta, um 9 ou menos no d20 conta como 10.",
   "Golpe Astuto Aprimorado (Improved Cunning Strike)": "Aplique dois efeitos de Golpe Astuto no mesmo ataque.",
-  "Golpes Sujos (Devious Strikes)": "Novos efeitos de Golpe Astuto: Atordoar, Nocautear e Obscurecer.",
+  "Golpes Sujos (Devious Strikes)": "Novos efeitos de Golpe Astuto: Aturdir (2d6), Obscurecer (3d6) e Nocaute (6d6).",
   "Mente Escorregadia (Slippery Mind)": "Proficiência nas salvaguardas de Sabedoria e de Carisma.",
   "Elusivo (Elusive)": "Nenhum ataque tem vantagem contra você enquanto você não estiver Incapacitado.",
-  "Golpe de Sorte (Stroke of Luck)": "Uma vez por descanso: transforme um erro em acerto ou um teste falhado em 20.",
+  "Golpe de Sorte (Stroke of Luck)": "Uma vez por Descanso Curto ou Longo: transforme um Teste de D20 falho em um 20.",
 
   // ---- Feiticeiro ----
   "Feitiçaria Inata (Innate Sorcery)": "Ação bônus por 1 minuto: +1 na CD das suas magias e vantagem nos ataques de magia.",
   "Fonte de Magia (Font of Magic)": "Pontos de Feitiçaria, que viram espaços de magia e alimentam a Metamagia.",
   "Metamagia (Metamagic)": "Duas formas de torcer as suas magias (Sutil, Gêmea, Acelerada, Distante…) gastando Pontos de Feitiçaria.",
   "Opções de Metamagia (Metamagic Options)": "Mais duas opções de Metamagia à sua escolha.",
-  "Subclasse de Feiticeiro (Sorcerer Subclass)": "Escolha a sua Origem Feiticeira: ela concede características neste e nos níveis seguintes.",
-  "Restauração Feiticeira (Sorcerous Restoration)": "Recupere Pontos de Feitiçaria em um descanso curto, uma vez por dia.",
+  "Subclasse de Feiticeiro (Sorcerer Subclass)": "Escolha a sua Feitiçaria (Aberrante, Dracônica, Mecânica ou Selvagem): ela concede características neste e nos níveis seguintes.",
+  "Restauração Feiticeira (Sorcerous Restoration)": "No Descanso Curto, recupera Pontos de Feitiçaria até metade do nível de Feiticeiro; 1x por Descanso Longo.",
   "Feitiçaria Encarnada (Sorcery Incarnate)": "Use Feitiçaria Inata mesmo sem usos sobrando, gastando Pontos de Feitiçaria, e duas Metamagias na mesma magia.",
   "Apoteose Arcana (Arcane Apotheosis)": "Durante a Feitiçaria Inata, uma Metamagia por turno sai de graça.",
 
@@ -12215,7 +12463,7 @@ DND5E_DATA.featureSummaries = {
   "Invocações Místicas (Eldritch Invocations)": "Poderes permanentes do pacto, trocáveis quando você sobe de nível.",
   "Magia de Pacto (Pact Magic)": "Poucos espaços de magia, todos do círculo mais alto, recuperados em descanso curto.",
   "Astúcia Mágica (Magical Cunning)": "Um ritual de 1 minuto recupera metade dos seus espaços de Magia de Pacto.",
-  "Subclasse de Bruxo (Warlock Subclass)": "Escolha o seu Patrono Sobrenatural: ele concede características neste e nos níveis seguintes.",
+  "Subclasse de Bruxo (Warlock Subclass)": "Escolha o seu Patrono (Arquifada, Celestial, Grande Antigo ou Ínfero): ele concede características neste e nos níveis seguintes.",
   "Contatar Patrono (Contact Patron)": "Você sempre tem Contatar Outro Plano preparada e fala com o seu patrono sem falhar.",
   "Arcana Mística (6º círculo) (Mystic Arcanum (level 6))": "Uma magia de 6º círculo conjurada de graça, uma vez por descanso longo.",
   "Arcana Mística (7º círculo) (Mystic Arcanum (level 7))": "Uma magia de 7º círculo conjurada de graça, uma vez por descanso longo.",
@@ -12225,9 +12473,9 @@ DND5E_DATA.featureSummaries = {
 
   // ---- Mago ----
   "Adepto de Ritual (Ritual Adept)": "Conjure como ritual qualquer magia do livro que tenha a marca Ritual, sem prepará-la.",
-  "Recuperação Arcana (Arcane Recovery)": "Em um descanso curto, recupere espaços de magia somando até metade do seu nível.",
-  "Acadêmico (Scholar)": "Especialização em uma perícia de conhecimento (Arcanismo, História, Investigação, Medicina ou Natureza).",
-  "Subclasse de Mago (Wizard Subclass)": "Escolha a sua Tradição Arcana: ela concede características neste e nos níveis seguintes.",
+  "Recuperação Arcana (Arcane Recovery)": "Em um Descanso Curto, recupera espaços somando até metade do nível de Mago (nenhum de 6º+); 1x por Descanso Longo.",
+  "Acadêmico (Scholar)": "Especialização em Arcanismo, História, Investigação, Medicina, Natureza ou Religião.",
+  "Subclasse de Mago (Wizard Subclass)": "Escolha a sua subclasse (Abjurador, Adivinhador, Evocador ou Ilusionista): ela concede características neste e nos níveis seguintes.",
   "Memorizar Magia (Memorize Spell)": "Em um descanso curto, troque uma magia preparada por outra do seu livro.",
   "Maestria de Magias (Spell Mastery)": "Uma magia de 1º e uma de 2º círculo passam a ser conjuradas à vontade.",
   "Assinatura Mágica (Signature Spells)": "Duas magias de 3º círculo sempre preparadas e conjuradas de graça uma vez por descanso."
@@ -12258,6 +12506,10 @@ DND5E_DATA.featureTexts = {
     "Você adquire um talento Dádiva Épica (veja o capítulo 5) ou outro talento à sua escolha para o qual atenda os pré-requisitos. A Dádiva do Ataque Irresistível é recomendada.",
   "barbarian|Força Indomável (Indomitable Might)":
     "Se o total de seu teste de Força ou de sua salvaguarda de Força for menor que seu valor de Força, você pode usar esse valor no lugar do resultado total.",
+  "barbarian|Ataque Imprudente (Reckless Attack)":
+    "Você pode descartar toda preocupação com a defesa para atacar com ferocidade intensificada. Ao realizar sua primeira jogada de ataque no seu turno, você pode decidir atacar de forma imprudente. Fazer isso lhe concede Vantagem em jogadas de ataque usando Força até o início do seu próximo turno, mas jogadas de ataque contra você também têm Vantagem durante esse tempo.",
+  "barbarian|Sentido de Perigo (Danger Sense)":
+    "Você adquire uma sensibilidade extraordinária de quando as coisas não estão como deveriam, o que lhe dá um benefício ao desviar de perigos. Você tem Vantagem em salvaguardas de Destreza, a menos que tenha a condição Incapacitado.",
   "barbarian|Fúria (Rage)":
     "Você pode se imbuir com um poder primitivo chamado Fúria, uma força que lhe concede força e resiliência extraordinárias. Você pode entrar em Fúria como uma Ação Bônus, desde que não esteja vestindo armadura Pesada. Você pode entrar em Fúria o número de vezes indicado na coluna Fúrias da tabela Características de Bárbaro para seu nível de Bárbaro. Você recupera um uso gasto ao completar um Descanso Curto, e restaura todos os usos gastos ao completar um Descanso Longo. Enquanto ativa, sua Fúria segue as regras abaixo. Resistência a Dano. Você tem Resistência a dano Contundente, Cortante e Perfurante. Dano da Fúria. Quando você realiza um ataque com Força — seja com uma arma ou um Ataque Desarmado — e causar dano ao alvo, você recebe um bônus no dano, que aumenta conforme você adquire níveis como Bárbaro, conforme mostrado na coluna Dano da Fúria da tabela Características de Bárbaro. Vantagem com Força. Você tem Vantagem em testes de Força e salvaguardas de Força. Sem Concentração ou Magias. Você não pode manter a Concentração e não pode conjurar magias. Duração. A Fúria dura até o final do seu próximo turno, e encerra se você vestir armadura Pesada ou ter a condição Incapacitado. Se sua Fúria ainda estiver ativa no próximo turno, você pode estendê-la por mais um turno ao realizar uma das seguintes ações: • Realizar uma jogada de ataque contra um inimigo. • Forçar um inimigo a realizar uma salvaguarda. • Executar uma Ação Bônus para estender sua Fúria. Cada vez que a Fúria é estendida, ela permanece até o final do seu próximo turno. Você pode manter uma Fúria por até 10 minutos.",
   "barbarian|Fúria Implacável (Relentless Rage)":
@@ -12856,6 +13108,14 @@ DND5E_DATA.classChoices = [
   { id: "ranger_expertise", classId: "ranger", level: 9, kind: "expertise", count: 2,
     label: "Especialista (nível 9) — Especialização",
     desc: "Especialização em duas perícias em que já é proficiente." },
+
+  // ---------------- Espécies ----------------
+  { id: "human_skillful", speciesId: "human", level: 1, kind: "skill", count: 1,
+    label: "Humano — Hábil",
+    desc: "Proficiência em uma perícia à sua escolha." },
+  { id: "elf_keen_senses", speciesId: "elf", level: 1, kind: "skill", count: 1, skills: ["insight", "perception", "survival"],
+    label: "Elfo — Sentidos Aguçados",
+    desc: "Proficiência em Intuição, Percepção ou Sobrevivência." },
 
   // ---------------- Ladino ----------------
   { id: "rogue_expertise", classId: "rogue", level: 1, kind: "expertise", countByLevel: { 1: 2, 6: 4 },
