@@ -6702,11 +6702,6 @@ function listasDaClassePersonalizada() {
   return listas;
 }
 
-/* Quantas magias de cada círculo entram de uma vez, e quantas já foram
-   mostradas em cada um. Estado de tela: zera quando o filtro muda. */
-const MAGIAS_POR_LOTE = 25;
-const _magiasMostradas = {};
-
 let _filtroMagiasAnterior = null;
 function renderSpellsCatalog() {
   syncCustomSpellsIntoCatalog();
@@ -6846,16 +6841,8 @@ function renderSpellsCatalog() {
     const todas = porCirculo.get(nivel);
     const naFicha = todas.filter(sp => idsNaFicha.has(sp.id)).length;
     const idBloco = `magias-circulo-${nivel}`;
-    // Lote a lote: um círculo com 80 magias vira 80 linhas de tabela, e no
-    // celular isso pesa para rolar. Mostra as primeiras e cresce sob demanda.
-    const mostrados = _magiasMostradas[nivel] || MAGIAS_POR_LOTE;
-    // O que já está na ficha entra sempre, mesmo além do lote: essas são as
-    // magias que o jogador volta aqui para conferir ou tirar.
-    const magias = [
-      ...todas.slice(0, mostrados),
-      ...todas.slice(mostrados).filter(sp => idsNaFicha.has(sp.id))
-    ];
-    const faltam = todas.length - magias.length;
+    // O círculo aberto mostra todas as magias de uma vez. Antes vinham lotes
+    // de 25 com "Mostrar mais", e achar uma magia pedia vários cliques.
     // Fechado por padrão: o catálogo inteiro são 400 linhas. Abre sozinho o
     // círculo que já tem magia na ficha — ali há o que conferir.
     const aberto = blocoEstaAberto(idBloco, filtrando || naFicha > 0);
@@ -6868,15 +6855,7 @@ function renderSpellsCatalog() {
           <span class="spell-group-count">${todas.length} magia${todas.length > 1 ? "s" : ""}${naFicha ? ` · ${naFicha} na ficha` : ""}</span>
         </th>
       </tr>
-      ${aberto ? magias.map(linhaDaMagia).join("") : ""}
-      ${aberto && faltam ? `
-        <tr class="spell-mais-row">
-          <td colspan="5">
-            <button type="button" class="btn btn-secondary btn-sm" data-mais="${nivel}">
-              <i class="fa-solid fa-plus"></i> Mostrar mais ${Math.min(MAGIAS_POR_LOTE, faltam)} (faltam ${faltam})
-            </button>
-          </td>
-        </tr>` : ""}
+      ${aberto ? todas.map(linhaDaMagia).join("") : ""}
       </tbody></table>`;
   }).join("");
 
@@ -6928,14 +6907,6 @@ function renderSpellsCatalog() {
         recalculateCharacter();
         showToast("Magia personalizada removida.");
       }
-      return;
-    }
-
-    const mais = e.target.closest("[data-mais]");
-    if (mais) {
-      const nivel = mais.getAttribute("data-mais");
-      _magiasMostradas[nivel] = (_magiasMostradas[nivel] || MAGIAS_POR_LOTE) + MAGIAS_POR_LOTE;
-      renderSpellsCatalog();
       return;
     }
 
