@@ -2738,11 +2738,6 @@ function renderSpellSlots() {
   const truquesEscolhidos = escolhidas.filter(ehTruque).length;
   const magiasEscolhidas = escolhidas.length - truquesEscolhidos;
 
-  // O que sobra de capacidade vem sempre da classe; o talento entra como folga
-  const capClasse = cap.breakdown.filter(b => b.detalhe !== "talento");
-  const capTalento = cap.breakdown.filter(b => b.detalhe === "talento");
-  const somaT = (arr, campo) => arr.reduce((a, b) => a + b[campo], 0);
-
   const porCirculo = (a, b) => (a.circulo - b.circulo) || a.nome.localeCompare(b.nome);
 
   /* Um item da lista aberta: nome, círculo e o "i" que abre a descrição inteira
@@ -2756,6 +2751,7 @@ function renderSpellSlots() {
         ${m.nome} <small>${m.circulo === 0 ? "truque" : `${m.circulo}º`}</small>
       </span>
       <span class="magia-item-modo is-${modo.chave}">${modo.rotulo}</span>
+      ${m.fonte ? `<small class="magia-item-fonte">${m.fonte}</small>` : ""}
       ${sp ? `<button type="button" class="magia-item-info${aberta ? " is-open" : ""}" data-magia-info="${m.id}"
                       title="Ver a descrição da magia"><i class="fa-solid fa-info"></i></button>` : ""}
       ${sp ? `<div class="magia-item-desc" data-magia-desc="${m.id}"${aberta ? "" : " hidden"}>${buildSpellInfoHtml(sp)}</div>` : ""}
@@ -2780,40 +2776,86 @@ function renderSpellSlots() {
        ${temLista ? `<div class="magia-conta-lista" data-origem-lista="${chave}"${aberto ? "" : " hidden"}>${lista.map(itemHtml).join("")}</div>` : ""}`;
   };
 
-  const contas = [];
-  if (capClasse.length) {
-    contas.push(linhaConta("cap-classe", "Classe (capacidade)",
-      `${somaT(capClasse, "truques")} truques · ${somaT(capClasse, "preparadas")} preparadas`));
-  }
-  capTalento.forEach((b, i) => {
-    contas.push(linhaConta(`cap-talento-${i}`, `${b.origem || "Talento"} (capacidade)`,
-      `${b.fonte}: ${b.truques ? `${b.truques} truque(s)` : ""}${b.truques && b.preparadas ? " · " : ""}${b.preparadas ? `${b.preparadas} magia(s)` : ""} para escolher`));
+  /* Conhecida × preparada, como no livro de 2024. Truque é conhecido; magia que
+     só sai como Ritual (Coração Selvagem) ou pela Arcana Mística também é
+     conhecida sem entrar na lista de preparadas. O resto — o que foi escolhido
+     no catálogo e o que alguma característica deixa sempre preparado — é
+     preparada. Dentro de cada seção, uma linha por origem. */
+  // "Subclasse (Juramento da Devoção (Oath of Devotion))" → sem o nome em inglês
+  const semIngles = (txt) => String(txt || "").replace(/\s\([^()]*\)(?=\))/g, "");
+  const ehConhecida = (m) => m.circulo === 0 || m.tipo === "Ritual" || m.tipo === "Arcana Mística";
+  const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+  const contagem = (lista) => {
+    const truques = lista.filter(m => m.circulo === 0).length;
+    const partes = [];
+    if (truques) partes.push(plural(truques, "truque", "truques"));
+    if (lista.length - truques) partes.push(plural(lista.length - truques, "magia", "magias"));
+    return partes.join(" · ");
+  };
+
+  // Limites: de onde vêm as vagas que o jogador preenche pelo catálogo (a
+  // classe, a linhagem do Alto Elfo, a vaga em aberto de um talento).
+  const limites = cap.breakdown.map((b, i) => {
+    const partes = [];
+    if (b.truques) partes.push(plural(b.truques, "truque", "truques"));
+    if (b.preparadas) partes.push(plural(b.preparadas, "preparada", "preparadas"));
+    const rotulo = b.detalhe === "talento" ? `${b.origem || "Talento"} · ${b.fonte}` : b.fonte.replace(/\s\([^()]*\)/, "");
+    return linhaConta(`cap-${i}`, rotulo, partes.join(" · "));
   });
 
-  // As escolhidas são as magias da classe: saem da capacidade dela e é por isso
-  // que aparecem como fração. As concedidas, abaixo, não gastam nada.
-  contas.push(linhaConta("escolhidas", "Classe (escolhidas)",
-    `${truquesEscolhidos} / ${cap.maxCantrips} truques · ${magiasEscolhidas} / ${cap.maxPrepared} preparadas`,
-    escolhidas.map(id => {
-      const sp = spellDe(id);
-      return { id, nome: sp ? sp.name.split(" (")[0] : id, circulo: sp ? sp.level : 0, fonte: "Escolhida no catálogo", tipo: "Classe" };
-    }),
-    truquesEscolhidos > cap.maxCantrips || magiasEscolhidas > cap.maxPrepared));
+  const escolhidasItens = escolhidas.map(id => {
+    const sp = spellDe(id);
+    return { id, nome: sp ? sp.name.split(" (")[0] : id, circulo: sp ? sp.level : 0, fonte: "", tipo: "Catálogo" };
+  });
+  const escTruques = escolhidasItens.filter(m => m.circulo === 0);
+  const escMagias = escolhidasItens.filter(m => m.circulo > 0);
+
+  // Se só uma fonte dá vagas (o Alto Elfo que não é conjurador, por exemplo),
+  // o rótulo já diz de onde veio o truque escolhido.
+  const fonteUnica = (campo) => {
+    const fontes = cap.breakdown.filter(b => b[campo] > 0);
+    if (fontes.length !== 1) return "";
+    const b = fontes[0];
+    return ` (${b.detalhe === "talento" ? b.fonte : b.fonte.replace(/\s\([^()]*\)/, "").replace(/ nível \d+$/, "")})`;
+  };
+
+  const conhecidas = [];
+  const preparadas = [];
+  if (escTruques.length || cap.maxCantrips) {
+    conhecidas.push(linhaConta("conh-catalogo", `Escolhidos no catálogo${fonteUnica("truques")}`,
+      `${escTruques.length} / ${cap.maxCantrips} truques`, escTruques, truquesEscolhidos > cap.maxCantrips));
+  }
+  if (escMagias.length || cap.maxPrepared) {
+    preparadas.push(linhaConta("prep-catalogo", `Escolhidas no catálogo${fonteUnica("preparadas")}`,
+      `${escMagias.length} / ${cap.maxPrepared}`, escMagias, magiasEscolhidas > cap.maxPrepared));
+  }
 
   const acima = escolhidas.map(spellDe).filter(magiaAcimaDoCirculo);
   if (acima.length) {
-    contas.push(`<p class="invoc-aviso"><i class="fa-solid fa-triangle-exclamation"></i> Acima do círculo que o personagem prepara: ${acima.map(sp => `${sp.name.split(" (")[0]} (${sp.level}º)`).join(", ")}</p>`);
+    preparadas.push(`<p class="invoc-aviso"><i class="fa-solid fa-triangle-exclamation"></i> Acima do círculo que o personagem prepara: ${acima.map(sp => `${sp.name.split(" (")[0]} (${sp.level}º)`).join(", ")}</p>`);
   }
 
   ordem.filter(k => grupos[k]).forEach(k => {
-    const truques = grupos[k].filter(m => m.circulo === 0).length;
-    const magias = grupos[k].length - truques;
-    const partes = [];
-    if (truques) partes.push(`${truques} truque(s)`);
-    if (magias) partes.push(`${magias} magia(s)`);
-    contas.push(linhaConta(`concedidas-${k}`, `${k} (concedidas)`,
-      `${partes.join(" · ")} — sempre prontas`, grupos[k].map(m => ({ ...m, tipo: k }))));
+    const itens = grupos[k].map(m => ({ ...m, tipo: k, fonte: semIngles(m.fonte) }));
+    const conh = itens.filter(ehConhecida);
+    const prep = itens.filter(m => !ehConhecida(m));
+    const linha = (lista) => {
+      const fontes = [...new Set(lista.map(m => m.fonte))];
+      return fontes.length === 1 && fontes[0]
+        ? { rotulo: fontes[0], lista: lista.map(m => ({ ...m, fonte: "" })) }
+        : { rotulo: k, lista };
+    };
+    if (conh.length) { const l = linha(conh); conhecidas.push(linhaConta(`conh-${k}`, l.rotulo, contagem(conh), l.lista)); }
+    if (prep.length) { const l = linha(prep); preparadas.push(linhaConta(`prep-${k}`, l.rotulo, `${contagem(prep)} · sempre`, l.lista)); }
   });
+
+  const secao = (icone, titulo, dica, linhasSecao) => linhasSecao.length
+    ? `<div class="magia-secao">
+         <div class="magia-secao-titulo"><i class="fa-solid ${icone}"></i> ${titulo}</div>
+         <p class="magia-contas-dica">${dica}</p>
+         ${linhasSecao.join("")}
+       </div>`
+    : "";
 
   // Um personagem que não conjura nada não precisa ver "Esta classe não tem
   // espaços de magia" nem uma linha "Escolhidas 0 / 0 truques · 0 / 0
@@ -2839,9 +2881,11 @@ function renderSpellSlots() {
   box.innerHTML = (temAlgum || linhas ? linhas : '<p class="hp-dado-vazio">Esta classe não tem espaços de magia neste nível.</p>')
     + gratis
     + `<div class="magia-contas">
-         <div class="cond-cabeca"><span>Magias por origem</span></div>
+         <div class="cond-cabeca"><span>Magias</span></div>
          <p class="magia-contas-dica">Toque no <strong>+</strong> para ver as magias de cada origem e no <strong>i</strong> para a descrição.</p>
-         ${contas.join("")}
+         ${secao("fa-book-open", "Truques e magias conhecidas", "Não entram na lista de preparadas.", conhecidas)}
+         ${secao("fa-wand-sparkles", "Magias preparadas", "As escolhidas no catálogo contam no limite; as outras vêm sempre preparadas.", preparadas)}
+         ${secao("fa-scale-balanced", "Limites de escolha", "De onde vêm as vagas preenchidas pelo catálogo.", limites)}
        </div>`;
 }
 
@@ -6612,8 +6656,11 @@ function renderSpellsCatalog() {
   });
   container.appendChild(barra);
 
-  const table = document.createElement("table");
-  table.className = "spells-table";
+  // Uma <table> por círculo dentro deste bloco (ver .spells-table no CSS). O
+  // nome `table` ficou: os cliques continuam delegados a ele.
+  const table = document.createElement("div");
+  table.className = "spells-table-groups";
+  const colunas = `<colgroup><col class="col-name"><col class="col-school"><col class="col-classes"><col class="col-info"><col class="col-action"></colgroup>`;
 
   // De onde veio cada magia concedida, para a etiqueta na linha
   const origemPorId = {};
@@ -6677,7 +6724,7 @@ function renderSpellsCatalog() {
     // Fechado por padrão: o catálogo inteiro são 400 linhas. Abre sozinho o
     // círculo que já tem magia na ficha — ali há o que conferir.
     const aberto = filtrando || blocoEstaAberto(idBloco, naFicha > 0);
-    return `
+    return `<table class="spells-table">${colunas}<tbody>
       <tr class="spell-group-row">
         <th colspan="5" class="spell-group-head${aberto ? " is-aberto" : ""}" data-grupo="${idBloco}"
             role="button" tabindex="0" aria-expanded="${aberto}">
@@ -6694,10 +6741,12 @@ function renderSpellsCatalog() {
               <i class="fa-solid fa-plus"></i> Mostrar mais ${Math.min(MAGIAS_POR_LOTE, faltam)} (faltam ${faltam})
             </button>
           </td>
-        </tr>` : ""}`;
+        </tr>` : ""}
+      </tbody></table>`;
   }).join("");
 
   table.innerHTML = `
+    <table class="spells-table">${colunas}
     <thead>
       <tr>
         <th class="col-name">Magia</th>
@@ -6707,7 +6756,8 @@ function renderSpellsCatalog() {
         <th class="col-action">Ficha</th>
       </tr>
     </thead>
-    <tbody>${corpo}</tbody>
+    </table>
+    ${corpo}
   `;
 
   // O cabeçalho do círculo é um botão: Enter e Espaço abrem e fecham, como um <details>

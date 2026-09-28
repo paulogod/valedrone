@@ -1567,6 +1567,23 @@ select.form-control option {
    no "i" — o painel de jogo é onde se consulta no meio do turno. */
 .magia-contas { margin-top: 0.5rem; border-top: 1px dashed rgba(255, 255, 255, 0.07); padding-top: 0.35rem; }
 
+/* Conhecidas, preparadas e limites: três blocos com título próprio, para a
+   diferença aparecer sem abrir nenhuma lista. */
+.magia-secao { margin-top: 0.45rem; }
+.magia-secao + .magia-secao { border-top: 1px dashed rgba(255, 255, 255, 0.07); padding-top: 0.4rem; }
+
+.magia-secao-titulo {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #e9d5ff;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.magia-secao-titulo i { color: #c084fc; margin-right: 0.2rem; }
+
+.magia-item-fonte { color: var(--text-muted); font-size: 0.66rem; }
+
 .magia-contas-dica {
   font-size: 0.7rem;
   color: var(--text-muted);
@@ -2359,10 +2376,43 @@ select.form-control option {
   font-size: 0.78rem;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-sm);
-  overflow: hidden;
+  overflow: clip;   /* hidden faria da tabela a referência do cabeçalho fixo */
 }
 
 .spells-table .col-classes { display: none; }
+
+/* Uma tabela por círculo. O cabeçalho fixo de uma célula fica preso à tabela
+   inteira — com uma tabela só, todos grudavam no mesmo lugar ao rolar e o
+   círculo seguinte cobria o anterior (o fechado sumia). Separadas, cada
+   cabeçalho gruda só enquanto o próprio círculo está na tela. As larguras
+   fixas mantêm as colunas alinhadas de uma tabela para a outra. */
+.spells-table { table-layout: fixed; }
+.spells-table + .spells-table { border-top: none; }
+/* Escola: só o ícone até 1100 px (o nome aparece dali para cima) */
+.spells-table col.col-school { width: 2.6rem; }
+/* Antes do tablet a coluna Classes fica com largura zero em vez de sumir: com
+   display: none nas células elas escorregavam uma casa para a esquerda e
+   sobrava uma faixa vazia à direita (o Chrome ignora display: none no <col>). */
+.spells-table col.col-classes { display: table-column; width: 0; }
+@media (max-width: 899.98px) {
+  .spells-table tr > th.col-classes,
+  .spells-table tr > td.col-classes { display: table-cell; padding: 0; font-size: 0; overflow: hidden; }
+}
+.spells-table col.col-info { width: 2.6rem; }
+.spells-table col.col-action { width: 3.2rem; }
+.spells-table td { overflow-wrap: anywhere; }
+@media (max-width: 1099.98px) {
+  .spells-table th.col-school { font-size: 0; }
+}
+@media (min-width: 600px) {
+  .spells-table col.col-action { width: 8rem; }
+}
+@media (min-width: 900px) {
+  .spells-table col.col-classes { width: 11rem; }
+}
+@media (min-width: 1100px) {
+  .spells-table col.col-school { width: 8.5rem; }
+}
 
 /* ---------- Catálogo de magias: grupos, escolas e etiquetas ---------- */
 
