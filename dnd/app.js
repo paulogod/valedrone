@@ -123,8 +123,11 @@ function createBlankCharacter() {
     // Overrides da ficha oficial editável (campos digitados à mão pelo jogador)
     sheet: {},
 
-    // Magias Conhecidas / Preparadas
+    // Magias escolhidas no catálogo. Para quem tem grimório (Mago), é o que
+    // está no grimório; `spellsPrepared` diz quais delas estão preparadas hoje.
+    // Nas outras classes toda magia escolhida já é preparada.
     spellsKnown: [],
+    spellsPrepared: [],
     spellSlotsExpended: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 },
 
     // Armas cuja propriedade de maestria está ativa (ids). A maestria não é
@@ -589,6 +592,14 @@ function mergeIntoBlankCharacter(data) {
     });
   }
   merged.customFeatsMigrados = true;
+  // Ficha de antes do grimório: tudo o que estava nela seguia preparado, e
+  // continua — ninguém abre a ficha e descobre as magias "despreparadas".
+  if (!Array.isArray(data.spellsPrepared)) {
+    merged.spellsPrepared = (merged.spellsKnown || []).filter(id => {
+      const sp = DND5E_DATA.spells.find(x => x.id === id);
+      return sp && sp.level > 0;
+    });
+  }
   if (!Array.isArray(merged.invocations)) merged.invocations = [];
   CHARACTER_NESTED_KEYS.forEach(k => {
     if (base[k] && typeof base[k] === "object" && !Array.isArray(base[k])) {
@@ -2600,6 +2611,13 @@ function comoSeConjura(tipo, circulo, id) {
   // Presente das Profundezas, que é uma vez por Descanso Longo.
   if (tipo === "Maestria de Magias") return { chave: "livre", rotulo: "à vontade, sem espaço" };
   if (tipo === "Ritual") return { chave: "livre", rotulo: "só como Ritual" };
+  if (tipo === "Grimório") {
+    if (magiaEstaPreparada(id)) return { chave: "espaco", rotulo: `espaço de ${circulo}º` };
+    const sp = DND5E_DATA.spells.find(x => x.id === id);
+    return sp && spellIsRitual(sp)
+      ? { chave: "livre", rotulo: "só como Ritual" }
+      : { chave: "nao", rotulo: "não preparada" };
+  }
   if (tipo === "Subclasse (grátis)") return { chave: "gratis", rotulo: "1x por descanso longo" };
   if (tipo === "Arcana Mística") return { chave: "gratis", rotulo: "1x por descanso longo" };
   if (tipo === "Assinatura Mágica") return { chave: "gratis", rotulo: "1x por descanso curto" };
@@ -2736,7 +2754,8 @@ function renderSpellSlots() {
     return sp && sp.level === 0;
   };
   const truquesEscolhidos = escolhidas.filter(ehTruque).length;
-  const magiasEscolhidas = escolhidas.length - truquesEscolhidos;
+  // Com grimório só a preparada conta no limite; as outras ficam no grimório
+  const magiasEscolhidas = escolhidas.filter(id => !ehTruque(id) && magiaEstaPreparada(id)).length;
 
   const porCirculo = (a, b) => (a.circulo - b.circulo) || a.nome.localeCompare(b.nome);
 
@@ -2746,11 +2765,16 @@ function renderSpellSlots() {
     const sp = spellDe(m.id);
     const aberta = _magiaInfoAberta.has(m.id);
     const modo = comoSeConjura(m.tipo, m.circulo, m.id);
+    // No grimório dá para preparar e despreparar daqui mesmo, depois do
+    // Descanso Longo, sem voltar ao Passo 4.
+    const prep = m.tipo === "Grimório" ? magiaEstaPreparada(m.id) : null;
     return `<div class="magia-item">
       <span class="magia-item-nome"${m.fonte ? ` title="${String(m.fonte).replace(/"/g, "&quot;")}"` : ""}>
         ${m.nome} <small>${m.circulo === 0 ? "truque" : `${m.circulo}º`}</small>
       </span>
       <span class="magia-item-modo is-${modo.chave}">${modo.rotulo}</span>
+      ${prep !== null ? `<button type="button" class="spell-prep-btn${prep ? " is-on" : ""}" data-preparar="${m.id}"
+                                 title="${prep ? "Despreparar" : "Preparar"}"><i class="fa-solid ${prep ? "fa-check" : "fa-book"}"></i> ${prep ? "Preparada" : "Preparar"}</button>` : ""}
       ${m.fonte ? `<small class="magia-item-fonte">${m.fonte}</small>` : ""}
       ${sp ? `<button type="button" class="magia-item-info${aberta ? " is-open" : ""}" data-magia-info="${m.id}"
                       title="Ver a descrição da magia"><i class="fa-solid fa-info"></i></button>` : ""}
@@ -2808,7 +2832,7 @@ function renderSpellSlots() {
     return { id, nome: sp ? sp.name.split(" (")[0] : id, circulo: sp ? sp.level : 0, fonte: "", tipo: "Catálogo" };
   });
   const escTruques = escolhidasItens.filter(m => m.circulo === 0);
-  const escMagias = escolhidasItens.filter(m => m.circulo > 0);
+  const escMagias = escolhidasItens.filter(m => m.circulo > 0 && magiaEstaPreparada(m.id));
 
   // Se só uma fonte dá vagas (o Alto Elfo que não é conjurador, por exemplo),
   // o rótulo já diz de onde veio o truque escolhido.
@@ -2824,6 +2848,12 @@ function renderSpellSlots() {
   if (escTruques.length || cap.maxCantrips) {
     conhecidas.push(linhaConta("conh-catalogo", `Escolhidos no catálogo${fonteUnica("truques")}`,
       `${escTruques.length} / ${cap.maxCantrips} truques`, escTruques, truquesEscolhidos > cap.maxCantrips));
+  }
+  // O grimório inteiro, preparadas e não preparadas: é o livro do Mago
+  if (usaGrimorio()) {
+    const noLivro = escolhidasItens.filter(m => m.circulo > 0).map(m => ({ ...m, tipo: "Grimório" }));
+    conhecidas.push(linhaConta("conh-grimorio", "Grimório (Mago)",
+      `${noLivro.length} / ${cap.maxGrimorio} · ${noLivro.length - escMagias.length} sem preparar`, noLivro));
   }
   if (escMagias.length || cap.maxPrepared) {
     preparadas.push(linhaConta("prep-catalogo", `Escolhidas no catálogo${fonteUnica("preparadas")}`,
@@ -2897,6 +2927,14 @@ const _magiaInfoAberta = new Set();
 
 /** Abre/fecha uma origem ou a descrição de uma magia no painel de jogo */
 function toggleMagiaPainel(e) {
+  const prep = e.target.closest("[data-preparar]");
+  if (prep && prep.closest("#spellSlotsPanel")) {
+    alternarPreparo(prep.getAttribute("data-preparar"));
+    renderSpellsCatalog();
+    recalculateCharacter();
+    return true;
+  }
+
   const exp = e.target.closest("[data-origem]");
   if (exp) {
     const chave = exp.getAttribute("data-origem");
@@ -3726,7 +3764,7 @@ function spellAttackRows(finalMods, pb) {
   const atkMagico = mod + pb;
 
   const ids = [...new Set([
-    ...(character.spellsKnown || []),
+    ...magiasEscolhidasPreparadas(),
     ...getGrantedSpellEntries().map(g => g.id)
   ])];
 
@@ -4653,6 +4691,7 @@ function pendenciasDoWizard() {
   // Passo 4 — magias
   const cap = getSpellCapacityInfo(_ultimosMods || {});
   if (cap.currentCantripsCount < cap.maxCantrips) p[4].push(`Truques (${cap.currentCantripsCount} de ${cap.maxCantrips})`);
+  if (usaGrimorio() && cap.grimorio < cap.maxGrimorio) p[4].push(`Grimório (${cap.grimorio} de ${cap.maxGrimorio})`);
   if (cap.currentPreparedCount < cap.maxPrepared) p[4].push(`Magias preparadas (${cap.currentPreparedCount} de ${cap.maxPrepared})`);
 
   return p;
@@ -5175,6 +5214,57 @@ function invocationById(id) {
 }
 
 /** Nível de Bruxo do personagem, somando classe primária e multiclasse */
+function wizardLevel() {
+  let n = 0;
+  if (character.class1 === "wizard") n += character.level1 || 0;
+  if (character.class2 === "wizard") n += character.level2 || 0;
+  return n;
+}
+
+/* Grimório do Mago (Livro 2024): começa com seis magias de 1º círculo e ganha
+   duas a cada nível de Mago. Magia do grimório não está preparada por estar
+   lá — prepara-se a cada Descanso Longo até o limite da tabela. As que têm a
+   marca Ritual saem como Ritual mesmo sem preparar (Adepto Ritualístico).
+   Truque não vai para o grimório: é sempre conhecido. */
+function usaGrimorio() { return wizardLevel() > 0; }
+
+function limiteDoGrimorio() {
+  const n = wizardLevel();
+  return n ? 6 + 2 * (n - 1) : 0;
+}
+
+/** Magia escolhida no catálogo que está preparada (truque sempre está) */
+function magiaEstaPreparada(id) {
+  if (!usaGrimorio()) return true;
+  const sp = DND5E_DATA.spells.find(x => x.id === id);
+  if (!sp || sp.level === 0) return true;
+  return (character.spellsPrepared || []).includes(id);
+}
+
+/** As escolhidas no catálogo que valem na ficha: truques e preparadas */
+function magiasEscolhidasPreparadas() {
+  return (character.spellsKnown || []).filter(magiaEstaPreparada);
+}
+
+/** Prepara ou despreparar uma magia do grimório */
+function alternarPreparo(id) {
+  const sp = DND5E_DATA.spells.find(x => x.id === id);
+  const nome = sp ? sp.name.split(" (")[0] : id;
+  const lista = character.spellsPrepared = (character.spellsPrepared || []).slice();
+  const i = lista.indexOf(id);
+  if (i >= 0) {
+    lista.splice(i, 1);
+    logHpEvent("magia", `Despreparou ${nome}`, character.currentHp || 0);
+  } else {
+    lista.push(id);
+    logHpEvent("magia", `Preparou ${nome}`, character.currentHp || 0);
+    const cap = getSpellCapacityInfo(_ultimosMods || {});
+    if (cap.currentPreparedCount > cap.maxPrepared) {
+      showToast(`⚠ ${nome} passa do limite: ${cap.currentPreparedCount} preparadas de ${cap.maxPrepared}.`);
+    }
+  }
+}
+
 function warlockLevel() {
   let n = 0;
   if (character.class1 === "warlock") n += character.level1 || 0;
@@ -6486,17 +6576,21 @@ function getSpellCapacityInfo(finalMods) {
   // classe. Uma ficha antiga pode ter a mesma magia nas duas listas — escolhida
   // antes de a subclasse concedê-la —, e aí ela era contada duas vezes.
   const idsConcedidos = new Set(grantedSpells.map(g => g.id));
-  const contaPorNivel = (querTruque) => character.spellsKnown.filter(id => {
+  const contaPorNivel = (querTruque, lista) => lista.filter(id => {
     if (idsConcedidos.has(id)) return false;
     const sp = DND5E_DATA.spells.find(s => s.id === id);
     return sp && (querTruque ? sp.level === 0 : sp.level > 0);
   }).length;
 
+  // Com grimório, preparada é só a marcada como preparada; o grimório inteiro
+  // tem conta própria (6 + 2 por nível de Mago).
   return {
     maxCantrips,
-    currentCantripsCount: contaPorNivel(true),
+    currentCantripsCount: contaPorNivel(true, character.spellsKnown),
     maxPrepared,
-    currentPreparedCount: contaPorNivel(false),
+    currentPreparedCount: contaPorNivel(false, magiasEscolhidasPreparadas()),
+    grimorio: usaGrimorio() ? contaPorNivel(false, character.spellsKnown) : 0,
+    maxGrimorio: limiteDoGrimorio(),
     grantedSpells,
     breakdown
   };
@@ -6592,6 +6686,7 @@ function listasDaClassePersonalizada() {
 const MAGIAS_POR_LOTE = 25;
 const _magiasMostradas = {};
 
+let _filtroMagiasAnterior = null;
 function renderSpellsCatalog() {
   syncCustomSpellsIntoCatalog();
   const container = document.getElementById("spellsCatalogList");
@@ -6673,14 +6768,23 @@ function renderSpellsCatalog() {
     porCirculo.get(sp.level).push(sp);
   });
 
+  const grimorio = usaGrimorio();
   const linhaDaMagia = (sp) => {
     const isKnown = character.spellsKnown.includes(sp.id);
     const origem = origemPorId[sp.id];
+    const noGrimorio = grimorio && sp.level > 0;
+    const preparada = isKnown && magiaEstaPreparada(sp.id);
     return `
       <tr class="spell-row${isKnown ? " is-known" : ""}${origem ? " is-granted" : ""}" data-row="${sp.id}">
         <td class="col-name">
           <span class="spell-row-name">${sp.name}</span>
           ${spellTagsHtml(sp, origem)}
+          ${noGrimorio && isKnown && !origem
+            ? `<button type="button" class="spell-prep-btn${preparada ? " is-on" : ""}" data-preparar="${sp.id}"
+                       title="${preparada ? "Preparada hoje — clique para despreparar" : "No grimório, não preparada — clique para preparar"}">
+                 <i class="fa-solid ${preparada ? "fa-check" : "fa-book"}"></i> ${preparada ? "Preparada" : "Preparar"}
+               </button>`
+            : ""}
           ${!origem && magiaAcimaDoCirculo(sp) ? `<span class="spell-tag is-acima" title="Seu personagem ainda não prepara magias de ${sp.level}º círculo (máximo: ${maiorCirculoPreparavel() ? maiorCirculoPreparavel() + "º" : "nenhum"})">acima do seu círculo</span>` : ""}
         </td>
         <td class="col-school">${spellSchoolHtml(sp.school)}</td>
@@ -6693,7 +6797,7 @@ function renderSpellsCatalog() {
           ${origem
             ? `<span class="spell-granted-lock" title="Concedida por ${String(origem.fonte).replace(/"/g, "&quot;")} — já vem na ficha"><i class="fa-solid fa-gift"></i><span class="btn-txt"> Concedida</span></span>`
             : `<button type="button" class="btn btn-sm ${isKnown ? "btn-gold" : "btn-secondary"} btn-toggle-spell" data-id="${sp.id}">
-                 <i class="fa-solid ${isKnown ? "fa-check" : "fa-plus"}"></i><span class="btn-txt"> ${isKnown ? "Na ficha" : "Adicionar"}</span>
+                 <i class="fa-solid ${isKnown ? (noGrimorio ? "fa-book" : "fa-check") : "fa-plus"}"></i><span class="btn-txt"> ${isKnown ? (noGrimorio ? "No grimório" : "Na ficha") : (noGrimorio ? "Ao grimório" : "Adicionar")}</span>
                </button>`}
         </td>
       </tr>
@@ -6707,6 +6811,16 @@ function renderSpellsCatalog() {
   // Um filtro ou uma busca em uso abre tudo — quem procura quer ver o resultado.
   const filtrando = !!searchQuery || filterLevel !== "all" || filterClass !== "all"
     || filterSchool !== "all" || soSelecionadas;
+  // O filtro só decide o ponto de partida (tudo aberto). Antes ele forçava os
+  // círculos abertos, e com a classe filtrada "Fechar todos", "Abrir todos" e
+  // o clique no cabeçalho não faziam nada. Trocar o filtro reabre tudo.
+  const assinaturaFiltro = [searchQuery, filterLevel, filterClass, filterSchool, soSelecionadas].join("|");
+  if (assinaturaFiltro !== _filtroMagiasAnterior) {
+    if (_filtroMagiasAnterior !== null && filtrando) {
+      Object.keys(_blocosAbertos).filter(k => k.startsWith("magias-circulo-")).forEach(k => delete _blocosAbertos[k]);
+    }
+    _filtroMagiasAnterior = assinaturaFiltro;
+  }
   const corpo = [...porCirculo.keys()].sort((a, b) => a - b).map(nivel => {
     const todas = porCirculo.get(nivel);
     const naFicha = todas.filter(sp => idsNaFicha.has(sp.id)).length;
@@ -6723,7 +6837,7 @@ function renderSpellsCatalog() {
     const faltam = todas.length - magias.length;
     // Fechado por padrão: o catálogo inteiro são 400 linhas. Abre sozinho o
     // círculo que já tem magia na ficha — ali há o que conferir.
-    const aberto = filtrando || blocoEstaAberto(idBloco, naFicha > 0);
+    const aberto = blocoEstaAberto(idBloco, filtrando || naFicha > 0);
     return `<table class="spells-table">${colunas}<tbody>
       <tr class="spell-group-row">
         <th colspan="5" class="spell-group-head${aberto ? " is-aberto" : ""}" data-grupo="${idBloco}"
@@ -6813,6 +6927,15 @@ function renderSpellsCatalog() {
       return;
     }
 
+    const prepBtn = e.target.closest("[data-preparar]");
+    if (prepBtn) {
+      alternarPreparo(prepBtn.getAttribute("data-preparar"));
+      renderSpellsCatalog();
+      renderHpLog();
+      recalculateCharacter();
+      return;
+    }
+
     const toggleBtn = e.target.closest(".btn-toggle-spell");
     if (toggleBtn) {
       const spId = toggleBtn.getAttribute("data-id");
@@ -6820,7 +6943,18 @@ function renderSpellsCatalog() {
       const nomeMagia = sp ? sp.name.split(" (")[0] : spId;
       if (character.spellsKnown.includes(spId)) {
         character.spellsKnown = character.spellsKnown.filter(id => id !== spId);
+        character.spellsPrepared = (character.spellsPrepared || []).filter(id => id !== spId);
         logHpEvent("magia", `Removeu ${nomeMagia}`, character.currentHp || 0);
+      } else if (usaGrimorio() && sp && sp.level > 0) {
+        // Entra no grimório e já fica preparada se ainda houver vaga
+        character.spellsKnown.push(spId);
+        const cap = getSpellCapacityInfo(_ultimosMods || {});
+        const cabe = cap.currentPreparedCount < cap.maxPrepared;
+        if (cabe) character.spellsPrepared = [...(character.spellsPrepared || []), spId];
+        logHpEvent("magia", `${nomeMagia} no grimório${cabe ? " e preparada" : ""}`, character.currentHp || 0);
+        showToast(cabe
+          ? `📖 ${nomeMagia} entrou no grimório e já está preparada.`
+          : `📖 ${nomeMagia} entrou no grimório. As ${cap.maxPrepared} preparadas já estão ocupadas: despreparar outra para preparar esta.`);
       } else {
         character.spellsKnown.push(spId);
         logHpEvent("magia", `Adicionou ${nomeMagia}`, character.currentHp || 0);
@@ -7008,6 +7142,13 @@ function recalculateCharacter() {
 
     preparedCountEl.textContent = `${capInfo.currentPreparedCount} / ${capInfo.maxPrepared}`;
     preparedCountEl.style.color = capInfo.currentPreparedCount > capInfo.maxPrepared ? "#ef4444" : "#c084fc";
+
+    const grimorioStat = document.getElementById("grimorioCapacityStat");
+    if (grimorioStat) {
+      grimorioStat.hidden = !usaGrimorio();
+      const el = document.getElementById("grimorioCapacityCount");
+      if (el) el.textContent = `${capInfo.grimorio} / ${capInfo.maxGrimorio}`;
+    }
 
     if (grantedCountEl) {
       grantedCountEl.textContent = `${capInfo.grantedSpells.length} concedidas`;
@@ -8110,7 +8251,10 @@ function syncSheetSpellRows() {
   const ov = sheetOv();
   if (!Array.isArray(ov.spellRows)) ov.spellRows = [];
 
-  character.spellsKnown.forEach(id => {
+  // Na ficha vão os truques e as preparadas: a do grimório que não está
+  // preparada hoje não se conjura (fora como Ritual) e não ocupa linha.
+  const preparadas = magiasEscolhidasPreparadas();
+  preparadas.forEach(id => {
     if (ov.spellRows.some(r => r.spellId === id)) return;
     const sp = DND5E_DATA.spells.find(s => s.id === id);
     if (sp) ov.spellRows.push(buildSpellRowFromData(sp));
@@ -8141,7 +8285,7 @@ function syncSheetSpellRows() {
   });
 
   ov.spellRows = ov.spellRows.filter(r =>
-    !r.spellId || character.spellsKnown.includes(r.spellId) || grantedIds.includes(r.spellId));
+    !r.spellId || preparadas.includes(r.spellId) || grantedIds.includes(r.spellId));
 
   ov.spellRows.sort((a, b) => {
     const rank = r => (r.spellId ? 0 : 1);
@@ -8470,6 +8614,13 @@ function bindOfficialSheetEvents() {
       if (!row) return;
       if (row.grantSrc && !character.spellsKnown.includes(row.spellId)) {
         showToast(`Esta magia vem de ${row.grantSrc} — mude a origem no Passo 3 para tirá-la da ficha.`);
+        return;
+      }
+      // Magia do grimório sai da ficha despreparada, mas continua no grimório
+      if (row.spellId && usaGrimorio() && (character.spellsPrepared || []).includes(row.spellId)) {
+        alternarPreparo(row.spellId);
+        renderSpellsCatalog();
+        recalculateCharacter();
         return;
       }
       if (row.spellId) {
@@ -9329,6 +9480,15 @@ function bindEvents() {
   document.getElementById("inputImportJson").addEventListener("change", importCharacterJson);
   // "Imprimir / PDF" é ligado em pdf-export.js: ele gera a ficha oficial preenchida
   // e abre a impressão dela, em vez de imprimir o HTML da tela.
+  // Salvar do cabeçalho. O ouvinte tinha saído junto com os botões de d20 fixo
+  // que o rolador abaixo substituiu, e o botão ficou na tela sem fazer nada.
+  const btnQuickSave = document.getElementById("btnQuickSave");
+  if (btnQuickSave) btnQuickSave.addEventListener("click", () => {
+    saveToLocalStorage(true);
+    renderSavedCharsList();
+    showToast("💾 Ficha salva no navegador!");
+  });
+
   // Rolador de expressão: "2d6+3", "d20", "4d6-1". Substituiu os dois botões
   // de d20 fixo — na mesa se rola de tudo, não só d20.
   const rolarExpressao = (origem) => {
@@ -9790,6 +9950,7 @@ function generateRandomCharacter() {
     : ["athletics", "perception"];
   character.expertSkills = [];
   character.spellsKnown = [];
+  character.spellsPrepared = [];
   character.weapons = ["longsword", "dagger", "shortbow"];
   sortearEscolhasDeClasse();
 

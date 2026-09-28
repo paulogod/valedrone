@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260928e";
+    var APP_VERSION = "20260928f";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -730,6 +730,11 @@
             <div class="spell-capacity-stat">
               <span class="spell-cap-val" id="preparedCapacityCount">0 / 0</span>
               <span class="spell-cap-label">Magias Preparadas</span>
+            </div>
+            <!-- Só para quem tem grimório (Mago): 6 + 2 por nível de Mago -->
+            <div class="spell-capacity-stat" id="grimorioCapacityStat" hidden>
+              <span class="spell-cap-val" id="grimorioCapacityCount">0 / 0</span>
+              <span class="spell-cap-label">Magias no Grimório</span>
             </div>
             <div class="spell-capacity-stat">
               <span class="spell-cap-val" id="grantedSpellsCount">0 concedidas</span>

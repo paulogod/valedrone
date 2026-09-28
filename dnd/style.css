@@ -3747,3 +3747,39 @@ img, table, pre { max-width: 100%; }
 @supports (overflow-x: clip) {
   .spells-catalog-grid { overflow-x: clip; }
 }
+
+/* ---------------------------------------------------------------------------
+   GRIMÓRIO (Mago): preparar e despreparar no catálogo e no painel de jogo
+--------------------------------------------------------------------------- */
+.spell-capacity-stat[hidden] { display: none; }
+
+.spell-prep-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0.2rem 0.2rem 0 0;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.3;
+  cursor: pointer;
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  border-radius: 9999px;
+  vertical-align: middle;
+}
+
+.spell-prep-btn:hover { background: rgba(148, 163, 184, 0.2); }
+
+.spell-prep-btn.is-on {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+}
+
+.magia-item-modo.is-nao {
+  color: var(--text-muted);
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+}
