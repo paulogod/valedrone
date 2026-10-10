@@ -3560,6 +3560,79 @@ img, table, pre { max-width: 100%; }
 }
 
 /* ---------------------------------------------------------------------------
+   BÔNUS MÁGICOS DO ITEM CUSTOMIZADO
+   Cada linha diz onde o bônus vale (magias de ataque, de área, uma arma...),
+   quanto soma no acerto/CD e quanto soma no dano.
+--------------------------------------------------------------------------- */
+.item-bonus-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.item-bonus-help {
+  font-size: 0.75rem;
+  margin: 0.2rem 0 0.4rem;
+}
+
+.item-bonus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.item-bonus-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.6fr) minmax(0, 0.9fr) minmax(0, 1.1fr) auto;
+  gap: 0.35rem;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.4rem;
+}
+
+.item-bonus-row .form-control {
+  padding: 0.3rem 0.45rem;
+  font-size: 0.82rem;
+}
+
+.item-bonus-row [data-f="ref"][hidden] {
+  display: none;
+}
+
+.item-bonus-row .btn {
+  padding: 2px 6px;
+  color: #f87171;
+}
+
+.item-bonus-detect {
+  font-size: 0.75rem;
+  color: #c084fc;
+  margin: 0.3rem 0 0;
+}
+
+.item-bonus-detect:empty {
+  display: none;
+}
+
+.custom-item-bonus {
+  color: #c084fc;
+}
+
+@media (max-width: 640px) {
+  .item-bonus-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  }
+
+  .item-bonus-row [data-f="target"],
+  .item-bonus-row [data-f="ref"] {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    RESUMO DE COMBATE (abaixo dos PV)
    CA, Iniciativa, Deslocamento, salvaguardas e ataques da ficha. Clicar rola;
    a caneta edita como a dos PV. Valores editados à mão ganham borda roxa.

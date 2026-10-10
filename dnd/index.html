@@ -1749,6 +1749,18 @@
         <div class="form-group">
           <label class="form-label" for="customItemDesc">Descrição & Propriedades Mágicas</label>
           <textarea class="form-control" id="customItemDesc" rows="3" placeholder="Descreva os efeitos mágicos, cargas e histórico do item..."></textarea>
+          <p class="item-bonus-detect" id="customItemBonusDetect"></p>
+        </div>
+
+        <div class="form-group">
+          <div class="item-bonus-head">
+            <label class="form-label">Bônus Mágicos do Item</label>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnAddItemBonus">
+              <i class="fa-solid fa-plus"></i> Adicionar Bônus
+            </button>
+          </div>
+          <p class="section-desc item-bonus-help">Escolha onde o bônus vale. "Acerto / CD" aceita número (+1) ou dado (1d4); em magias de área ele soma na CD. "Dano" aceita +2 ou 1d6 Fogo. Valem enquanto o item estiver equipado.</p>
+          <div id="customItemBonusList" class="item-bonus-list"></div>
         </div>
 
         <div class="form-group">

@@ -2867,9 +2867,18 @@ function renderSpellSlots() {
   }
   // O grimório inteiro, preparadas e não preparadas: é o livro do Mago
   if (usaGrimorio()) {
-    const noLivro = escolhidasItens.filter(m => m.circulo > 0).map(m => ({ ...m, tipo: "Grimório" }));
+    const versado = cap.versado;
+    const grats = new Set(versado ? versado.ids : []);
+    const noLivro = escolhidasItens.filter(m => m.circulo > 0 && !grats.has(m.id)).map(m => ({ ...m, tipo: "Grimório" }));
+    const semPreparar = escolhidasItens.filter(m => m.circulo > 0).length - escMagias.length;
     conhecidas.push(linhaConta("conh-grimorio", "Grimório (Mago)",
-      `${noLivro.length} / ${cap.maxGrimorio} · ${noLivro.length - escMagias.length} sem preparar`, noLivro));
+      `${noLivro.length} / ${cap.maxGrimorio} · ${semPreparar} sem preparar`, noLivro, noLivro.length > cap.maxGrimorio));
+    // As vagas grátis da subclasse aparecem à parte: só aceitam a escola dela
+    if (versado) {
+      const livres = escolhidasItens.filter(m => grats.has(m.id)).map(m => ({ ...m, tipo: versado.nome }));
+      conhecidas.push(linhaConta("conh-versado", `${versado.nome} (grátis)`,
+        `${versado.usados} / ${versado.total} de ${versado.escola}`, livres));
+    }
   }
   if (escMagias.length || cap.maxPrepared) {
     preparadas.push(linhaConta("prep-catalogo", `Escolhidas no catálogo${fonteUnica("preparadas")}`,
@@ -3838,13 +3847,16 @@ function spellAttackRows(finalMods, pb) {
       spellNeedsConcentration(sp) ? "Concentração" : null,
       ...extras
     ].filter(Boolean).join(" • ");
-    return {
+    const linha = {
       srcId: "spell:" + sp.id,
       name: sp.name.split(" (")[0],
       atk: `${atkMagico >= 0 ? "+" : ""}${atkMagico}`,
       damage: dano,
       notes: notas
     };
+    // Item que soma em magia de ataque (Varinha do Mago de Guerra +1)
+    aplicarBonusNaLinha(linha, itemBonusesForSpells("attack"));
+    return linha;
   }).filter(Boolean);
 }
 
@@ -4708,6 +4720,7 @@ function pendenciasDoWizard() {
   const cap = getSpellCapacityInfo(_ultimosMods || {});
   if (cap.currentCantripsCount < cap.maxCantrips) p[4].push(`Truques (${cap.currentCantripsCount} de ${cap.maxCantrips})`);
   if (usaGrimorio() && cap.grimorio < cap.maxGrimorio) p[4].push(`Grimório (${cap.grimorio} de ${cap.maxGrimorio})`);
+  if (cap.versado && cap.versado.usados < cap.versado.total) p[4].push(`${cap.versado.nome} (${cap.versado.usados} de ${cap.versado.total})`);
   if (cap.currentPreparedCount < cap.maxPrepared) p[4].push(`Magias preparadas (${cap.currentPreparedCount} de ${cap.maxPrepared})`);
 
   return p;
@@ -5254,6 +5267,38 @@ function usaGrimorio() { return wizardLevel() > 0; }
 function limiteDoGrimorio() {
   const n = wizardLevel();
   return n ? 6 + 2 * (n - 1) : 0;
+}
+
+/*
+ * Versado em <Escola> (Abjurador, Adivinhador, Evocador, Ilusionista): no
+ * nível 3 de Mago duas magias da escola (de até 2º círculo) entram de graça
+ * no grimório, e mais uma a cada novo círculo de espaços de Mago (níveis 5,
+ * 7, 9, 11, 13, 15 e 17). Essas vagas são só da escola: as magias dela no
+ * grimório ocupam primeiro as vagas grátis e só o que sobra conta no limite
+ * normal de 6 + 2 por nível.
+ */
+const VERSADO_ESCOLA = { abjuration: "Abjuração", divination: "Adivinhação", evocation: "Evocação", illusion: "Ilusão" };
+
+/** Escola, vagas e magias do Versado do Mago, ou null sem a subclasse */
+function versadoInfo() {
+  const slot = character.class1 === "wizard" ? 1 : character.class2 === "wizard" ? 2 : 0;
+  const sub = slot ? subclasseEscolhida(slot) : null;
+  const escola = sub && VERSADO_ESCOLA[sub.id];
+  if (!escola) return null;
+  const nivel = wizardLevel();
+  const total = 2 + [5, 7, 9, 11, 13, 15, 17].filter(n => nivel >= n).length;
+  const concedidas = new Set(getGrantedSpellEntries().map(g => g.id));
+  const daEscola = (character.spellsKnown || []).filter(id => {
+    if (concedidas.has(id)) return false;
+    const sp = DND5E_DATA.spells.find(x => x.id === id);
+    return sp && sp.level > 0 && sp.school === escola && (sp.classes || []).includes("wizard");
+  });
+  return {
+    escola, total,
+    nome: `Versado em ${escola}`,
+    ids: daEscola.slice(0, total),
+    usados: Math.min(daEscola.length, total)
+  };
 }
 
 /** Magia escolhida no catálogo que está preparada (truque sempre está) */
@@ -6395,6 +6440,9 @@ function renderCustomItemsList() {
             <button class="btn btn-sm ${item.equipped ? 'btn-gold' : 'btn-secondary'} btn-toggle-equip-item" data-id="${item.id}" title="${item.equipped ? 'Desequipar item' : 'Equipar item'}">
               <i class="fa-solid ${item.equipped ? 'fa-shield-halved' : 'fa-hand'}"></i> ${item.equipped ? 'Equipado' : 'Equipar'}
             </button>
+            <button class="btn btn-secondary btn-sm btn-edit-custom-item" data-id="${item.id}" style="padding: 2px 6px;" title="Editar item">
+              <i class="fa-solid fa-pen"></i>
+            </button>
             <button class="btn btn-secondary btn-sm btn-delete-custom-item" data-id="${item.id}" style="color: #f87171; padding: 2px 6px;" title="Excluir item">
               <i class="fa-solid fa-trash"></i>
             </button>
@@ -6406,6 +6454,7 @@ function renderCustomItemsList() {
           ${item.acBonus > 0 ? `<span>• +${item.acBonus} CA</span>` : ''}
           ${item.mastery ? `<span>• Maestria: ${item.mastery}</span>` : ''}
           ${item.attunement === "true" || item.attunement === true ? '<span style="color: #a855f7;">• Sintonização</span>' : ''}
+          ${itemBonusesOf(item).map(b => `<span class="custom-item-bonus" title="${b.fromText ? 'Lido da descrição' : 'Escolhido no item'}">• ${escAttr(describeItemBonus(b))}</span>`).join("")}
         </div>
         <p class="custom-item-desc">${item.desc || 'Sem descrição.'}</p>
       </div>
@@ -6421,6 +6470,8 @@ function renderCustomItemsList() {
       recalculateCharacter();
       showToast(`${item.name} ${item.equipped ? 'equipado' : 'desequipado'}!`);
     });
+
+    card.querySelector(".btn-edit-custom-item").addEventListener("click", () => openCustomItemModal(item));
 
     card.querySelector(".btn-delete-custom-item").addEventListener("click", () => {
       if (confirm(`Deseja excluir o item customizado "${item.name}"?`)) {
@@ -6611,8 +6662,9 @@ function getSpellCapacityInfo(finalMods) {
     currentCantripsCount: contaPorNivel(true, character.spellsKnown),
     maxPrepared,
     currentPreparedCount: contaPorNivel(false, magiasEscolhidasPreparadas()),
-    grimorio: usaGrimorio() ? contaPorNivel(false, character.spellsKnown) : 0,
+    grimorio: usaGrimorio() ? contaPorNivel(false, character.spellsKnown) - (versadoInfo() || { usados: 0 }).usados : 0,
     maxGrimorio: limiteDoGrimorio(),
+    versado: versadoInfo(),
     grantedSpells,
     breakdown
   };
@@ -6950,7 +7002,10 @@ function renderSpellsCatalog() {
         // Só entra no grimório; preparar é o botão ao lado
         character.spellsKnown.push(spId);
         logHpEvent("magia", `${nomeMagia} no grimório`, character.currentHp || 0);
-        showToast(`📖 ${nomeMagia} entrou no grimório. Use Preparar para levá-la à ficha.`);
+        const versado = versadoInfo();
+        showToast(versado && versado.ids.includes(spId)
+          ? `📖 ${nomeMagia} entrou no grimório de graça (${versado.nome} ${versado.usados}/${versado.total}). Use Preparar para levá-la à ficha.`
+          : `📖 ${nomeMagia} entrou no grimório. Use Preparar para levá-la à ficha.`);
       } else {
         character.spellsKnown.push(spId);
         logHpEvent("magia", `Adicionou ${nomeMagia}`, character.currentHp || 0);
@@ -7143,7 +7198,8 @@ function recalculateCharacter() {
     if (grimorioStat) {
       grimorioStat.hidden = !usaGrimorio();
       const el = document.getElementById("grimorioCapacityCount");
-      if (el) el.textContent = `${capInfo.grimorio} / ${capInfo.maxGrimorio}`;
+      if (el) el.textContent = `${capInfo.grimorio} / ${capInfo.maxGrimorio}` +
+        (capInfo.versado ? ` + ${capInfo.versado.usados} / ${capInfo.versado.total} ${capInfo.versado.escola}` : "");
     }
 
     if (grantedCountEl) {
@@ -7247,6 +7303,10 @@ function recalculateCharacter() {
   let spellMod = finalMods[spellAbility] || 0;
   let spellDC = 8 + pb + spellMod;
   let spellAtk = pb + spellMod;
+  // Itens equipados (Varinha do Mago de Guerra, Amuleto...): só a parte numérica
+  // cabe no cabeçalho; um dado (1d4) segue nas linhas de ataque.
+  spellAtk += somarBonus(itemBonusesForSpells("attack").map(p => p.b), "atk").num;
+  spellDC += somarBonus(itemBonusesForSpells("save").map(p => p.b), "atk").num;
 
   // =========================================================================
   // FICHA OFICIAL EDITÁVEL (2 PÁGINAS) — espelho da ficha editável do PDF
@@ -7699,6 +7759,285 @@ function renderOfStatStrip(ctx) {
   syncOfField("sheetPassivePerception", passivePerception, "passivePerception");
 }
 
+/* ------------------------------------------- BÔNUS MÁGICOS DOS ITENS */
+
+/*
+ * Varinha do Mago de Guerra +1, Espada +2, Amuleto que soma na CD: o item diz
+ * ONDE o bônus vale e quanto soma no acerto e no dano. Antes o "+1" ficava só
+ * escrito na descrição e a ficha não mudava. Cada alvo sabe a quais linhas da
+ * tabela de ataques (ou ao cabeçalho de conjuração) ele se aplica.
+ */
+const ITEM_BONUS_TARGETS = [
+  { id: "spell_attack",   label: "Magias de ataque (ataque mágico e dano)", curto: "Magias de ataque" },
+  { id: "spell_save",     label: "Magias de área / salvaguarda (CD e dano)", curto: "Magias de área (CD)" },
+  { id: "spell_all",      label: "Todas as magias (ataque, CD e dano)",      curto: "Todas as magias" },
+  { id: "this_weapon",    label: "Este item (quando for arma)",              curto: "Este item" },
+  { id: "weapon",         label: "Arma específica",                          curto: "Arma" },
+  { id: "weapons_all",    label: "Todas as armas",                           curto: "Todas as armas" },
+  { id: "weapons_melee",  label: "Armas corpo a corpo",                      curto: "Armas corpo a corpo" },
+  { id: "weapons_ranged", label: "Armas à distância",                        curto: "Armas à distância" },
+  { id: "unarmed",        label: "Ataques desarmados",                       curto: "Desarmado" }
+];
+
+/**
+ * Bônus que o texto do item já anuncia ("+1 no Spell Attack", "+1 na CD de
+ * magia", "Espada Longa +2"). Assim um item criado antes das opções — ou
+ * descrito só em texto — já mexe na ficha sem o jogador refazê-lo.
+ */
+function bonusesFromItemText(item) {
+  const desc = String(item.desc || "");
+  const out = [];
+  const num = (s) => comSinal(parseInt(s, 10));
+
+  const mAtk = desc.match(/([+-]\d+)[^.\n+]{0,40}?(?:spell attacks?|ataques? (?:m[aá]gicos?|de magias?|com magias?)|jogadas? de ataque (?:m[aá]gico|de magias?|com magias?))/i);
+  if (mAtk) out.push({ target: "spell_attack", atk: num(mAtk[1]), dmg: "" });
+
+  const mCd = desc.match(/([+-]\d+)[^.\n+]{0,40}?\b(?:CD|DC)\b/);
+  if (mCd) out.push({ target: "spell_save", atk: num(mCd[1]), dmg: "" });
+
+  // Arma com "+N" no nome: soma no acerto; no dano só se o jogador ainda não
+  // escreveu o modificador no campo de dano ("1d8+1"), para não contar duas vezes.
+  const ehArma = item.type === "weapon" || item.damage;
+  const mNome = String(item.name || "").match(/\+(\d+)\s*$/);
+  if (ehArma && mNome) {
+    const jaNoDano = /\d*d\d+\s*[+-]\s*\d+/i.test(item.damage || "");
+    out.push({ target: "this_weapon", atk: num(mNome[1]), dmg: jaNoDano ? "" : num(mNome[1]) });
+  }
+  return out.map(b => ({ ...b, fromText: true }));
+}
+
+/** Bônus do item: os escolhidos no formulário e, nos alvos que eles não cobrem, os lidos do texto */
+function itemBonusesOf(item) {
+  const escolhidos = (Array.isArray(item.bonuses) ? item.bonuses : []).filter(b => b && b.target && (b.atk || b.dmg));
+  const doTexto = bonusesFromItemText(item).filter(t => !escolhidos.some(b => b.target === t.target));
+  return [...escolhidos, ...doTexto];
+}
+
+/** Bônus de todos os itens equipados, cada um com o item de onde veio */
+function activeItemBonuses() {
+  const out = [];
+  (character.customItems || []).filter(i => i.equipped).forEach(item => {
+    itemBonusesOf(item).forEach(b => out.push({ item, b }));
+  });
+  return out;
+}
+
+/** O bônus vale para esta linha da tabela de ataques? */
+function itemBonusAppliesToRow(b, item, row) {
+  const src = String(row.srcId || "");
+  if (b.target === "weapon") return b.ref === src;
+  if (b.target === "this_weapon") return src === "item:" + item.id;
+  if (src.startsWith("atk:")) return false;   // ataque digitado à mão: só quando escolhido de propósito
+
+  const wId = src.startsWith("weapon:") ? src.slice(7) : null;
+  const w = wId ? DND5E_DATA.weapons.find(x => x.id === wId) : null;
+  const desarmado = wId === "unarmed";
+  const arma = src.startsWith("weapon:") || src.startsWith("item:") || src.startsWith("feature:psychic_blade");
+  if (!arma) return false;
+
+  if (b.target === "unarmed") return desarmado;
+  if (b.target === "weapons_all") return !desarmado && wId !== "improvised";
+  // Item customizado e Lâmina Psíquica contam como corpo a corpo
+  const distancia = w ? isRangedWeapon(w) : false;
+  if (b.target === "weapons_melee") return !desarmado && wId !== "improvised" && !distancia;
+  if (b.target === "weapons_ranged") return distancia;
+  return false;
+}
+
+/** Soma uma lista de bônus: números vão para a conta, dados ficam como texto */
+function somarBonus(lista, campo) {
+  let num = 0;
+  const textos = [];
+  lista.forEach(b => {
+    const v = String(b[campo] || "").trim();
+    if (!v) return;
+    const n = ajusteNumerico(v);
+    if (n === null) textos.push(v); else num += n;
+  });
+  return { num, textos };
+}
+
+/** Aplica o acerto e o dano dos bônus nas linhas, anotando de qual item vieram */
+function aplicarBonusNaLinha(r, pares) {
+  if (!pares.length) return;
+  const bs = pares.map(p => p.b);
+  const atk = somarBonus(bs, "atk");
+  const dmg = somarBonus(bs, "dmg");
+  if (atk.num || atk.textos.length) r.atk = aplicarAjusteNoAcerto(r.atk, atk.num, atk.textos);
+  if (dmg.num || dmg.textos.length) r.damage = aplicarAjusteNoDano(r.damage, dmg.num, dmg.textos);
+  const nomes = [...new Set(pares.map(p => p.item.name))];
+  r.notes = [r.notes, `Item: ${nomes.join(", ")}`].filter(Boolean).join(" • ");
+}
+
+/** Bônus de itens nas linhas de arma, item e ataque personalizado */
+function aplicarBonusDeItensNasArmas(linhas) {
+  const ativos = activeItemBonuses().filter(({ b }) => !b.target.startsWith("spell_"));
+  if (!ativos.length) return;
+  linhas.forEach(r => aplicarBonusNaLinha(r, ativos.filter(({ item, b }) => itemBonusAppliesToRow(b, item, r))));
+}
+
+/** Bônus de itens para um tipo de magia: "attack" (jogada de ataque) ou "save" (área / CD) */
+function itemBonusesForSpells(tipo) {
+  const alvos = tipo === "attack" ? ["spell_attack", "spell_all"] : ["spell_save", "spell_all"];
+  return activeItemBonuses().filter(({ b }) => alvos.includes(b.target));
+}
+
+/** Texto curto do bônus para o card do item: "+1 acerto • +1d6 dano (Magias de ataque)" */
+function describeItemBonus(b) {
+  const alvo = ITEM_BONUS_TARGETS.find(t => t.id === b.target);
+  let onde = alvo ? alvo.curto : b.target;
+  if (b.target === "weapon" && b.ref) {
+    const op = itemBonusWeaponOptions().find(o => o.value === b.ref);
+    onde = op ? op.label : "Arma";
+  }
+  const ehCd = b.target === "spell_save";
+  const partes = [];
+  if (b.atk) partes.push(`${b.atk} ${ehCd ? "CD" : "acerto"}`);
+  if (b.dmg) partes.push(`${b.dmg} dano`);
+  return `${partes.join(" e ")} (${onde})`;
+}
+
+/** Armas que dá para escolher em "Arma específica": as equipadas, os itens-arma e os ataques personalizados */
+function itemBonusWeaponOptions(itemAtual) {
+  const ops = [];
+  (character.weapons || []).forEach(wId => {
+    const w = DND5E_DATA.weapons.find(x => x.id === wId);
+    if (w && w.id !== "none") ops.push({ value: "weapon:" + w.id, label: w.name.split(" (")[0] });
+  });
+  if (!ops.some(o => o.value === "weapon:unarmed")) ops.push({ value: "weapon:unarmed", label: "Ataque Desarmado" });
+  (character.customItems || []).filter(i => i !== itemAtual && (i.type === "weapon" || i.damage))
+    .forEach(i => ops.push({ value: "item:" + i.id, label: i.name }));
+  (character.customAttacks || []).forEach(a => ops.push({ value: "atk:" + a.id, label: a.name }));
+  return ops;
+}
+
+/* ------------------------------------------ FORMULÁRIO DE ITEM CUSTOMIZADO */
+
+/** Item sendo editado no modal (null = criando um novo) */
+let _editingItemId = null;
+/** Linhas de bônus do formulário, antes de salvar */
+let _itemBonusDraft = [];
+
+/** Abre o modal de item vazio (novo) ou preenchido com um item existente */
+function openCustomItemModal(item) {
+  const form = document.getElementById("customItemForm");
+  form.reset();
+  _editingItemId = item ? item.id : null;
+  _itemBonusDraft = item && Array.isArray(item.bonuses) ? item.bonuses.map(b => ({ ...b })) : [];
+
+  if (item) {
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v == null ? "" : v; };
+    set("customItemName", item.name);
+    set("customItemType", item.type || "other");
+    set("customItemDamage", item.damage);
+    set("customItemDamageType", item.damageType || "Cortante");
+    set("customItemMastery", item.mastery);
+    set("customItemAcBonus", item.acBonus || 0);
+    set("customItemAttunement", String(item.attunement === true || item.attunement === "true"));
+    set("customItemWeight", item.weight);
+    set("customItemCost", item.cost);
+    set("customItemDesc", item.desc);
+    document.getElementById("customItemEquipNow").checked = !!item.equipped;
+  }
+  document.getElementById("customItemType").dispatchEvent(new Event("change"));
+
+  const modal = document.getElementById("customItemModal");
+  modal.querySelector(".modal-title").innerHTML = item
+    ? '<i class="fa-solid fa-shield-cat"></i> Editar Item / Arma Personalizada'
+    : '<i class="fa-solid fa-shield-cat"></i> Adicionar Item / Arma Personalizada';
+  renderItemBonusEditor();
+  modal.classList.add("active");
+}
+
+/** Desenha as linhas de bônus do formulário */
+function renderItemBonusEditor() {
+  const lista = document.getElementById("customItemBonusList");
+  if (!lista) return;
+  const itemAtual = _editingItemId ? character.customItems.find(i => i.id === _editingItemId) : null;
+  const armas = itemBonusWeaponOptions(itemAtual);
+
+  lista.innerHTML = _itemBonusDraft.map((b, i) => `
+    <div class="item-bonus-row" data-i="${i}">
+      <select class="form-control" data-f="target" title="Onde o bônus vale">
+        ${ITEM_BONUS_TARGETS.map(t => `<option value="${t.id}" ${t.id === b.target ? "selected" : ""}>${t.label}</option>`).join("")}
+      </select>
+      <select class="form-control" data-f="ref" title="Qual arma" ${b.target === "weapon" ? "" : "hidden"}>
+        ${armas.length ? armas.map(o => `<option value="${escAttr(o.value)}" ${o.value === b.ref ? "selected" : ""}>${escAttr(o.label)}</option>`).join("")
+                       : '<option value="">Nenhuma arma equipada</option>'}
+      </select>
+      <input type="text" class="form-control" data-f="atk" value="${escAttr(b.atk || "")}" placeholder="${b.target === "spell_save" ? "CD +1" : "Acerto +1"}" title="${b.target === "spell_save" ? "Soma na CD de magia" : "Soma no acerto"}">
+      <input type="text" class="form-control" data-f="dmg" value="${escAttr(b.dmg || "")}" placeholder="Dano +1 / 1d6" title="Soma no dano">
+      <button type="button" class="btn btn-secondary btn-sm" data-act="del" title="Remover bônus"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  `).join("");
+  atualizarBonusDetectado();
+}
+
+/** Mostra, sob a descrição, o que foi lido do texto e ainda não está nas linhas */
+function atualizarBonusDetectado() {
+  const el = document.getElementById("customItemBonusDetect");
+  if (!el) return;
+  const rascunho = {
+    name: document.getElementById("customItemName").value,
+    type: document.getElementById("customItemType").value,
+    damage: document.getElementById("customItemDamage").value,
+    desc: document.getElementById("customItemDesc").value
+  };
+  const lidos = bonusesFromItemText(rascunho).filter(t => !_itemBonusDraft.some(b => b.target === t.target && (b.atk || b.dmg)));
+  el.textContent = lidos.length
+    ? "✨ Lido do texto (já vale na ficha): " + lidos.map(describeItemBonus).join(" • ")
+    : "";
+}
+
+/** Liga os eventos do editor de bônus (uma vez, na carga) */
+function setupItemBonusEditor() {
+  const lista = document.getElementById("customItemBonusList");
+  const btnAdd = document.getElementById("btnAddItemBonus");
+  if (!lista || !btnAdd) return;
+
+  btnAdd.addEventListener("click", () => {
+    const tipo = document.getElementById("customItemType").value;
+    _itemBonusDraft.push({ target: tipo === "weapon" ? "this_weapon" : "spell_attack", ref: "", atk: "", dmg: "" });
+    renderItemBonusEditor();
+    const ultimo = lista.querySelector(".item-bonus-row:last-child [data-f='atk']");
+    if (ultimo) ultimo.focus();
+  });
+
+  const atualizar = (e) => {
+    const campo = e.target.closest("[data-f]");
+    const linha = e.target.closest(".item-bonus-row");
+    if (!campo || !linha) return;
+    const b = _itemBonusDraft[parseInt(linha.getAttribute("data-i"), 10)];
+    if (!b) return;
+    const f = campo.getAttribute("data-f");
+    b[f] = campo.value;
+    if (f === "target") {
+      if (b.target === "weapon" && !b.ref) {
+        const itemAtual = _editingItemId ? character.customItems.find(i => i.id === _editingItemId) : null;
+        const primeira = itemBonusWeaponOptions(itemAtual)[0];
+        b.ref = primeira ? primeira.value : "";
+      }
+      renderItemBonusEditor();
+    } else {
+      atualizarBonusDetectado();
+    }
+  };
+  lista.addEventListener("input", atualizar);
+  lista.addEventListener("change", atualizar);
+
+  lista.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act='del']");
+    if (!btn) return;
+    _itemBonusDraft.splice(parseInt(btn.closest(".item-bonus-row").getAttribute("data-i"), 10), 1);
+    renderItemBonusEditor();
+  });
+
+  ["customItemName", "customItemDesc", "customItemDamage"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", atualizarBonusDetectado);
+  });
+}
+
 /* ------------------------------------ AJUSTES TEMPORÁRIOS DE ATAQUE */
 
 /*
@@ -7879,6 +8218,7 @@ function syncSheetWeaponRows(ctx) {
   // tudo que o jogador empunha. As magias ficam de fora: cada uma traz o
   // próprio bônus de conjuração.
   aplicarAjustesTemporarios(auto);
+  aplicarBonusDeItensNasArmas(auto);
 
   // Tudo acima é arma; as magias vêm à parte porque disputam as mesmas linhas e
   // perdem a disputa. Uma arma equipada é escolha já feita pelo jogador; uma
@@ -8278,6 +8618,22 @@ function syncSheetSpellRows() {
 
   ov.spellRows.forEach(r => {
     if (r.grantSrc && !grantedIds.includes(r.spellId)) delete r.grantSrc;
+  });
+
+  // Magia de área não tem linha na tabela de ataques: o dano extra de um item
+  // (o "+N" na CD já está no cabeçalho) vai como anotação na linha da magia.
+  const danoEmArea = itemBonusesForSpells("save").filter(({ b }) => b.dmg);
+  ov.spellRows.forEach(r => {
+    if (!r.spellId || r.edited) return;
+    const base = String(r.notes || "").split(" • ").filter(t => t && !t.startsWith("Item: "));
+    const sp = DND5E_DATA.spells.find(x => x.id === r.spellId);
+    const info = sp ? spellCombatInfo(sp) : null;
+    if (danoEmArea.length && info && info.salvaguarda && !info.ataque && info.dano) {
+      const dmg = somarBonus(danoEmArea.map(p => p.b), "dmg");
+      const extra = [dmg.num ? comSinal(dmg.num) : "", ...dmg.textos].filter(Boolean).join(" + ");
+      base.push(`Item: ${extra} no dano (${[...new Set(danoEmArea.map(p => p.item.name))].join(", ")})`);
+    }
+    r.notes = base.join(" • ");
   });
 
   ov.spellRows = ov.spellRows.filter(r =>
@@ -9601,10 +9957,9 @@ function bindEvents() {
   const customItemModal = document.getElementById("customItemModal");
   const btnAddCustomItem = document.getElementById("btnAddCustomItemModalBtn");
   if (btnAddCustomItem) {
-    btnAddCustomItem.addEventListener("click", () => {
-      customItemModal.classList.add("active");
-    });
+    btnAddCustomItem.addEventListener("click", () => openCustomItemModal(null));
   }
+  setupItemBonusEditor();
   document.getElementById("closeCustomItemModal").addEventListener("click", () => {
     customItemModal.classList.remove("active");
   });
@@ -9620,6 +9975,7 @@ function bindEvents() {
     const t = e.target.value;
     weaponFields.style.display = t === "weapon" ? "grid" : "none";
     protectionFields.style.display = (t === "armor" || t === "shield" || t === "ring" || t === "wondrous") ? "grid" : "none";
+    atualizarBonusDetectado();
   });
 
   document.getElementById("customItemForm").addEventListener("submit", (e) => {
@@ -9637,26 +9993,21 @@ function bindEvents() {
     const equipped = document.getElementById("customItemEquipNow").checked;
 
     if (name) {
-      character.customItems.push({
-        id: "item_" + Date.now(),
-        name,
-        type,
-        damage,
-        damageType,
-        mastery,
-        acBonus,
-        attunement,
-        weight,
-        cost,
-        desc,
-        equipped
-      });
+      const bonuses = _itemBonusDraft
+        .filter(b => b.target && (String(b.atk || "").trim() || String(b.dmg || "").trim()))
+        .map(b => ({ target: b.target, ref: b.target === "weapon" ? b.ref : undefined,
+                     atk: String(b.atk || "").trim(), dmg: String(b.dmg || "").trim() }));
+      const dados = { name, type, damage, damageType, mastery, acBonus, attunement, weight, cost, desc, equipped, bonuses };
+      const editando = _editingItemId && character.customItems.find(i => i.id === _editingItemId);
+      if (editando) Object.assign(editando, dados);
+      else character.customItems.push({ id: "item_" + Date.now(), ...dados });
 
       customItemModal.classList.remove("active");
       document.getElementById("customItemForm").reset();
+      _editingItemId = null;
       renderCustomItemsList();
       recalculateCharacter();
-      showToast(`🛡️ Item customizado "${name}" criado com sucesso!`);
+      showToast(editando ? `🛡️ Item "${name}" atualizado!` : `🛡️ Item customizado "${name}" criado com sucesso!`);
     }
   });
 
