@@ -77,7 +77,7 @@ function renderCandidatos() {
   const lista = candidatosFiltrados();
   const tb = document.getElementById('encCandidatos');
   if (!lista.length) {
-    tb.innerHTML = '<tr><td colspan="6" class="fichas-ajuda">Nada com esses filtros (ou o orçamento acabou).</td></tr>';
+    tb.innerHTML = '<tr><td colspan="7" class="fichas-ajuda">Nada com esses filtros (ou o orçamento acabou).</td></tr>';
     return;
   }
   tb.innerHTML = lista.map(m => `<tr>
@@ -86,6 +86,7 @@ function renderCandidatos() {
       <td class="enc-local">${esc(habitatTexto(m.hab)) || '—'}</td>
       <td>${ndTexto(m.nd)}</td>
       <td>${formatarXp(xpDe(m))}</td>
+      <td>${pilulaDif(xpDe(m))}</td>
       <td><button class="btn btn-heal" data-enc-add="${esc(m.id)}" title="Adicionar ao encontro">+</button></td>
     </tr>`).join('');
 }
@@ -106,11 +107,17 @@ function renderEncontroAtual() {
         <span class="col-clickable" data-enc-ver="${esc(m.id)}">${esc(m.n)}</span>
         <span class="ficha-sub bst-inline">ND ${ndTexto(m.nd)} · ${formatarXp(xpDe(m))} XP</span>
         <span class="enc-qtd">
-          <button class="btn btn-secondary btn-sm" data-enc-menos="${i}" aria-label="Menos um">−</button>
+          <button class="btn btn-secondary btn-sm" data-enc-menos="${i}" aria-label="Menos um" title="Tirar um: ${ENC_DIF_NOME[difComDelta(-xpDe(m))]}">−</button>
           <strong>${c.qtd}</strong>
-          <button class="btn btn-secondary btn-sm" data-enc-mais="${i}" aria-label="Mais um">+</button>
+          <button class="btn btn-secondary btn-sm" data-enc-mais="${i}" aria-label="Mais um" title="Mais um: ${ENC_DIF_NOME[difComDelta(xpDe(m))]}">+</button>
+          <button class="btn btn-danger btn-sm enc-tirar" data-enc-tirar="${i}" aria-label="Tirar do encontro" title="Tirar ${esc(m.n)} do encontro">✕</button>
         </span>
         <span class="enc-xp">${formatarXp(xpDe(m) * c.qtd)} XP</span>
+        <span class="enc-efeito">
+          <span>+1 ${pilulaDif(xpDe(m))}</span>
+          <span>−1 ${enc.atual.length === 1 && c.qtd === 1 ? '<span class="enc-pill">vazio</span>' : pilulaDif(-xpDe(m))}</span>
+          ${c.qtd > 1 ? `<span>sem eles ${enc.atual.length === 1 ? '<span class="enc-pill">vazio</span>' : pilulaDif(-xpDe(m) * c.qtd)}</span>` : ''}
+        </span>
       </div>`;
   }).join('') : '<p class="fichas-ajuda">Adicione criaturas da lista ou use 🎲 Sortear.</p>';
 
@@ -129,8 +136,137 @@ function renderEncontroAtual() {
 
 function renderMontagem() {
   renderEncontroAtual();
+  renderSugestoes();
   renderCandidatos();
   renderTesouroAtual();
+}
+
+// ---------- efeito na dificuldade ----------
+/** Dificuldade se o total de XP mudar em `delta` */
+function difComDelta(delta) {
+  return dificuldadeDoTotal(Math.max(0, totalDoEncontro(enc.atual) + delta), limitesDoGrupo(enc.n, enc.nivel));
+}
+/** Selo "→ Alta"; contornado quando a dificuldade muda */
+function pilulaDif(delta) {
+  const nova = difComDelta(delta);
+  const muda = enc.atual.length && nova !== difAtual();
+  return `<span class="enc-pill enc-txt-${nova}${muda ? ' enc-muda' : ''}" title="${muda ? 'Muda a dificuldade' : 'Mantém a dificuldade'}">→ ${ENC_DIF_NOME[nova]}</span>`;
+}
+
+/** Última dificuldade mostrada, para avisar quando ela muda */
+let _difAnterior = null;
+
+/**
+ * Avisa a nova dificuldade depois de uma mudança. `acao` descreve o que o
+ * mestre fez ("+1 Goblin Warrior"); sem ação, só avisa se a dificuldade mudou
+ * (troca de nível ou de número de personagens).
+ */
+function avisarDificuldade(acao) {
+  const nova = enc.atual.length ? difAtual() : null;
+  const antes = _difAnterior;
+  _difAnterior = nova;
+  const mudou = antes && nova && antes !== nova;
+  if (mudou) {
+    const medidor = document.getElementById('encMedidor');
+    medidor.classList.remove('enc-pulso'); void medidor.offsetWidth; medidor.classList.add('enc-pulso');
+  }
+  if (!acao && !mudou) return;
+  if (!nova) return avisoRapido(`${acao} · encontro vazio`, 'neutro');
+  const texto = mudou
+    ? `Dificuldade mudou: ${ENC_DIF_NOME[antes]} → ${ENC_DIF_NOME[nova]}`
+    : `Dificuldade continua ${ENC_DIF_NOME[nova]}`;
+  avisoRapido(acao ? `${acao} · ${texto}` : texto, mudou ? 'dif' : 'neutro');
+}
+
+// ---------- sugestões por tipo de criatura ----------
+/*
+ * Olha os tipos que já estão no encontro (ou o tipo escolhido no filtro) e
+ * propõe o que completa o orçamento da dificuldade escolhida: quantas cópias
+ * de cada criatura do mesmo tipo cabem no XP que falta. Se o encontro passou
+ * do orçamento, propõe o que tirar para voltar a ele.
+ */
+function renderSugestoes() {
+  const box = document.getElementById('encSugestoes');
+  const orc = orcamentoAtual();
+  const total = totalDoEncontro(enc.atual);
+  const alvo = ENC_DIF_NOME[enc.dif];
+  const local = document.getElementById('encLocal').value;
+  const titulo = `<h3 class="enc-sub">💡 Sugestões para ${alvo}</h3>`;
+
+  // Passou do orçamento: o que tirar, ou o que trocar por algo mais fraco do mesmo tipo
+  if (total > orc) {
+    const tirar = enc.atual.map((c, i) => {
+      const m = acharMonstro(c.id);
+      const xp = xpDe(m);
+      if (!xp) return null;
+      const r = Math.ceil((total - orc) / xp);
+      if (r > c.qtd || r >= 7 || total - xp * r <= 0) return null;   // tirar tudo não é sugestão
+      return { i, m, r, delta: -xp * r };
+    }).filter(Boolean).sort((a, b) => b.delta - a.delta);
+
+    const trocas = enc.atual.map((c, i) => {
+      const m = acharMonstro(c.id);
+      const xp = xpDe(m);
+      if (!xp || !m.tipo) return null;
+      const cabe = orc - (total - xp);                 // XP disponível para o substituto
+      const opcoes = todosOsMonstros().filter(o => o.tipo === m.tipo && o.id !== m.id &&
+        xpDe(o) > 0 && xpDe(o) <= cabe && monstroNoLocal(o, local));
+      if (!opcoes.length) return null;
+      const melhor = opcoes.sort((a, b) => xpDe(b) - xpDe(a))[0];
+      return { i, m, por: melhor, delta: xpDe(melhor) - xp };
+    }).filter(Boolean).sort((a, b) => b.delta - a.delta).slice(0, 3);
+
+    const linhasTirar = tirar.map(t => `<div class="enc-sug">
+        <span>−${t.r}× <strong>${esc(t.m.n)}</strong></span> ${pilulaDif(t.delta)}
+        <button class="btn btn-danger btn-sm" data-enc-sug-tirar="${t.i}:${t.r}">Tirar</button>
+      </div>`).join('');
+    const linhasTrocar = trocas.map(t => `<div class="enc-sug">
+        <span>Trocar 1× <strong>${esc(t.m.n)}</strong> por <span class="col-clickable" data-enc-ver="${esc(t.por.id)}">${esc(t.por.n)}</span>
+          <span class="ficha-sub bst-inline">ND ${ndTexto(t.por.nd)} · ${formatarXp(xpDe(t.por))} XP</span></span>
+        ${pilulaDif(t.delta)}
+        <button class="btn btn-secondary btn-sm" data-enc-sug-trocar="${t.i}:${esc(t.por.id)}">Trocar</button>
+      </div>`).join('');
+    box.innerHTML = titulo + `<p class="fichas-ajuda">O encontro passou do orçamento de ${alvo} (${formatarXp(total)} de ${formatarXp(orc)} XP).</p>` +
+      (linhasTirar || linhasTrocar
+        ? linhasTirar + linhasTrocar
+        : '<p class="fichas-ajuda">Nenhuma troca simples volta ao orçamento: tire a criatura mais forte ou suba a dificuldade.</p>');
+    return;
+  }
+
+  const contagem = {};
+  enc.atual.forEach(c => { const m = acharMonstro(c.id); if (m && m.tipo) contagem[m.tipo] = (contagem[m.tipo] || 0) + c.qtd; });
+  let tipos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]).slice(0, 2);
+  const filtro = document.getElementById('encTipo').value;
+  if (filtro && !tipos.includes(filtro)) tipos = [filtro, ...tipos].slice(0, 2);
+  if (!tipos.length) {
+    box.innerHTML = titulo + '<p class="fichas-ajuda">Adicione uma criatura ou escolha um tipo no filtro para receber sugestões do mesmo tipo.</p>';
+    return;
+  }
+
+  const resta = orc - total;
+  const noEncontro = new Set(enc.atual.map(c => c.id));
+  const grupos = tipos.map(tipo => {
+    const opcoes = todosOsMonstros()
+      .filter(m => m.tipo === tipo && xpDe(m) > 0 && xpDe(m) <= resta && monstroNoLocal(m, local))
+      .map(m => {
+        const k = Math.min(6, Math.floor(resta / xpDe(m)));
+        // Quanto do orçamento a sugestão preenche; já estar no encontro desempata (forma bando)
+        return { m, k, nota: (k * xpDe(m)) / resta + (noEncontro.has(m.id) ? 0.05 : 0) - k * 0.01 };
+      })
+      .sort((a, b) => b.nota - a.nota)
+      .slice(0, 4);
+    return { tipo, opcoes };
+  });
+
+  const corpo = grupos.map(g => `<div class="enc-sug-grupo">${esc(BST_TIPOS[g.tipo] || g.tipo)}</div>` +
+    (g.opcoes.length ? g.opcoes.map(o => `<div class="enc-sug">
+        <span>+${o.k}× <span class="col-clickable" data-enc-ver="${esc(o.m.id)}">${esc(o.m.n)}</span>
+          <span class="ficha-sub bst-inline">ND ${ndTexto(o.m.nd)} · ${formatarXp(xpDe(o.m) * o.k)} XP</span></span>
+        ${pilulaDif(xpDe(o.m) * o.k)}
+        <button class="btn btn-heal btn-sm" data-enc-sug="${esc(o.m.id)}:${o.k}">Adicionar</button>
+      </div>`).join('') : `<p class="fichas-ajuda">Nada desse tipo cabe nos ${formatarXp(resta)} XP que faltam.</p>`)
+  ).join('');
+  box.innerHTML = titulo + `<p class="fichas-ajuda">Faltam ${formatarXp(resta)} XP para o teto de ${alvo}.</p>` + corpo;
 }
 
 function renderTesouroAtual() {
@@ -145,15 +281,26 @@ function difAtual() {
 }
 
 /** O encontro mudou de criaturas: o tesouro sugerido acompanha */
-function encontroMudou() {
+function encontroMudou(acao) {
   enc.tesouro = enc.atual.length ? sortearTesouro(enc.atual, enc.nivel, difAtual()) : null;
   salvarEncontros(); renderMontagem();
+  avisarDificuldade(acao);
 }
 
-function adicionarAoEncontro(id) {
+function adicionarAoEncontro(id, qtd = 1) {
   const c = enc.atual.find(x => x.id === id);
-  if (c) c.qtd++; else enc.atual.push({ id, qtd: 1 });
-  encontroMudou();
+  if (c) c.qtd += qtd; else enc.atual.push({ id, qtd });
+  encontroMudou(`+${qtd} ${(acharMonstro(id) || {}).n || id}`);
+}
+
+function tirarDoEncontro(i, qtd) {
+  const c = enc.atual[i];
+  if (!c) return;
+  const nome = (acharMonstro(c.id) || {}).n || c.id;
+  const r = Math.min(qtd, c.qtd);
+  c.qtd -= r;
+  if (c.qtd <= 0) enc.atual.splice(i, 1);
+  encontroMudou(`−${r} ${nome}`);
 }
 
 /**
@@ -193,7 +340,8 @@ function sortearEncontro() {
     if (resta < orc * 0.1) break;
   }
   enc.atual = escolhidos;
-  encontroMudou();
+  _difAnterior = null;                  // encontro novo: não é "mudança"
+  encontroMudou('🎲 Encontro sorteado');
 }
 
 function encontroParaIniciativa(lista) {
@@ -205,7 +353,7 @@ function encontroParaIniciativa(lista) {
     const ini = monstroParaIniciativa(c.id, { qtd: c.qtd, rolarPv, grupo: true });
     return `${c.qtd}× ${m.n} (iniciativa ${ini})`;
   }).filter(Boolean);
-  alert('Na iniciativa:\n' + partes.join('\n'));
+  alert('No Combate:\n' + partes.join('\n'));
 }
 
 // ---------- tabela de encontros ----------
@@ -310,26 +458,28 @@ function sincronizarGrupo() {
     enc.nivel = Math.max(1, Math.min(20, +document.getElementById('encNivel').value || 1));
     enc.dif = document.getElementById('encDif').value;
     salvarEncontros(); renderMontagem();
+    avisarDificuldade();               // mudar o grupo pode mudar a dificuldade do mesmo encontro
   };
   ['encN', 'encNivel'].forEach(id => document.getElementById(id).addEventListener('input', grupo));
   document.getElementById('encDif').addEventListener('change', grupo);
 
   document.getElementById('encDasFichas').addEventListener('click', () => {
     const fichas = (state.fichas || []).filter(f => f.nivel);
-    if (!fichas.length) { alert('Nenhuma ficha carregada na aba Fichas D&D.'); return; }
+    if (!fichas.length) { alert('Nenhuma ficha carregada na aba Personagens.'); return; }
     enc.n = fichas.length;
     enc.nivel = Math.round(fichas.reduce((s, f) => s + (+f.nivel || 1), 0) / fichas.length);
     sincronizarGrupo(); salvarEncontros(); renderMontagem();
+    avisarDificuldade();
   });
 
   ['encBusca'].forEach(id => document.getElementById(id).addEventListener('input', renderCandidatos));
-  ['encTipo', 'encLocal', 'encCabe'].forEach(id => document.getElementById(id).addEventListener('change', renderCandidatos));
+  ['encTipo', 'encLocal', 'encCabe'].forEach(id => document.getElementById(id).addEventListener('change', () => { renderCandidatos(); renderSugestoes(); }));
   ['tabBusca'].forEach(id => document.getElementById(id).addEventListener('input', renderTabela));
   ['tabDif', 'tabTipo', 'tabLocal'].forEach(id => document.getElementById(id).addEventListener('change', renderTabela));
 
   document.getElementById('encSortear').addEventListener('click', sortearEncontro);
   document.getElementById('encIniciativa').addEventListener('click', () => encontroParaIniciativa(enc.atual));
-  document.getElementById('encLimpar').addEventListener('click', () => { enc.atual = []; encontroMudou(); });
+  document.getElementById('encLimpar').addEventListener('click', () => { enc.atual = []; _difAnterior = null; encontroMudou(); });
   document.getElementById('encTesouroRolar').addEventListener('click', () => {
     if (!enc.atual.length) return;
     enc.tesouro = sortearTesouro(enc.atual, enc.nivel, difAtual());
@@ -350,10 +500,20 @@ function sincronizarGrupo() {
     let v;
     if ((v = alvo('data-enc-ver')) !== null) return verMonstroNoBestiario(v);
     if ((v = alvo('data-enc-add')) !== null) return adicionarAoEncontro(v);
-    if ((v = alvo('data-enc-mais')) !== null) { enc.atual[+v].qtd++; return encontroMudou(); }
-    if ((v = alvo('data-enc-menos')) !== null) {
-      if (--enc.atual[+v].qtd <= 0) enc.atual.splice(+v, 1);
-      return encontroMudou();
+    if ((v = alvo('data-enc-mais')) !== null) return adicionarAoEncontro(enc.atual[+v].id, 1);
+    if ((v = alvo('data-enc-menos')) !== null) return tirarDoEncontro(+v, 1);
+    if ((v = alvo('data-enc-tirar')) !== null) return tirarDoEncontro(+v, Infinity);
+    if ((v = alvo('data-enc-sug')) !== null) { const [id, k] = v.split(':'); return adicionarAoEncontro(id, +k); }
+    if ((v = alvo('data-enc-sug-tirar')) !== null) { const [i, r] = v.split(':'); return tirarDoEncontro(+i, +r); }
+    if ((v = alvo('data-enc-sug-trocar')) !== null) {
+      const [i, por] = v.split(':');
+      const c = enc.atual[+i];
+      if (!c) return;
+      const de = (acharMonstro(c.id) || {}).n || c.id;
+      if (--c.qtd <= 0) enc.atual.splice(+i, 1);
+      const ja = enc.atual.find(x => x.id === por);
+      if (ja) ja.qtd++; else enc.atual.push({ id: por, qtd: 1 });
+      return encontroMudou(`${de} → ${(acharMonstro(por) || {}).n || por}`);
     }
     if ((v = alvo('data-tab-ini')) !== null) {
       const s = enc.salvos.find(x => x.id === v);
@@ -368,6 +528,7 @@ function sincronizarGrupo() {
       document.getElementById('encNome').value = s.nome;
       document.getElementById('encSalvarLocal').value = s.local || '';
       sincronizarGrupo(); salvarEncontros(); renderMontagem();
+      _difAnterior = enc.atual.length ? difAtual() : null;
       return raiz.scrollIntoView({ behavior: 'smooth' });
     }
     if ((v = alvo('data-tab-del')) !== null) {
@@ -380,4 +541,5 @@ function sincronizarGrupo() {
 
   renderMontagem();
   renderTabela();
+  _difAnterior = enc.atual.length ? difAtual() : null;
 })();

@@ -292,7 +292,7 @@ function renderFichas() {
         <button class="btn btn-dmg" onclick="fichaDano(${i})">Dano</button>
         <input type="number" min="0" max="9999" value="0" id="fichaCura${i}">
         <button class="btn btn-heal" onclick="fichaCura(${i})">Curar</button>
-        <button class="btn btn-repair" onclick="fichaNoFormulario(${i})">➕ Personagens</button>
+        <button class="btn btn-repair" onclick="fichaNoFormulario(${i})">➕ Combate</button>
         <button class="btn btn-danger" onclick="fichaRemover(${i})">Remover</button>
       </div></td>`;
     tb.appendChild(tr);
@@ -341,7 +341,7 @@ function fichaCura(i) {
   salvarFichas(); renderFichas();
 }
 
-/** Seletor de ficha no formulário da aba Personagens */
+/** Seletor de ficha no formulário da aba Combate */
 function renderFichaSelect() {
   const sel = document.getElementById('entityFicha');
   if (!sel) return;
@@ -349,7 +349,7 @@ function renderFichaSelect() {
     `<option value="${i}">${esc(f.nome || '(sem nome)')}${f.classe ? ' — ' + esc(f.classe) + ' ' + esc(f.nivelTexto || '') : ''}</option>`).join('');
 }
 
-/** Preenche o formulário "Adicionar Personagem" com os dados da ficha */
+/** Preenche o formulário "Adicionar ao Combate" com os dados da ficha */
 function preencherFormularioComFicha(i) {
   const f = state.fichas[i];
   if (!f) return;
@@ -405,7 +405,7 @@ document.getElementById('fichasCombateBtn').addEventListener('click', () => {
   state.fichas.forEach((_, i) => fichaParaCombate(i));
   state.entities.sort((a,b) => b.initiative - a.initiative);
   renderEntities(); saveData();
-  alert(`${state.fichas.length} ficha(s) enviada(s) para Personagens.`);
+  alert(`${state.fichas.length} ficha(s) enviada(s) para o Combate.`);
 });
 
 document.getElementById('fichasLimparBtn').addEventListener('click', () => {
@@ -426,7 +426,9 @@ document.getElementById('exportBtn').addEventListener('click', () => {
     currentTurn: state.currentTurn, fichas: state.fichas,
     // Bestiário e encontros ficam em bestiario.js / encontros.js
     bestiario: typeof bst !== 'undefined' ? bst.meus : [],
-    encontros: typeof enc !== 'undefined' ? enc.salvos : []
+    encontros: typeof enc !== 'undefined' ? enc.salvos : [],
+    encontroAtual: typeof enc !== 'undefined'
+      ? { n: enc.n, nivel: enc.nivel, dif: enc.dif, atual: enc.atual, tesouro: enc.tesouro } : null
   }, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -447,6 +449,10 @@ document.getElementById('importBtn').addEventListener('change', e => {
       if (Array.isArray(data.fichas)) { state.fichas = data.fichas; salvarFichas(); }
       if (Array.isArray(data.bestiario) && typeof bst !== 'undefined') { bst.meus = data.bestiario; salvarBestiario(); renderBestiario(); }
       if (Array.isArray(data.encontros) && typeof enc !== 'undefined') { enc.salvos = data.encontros; salvarEncontros(); renderTabela(); }
+      if (data.encontroAtual && typeof enc !== 'undefined') {
+        Object.assign(enc, data.encontroAtual);
+        salvarEncontros(); sincronizarGrupo(); renderMontagem();
+      }
       renderAll(); saveData();
       alert('Dados importados com sucesso!');
     } catch(err) { alert('Erro ao importar: ' + err.message); }

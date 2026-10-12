@@ -168,7 +168,7 @@ function renderBestiario() {
       <td>${m.ca ?? '—'}</td>
       <td>${m.pv ?? '—'}${m.dv ? ` <span class="ficha-sub bst-inline">(${esc(m.dv)})</span>` : ''}</td>
       <td><div class="action-cell bst-acoes">
-        <button class="btn btn-repair" data-bst-ini="${esc(m.id)}" title="Pôr na iniciativa (aba Personagens)">⚔️ Iniciativa</button>
+        <button class="btn btn-repair" data-bst-ini="${esc(m.id)}" title="Pôr no Combate (primeira aba)">⚔️ Iniciativa</button>
         ${link ? `<a class="btn btn-secondary btn-sm" href="${link}" target="_blank" rel="noopener" title="Página completa no AideDD">🔗 AideDD</a>` : ''}
       </div></td>
     </tr>`;
@@ -251,7 +251,7 @@ function abrirMonstro(id) {
   document.getElementById('bstDetalhe').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/** Chamado da aba Personagens (📖): troca de aba e abre o bloco */
+/** Chamado da aba Combate (📖): troca de aba e abre o bloco */
 function verMonstroNoBestiario(id) {
   document.getElementById('tab-bestiario').click();
   abrirMonstro(id);
@@ -270,52 +270,123 @@ function rolarDadosDeVida(txt) {
   return Math.max(1, total);
 }
 
-/**
- * Põe `qtd` cópias do monstro na aba Personagens. Usado pelo Bestiário (que
- * lê as opções da barra de envio) e pelos Encontros (que mandam as próprias).
- * Devolve a iniciativa rolada para o grupo, ou null se foi individual.
- */
-function monstroParaIniciativa(id, opcoes) {
-  const m = acharMonstro(id);
-  if (!m) return null;
-  const doPainel = !opcoes;
-  const op = opcoes || {
-    qtd: +document.getElementById('bstQtd').value || 1,
-    rolarPv: document.getElementById('bstPv').value === 'rolado',
-    grupo: document.getElementById('bstIniGrupo').checked
-  };
-  const qtd = Math.max(1, Math.min(30, op.qtd || 1));
-  const bonus = iniciativaDe(m);
-  const iniGrupo = d(20) + bonus;
-
-  // Numera a partir do último do mesmo nome que já está na mesa (Goblin 3, 4...)
+/** Nomes das cópias, numerados a partir do último do mesmo nome no Combate (Goblin 3, 4...) */
+function nomesDasCopias(m, qtd) {
   const re = new RegExp('^' + m.n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?: (\\d+))?$');
   let ultimo = 0;
   state.entities.forEach(e => { const r = e.name.match(re); if (r) ultimo = Math.max(ultimo, +(r[1] || 1)); });
   const numerar = qtd > 1 || ultimo > 0;
+  return Array.from({ length: qtd }, (_, i) => numerar ? `${m.n} ${ultimo + i + 1}` : m.n);
+}
+
+/**
+ * Põe `qtd` cópias do monstro na aba Combate. Usado pela caixa de iniciativa
+ * do Bestiário (que manda os valores digitados em `iniciativas`) e pelos
+ * Encontros (que deixam o app rolar). Devolve a iniciativa do grupo, ou null.
+ */
+function monstroParaIniciativa(id, op) {
+  const m = acharMonstro(id);
+  if (!m) return null;
+  const qtd = Math.max(1, Math.min(30, op.qtd || 1));
+  const bonus = iniciativaDe(m);
+  const valores = op.iniciativas || [];
+  const rolar = () => d(20) + bonus;
+  const iniGrupo = Number.isFinite(valores[0]) ? valores[0] : rolar();
 
   const acoes = [...(m.ac || []), ...(m.ab || [])].map(a => a[0].replace(/\s*\(.*\)$/, ''))
     .filter(n => n !== 'Multiattack').slice(0, 6);
 
-  for (let i = 1; i <= qtd; i++) {
+  nomesDasCopias(m, qtd).forEach((nome, i) => {
     const pv = (op.rolarPv && rolarDadosDeVida(m.dv)) || m.pv || 1;
     state.entities.push({
       id: Date.now() + Math.random(),
-      name: numerar ? `${m.n} ${ultimo + i}` : m.n,
+      name: nome,
       type: m.categoria === 'NPC' ? 'NPC' : 'Monster',
       maxHp: pv, hp: pv,
-      initiative: op.grupo ? iniGrupo : d(20) + bonus,
+      initiative: op.grupo ? iniGrupo : (Number.isFinite(valores[i]) ? valores[i] : rolar()),
       armor: m.ca || 0,
       conditions: [],
       abilities: acoes,
       ref: m.id,
       turn_info: ''
     });
-  }
+  });
   state.entities.sort((a, b) => b.initiative - a.initiative);
   renderEntities(); saveData();
-  if (doPainel) alert(`${qtd}× ${m.n} na iniciativa (${op.grupo ? `rolou ${iniGrupo}` : 'iniciativa individual'}, bônus ${comSinalBst(bonus)}).`);
   return op.grupo ? iniGrupo : null;
+}
+
+// ---------- caixa de iniciativa ----------
+/*
+ * O ⚔️ do Bestiário abre esta caixa em vez de mandar direto: o mestre digita
+ * a iniciativa que rolou na mesa (ou fica com a sugerida, d20 + bônus), escolhe
+ * quantas cópias e como os PV saem, e só então a criatura vai para o Combate.
+ */
+const iniCaixa = { id: null, valores: [] };
+
+/** Aviso que some sozinho; tipo 'dif' (âmbar) marca mudança de dificuldade */
+function avisoRapido(msg, tipo) {
+  const el = document.getElementById('avisoRapido');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'aviso-rapido' + (tipo ? ' aviso-' + tipo : '');
+  el.hidden = false;
+  clearTimeout(avisoRapido._t);
+  avisoRapido._t = setTimeout(() => { el.hidden = true; }, 3500);
+}
+
+function abrirCaixaIniciativa(id) {
+  const m = acharMonstro(id);
+  if (!m) return;
+  const bonus = iniciativaDe(m);
+  iniCaixa.id = id;
+  iniCaixa.valores = [d(20) + bonus];
+  document.getElementById('bstQtd').value = 1;
+  document.getElementById('iniModalTitulo').textContent = `⚔️ ${m.n}`;
+  document.getElementById('iniModalInfo').innerHTML =
+    `Bônus de Iniciativa <strong>${comSinalBst(bonus)}</strong> · CA ${m.ca ?? '—'} · PV ${m.pv ?? '—'}${m.dv ? ` (${esc(m.dv)})` : ''}`;
+  renderValoresIniciativa();
+  document.getElementById('iniModal').hidden = false;
+  const primeiro = document.querySelector('#iniModalValores input');
+  if (primeiro) { primeiro.focus(); primeiro.select(); }
+}
+
+function fecharCaixaIniciativa() {
+  document.getElementById('iniModal').hidden = true;
+  iniCaixa.id = null;
+}
+
+/** Um campo por cópia (iniciativa individual) ou um só para o grupo */
+function renderValoresIniciativa() {
+  const m = acharMonstro(iniCaixa.id);
+  if (!m) return;
+  const qtd = Math.max(1, Math.min(30, +document.getElementById('bstQtd').value || 1));
+  const grupo = document.getElementById('bstIniGrupo').checked;
+  const campos = grupo ? 1 : qtd;
+  const bonus = iniciativaDe(m);
+  while (iniCaixa.valores.length < campos) iniCaixa.valores.push(d(20) + bonus);
+  const nomes = nomesDasCopias(m, qtd);
+  document.getElementById('iniModalValores').innerHTML = Array.from({ length: campos }, (_, i) => `
+    <label class="ini-linha">
+      <span>${grupo ? (qtd > 1 ? `Iniciativa do grupo (${qtd})` : 'Iniciativa') : esc(nomes[i])}</span>
+      <input type="number" min="-10" max="99" data-ini="${i}" value="${iniCaixa.valores[i]}" required>
+      <button type="button" class="btn btn-secondary btn-sm" data-ini-rolar="${i}" title="Rolar d20 ${comSinalBst(bonus)}">🎲</button>
+    </label>`).join('');
+}
+
+function confirmarCaixaIniciativa(e) {
+  e.preventDefault();
+  const m = acharMonstro(iniCaixa.id);
+  if (!m) return fecharCaixaIniciativa();
+  const qtd = Math.max(1, Math.min(30, +document.getElementById('bstQtd').value || 1));
+  const grupo = document.getElementById('bstIniGrupo').checked;
+  const iniciativas = [...document.querySelectorAll('#iniModalValores [data-ini]')].map(i => parseInt(i.value, 10));
+  monstroParaIniciativa(m.id, {
+    qtd, grupo, iniciativas,
+    rolarPv: document.getElementById('bstPv').value === 'rolado'
+  });
+  fecharCaixaIniciativa();
+  avisoRapido(`${qtd > 1 ? qtd + '× ' : ''}${m.n} no Combate (iniciativa ${grupo ? iniciativas[0] : iniciativas.join(', ')}).`);
 }
 
 // ---------- importar colando o bloco ----------
@@ -445,10 +516,30 @@ function excluirMonstro(id) {
     const ver = e.target.closest('[data-bst-ver]');
     if (ver) return abrirMonstro(ver.dataset.bstVer);
     const ini = e.target.closest('[data-bst-ini]');
-    if (ini) return monstroParaIniciativa(ini.dataset.bstIni);
+    if (ini) return abrirCaixaIniciativa(ini.dataset.bstIni);
     const del = e.target.closest('[data-bst-del]');
     if (del) return excluirMonstro(del.dataset.bstDel);
     if (e.target.closest('[data-bst-fechar]')) { bst.aberto = null; renderDetalhe(); renderBestiario(); }
+  });
+
+  // Caixa de iniciativa
+  const caixa = document.getElementById('iniModal');
+  document.getElementById('iniForm').addEventListener('submit', confirmarCaixaIniciativa);
+  document.getElementById('iniCancelar').addEventListener('click', fecharCaixaIniciativa);
+  caixa.addEventListener('click', e => { if (e.target === caixa) fecharCaixaIniciativa(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !caixa.hidden) fecharCaixaIniciativa(); });
+  ['bstQtd', 'bstIniGrupo'].forEach(id => document.getElementById(id).addEventListener('input', renderValoresIniciativa));
+  document.getElementById('bstIniGrupo').addEventListener('change', renderValoresIniciativa);
+  document.getElementById('iniModalValores').addEventListener('input', e => {
+    const campo = e.target.closest('[data-ini]');
+    if (campo) iniCaixa.valores[+campo.dataset.ini] = parseInt(campo.value, 10);
+  });
+  document.getElementById('iniModalValores').addEventListener('click', e => {
+    const btn = e.target.closest('[data-ini-rolar]');
+    if (!btn) return;
+    const i = +btn.dataset.iniRolar;
+    iniCaixa.valores[i] = d(20) + iniciativaDe(acharMonstro(iniCaixa.id));
+    btn.previousElementSibling.value = iniCaixa.valores[i];
   });
 
   document.getElementById('bstLerBtn').addEventListener('click', () => {

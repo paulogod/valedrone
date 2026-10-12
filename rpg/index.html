@@ -17,8 +17,8 @@
     </header>
 
     <nav class="tab-nav" id="tabNav">
-      <button class="tab-btn active" data-tab="personagens" id="tab-personagens">🎭 Personagens</button>
-      <button class="tab-btn" data-tab="fichas" id="tab-fichas">🐉 Fichas D&amp;D</button>
+      <button class="tab-btn active" data-tab="personagens" id="tab-personagens">⚔️ Combate</button>
+      <button class="tab-btn" data-tab="fichas" id="tab-fichas">🎭 Personagens</button>
       <button class="tab-btn" data-tab="bestiario" id="tab-bestiario">📚 Bestiário</button>
       <button class="tab-btn" data-tab="encontros" id="tab-encontros">🎲 Encontros</button>
       <button class="tab-btn" data-tab="notas" id="tab-notas">📝 Notas</button>
@@ -27,7 +27,7 @@
     <!-- PERSONAGENS TAB -->
     <section class="tab-content active" id="content-personagens">
       <div class="card form-card">
-        <h2 class="card-title">Adicionar Personagem</h2>
+        <h2 class="card-title">Adicionar ao Combate</h2>
         <form id="entityForm" class="form-grid">
           <div class="form-group"><label>Ficha D&amp;D</label><select id="entityFicha"><option value="">— preencher à mão —</option></select></div>
           <div class="form-group"><label>Nome</label><input type="text" id="entityName" required></div>
@@ -39,7 +39,7 @@
           <div class="form-group"><label>Armadura</label><input type="number" id="entityArmor" min="0" max="9999" value="0"></div>
           <div class="form-group"><label>Condições</label><input type="text" id="entityConditions" placeholder="separadas por vírgula"></div>
           <div class="form-group"><label>Habilidades</label><input type="text" id="entityAbilities" placeholder="separadas por vírgula"></div>
-          <button type="submit" class="btn btn-primary" id="addEntityBtn">Adicionar Personagem</button>
+          <button type="submit" class="btn btn-primary" id="addEntityBtn">Adicionar ao Combate</button>
         </form>
       </div>
       <div class="card">
@@ -66,7 +66,7 @@
         <p class="fichas-ajuda">Carregue os JSON exportados pelo <a href="../dnd/">Criador de Ficha</a>. Dá para escolher vários de uma vez; carregar de novo a ficha do mesmo personagem atualiza a linha dele.</p>
         <div class="turn-bar">
           <label class="btn btn-primary file-label">📂 Carregar Fichas (JSON)<input type="file" accept=".json,application/json" id="fichasInput" multiple hidden></label>
-          <button class="btn btn-secondary" id="fichasCombateBtn">⚔️ Enviar todas para Personagens</button>
+          <button class="btn btn-secondary" id="fichasCombateBtn">⚔️ Enviar todas para o Combate</button>
           <button class="btn btn-danger" id="fichasLimparBtn">Limpar</button>
         </div>
         <div class="table-wrap">
@@ -84,7 +84,7 @@
     <section class="tab-content" id="content-bestiario">
       <div class="card">
         <h2 class="card-title">Bestiário — Monstros e NPCs (D&amp;D 2024)</h2>
-        <p class="fichas-ajuda">Os 341 monstros do SRD 5.2 já vêm prontos (textos em inglês, como no SRD). Clique no nome para ver o bloco de estatísticas, em 🔗 para a página completa no <a href="https://www.aidedd.org/" target="_blank" rel="noopener">AideDD</a> e em ⚔️ para pôr na iniciativa. Monstros de outros livros entram colando o bloco em "Importar".</p>
+        <p class="fichas-ajuda">Os 341 monstros do SRD 5.2 já vêm prontos (textos em inglês, como no SRD). Clique no nome para ver o bloco de estatísticas, em 🔗 para a página completa no <a href="https://www.aidedd.org/" target="_blank" rel="noopener">AideDD</a> e em ⚔️ para escolher a iniciativa e pôr no Combate. Monstros de outros livros entram colando o bloco em "Importar".</p>
         <div class="bst-filtros">
           <input type="search" id="bstBusca" placeholder="Buscar por nome ou tipo…" aria-label="Buscar monstro">
           <select id="bstTipo" aria-label="Tipo de criatura"><option value="">Todos os tipos</option></select>
@@ -96,11 +96,6 @@
             <option value="meus">Só importados</option>
           </select>
           <span class="bst-total" id="bstTotal"></span>
-        </div>
-        <div class="bst-envio">
-          <label>Quantidade <input type="number" id="bstQtd" min="1" max="30" value="1"></label>
-          <label>PV <select id="bstPv"><option value="media">Média</option><option value="rolado">Rolado</option></select></label>
-          <label><input type="checkbox" id="bstIniGrupo" checked> Uma iniciativa para o grupo</label>
         </div>
         <div class="table-wrap bst-lista">
           <table id="bstTable">
@@ -184,7 +179,7 @@
             </div>
             <div class="table-wrap bst-lista enc-lista">
               <table>
-                <thead><tr><th>Nome</th><th>Tipo</th><th>Local</th><th>ND</th><th>XP</th><th></th></tr></thead>
+                <thead><tr><th>Nome</th><th>Tipo</th><th>Local</th><th>ND</th><th>XP</th><th>Se adicionar</th><th></th></tr></thead>
                 <tbody id="encCandidatos"></tbody>
               </table>
             </div>
@@ -194,6 +189,7 @@
             <h3 class="enc-sub">Encontro atual</h3>
             <div id="encAtual"></div>
             <div class="enc-medidor" id="encMedidor"></div>
+            <div class="enc-sugestoes" id="encSugestoes"></div>
             <div class="tes-caixa">
               <div class="tes-topo">
                 <h3 class="enc-sub">💰 Tesouro sugerido</h3>
@@ -260,6 +256,26 @@
     </div>
     <footer class="app-footer">Feito pelo Mestre Paulo Godoy</footer>
   </div>
+
+  <!-- CAIXA DE INICIATIVA (Bestiário → Combate) -->
+  <div class="modal-fundo" id="iniModal" hidden>
+    <form class="modal-caixa" id="iniForm" role="dialog" aria-modal="true" aria-labelledby="iniModalTitulo">
+      <h2 class="card-title" id="iniModalTitulo">Iniciativa</h2>
+      <p class="ini-info" id="iniModalInfo"></p>
+      <div class="bst-envio">
+        <label>Quantidade <input type="number" id="bstQtd" min="1" max="30" value="1"></label>
+        <label>PV <select id="bstPv"><option value="media">Média</option><option value="rolado">Rolado</option></select></label>
+        <label><input type="checkbox" id="bstIniGrupo" checked> Uma iniciativa para o grupo</label>
+      </div>
+      <div id="iniModalValores" class="ini-valores"></div>
+      <p class="fichas-ajuda ini-dica">Digite o valor rolado na mesa ou deixe o sugerido (d20 + bônus). 🎲 rola de novo.</p>
+      <div class="ini-botoes">
+        <button type="button" class="btn btn-secondary" id="iniCancelar">Cancelar</button>
+        <button type="submit" class="btn btn-primary">⚔️ Adicionar ao Combate</button>
+      </div>
+    </form>
+  </div>
+  <div class="aviso-rapido" id="avisoRapido" role="status" aria-live="polite" hidden></div>
 
   <script src="srd-monstros.js"></script>
   <script src="srd-itens.js"></script>

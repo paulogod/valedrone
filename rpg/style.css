@@ -357,3 +357,43 @@ tr.bst-aberto { background: rgba(139,92,246,.12); }
 .tes-total strong { color: #fbbf24; }
 .tes-regra { font-size: .72rem; color: #64748b; margin-top: .5rem; line-height: 1.4; }
 .tes-resumo { font-size: .8rem; max-width: 18rem; }
+
+/* ========== CAIXA DE INICIATIVA ========== */
+.modal-fundo { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(5,8,15,.7); backdrop-filter: blur(3px); }
+.modal-fundo[hidden] { display: none; }
+.modal-caixa { width: min(440px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; padding: 1.25rem;
+  border-radius: 14px; background: #161d2e; border: 1px solid rgba(139,92,246,.35); box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+.modal-caixa .card-title { margin-bottom: .5rem; }
+.ini-info { font-size: .85rem; color: #94a3b8; margin-bottom: .75rem; }
+.ini-info strong { color: #fbbf24; }
+.ini-valores { display: flex; flex-direction: column; gap: .4rem; margin-top: .75rem; }
+.ini-linha { display: flex; align-items: center; gap: .5rem; font-size: .87rem; }
+.ini-linha span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ini-linha input { width: 5rem; text-align: center; font-size: 1.05rem; font-weight: 700; padding: .4rem; }
+.ini-dica { margin: .6rem 0 0; font-size: .75rem; }
+.ini-botoes { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1rem; flex-wrap: wrap; }
+
+.aviso-rapido { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); z-index: 60;
+  max-width: calc(100vw - 32px); padding: .6rem 1rem; border-radius: 10px; font-size: .87rem;
+  background: rgba(34,197,94,.95); color: #052e16; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.aviso-rapido[hidden] { display: none; }
+
+/* ========== ENCONTROS: efeito na dificuldade e sugestões ========== */
+.enc-pill { display: inline-block; font-size: .72rem; font-weight: 700; padding: 1px 7px; border-radius: 9999px;
+  background: rgba(51,65,85,.6); white-space: nowrap; }
+.enc-pill.enc-muda { outline: 1px solid currentColor; }
+.enc-efeito { display: flex; gap: .6rem; flex-wrap: wrap; width: 100%; font-size: .72rem; color: #94a3b8; }
+.enc-tirar { padding: .1rem .45rem !important; }
+.enc-sugestoes { margin: .75rem 0; padding: .75rem; border-radius: 10px; background: rgba(139,92,246,.07);
+  border: 1px solid rgba(139,92,246,.2); }
+.enc-sugestoes .enc-sub { margin-bottom: .2rem; }
+.enc-sug-grupo { font-size: .75rem; color: #c084fc; font-weight: 700; margin: .55rem 0 .25rem; text-transform: uppercase; letter-spacing: .5px; }
+.enc-sug { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; padding: .3rem 0; font-size: .85rem;
+  border-bottom: 1px solid rgba(51,65,85,.4); }
+.enc-sug:last-child { border-bottom: none; }
+.enc-sug .btn { margin-left: auto; }
+.enc-medidor.enc-pulso .enc-barra { animation: encPulso 1.2s ease; }
+@keyframes encPulso { 0%, 100% { box-shadow: none; } 30% { box-shadow: 0 0 0 4px rgba(251,191,36,.45); } }
+.aviso-rapido.aviso-dif { background: rgba(251,191,36,.97); color: #422006; }
+.aviso-rapido.aviso-neutro { background: rgba(51,65,85,.97); color: #e2e8f0; }
