@@ -259,6 +259,16 @@ function proximosNaFila(qtd) {
   return fila;
 }
 
+// ---------- links da criatura ----------
+/** Botões 📖 (Bestiário) e 🔗 AideDD de quem veio do Bestiário ou dos Encontros */
+function linksDaCriatura(e, rotuloCompleto) {
+  if (!e.ref) return '';
+  const m = typeof acharMonstro === 'function' ? acharMonstro(e.ref) : null;
+  const url = m && typeof linkAidedd === 'function' ? linkAidedd(m) : '';
+  return `<button type="button" class="btn-lupa" onclick="verMonstroNoBestiario('${esc(e.ref)}')" title="Bloco completo no Bestiário" aria-label="Ver ${esc(e.name)} no Bestiário">📖</button>` +
+    (url ? `<a class="cb-aidedd" href="${url}" target="_blank" rel="noopener" title="Página da criatura no AideDD" aria-label="Abrir ${esc(m.n)} no AideDD">🔗${rotuloCompleto ? ' AideDD' : ''}</a>` : '');
+}
+
 // ---------- ações do monstro ----------
 /** "Melee Attack Roll: +14 ... Hit: 13 (1d10 + 8) Slashing damage plus 5 (2d4) Fire damage" → números */
 function lerAcao(desc) {
@@ -349,7 +359,7 @@ function renderTurnoAtual() {
       <span class="cb-turno-rotulo">Turno de</span>
       <h2 class="cb-turno-nome">${esc(e.name)}</h2>
       <span class="cb-tipo cb-tipo-${esc(e.type)}">${{ PC: 'Herói', NPC: 'NPC', Monster: 'Monstro' }[e.type] || esc(e.type)}</span>
-      ${e.ref ? `<button type="button" class="btn-lupa" onclick="verMonstroNoBestiario('${esc(e.ref)}')" title="Bloco completo no Bestiário">📖</button>` : ''}
+      ${linksDaCriatura(e, true)}
     </div>
     <div class="cb-turno-stats">
       <span><strong>CA</strong> ${e.armor || '—'}</span>
@@ -389,7 +399,7 @@ function renderLista() {
           <div class="cb-nome">
             ${atual ? '<span class="cb-seta" aria-label="Turno atual">▶</span>' : ''}
             <button type="button" class="cb-nome-btn" data-cb-ir="${i}" title="Ir para o turno de ${esc(e.name)}">${esc(e.name)}</button>
-            ${e.ref ? `<button type="button" class="btn-lupa" onclick="verMonstroNoBestiario('${esc(e.ref)}')" title="Ver no Bestiário">📖</button>` : ''}
+            ${linksDaCriatura(e, false)}
             <span class="cb-ca" title="Classe de Armadura">🛡 ${e.armor || '—'}</span>
           </div>
           <div class="cb-conds">${chipsDeCondicao(e, i)}<button type="button" class="cb-cond-mais" data-cb-cond-abrir="${i}" title="Pôr condição">＋</button></div>
