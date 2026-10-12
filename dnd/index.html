@@ -474,6 +474,26 @@
           <!-- ESCOLHAS DE UM ANTECEDENTE ABERTO (perícias e talento à escolha) -->
           <div id="bgChoicesContainer" style="margin-bottom: 0.75rem;" hidden></div>
 
+          <!-- IDIOMAS (Livro 2024: Comum + 2 da tabela de Idiomas Padrão) -->
+          <div class="info-selection-card" id="languagesPanel" style="margin-bottom: 0.75rem;">
+            <div class="custom-bg-section-title">
+              <i class="fa-solid fa-language"></i> Idiomas Conhecidos
+              <span class="lang-count" id="languagesCount"></span>
+            </div>
+            <p class="lang-help">
+              Todo personagem sabe <strong>Comum</strong> e mais <strong>2 idiomas</strong> da tabela de Idiomas Padrão.
+              Espécie e antecedente não dão idiomas em 2024; idiomas raros só com uma característica (Druídico, Gíria dos Ladrões, Ranger) ou com permissão do Mestre.
+            </p>
+            <div class="lang-group-title">Idiomas Padrão</div>
+            <div class="languages-grid" id="customBgLanguagesGrid"></div>
+            <div class="lang-group-title">Idiomas Raros <span>(contam nos 2 — só com permissão do Mestre)</span></div>
+            <div class="languages-grid" id="rareLanguagesGrid"></div>
+            <div class="form-group" style="margin-top: 0.5rem;">
+              <label class="form-label" for="inputCustomLanguagesExtra">Idiomas Extras (de característica, talento ou do Mestre)</label>
+              <input type="text" class="form-control" id="inputCustomLanguagesExtra" placeholder="Ex: Língua dos Pássaros (separados por vírgula)">
+            </div>
+          </div>
+
           <!-- PAINEL DE ANTECEDENTE CUSTOMIZADO (SE SELECIONADO 'custom') -->
           <div class="info-selection-card" id="customBackgroundPanel" style="display: none; border-color: rgba(251, 191, 36, 0.4); margin-bottom: 0.75rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
@@ -481,7 +501,7 @@
               <span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 9999px; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); font-weight: 600;">Personalizado</span>
             </div>
             <p style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.75rem;">
-              Conforme as regras oficiais do Livro do Jogador D&D 2024, você personaliza: <strong>Aumento de Atributos</strong> (+2/+1 ou +1/+1/+1 livres), <strong>1 Talento de Origem</strong>, <strong>2 Perícias</strong>, <strong>1 Ferramenta</strong> e <strong>Idiomas</strong>.
+              Conforme as regras oficiais do Livro do Jogador D&D 2024, você personaliza: <strong>Aumento de Atributos</strong> (+2/+1 ou +1/+1/+1 livres), <strong>1 Talento de Origem</strong>, <strong>2 Perícias</strong>, e <strong>1 Ferramenta</strong>.
             </p>
 
             <!-- 0. Nome do Antecedente -->
@@ -570,20 +590,6 @@
               </div>
             </div>
 
-            <!-- 5. Idiomas Conhecidos -->
-            <div class="custom-bg-section">
-              <div class="custom-bg-section-title">
-                <i class="fa-solid fa-language"></i> 5. Idiomas Conhecidos (Línguas Oficiais D&D 2024)
-              </div>
-              <p style="font-size: 0.76rem; color: #94a3b8; margin-bottom: 0.4rem;">
-                Todos os heróis falam <strong>Comum</strong> mais os idiomas de espécie e antecedente (selecione os conhecidos):
-              </p>
-              <div class="languages-grid" id="customBgLanguagesGrid"></div>
-              <div class="form-group" style="margin-top: 0.5rem;">
-                <label class="form-label" for="inputCustomLanguagesExtra">Outros Idiomas Raros / Dialetos</label>
-                <input type="text" class="form-control" id="inputCustomLanguagesExtra" placeholder="Ex: Dialeto Subterrâneo, Língua dos Pássaros (separados por vírgula)">
-              </div>
-            </div>
           </div>
 
           <!-- RESUMO DE RECURSOS DA ESPÉCIE & ANTECEDENTE -->

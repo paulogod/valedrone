@@ -1326,6 +1326,47 @@ select.form-control option {
   transition: background 0.15s;
 }
 
+.lang-help {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  margin-bottom: 0.4rem;
+}
+
+.lang-group-title {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin: 0.45rem 0 0.2rem;
+}
+
+.lang-group-title span {
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.lang-count {
+  margin-left: auto;
+  font-size: 0.74rem;
+  padding: 1px 8px;
+  border-radius: 9999px;
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+.lang-count.is-alerta {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+.lang-checkbox-item.is-bloqueado {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lang-checkbox-item.is-fixo {
+  color: #94a3b8;
+}
+
 .lang-checkbox-item:hover {
   background: rgba(56, 189, 248, 0.15);
 }

@@ -847,25 +847,8 @@ function updateLineagesDropdown() {
     character.lineage = "none";
   }
 
-  // Sincroniza idioma natural da espécie
-  if (currentSpeciesObj) {
-    const defaultLangMap = {
-      elf: "Élfico (Elvish)",
-      dwarf: "Anão (Dwarvish)",
-      dragonborn: "Dracônico (Draconic)",
-      gnome: "Gnômico (Gnomish)",
-      tiefling: "Infernal",
-      orc: "Órquico (Orc)",
-      aasimar: "Celestial",
-      goliath: "Gigante (Giant)",
-      halfling: "Halfling"
-    };
-    const specLang = defaultLangMap[character.species];
-    if (specLang && !character.languages.includes(specLang)) {
-      character.languages.push(specLang);
-    }
-  }
-
+  // Espécie não dá idioma no Livro 2024 (antes o app marcava o "idioma
+  // natural" sozinho, regra de 2014, e ele comia uma das duas escolhas).
   renderLanguagesCheckboxes();
   renderSpeciesBackgroundSummary();
 }
@@ -1462,42 +1445,81 @@ function updateCustomBgFeatPreview() {
   }
 }
 
+/*
+ * Idiomas (Livro 2024, criação do personagem): todo mundo sabe Comum e mais
+ * dois da tabela de Idiomas Padrão. Espécie e antecedente não dão idioma; os
+ * raros vêm de característica (Druídico, Gíria dos Ladrões, Explorador Hábil)
+ * ou do Mestre. Os da classe aparecem marcados e não contam nos dois.
+ */
+const IDIOMAS_A_ESCOLHER = 2;
+
+/** Idiomas da tabela que o jogador marcou (sem o Comum e sem os da classe) */
+function idiomasEscolhidos() {
+  const daClasse = new Set(getClassChoiceLanguages());
+  return DND5E_DATA.languages
+    .filter(l => l.id !== "common" && !daClasse.has(l.name))
+    .filter(l => (character.languages || []).includes(l.name) || (character.languages || []).includes(l.id))
+    .map(l => l.name);
+}
+
 /**
  * Renderiza checkboxes de idiomas conhecidos
  */
 function renderLanguagesCheckboxes() {
-  const container = document.getElementById("customBgLanguagesGrid");
-  if (!container) return;
-  container.innerHTML = "";
+  const padrao = document.getElementById("customBgLanguagesGrid");
+  const raros = document.getElementById("rareLanguagesGrid");
+  if (!padrao) return;
+  padrao.innerHTML = "";
+  if (raros) raros.innerHTML = "";
+
+  const daClasse = new Set(getClassChoiceLanguages());
+  const escolhidos = idiomasEscolhidos();
+  const cheio = escolhidos.length >= IDIOMAS_A_ESCOLHER;
 
   DND5E_DATA.languages.forEach(lang => {
-    const isCommon = lang.id === "common" || lang.name.startsWith("Comum (Common)") || lang.name.startsWith("Comum");
-    const isChecked = isCommon || character.languages.includes(lang.name) || character.languages.includes(lang.id);
+    const isCommon = lang.id === "common";
+    const fixo = isCommon || daClasse.has(lang.name);
+    const marcado = fixo || escolhidos.includes(lang.name);
+    const bloqueado = !fixo && !marcado && cheio;
 
     const label = document.createElement("label");
-    label.className = "lang-checkbox-item";
+    label.className = "lang-checkbox-item" + (fixo ? " is-fixo" : "") + (bloqueado ? " is-bloqueado" : "");
+    label.title = isCommon ? "Todo personagem sabe Comum"
+      : fixo ? "Concedido pela classe"
+      : bloqueado ? `Você já escolheu ${IDIOMAS_A_ESCOLHER} idiomas — desmarque um para trocar` : "";
     label.innerHTML = `
-      <input type="checkbox" value="${lang.name}" ${isChecked ? "checked" : ""} ${isCommon ? "disabled" : ""}>
-      <span>${lang.name}</span>
+      <input type="checkbox" value="${escAttr(lang.name)}" ${marcado ? "checked" : ""} ${fixo || bloqueado ? "disabled" : ""}>
+      <span>${lang.name}${fixo && !isCommon ? " (classe)" : ""}</span>
     `;
 
-    const input = label.querySelector("input");
-    if (!isCommon) {
-      input.addEventListener("change", (e) => {
+    if (!fixo) {
+      label.querySelector("input").addEventListener("change", (e) => {
         if (e.target.checked) {
+          if (idiomasEscolhidos().length >= IDIOMAS_A_ESCOLHER) {
+            e.target.checked = false;
+            showToast(`Comum + ${IDIOMAS_A_ESCOLHER} idiomas: desmarque um antes de escolher outro.`);
+            return;
+          }
           if (!character.languages.includes(lang.name)) character.languages.push(lang.name);
         } else {
           character.languages = character.languages.filter(l => l !== lang.name && l !== lang.id);
         }
+        renderLanguagesCheckboxes();
         renderSpeciesBackgroundSummary();
         recalculateCharacter();
       });
     }
-    container.appendChild(label);
+    (lang.type === "standard" || !raros ? padrao : raros).appendChild(label);
   });
 
+  const contador = document.getElementById("languagesCount");
+  if (contador) {
+    contador.textContent = `Comum + ${escolhidos.length} / ${IDIOMAS_A_ESCOLHER}`;
+    contador.classList.toggle("is-alerta", escolhidos.length !== IDIOMAS_A_ESCOLHER);
+  }
+
   const inputExtra = document.getElementById("inputCustomLanguagesExtra");
-  if (inputExtra) {
+  if (inputExtra && inputExtra.value !== (character.customLanguages || "")) {
     inputExtra.value = character.customLanguages || "";
   }
 }
@@ -4678,6 +4700,9 @@ function pendenciasDoWizard() {
     }
     if (bgAberto.featChoice && !getOriginFeatId()) p[1].push("Talento de Origem do antecedente");
   }
+  const nIdiomas = idiomasEscolhidos().length;
+  if (nIdiomas < IDIOMAS_A_ESCOLHER) p[1].push(`Idiomas (${nIdiomas} de ${IDIOMAS_A_ESCOLHER})`);
+  else if (nIdiomas > IDIOMAS_A_ESCOLHER) p[1].push(`Idiomas acima do limite (${nIdiomas} de ${IDIOMAS_A_ESCOLHER})`);
 
   // Passo 2 — atributos
   const scores = character.baseScores || {};
@@ -7322,6 +7347,7 @@ function recalculateCharacter() {
 
   renderStyleEffectsPanel({ ac, armorStyleMods });
   renderDeathSaves();
+  renderLanguagesCheckboxes();   // idioma da classe (Druídico, Gíria) muda com as escolhas
   renderWizardPendencias();
 
   character.resumo = montarResumoDoMestre({

@@ -403,14 +403,20 @@ const DND5E_DATA = {
     {
       "id": "draconic",
       "name": "Dracônico (Draconic)",
-      "type": "exotic",
+      "type": "standard",
       "desc": "Língua dos dragões e da magia arcana primal."
     },
     {
-      "id": "deep_speech",
+      "id": "undercommon",
       "name": "Dialeto Subterrâneo (Undercommon)",
       "type": "exotic",
       "desc": "Falado nas profundezas do Subterrâneo."
+    },
+    {
+      "id": "deep_speech",
+      "name": "Fala Profunda (Deep Speech)",
+      "type": "exotic",
+      "desc": "Idioma das aberrações, como devoradores de mentes e observadores."
     },
     {
       "id": "infernal",
