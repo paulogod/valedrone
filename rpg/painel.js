@@ -13,6 +13,23 @@
 const PN_SIMULACOES = 1000;
 const PN_RODADAS_MAX = 30;
 
+/*
+ * Recursos que a ficha não mostra como ataque: magias com espaço, cura,
+ * Surto de Ação, Destruição Divina, resistências, itens. Sem eles o grupo
+ * fica fraco demais e o risco de TPK sai exagerado, cada vez mais com o
+ * nível. Entram como dois fatores por nível do herói:
+ *   dano = danoBase + danoNivel × (nível − 1)   multiplica o dano dos ataques
+ *   pv   = pvBase   + pvNivel   × (nível − 1)   reserva de PV extra (cura e mitigação),
+ *                                               como fração dos PV máximos
+ * Os valores saem de tools/calibrar-tpk.js, que ajusta o simulador à régua de
+ * dificuldade do SRD (Baixa, Moderada, Alta). Mudou o simulador? Rode de novo.
+ */
+const PN_RECURSOS = { danoBase: 1.2, danoNivel: 0.07, pvBase: 1.25, pvNivel: 0.03 };
+function fatoresDeRecursos(nivel) {
+  const L = Math.max(1, Math.min(20, +nivel || 1));
+  return { dano: PN_RECURSOS.danoBase + PN_RECURSOS.danoNivel * (L - 1), pv: PN_RECURSOS.pvBase + PN_RECURSOS.pvNivel * (L - 1) };
+}
+
 // ---------- dados ----------
 const pnD = lados => 1 + Math.floor(Math.random() * lados);
 
@@ -79,9 +96,12 @@ function perfilDoHeroi(e, caInimiga) {
   const rende = a => (a.truque ? 1 : n) * chanceDeAcerto(a.atk, caInimiga) * mediaExpr(a.dados);
   const melhor = ataques.slice().sort((a, b) => rende(b) - rende(a))[0];
   const furtivo = ficha && /Ladino|Rogue/i.test(ficha.classe || '') ? { n: Math.ceil(nivel / 2), d: 6, mod: 0 } : null;
+  const fatores = fatoresDeRecursos(nivel || 1);
   return {
     id: e.id, nome: e.name, pv: Math.max(0, e.hp), pvMax: e.maxHp, ca: +e.armor || 10,
-    ataque: melhor, n: melhor.truque ? 1 : n, furtivo, estimado,
+    ataque: melhor, n: melhor.truque ? 1 : n, furtivo, estimado, nivel: nivel || 1,
+    fatorDano: fatores.dano,
+    reserva: Math.round(Math.max(0, fatores.pv - 1) * (+e.maxHp || 0)),
     ds: e.ds || { s: 0, f: 0 }
   };
 }
@@ -98,8 +118,17 @@ function ataquesDoTexto(texto) {
 
 /** Rotina do turno a partir do Multiattack ("makes three Rend attacks", "makes two attacks, using Scimitar or Shortbow") */
 function rotinaDoMulti(desc, ataques) {
-  const t = String(desc || '');
+  let t = String(desc || '');
   const rotina = [];
+  const qtdDe = w => PN_NUMEROS[w.toLowerCase()] || +w || 1;
+  const porNome = nome => ataques.find(a => a.nome.toLowerCase() === nome.trim().toLowerCase());
+  // "makes two Claw or Nightmare Ray attacks": a quantidade vale para a melhor das opções
+  t = t.replace(/\b(one|two|three|four|five|six|\d+)\s+([A-Z][\w' -]*?)\s+or\s+([A-Z][\w' -]*?)\s+attacks?/g, (trecho, qtd, a1, a2) => {
+    const opcoes = [porNome(a1), porNome(a2)].filter(Boolean).sort((x, y) => y.media - x.media);
+    if (!opcoes.length) return trecho;
+    for (let i = 0; i < qtdDe(qtd); i++) rotina.push(opcoes[0]);
+    return '';
+  });
   ataques.forEach(a => {
     const nome = a.nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const m = t.match(new RegExp(`\\b(one|two|three|four|five|six|\\d+)\\s+${nome}\\s+attacks?`, 'i'));
@@ -183,7 +212,7 @@ function danoEsperadoHeroi(h, ca) {
   const p = chanceDeAcerto(h.ataque.atk, ca);
   let dano = h.n * (p * mediaExpr(h.ataque.dados) + 0.05 * h.ataque.dados.n * (h.ataque.dados.d + 1) / 2);
   if (h.furtivo) dano += (1 - Math.pow(1 - p, h.n)) * mediaExpr(h.furtivo);
-  return dano;
+  return dano * (h.fatorDano || 1);
 }
 function danoEsperadoMonstro(mo, ca, alvos) {
   let rotina = mo.rotina.reduce((s, a) => s + chanceDeAcerto(a.atk, ca) * a.danos.reduce((t, x) => t + mediaExpr(x), 0), 0);
@@ -213,7 +242,8 @@ function simularCombate(herois, monstros, ordem, n = PN_SIMULACOES) {
   if (!herois.length || !monstros.length) return null;
 
   for (let s = 0; s < n; s++) {
-    const hp = herois.map(h => h.pv);
+    // A reserva (cura e mitigação) só vale para quem ainda está de pé
+    const hp = herois.map(h => h.pv > 0 ? h.pv + (h.reserva || 0) : 0);
     const ds = herois.map(h => ({ s: h.ds.s || 0, f: h.ds.f || 0 }));
     const mhp = monstros.map(m => m.pv);
     const recarga = monstros.map(() => true);
@@ -245,7 +275,7 @@ function simularCombate(herois, monstros, ordem, n = PN_SIMULACOES) {
             if (d20 !== 1 && (d20 === 20 || d20 + h.ataque.atk >= monstros[alvo].ca)) {
               let dano = rolarExpr(h.ataque.dados, d20 === 20);
               if (h.furtivo && !furtivoUsado) { dano += rolarExpr(h.furtivo, d20 === 20); furtivoUsado = true; }
-              mhp[alvo] -= dano;
+              mhp[alvo] -= Math.round(dano * (h.fatorDano || 1));
             }
           }
           if (!monstrosDePe()) { fim = 'vitoria'; break; }
@@ -348,7 +378,7 @@ function blocoDeHerois(a) {
         ${barraDePv({ hp: h.pv, maxHp: h.pvMax, tmp: 0, type: 'PC', ds: h.ds }, false)}
         <p class="pn-detalhe">${h.estimado ? '⚠ sem ficha com ataques: ataque estimado (+5, 1d8+3)' :
           `${esc(atq.nome)} ${atq.atk >= 0 ? '+' : ''}${atq.atk}, ${atq.dados.n}d${atq.dados.d}${atq.dados.mod ? (atq.dados.mod > 0 ? '+' : '') + atq.dados.mod : ''}${h.n > 1 ? ` ×${h.n}` : ''}${h.furtivo ? ` + Ataque Furtivo ${h.furtivo.n}d6` : ''}`}
-          · ~${Math.round(danoEsperadoHeroi(h, a.caInimiga))} de dano/rodada</p>
+          · ~${Math.round(danoEsperadoHeroi(h, a.caInimiga))} de dano/rodada com recursos do nível ${h.nivel}</p>
         ${perigo ? `<p class="pn-perigo">⚠️ Pode cair num turno de ${esc(perigo.m.nome)} (até ~${Math.round(perigo.max)} de dano)</p>` : ''}
       </div>`;
   }).join('');
@@ -475,7 +505,7 @@ function renderPainel() {
         <button type="button" class="btn btn-secondary btn-sm" id="pnLimparRegistro">Limpar registro</button></div>${blocoDoRegistro()}</div>
     </div>
 
-    <p class="tes-regra">Como é calculado: a simulação joga o resto do combate ${PN_SIMULACOES.toLocaleString('pt-BR')} vezes a partir dos PV atuais, na ordem de iniciativa. Heróis usam o melhor ataque da ficha (com Ataque Extra e Ataque Furtivo) no inimigo mais ferido; monstros usam o Multiattack e os sopros com Recarga do SRD (até 2 alvos, metade do dano em metade das vezes) em heróis de pé escolhidos ao acaso. Magias de área e de cura dos heróis, táticas e terreno não entram: trate como estimativa. TPK = todos os heróis com 0 PV ao mesmo tempo.</p>`;
+    <p class="tes-regra">Como é calculado: a simulação joga o resto do combate ${PN_SIMULACOES.toLocaleString('pt-BR')} vezes a partir dos PV atuais, na ordem de iniciativa. Heróis usam o melhor ataque da ficha (com Ataque Extra e Ataque Furtivo) no inimigo mais ferido; monstros usam o Multiattack e os sopros com Recarga do SRD (até 2 alvos, metade do dano em metade das vezes) em heróis de pé escolhidos ao acaso. Magias, cura e recursos de classe dos heróis não aparecem na ficha como ataque, então entram como um fator por nível (mais dano e uma reserva de PV), calibrado para que encontros Baixa, Moderada e Alta do SRD fiquem nas faixas do Livro do Mestre (tools/calibrar-tpk.js). Táticas, terreno e efeitos como paralisia não entram: trate como estimativa. TPK = todos os heróis com 0 PV ao mesmo tempo.</p>`;
 }
 
 // ---------- risco nos Encontros ----------
