@@ -105,6 +105,57 @@ function linkAidedd(m) {
   return slug ? `https://www.aidedd.org/monster/${slug}` : '';
 }
 
+// ---------- ordenação das tabelas ----------
+/*
+ * Clicar no cabeçalho ordena a coluna; clicar de novo inverte. Número começa
+ * do maior para o menor (ND, XP, PV) e texto de A a Z. Vale para o Bestiário
+ * ("bst"), a lista de criaturas dos Encontros ("enc") e a Tabela de Encontros
+ * ("tab"); cada tabela diz como ler cada coluna em ORDEM_CHAVES.
+ */
+const ORDEM = { bst: { col: 'n', dir: 1 }, enc: { col: 'xp', dir: -1 }, tab: { col: 'pos', dir: 1 } };
+const ORDEM_TEXTO = new Set(['n', 'tipo', 'local', 'nome']);
+const ORDEM_CHAVES = {
+  bst: { n: m => m.n, tipo: m => tipoTexto(m), nd: m => ndNumero(m.nd), ca: m => m.ca, pv: m => m.pv },
+  enc: { n: m => m.n, tipo: m => tipoTexto(m), local: m => habitatTexto(m.hab), nd: m => ndNumero(m.nd), xp: m => Number(m.xp) || 0 }
+};
+
+/** Ordena uma lista pela coluna escolhida da tabela `tabela` (vazios sempre no fim) */
+function ordenarPor(tabela, lista, chaves) {
+  const { col, dir } = ORDEM[tabela];
+  const ler = (chaves || ORDEM_CHAVES[tabela])[col];
+  if (!ler) return lista;
+  return lista.slice().sort((a, b) => {
+    const va = ler(a), vb = ler(b);
+    const vaz = v => v === null || v === undefined || v === '';
+    if (vaz(va) || vaz(vb)) return vaz(va) - vaz(vb);
+    const r = typeof va === 'number' && typeof vb === 'number' ? va - vb : String(va).localeCompare(String(vb), 'pt-BR');
+    return r * dir || String(a.n || a.nome || '').localeCompare(String(b.n || b.nome || ''), 'pt-BR');
+  });
+}
+
+/** Seta ▲▼ e aria-sort nos cabeçalhos da tabela */
+function marcarCabecalhos(tabela) {
+  document.querySelectorAll(`[data-ordem^="${tabela}:"]`).forEach(th => {
+    const col = th.dataset.ordem.split(':')[1];
+    const ativa = ORDEM[tabela].col === col;
+    th.setAttribute('aria-sort', ativa ? (ORDEM[tabela].dir > 0 ? 'ascending' : 'descending') : 'none');
+    th.querySelector('.th-seta').textContent = ativa ? (ORDEM[tabela].dir > 0 ? ' ▲' : ' ▼') : '';
+  });
+}
+
+const RENDER_DA_TABELA = {};      // tabela → função que redesenha (os Encontros registram as deles)
+
+document.addEventListener('click', e => {
+  const th = e.target.closest('[data-ordem]');
+  if (!th) return;
+  const [tabela, col] = th.dataset.ordem.split(':');
+  const o = ORDEM[tabela];
+  if (o.col === col) o.dir = -o.dir;
+  else { o.col = col; o.dir = ORDEM_TEXTO.has(col) || col === 'pos' ? 1 : -1; }
+  marcarCabecalhos(tabela);
+  if (RENDER_DA_TABELA[tabela]) RENDER_DA_TABELA[tabela]();
+});
+
 // ---------- lista e filtros ----------
 /** Opções de tipo e de local, usadas no Bestiário e nos Encontros */
 function opcoesDeTipo() {
@@ -148,11 +199,12 @@ function monstrosFiltrados() {
       if (!alvo.includes(busca)) return false;
     }
     return true;
-  }).sort((a, b) => a.n.localeCompare(b.n));
+  });
 }
 
 function renderBestiario() {
-  const lista = monstrosFiltrados();
+  const lista = ordenarPor('bst', monstrosFiltrados());
+  marcarCabecalhos('bst');
   const tb = document.getElementById('bstTableBody');
   document.getElementById('bstTotal').textContent = `${lista.length} de ${todosOsMonstros().length}`;
   if (!lista.length) {
@@ -506,6 +558,7 @@ function excluirMonstro(id) {
 (function iniciarBestiario() {
   if (!document.getElementById('content-bestiario')) return;
   preencherFiltroDeTipos();
+  RENDER_DA_TABELA.bst = renderBestiario;
 
   ['bstBusca', 'bstNdMin', 'bstNdMax'].forEach(id =>
     document.getElementById(id).addEventListener('input', renderBestiario));

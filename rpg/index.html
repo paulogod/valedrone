@@ -18,6 +18,7 @@
 
     <nav class="tab-nav" id="tabNav">
       <button class="tab-btn active" data-tab="personagens" id="tab-personagens">⚔️ Combate</button>
+      <button class="tab-btn" data-tab="painel" id="tab-painel">📊 Painel</button>
       <button class="tab-btn" data-tab="fichas" id="tab-fichas">🎭 Personagens</button>
       <button class="tab-btn" data-tab="bestiario" id="tab-bestiario">📚 Bestiário</button>
       <button class="tab-btn" data-tab="encontros" id="tab-encontros">🎲 Encontros</button>
@@ -62,6 +63,18 @@
       </div>
     </section>
 
+    <!-- PAINEL TAB -->
+    <section class="tab-content" id="content-painel">
+      <div class="card pn-topo">
+        <div>
+          <h2 class="card-title">Painel do Combate</h2>
+          <p class="fichas-ajuda">Vida dos dois lados, dano esperado por rodada e o risco de TPK (todos os heróis caídos ao mesmo tempo), estimado simulando o resto do combate a partir dos PV atuais. Atualiza a cada dano, cura e turno.</p>
+        </div>
+        <button type="button" class="btn btn-secondary" id="pnRecalcular" title="Simula de novo">🔄 Recalcular</button>
+      </div>
+      <div id="pnConteudo"></div>
+    </section>
+
     <!-- FICHAS D&D TAB -->
     <section class="tab-content" id="content-fichas">
       <div class="card">
@@ -102,7 +115,7 @@
         </div>
         <div class="table-wrap bst-lista">
           <table id="bstTable">
-            <thead><tr><th>Nome</th><th>Tipo</th><th>ND</th><th>CA</th><th>PV</th><th>Ações</th></tr></thead>
+            <thead><tr><th data-ordem="bst:n" aria-sort="none"><button type="button" class="th-ordem">Nome<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="bst:tipo" aria-sort="none"><button type="button" class="th-ordem">Tipo<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="bst:nd" aria-sort="none"><button type="button" class="th-ordem">ND<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="bst:ca" aria-sort="none"><button type="button" class="th-ordem">CA<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="bst:pv" aria-sort="none"><button type="button" class="th-ordem">PV<span class="th-seta" aria-hidden="true"></span></button></th><th>Ações</th></tr></thead>
             <tbody id="bstTableBody"></tbody>
           </table>
         </div>
@@ -182,7 +195,7 @@
             </div>
             <div class="table-wrap bst-lista enc-lista">
               <table>
-                <thead><tr><th>Nome</th><th>Tipo</th><th>Local</th><th>ND</th><th>XP</th><th>Se adicionar</th><th></th></tr></thead>
+                <thead><tr><th data-ordem="enc:n" aria-sort="none"><button type="button" class="th-ordem">Nome<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="enc:tipo" aria-sort="none"><button type="button" class="th-ordem">Tipo<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="enc:local" aria-sort="none"><button type="button" class="th-ordem">Local<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="enc:nd" aria-sort="none"><button type="button" class="th-ordem">ND<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="enc:xp" aria-sort="none"><button type="button" class="th-ordem">XP<span class="th-seta" aria-hidden="true"></span></button></th><th>Se adicionar</th><th></th></tr></thead>
                 <tbody id="encCandidatos"></tbody>
               </table>
             </div>
@@ -236,7 +249,7 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>#</th><th>Encontro</th><th>Local</th><th>Dificuldade</th><th>Criaturas</th><th>XP</th><th>Tesouro</th><th>Ações</th></tr></thead>
+            <thead><tr><th data-ordem="tab:pos" aria-sort="none"><button type="button" class="th-ordem">#<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="tab:nome" aria-sort="none"><button type="button" class="th-ordem">Encontro<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="tab:local" aria-sort="none"><button type="button" class="th-ordem">Local<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="tab:dif" aria-sort="none"><button type="button" class="th-ordem">Dificuldade<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="tab:criaturas" aria-sort="none"><button type="button" class="th-ordem">Criaturas<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="tab:xp" aria-sort="none"><button type="button" class="th-ordem">XP<span class="th-seta" aria-hidden="true"></span></button></th><th data-ordem="tab:tesouro" aria-sort="none"><button type="button" class="th-ordem">Tesouro<span class="th-seta" aria-hidden="true"></span></button></th><th>Ações</th></tr></thead>
             <tbody id="tabEncontros"></tbody>
           </table>
         </div>
@@ -289,5 +302,6 @@
   <script src="bestiario.js"></script>
   <script src="tesouro.js"></script>
   <script src="encontros.js"></script>
+  <script src="painel.js"></script>
 </body>
 </html>

@@ -78,9 +78,18 @@ function lerEntradaDePv(txt) {
   return { cura: m[1] === '+', v: +m[2] };
 }
 
+/** Guarda o dano/cura com a rodada: o Painel monta o gráfico e o resumo com isso */
+function registrar(e, tipo, v) {
+  if (!v) return;
+  if (!Array.isArray(state.registro)) state.registro = [];
+  state.registro.push({ r: state.round || 1, n: e.name, lado: ehHeroi(e) ? 'heroi' : 'criatura', tipo, v });
+  if (state.registro.length > 500) state.registro.splice(0, state.registro.length - 500);
+}
+
 function aplicarDano(i, v) {
   const e = state.entities[i];
   if (!e || !v) return;
+  registrar(e, 'dano', v);
   const nome = e.name;
   if (ehHeroi(e) && e.hp <= 0) {
     // Dano em quem já está com 0 PV: uma falha no teste contra a morte
@@ -106,7 +115,9 @@ function aplicarCura(i, v) {
   const e = state.entities[i];
   if (!e || !v) return;
   const estavaCaido = e.hp <= 0;
+  const antes = e.hp;
   e.hp = Math.min(e.maxHp, e.hp + v);
+  registrar(e, 'cura', e.hp - antes);
   if (estavaCaido) e.ds = { s: 0, f: 0 };
   avisoRapido(`${e.name} +${v} PV${estavaCaido ? ' · levantou' : ''}`, 'neutro');
 }

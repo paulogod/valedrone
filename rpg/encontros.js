@@ -70,11 +70,12 @@ function candidatosFiltrados() {
     if (soOQueCabe && xpDe(m) > restante) return false;
     if (busca && !`${m.n} ${m.ingles || ''}`.toLowerCase().includes(busca)) return false;
     return true;
-  }).sort((a, b) => xpDe(b) - xpDe(a) || a.n.localeCompare(b.n));
+  });
 }
 
 function renderCandidatos() {
-  const lista = candidatosFiltrados();
+  const lista = ordenarPor('enc', candidatosFiltrados());
+  marcarCabecalhos('enc');
   const tb = document.getElementById('encCandidatos');
   if (!lista.length) {
     tb.innerHTML = '<tr><td colspan="7" class="fichas-ajuda">Nada com esses filtros (ou o orçamento acabou).</td></tr>';
@@ -131,7 +132,8 @@ function renderEncontroAtual() {
       <strong>${formatarXp(total)} XP</strong> de ${formatarXp(orc)} ·
       ${total ? `dificuldade <strong class="enc-txt-${dif}">${ENC_DIF_NOME[dif]}</strong>` : 'vazio'}
       <span class="ficha-sub bst-inline">(Baixa ≤ ${formatarXp(lim.baixa)} · Moderada ≤ ${formatarXp(lim.moderada)} · Alta ≤ ${formatarXp(lim.alta)})</span>
-    </div>`;
+    </div>
+    ${typeof riscoDoEncontroHtml === 'function' ? riscoDoEncontroHtml(enc.atual) : ''}`;
 }
 
 function renderMontagem() {
@@ -394,8 +396,17 @@ function encontrosFiltrados() {
 
 let _encDestacado = null;
 
+// Como ler cada coluna da Tabela de Encontros
+const ENC_ORDEM_DIF = { baixa: 1, moderada: 2, alta: 3, acima: 4 };
+const TAB_CHAVES = {
+  pos: e => enc.salvos.indexOf(e), nome: e => e.nome, local: e => BST_HABITATS[e.local] || e.local || '',
+  dif: e => ENC_ORDEM_DIF[e.dif] || 0, criaturas: e => e.criaturas.reduce((s, c) => s + c.qtd, 0),
+  xp: e => e.xp, tesouro: e => (e.tesouro && e.tesouro.total) || 0
+};
+
 function renderTabela() {
-  const lista = encontrosFiltrados();
+  const lista = ordenarPor('tab', encontrosFiltrados(), TAB_CHAVES);
+  marcarCabecalhos('tab');
   const tb = document.getElementById('tabEncontros');
   document.getElementById('tabTotal').textContent = `${lista.length} de ${enc.salvos.length}`;
   if (!lista.length) {
@@ -425,7 +436,7 @@ function renderTabela() {
 }
 
 function rolarNaTabela() {
-  const lista = encontrosFiltrados();
+  const lista = ordenarPor('tab', encontrosFiltrados(), TAB_CHAVES);   // a mesma ordem da tela
   if (!lista.length) { alert('Nenhum encontro na tabela com esses filtros.'); return; }
   const i = Math.floor(Math.random() * lista.length);
   _encDestacado = lista[i].id;
@@ -539,6 +550,8 @@ function sincronizarGrupo() {
     }
   });
 
+  RENDER_DA_TABELA.enc = renderCandidatos;
+  RENDER_DA_TABELA.tab = renderTabela;
   renderMontagem();
   renderTabela();
   _difAnterior = enc.atual.length ? difAtual() : null;
