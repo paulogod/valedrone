@@ -13,7 +13,9 @@ function saveData() {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
     entities: state.entities,
     notes: state.notes,
-    currentTurn: state.currentTurn
+    currentTurn: state.currentTurn,
+    round: state.round,
+    turnoId: state.turnoId
   }));
 }
 
@@ -22,6 +24,8 @@ const state = {
   entities: saved?.entities || [],
   notes: saved?.notes || '',
   currentTurn: saved?.currentTurn || 0,
+  round: saved?.round || 1,
+  turnoId: saved?.turnoId ?? null,
   editingIndex: -1 // New: tracking which character is being edited
 };
 
@@ -44,7 +48,7 @@ function hpClass(hp, max) {
   return 'hp-healthy';
 }
 
-// ==================== ENTITY (PERSONAGENS) ====================
+// ==================== COMBATE: formulário de adicionar ====================
 document.getElementById('entityForm').addEventListener('submit', e => {
   e.preventDefault();
   const name = document.getElementById('entityName').value.trim();
@@ -71,125 +75,7 @@ document.getElementById('entityForm').addEventListener('submit', e => {
   saveData();
 });
 
-function renderEntities() {
-  const tb = document.getElementById('entityTableBody');
-  tb.innerHTML = '';
-  state.entities.forEach((ent, i) => {
-    const tr = document.createElement('tr');
-    if (i === state.currentTurn) tr.classList.add('current-turn');
-    const cls = hpClass(ent.hp, ent.maxHp);
-    const isEditing = state.editingIndex === i;
-
-    if (isEditing) {
-      tr.innerHTML = `
-        <td><input type="text" class="table-input" value="${esc(ent.name)}" id="editName${i}"></td>
-        <td>
-          <select class="table-input" id="editType${i}">
-            <option ${ent.type==='PC'?'selected':''}>PC</option>
-            <option ${ent.type==='NPC'?'selected':''}>NPC</option>
-            <option ${ent.type==='Monster'?'selected':''}>Monster</option>
-          </select>
-        </td>
-        <td class="hp-display ${cls}">
-          <input type="number" class="table-input hp-in" value="${ent.hp}" id="editHp${i}"> / 
-          <input type="number" class="table-input hp-in" value="${ent.maxHp}" id="editMaxHp${i}">
-        </td>
-        <td><input type="number" class="table-input" value="${ent.initiative}" id="editInit${i}"></td>
-        <td><input type="number" class="table-input" value="${ent.armor}" id="editArmor${i}"></td>
-        <td><input type="text" class="table-input" value="${esc((ent.conditions||[]).join(', '))}" id="editCond${i}"></td>
-        <td><input type="text" class="table-input" value="${esc((ent.abilities||[]).join(', '))}" id="editAbil${i}"></td>
-        <td><div class="action-cell">
-          <button class="btn btn-repair" onclick="saveEdit(${i})">✅ Salvar</button>
-          <button class="btn btn-secondary" onclick="toggleEdit(-1)">❌ Cancelar</button>
-        </div></td>`;
-    } else {
-      tr.innerHTML = `
-        <td><div class="ficha-nome"><span class="col-clickable" onclick="toggleEdit(${i})">✏️ ${esc(ent.name)}</span>${ent.ref ? `<button class="btn-lupa" onclick="verMonstroNoBestiario('${esc(ent.ref)}')" title="Ver o bloco de estatísticas no Bestiário">📖</button>` : ''}</div></td>
-        <td>${esc(ent.type)}</td>
-        <td class="hp-display ${cls}">${ent.hp}/${ent.maxHp}</td>
-        <td>${ent.initiative}</td>
-        <td>${ent.armor}</td>
-        <td>${esc((ent.conditions||[]).join(', '))}</td>
-        <td>${esc((ent.abilities||[]).join(', '))}</td>
-        <td><div class="action-cell">
-          <input type="number" min="0" max="9999" value="0" id="entDmg${i}">
-          <button class="btn btn-dmg" onclick="entityDamage(${i})">Dano</button>
-          <input type="number" min="0" max="9999" value="0" id="entHeal${i}">
-          <button class="btn btn-heal" onclick="entityHeal(${i})">Curar</button>
-          <button class="btn btn-danger" onclick="entityRemove(${i})">Remover</button>
-        </div></td>`;
-    }
-    tb.appendChild(tr);
-  });
-  updateTurnCounter();
-}
-
-function toggleEdit(index) {
-  state.editingIndex = index;
-  renderEntities();
-}
-
-function saveEdit(i) {
-  state.entities[i].name = document.getElementById(`editName${i}`).value;
-  state.entities[i].type = document.getElementById(`editType${i}`).value;
-  state.entities[i].hp = +document.getElementById(`editHp${i}`).value;
-  state.entities[i].maxHp = +document.getElementById(`editMaxHp${i}`).value;
-  state.entities[i].initiative = +document.getElementById(`editInit${i}`).value;
-  state.entities[i].armor = +document.getElementById(`editArmor${i}`).value;
-  state.entities[i].conditions = document.getElementById(`editCond${i}`).value.split(',').map(s=>s.trim()).filter(Boolean);
-  state.entities[i].abilities = document.getElementById(`editAbil${i}`).value.split(',').map(s=>s.trim()).filter(Boolean);
-  
-  state.entities.sort((a,b) => b.initiative - a.initiative);
-  state.editingIndex = -1;
-  renderEntities(); saveData();
-}
-
-function updateEnt(i, key, val) {
-  if (key === 'conditions' || key === 'abilities') {
-    state.entities[i][key] = val.split(',').map(s=>s.trim()).filter(Boolean);
-  } else {
-    state.entities[i][key] = val;
-  }
-  if (key === 'initiative') state.entities.sort((a,b) => b.initiative - a.initiative);
-  renderEntities(); saveData();
-}
-
-function entityDamage(i) {
-  const v = +document.getElementById('entDmg'+i).value;
-  state.entities[i].hp = Math.max(0, state.entities[i].hp - v);
-  renderEntities(); saveData();
-}
-function entityHeal(i) {
-  const v = +document.getElementById('entHeal'+i).value;
-  state.entities[i].hp = Math.min(state.entities[i].maxHp, state.entities[i].hp + v);
-  renderEntities(); saveData();
-}
-function entityRemove(i) {
-  if (!confirm(`Remover "${state.entities[i].name}"?`)) return;
-  state.entities.splice(i, 1);
-  if (!state.entities.length) state.currentTurn = 0;
-  else state.currentTurn = state.currentTurn % state.entities.length;
-  renderEntities(); saveData();
-}
-
-document.getElementById('nextTurnBtn').addEventListener('click', () => {
-  if (!state.entities.length) return;
-  state.entities.sort((a,b) => b.initiative - a.initiative);
-  state.currentTurn = (state.currentTurn + 1) % state.entities.length;
-  renderEntities(); saveData();
-});
-
-document.getElementById('turnMarker').addEventListener('input', e => {
-  if (state.entities.length && state.currentTurn < state.entities.length) {
-    state.entities[state.currentTurn].turn_info = e.target.value;
-    saveData();
-  }
-});
-
-function updateTurnCounter() {
-  const el = document.getElementById('turnCounter');
-  el.textContent = state.entities.length ? `${state.currentTurn+1}/${state.entities.length}` : '0/0';
-}
+// A lista do Combate, o cartão do turno e os controles de rodada ficam em combate.js
 
 // ==================== FICHAS D&D 5.5 ====================
 // Fichas exportadas pelo criador em ../dnd/. CA, PV máximo, iniciativa e
@@ -423,7 +309,7 @@ notesArea.addEventListener('input', () => { state.notes = notesArea.value; saveD
 document.getElementById('exportBtn').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify({
     entities: state.entities, notes: state.notes,
-    currentTurn: state.currentTurn, fichas: state.fichas,
+    currentTurn: state.currentTurn, round: state.round, fichas: state.fichas,
     // Bestiário e encontros ficam em bestiario.js / encontros.js
     bestiario: typeof bst !== 'undefined' ? bst.meus : [],
     encontros: typeof enc !== 'undefined' ? enc.salvos : [],
@@ -446,6 +332,7 @@ document.getElementById('importBtn').addEventListener('change', e => {
       state.entities = data.entities || [];
       state.notes = data.notes || '';
       state.currentTurn = data.currentTurn || 0;
+      state.round = data.round || 1;
       if (Array.isArray(data.fichas)) { state.fichas = data.fichas; salvarFichas(); }
       if (Array.isArray(data.bestiario) && typeof bst !== 'undefined') { bst.meus = data.bestiario; salvarBestiario(); renderBestiario(); }
       if (Array.isArray(data.encontros) && typeof enc !== 'undefined') { enc.salvos = data.encontros; salvarEncontros(); renderTabela(); }

@@ -24,37 +24,40 @@
       <button class="tab-btn" data-tab="notas" id="tab-notas">📝 Notas</button>
     </nav>
 
-    <!-- PERSONAGENS TAB -->
+    <!-- COMBATE TAB (o id "personagens" ficou do nome antigo da aba) -->
     <section class="tab-content active" id="content-personagens">
-      <div class="card form-card">
-        <h2 class="card-title">Adicionar ao Combate</h2>
+      <div class="cb-barra">
+        <div class="cb-rodada">Rodada <strong id="cbRodada">1</strong><span class="turn-counter" id="turnCounter">0/0</span></div>
+        <button class="btn btn-secondary" id="cbAnterior" title="Voltar um turno">⏮</button>
+        <button class="btn btn-accent" id="nextTurnBtn" title="Próximo turno (Espaço)">⏭ Próximo turno</button>
+        <input type="text" class="turn-info-input" id="turnMarker" placeholder="Anotação do turno atual (efeitos, lembretes…)">
+        <button class="btn btn-secondary btn-sm" id="cbReiniciar" title="Volta à rodada 1, no primeiro da iniciativa">↺ Reiniciar</button>
+        <button class="btn btn-secondary btn-sm" id="cbLimparMortos" title="Tira do combate os monstros e NPCs com 0 PV">🧹 Tirar caídos</button>
+      </div>
+
+      <details class="card form-card cb-adicionar" id="cbAdicionar">
+        <summary class="card-title">➕ Adicionar ao Combate</summary>
         <form id="entityForm" class="form-grid">
           <div class="form-group"><label>Ficha D&amp;D</label><select id="entityFicha"><option value="">— preencher à mão —</option></select></div>
           <div class="form-group"><label>Nome</label><input type="text" id="entityName" required></div>
           <div class="form-group"><label>Tipo</label>
             <select id="entityType"><option>PC</option><option>NPC</option><option>Monster</option></select>
           </div>
-          <div class="form-group"><label>HP Máximo</label><input type="number" id="entityMaxHp" min="1" max="9999" value="10"></div>
+          <div class="form-group"><label>PV Máximo</label><input type="number" id="entityMaxHp" min="1" max="9999" value="10"></div>
           <div class="form-group"><label>Iniciativa</label><input type="number" id="entityInitiative" min="0" max="9999" value="0"></div>
-          <div class="form-group"><label>Armadura</label><input type="number" id="entityArmor" min="0" max="9999" value="0"></div>
-          <div class="form-group"><label>Condições</label><input type="text" id="entityConditions" placeholder="separadas por vírgula"></div>
+          <div class="form-group"><label>CA</label><input type="number" id="entityArmor" min="0" max="9999" value="0"></div>
+          <div class="form-group"><label>Condições</label><input type="text" id="entityConditions" placeholder="Caído, Amedrontado"></div>
           <div class="form-group"><label>Habilidades</label><input type="text" id="entityAbilities" placeholder="separadas por vírgula"></div>
           <button type="submit" class="btn btn-primary" id="addEntityBtn">Adicionar ao Combate</button>
         </form>
-      </div>
-      <div class="card">
-        <div class="turn-bar">
-          <button class="btn btn-accent" id="nextTurnBtn">⏭ Próximo Turno</button>
-          <span class="turn-counter" id="turnCounter">0/0</span>
-          <input type="text" class="turn-info-input" id="turnMarker" placeholder="Informações do turno atual">
-        </div>
-        <div class="table-wrap">
-          <table id="entityTable">
-            <thead><tr>
-              <th>Nome</th><th>Tipo</th><th>PV</th><th>Iniciativa</th><th>Armadura</th><th>Condições</th><th>Habilidades</th><th>Ações</th>
-            </tr></thead>
-            <tbody id="entityTableBody"></tbody>
-          </table>
+      </details>
+
+      <div class="cb-layout">
+        <div class="card cb-turno" id="cbTurno" aria-live="polite"></div>
+        <div class="card cb-ordem">
+          <h2 class="card-title">Ordem de Iniciativa</h2>
+          <div id="cbLista"></div>
+          <p class="cb-atalhos">Atalhos: <kbd>Espaço</kbd> próximo turno · <kbd>D</kbd> dano no turno atual · no campo de PV, <kbd>8</kbd> ou <kbd>-8</kbd> causa dano e <kbd>+8</kbd> cura (Enter).</p>
         </div>
       </div>
     </section>
@@ -277,8 +280,11 @@
   </div>
   <div class="aviso-rapido" id="avisoRapido" role="status" aria-live="polite" hidden></div>
 
+  <!-- Condições e regras: mesma base do Criador de Ficha -->
+  <script src="../dnd/data.js"></script>
   <script src="srd-monstros.js"></script>
   <script src="srd-itens.js"></script>
+  <script src="combate.js"></script>
   <script src="app.js"></script>
   <script src="bestiario.js"></script>
   <script src="tesouro.js"></script>
