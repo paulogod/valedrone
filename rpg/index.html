@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="RPG Master App - Gerenciador de sessões Pathfinder 2e com controle de personagens, embarcações, tripulação e combate naval.">
+  <meta name="description" content="RPG Master App - Gerenciador de sessões Pathfinder 2e com controle de personagens, iniciativa, fichas D&amp;D e notas.">
   <title>RPG Master App - Pathfinder 2e</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -19,9 +19,8 @@
     <nav class="tab-nav" id="tabNav">
       <button class="tab-btn active" data-tab="personagens" id="tab-personagens">🎭 Personagens</button>
       <button class="tab-btn" data-tab="fichas" id="tab-fichas">🐉 Fichas D&amp;D</button>
-      <button class="tab-btn" data-tab="embarcacao" id="tab-embarcacao">⛵ Embarcação</button>
-      <button class="tab-btn" data-tab="tripulacao" id="tab-tripulacao">👥 Tripulação</button>
-      <button class="tab-btn" data-tab="combate" id="tab-combate">⚔️ Combate Naval</button>
+      <button class="tab-btn" data-tab="bestiario" id="tab-bestiario">📚 Bestiário</button>
+      <button class="tab-btn" data-tab="encontros" id="tab-encontros">🎲 Encontros</button>
       <button class="tab-btn" data-tab="notas" id="tab-notas">📝 Notas</button>
     </nav>
 
@@ -81,75 +80,165 @@
       </div>
     </section>
 
-    <!-- EMBARCAÇÃO TAB -->
-    <section class="tab-content" id="content-embarcacao">
-      <div class="card form-card">
-        <h2 class="card-title">Dados da Embarcação</h2>
-        <form id="shipForm" class="form-grid">
-          <div class="form-group"><label>Nome</label><input type="text" id="shipName"></div>
-          <div class="form-group"><label>PV Máximo</label><input type="number" id="shipMaxHp" min="1" max="9999" value="100"></div>
-          <div class="form-group"><label>PV Atual</label><input type="number" id="shipHp" min="0" max="9999" value="100"></div>
-          <div class="form-group"><label>Resistência</label><input type="number" id="shipHardness" min="0" max="100" value="0"></div>
-          <div class="form-group"><label>Velocidade</label><input type="number" id="shipSpeed" min="0" max="999" value="30"></div>
-          <div class="form-group full-width"><label>Habilidades</label><textarea id="shipAbilities" rows="3" placeholder="Uma por linha"></textarea></div>
-          <div class="form-group"><label>Mercadorias</label><input type="text" id="shipGoods"></div>
-          <button type="submit" class="btn btn-primary" id="saveShipBtn">Salvar Embarcação</button>
-        </form>
-      </div>
+    <!-- BESTIÁRIO TAB -->
+    <section class="tab-content" id="content-bestiario">
       <div class="card">
-        <h2 class="card-title">Embarcação Atual</h2>
-        <div class="table-wrap">
-          <table id="shipTable">
-            <thead><tr><th>Nome</th><th>PV</th><th>PV Máx</th><th>Resistência</th><th>Velocidade</th><th>Mercadorias</th><th>Ações</th></tr></thead>
-            <tbody id="shipTableBody"></tbody>
+        <h2 class="card-title">Bestiário — Monstros e NPCs (D&amp;D 2024)</h2>
+        <p class="fichas-ajuda">Os 341 monstros do SRD 5.2 já vêm prontos (textos em inglês, como no SRD). Clique no nome para ver o bloco de estatísticas, em 🔗 para a página completa no <a href="https://www.aidedd.org/" target="_blank" rel="noopener">AideDD</a> e em ⚔️ para pôr na iniciativa. Monstros de outros livros entram colando o bloco em "Importar".</p>
+        <div class="bst-filtros">
+          <input type="search" id="bstBusca" placeholder="Buscar por nome ou tipo…" aria-label="Buscar monstro">
+          <select id="bstTipo" aria-label="Tipo de criatura"><option value="">Todos os tipos</option></select>
+          <select id="bstLocal" aria-label="Local"><option value="">Todos os locais</option></select>
+          <label class="bst-nd">ND <input type="text" id="bstNdMin" placeholder="0" inputmode="decimal" aria-label="ND mínimo"> a <input type="text" id="bstNdMax" placeholder="30" inputmode="decimal" aria-label="ND máximo"></label>
+          <select id="bstFonte" aria-label="Origem">
+            <option value="">SRD e importados</option>
+            <option value="srd">Só SRD 5.2</option>
+            <option value="meus">Só importados</option>
+          </select>
+          <span class="bst-total" id="bstTotal"></span>
+        </div>
+        <div class="bst-envio">
+          <label>Quantidade <input type="number" id="bstQtd" min="1" max="30" value="1"></label>
+          <label>PV <select id="bstPv"><option value="media">Média</option><option value="rolado">Rolado</option></select></label>
+          <label><input type="checkbox" id="bstIniGrupo" checked> Uma iniciativa para o grupo</label>
+        </div>
+        <div class="table-wrap bst-lista">
+          <table id="bstTable">
+            <thead><tr><th>Nome</th><th>Tipo</th><th>ND</th><th>CA</th><th>PV</th><th>Ações</th></tr></thead>
+            <tbody id="bstTableBody"></tbody>
           </table>
         </div>
       </div>
-    </section>
 
-    <!-- TRIPULAÇÃO TAB -->
-    <section class="tab-content" id="content-tripulacao">
-      <div class="card form-card">
-        <h2 class="card-title">Adicionar Tripulante</h2>
-        <form id="crewForm" class="form-grid">
-          <div class="form-group"><label>Nome</label><input type="text" id="crewName" required></div>
-          <div class="form-group"><label>Função</label><input type="text" id="crewRole"></div>
-          <div class="form-group"><label>PV Máximo</label><input type="number" id="crewMaxHp" min="1" max="9999" value="10"></div>
-          <div class="form-group"><label>Info Extras</label><input type="text" id="crewInfo"></div>
-          <div class="form-group"><label>Ações Extras</label><input type="text" id="crewActions"></div>
-          <button type="submit" class="btn btn-primary" id="addCrewBtn">Adicionar Tripulante</button>
+      <div class="card" id="bstDetalhe" hidden></div>
+
+      <div class="card">
+        <h2 class="card-title">Importar Monstro ou NPC</h2>
+        <p class="fichas-ajuda">Cole o bloco de estatísticas (do AideDD, do D&amp;D Beyond, de um PDF ou digitado). O app lê CA, PV, Iniciativa, Deslocamento, atributos e ND; confira os campos antes de salvar. O texto inteiro fica guardado para consulta.</p>
+        <div class="form-group full-width">
+          <label for="bstColar">Bloco de estatísticas</label>
+          <textarea id="bstColar" rows="8" placeholder="Goblin Warrior&#10;Small Fey (Goblinoid), Chaotic Neutral&#10;AC 15   Initiative +2 (12)&#10;HP 10 (3d6)&#10;Speed 30 ft.&#10;…"></textarea>
+        </div>
+        <div class="turn-bar" style="margin-top:.75rem">
+          <button class="btn btn-primary" id="bstLerBtn">🔎 Ler bloco</button>
+          <label class="btn btn-secondary file-label">📤 Importar JSON<input type="file" accept=".json,application/json" id="bstImportar" hidden></label>
+          <button class="btn btn-secondary" id="bstExportarBtn">📥 Exportar importados</button>
+        </div>
+        <form id="bstForm" class="form-grid" hidden>
+          <div class="form-group"><label for="bstFNome">Nome</label><input type="text" id="bstFNome" required></div>
+          <div class="form-group"><label for="bstFIngles">Nome em inglês (link AideDD)</label><input type="text" id="bstFIngles" placeholder="Ex: Goblin Warrior"></div>
+          <div class="form-group"><label for="bstFCategoria">Categoria</label><select id="bstFCategoria"><option>Monster</option><option>NPC</option></select></div>
+          <div class="form-group"><label for="bstFTipo">Tamanho e tipo</label><input type="text" id="bstFTipo" placeholder="Médio Humanoide"></div>
+          <div class="form-group"><label for="bstFCa">CA</label><input type="number" id="bstFCa" min="0" max="40"></div>
+          <div class="form-group"><label for="bstFPv">PV (média)</label><input type="number" id="bstFPv" min="1" max="9999"></div>
+          <div class="form-group"><label for="bstFDv">Dados de Vida</label><input type="text" id="bstFDv" placeholder="3d6"></div>
+          <div class="form-group"><label for="bstFIni">Iniciativa (bônus)</label><input type="number" id="bstFIni" min="-10" max="30"></div>
+          <div class="form-group"><label for="bstFNd">ND</label><input type="text" id="bstFNd" placeholder="1/4"></div>
+          <div class="form-group"><label for="bstFDesl">Deslocamento</label><input type="text" id="bstFDesl" placeholder="9 m"></div>
+          <div class="form-group"><label for="bstFHab">Habitat (local)</label><input type="text" id="bstFHab" placeholder="Floresta, Colinas"></div>
+          <div class="form-group"><label for="bstFTes">Tesouro (tema)</label>
+            <select id="bstFTes">
+              <option value="Individual">Individual (moedas)</option>
+              <option value="Arcana">Arcano</option>
+              <option value="Armaments">Armamentos</option>
+              <option value="Implements">Implementos</option>
+              <option value="Relics">Relíquias</option>
+              <option value="Any">Qualquer</option>
+              <option value="None">Nenhum</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">💾 Salvar no Bestiário</button>
         </form>
       </div>
+
+      <p class="bst-credito">This work includes material from the System Reference Document 5.2 ("SRD 5.2") by Wizards of the Coast LLC, available at <a href="https://www.dndbeyond.com/srd" target="_blank" rel="noopener">dndbeyond.com/srd</a>. The SRD 5.2 is licensed under the <a href="https://creativecommons.org/licenses/by/4.0/legalcode" target="_blank" rel="noopener">Creative Commons Attribution 4.0 International License</a>. Dados estruturados por <a href="https://github.com/5e-bits/5e-database" target="_blank" rel="noopener">5e-bits/5e-database</a>. Habitat e tema de tesouro de cada monstro: Manual dos Monstros 2024, conforme o <a href="https://www.aidedd.org/" target="_blank" rel="noopener">AideDD</a>.</p>
+    </section>
+
+    <!-- ENCONTROS TAB -->
+    <section class="tab-content" id="content-encontros">
       <div class="card">
-        <div class="table-wrap">
-          <table id="crewTable">
-            <thead><tr><th>Tripulante</th><th>Função</th><th>PV</th><th>Info Extras</th><th>Ações Extras</th><th>Ações</th></tr></thead>
-            <tbody id="crewTableBody"></tbody>
-          </table>
+        <h2 class="card-title">Montar Encontro</h2>
+        <p class="fichas-ajuda">Orçamento de XP pela tabela do SRD 5.2 (XP por personagem × tamanho do grupo). Some criaturas até o orçamento: o medidor mostra a dificuldade que o encontro atingiu.</p>
+        <div class="enc-grupo">
+          <label>Personagens <input type="number" id="encN" min="1" max="12" value="4"></label>
+          <label>Nível <input type="number" id="encNivel" min="1" max="20" value="1"></label>
+          <button type="button" class="btn btn-secondary btn-sm" id="encDasFichas" title="Conta as fichas carregadas e usa o nível médio">🐉 Usar fichas carregadas</button>
+          <label>Dificuldade
+            <select id="encDif">
+              <option value="baixa">Baixa</option>
+              <option value="moderada" selected>Moderada</option>
+              <option value="alta">Alta</option>
+            </select>
+          </label>
+          <span class="enc-orcamento" id="encOrcamento"></span>
+        </div>
+
+        <div class="enc-cols">
+          <div class="enc-col">
+            <h3 class="enc-sub">Criaturas</h3>
+            <div class="bst-filtros">
+              <input type="search" id="encBusca" placeholder="Buscar por nome…" aria-label="Buscar criatura">
+              <select id="encTipo" aria-label="Tipo de criatura"><option value="">Todos os tipos</option></select>
+              <select id="encLocal" aria-label="Local"><option value="">Todos os locais</option></select>
+              <label class="bst-nd"><input type="checkbox" id="encCabe" checked> Só o que cabe no orçamento</label>
+            </div>
+            <div class="table-wrap bst-lista enc-lista">
+              <table>
+                <thead><tr><th>Nome</th><th>Tipo</th><th>Local</th><th>ND</th><th>XP</th><th></th></tr></thead>
+                <tbody id="encCandidatos"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="enc-col">
+            <h3 class="enc-sub">Encontro atual</h3>
+            <div id="encAtual"></div>
+            <div class="enc-medidor" id="encMedidor"></div>
+            <div class="tes-caixa">
+              <div class="tes-topo">
+                <h3 class="enc-sub">💰 Tesouro sugerido</h3>
+                <div class="action-cell bst-acoes">
+                  <button type="button" class="btn btn-secondary btn-sm" id="encTesouroRolar" title="Sorteia outro tesouro para este encontro">🎲 Outro tesouro</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="encTesouroNotas" title="Acrescenta o tesouro na aba Notas">📋 Para as Notas</button>
+                </div>
+              </div>
+              <div id="encTesouro"></div>
+              <p class="tes-regra">Sugestão do app (o SRD não traz as tabelas de tesouro): moedas de ~10% do XP de cada criatura, objetos de valor pelo nível do grupo e chance de item mágico pela dificuldade, do tipo que combina com o tema de tesouro das criaturas.</p>
+            </div>
+            <div class="turn-bar enc-botoes">
+              <button type="button" class="btn btn-accent" id="encSortear" title="Sorteia criaturas com os filtros e o orçamento escolhidos">🎲 Sortear</button>
+              <button type="button" class="btn btn-repair" id="encIniciativa">⚔️ Enviar para a iniciativa</button>
+              <button type="button" class="btn btn-danger" id="encLimpar">Limpar</button>
+            </div>
+            <div class="enc-salvar">
+              <input type="text" id="encNome" placeholder="Nome do encontro (ex: Emboscada na estrada)">
+              <select id="encSalvarLocal" aria-label="Local do encontro"><option value="">Local…</option></select>
+              <button type="button" class="btn btn-primary" id="encSalvar">💾 Salvar na tabela</button>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
 
-    <!-- COMBATE NAVAL TAB -->
-    <section class="tab-content" id="content-combate">
-      <div class="card form-card">
-        <h2 class="card-title">Adicionar Embarcação ao Combate</h2>
-        <form id="combatForm" class="form-grid">
-          <div class="form-group"><label>Nome</label><input type="text" id="combatShipName" required></div>
-          <div class="form-group"><label>Iniciativa</label><input type="number" id="combatShipInitiative" min="0" max="9999" value="0"></div>
-          <div class="form-group"><label>PV Máximo</label><input type="number" id="combatShipMaxHp" min="1" max="9999" value="100"></div>
-          <div class="form-group"><label>PV Atual</label><input type="number" id="combatShipHp" min="0" max="9999" value="100"></div>
-          <div class="form-group"><label>Resistência</label><input type="number" id="combatShipHardness" min="0" max="100" value="0"></div>
-          <div class="form-group"><label>Velocidade</label><input type="number" id="combatShipSpeed" min="0" max="100" value="30"></div>
-          <div class="form-group"><label>Habilidades</label><input type="text" id="combatShipAbilities" placeholder="separadas por vírgula"></div>
-          <button type="submit" class="btn btn-primary" id="addCombatShipBtn">Adicionar ao Combate</button>
-        </form>
-      </div>
       <div class="card">
+        <h2 class="card-title">Tabela de Encontros</h2>
+        <div class="bst-filtros">
+          <input type="search" id="tabBusca" placeholder="Buscar por nome do encontro ou da criatura…" aria-label="Buscar encontro">
+          <select id="tabDif" aria-label="Dificuldade">
+            <option value="">Todas as dificuldades</option>
+            <option value="baixa">Baixa</option>
+            <option value="moderada">Moderada</option>
+            <option value="alta">Alta</option>
+            <option value="acima">Acima de Alta</option>
+          </select>
+          <select id="tabTipo" aria-label="Tipo de criatura"><option value="">Todos os tipos</option></select>
+          <select id="tabLocal" aria-label="Local"><option value="">Todos os locais</option></select>
+          <button type="button" class="btn btn-accent btn-sm" id="tabRolar" title="Sorteia um dos encontros listados">🎲 Rolar na tabela</button>
+          <span class="bst-total" id="tabTotal"></span>
+        </div>
         <div class="table-wrap">
-          <table id="combatTable">
-            <thead><tr><th>Nome</th><th>Iniciativa</th><th>PV</th><th>PV Máx</th><th>Resistência</th><th>Velocidade</th><th>Habilidades</th><th>Ações</th></tr></thead>
-            <tbody id="combatTableBody"></tbody>
+          <table>
+            <thead><tr><th>#</th><th>Encontro</th><th>Local</th><th>Dificuldade</th><th>Criaturas</th><th>XP</th><th>Tesouro</th><th>Ações</th></tr></thead>
+            <tbody id="tabEncontros"></tbody>
           </table>
         </div>
       </div>
@@ -172,6 +261,11 @@
     <footer class="app-footer">Feito pelo Mestre Paulo Godoy</footer>
   </div>
 
+  <script src="srd-monstros.js"></script>
+  <script src="srd-itens.js"></script>
   <script src="app.js"></script>
+  <script src="bestiario.js"></script>
+  <script src="tesouro.js"></script>
+  <script src="encontros.js"></script>
 </body>
 </html>

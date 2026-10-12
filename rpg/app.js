@@ -12,8 +12,6 @@ function loadData() {
 function saveData() {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
     entities: state.entities,
-    ship: state.ship,
-    combatShips: state.combatShips,
     notes: state.notes,
     currentTurn: state.currentTurn
   }));
@@ -22,8 +20,6 @@ function saveData() {
 const saved = loadData();
 const state = {
   entities: saved?.entities || [],
-  ship: saved?.ship || { name:'Default Ship', hp:100, maxHp:100, hardness:0, speed:30, abilities:[], crew:[], goods:'' },
-  combatShips: saved?.combatShips || [],
   notes: saved?.notes || '',
   currentTurn: saved?.currentTurn || 0,
   editingIndex: -1 // New: tracking which character is being edited
@@ -108,7 +104,7 @@ function renderEntities() {
         </div></td>`;
     } else {
       tr.innerHTML = `
-        <td class="col-clickable" onclick="toggleEdit(${i})">✏️ ${esc(ent.name)}</td>
+        <td><div class="ficha-nome"><span class="col-clickable" onclick="toggleEdit(${i})">✏️ ${esc(ent.name)}</span>${ent.ref ? `<button class="btn-lupa" onclick="verMonstroNoBestiario('${esc(ent.ref)}')" title="Ver o bloco de estatísticas no Bestiário">📖</button>` : ''}</div></td>
         <td>${esc(ent.type)}</td>
         <td class="hp-display ${cls}">${ent.hp}/${ent.maxHp}</td>
         <td>${ent.initiative}</td>
@@ -193,197 +189,6 @@ document.getElementById('turnMarker').addEventListener('input', e => {
 function updateTurnCounter() {
   const el = document.getElementById('turnCounter');
   el.textContent = state.entities.length ? `${state.currentTurn+1}/${state.entities.length}` : '0/0';
-}
-
-// ==================== SHIP (EMBARCAÇÃO) ====================
-function loadShipForm() {
-  document.getElementById('shipName').value = state.ship.name || '';
-  document.getElementById('shipMaxHp').value = state.ship.maxHp || 100;
-  document.getElementById('shipHp').value = state.ship.hp || 100;
-  document.getElementById('shipHardness').value = state.ship.hardness || 0;
-  document.getElementById('shipSpeed').value = state.ship.speed || 30;
-  document.getElementById('shipAbilities').value = (state.ship.abilities||[]).join('\n');
-  document.getElementById('shipGoods').value = state.ship.goods || '';
-}
-
-document.getElementById('shipForm').addEventListener('submit', e => {
-  e.preventDefault();
-  state.ship.name = document.getElementById('shipName').value;
-  state.ship.maxHp = +document.getElementById('shipMaxHp').value;
-  state.ship.hp = +document.getElementById('shipHp').value;
-  state.ship.hardness = +document.getElementById('shipHardness').value;
-  state.ship.speed = +document.getElementById('shipSpeed').value;
-  state.ship.abilities = document.getElementById('shipAbilities').value.split('\n').filter(Boolean);
-  state.ship.goods = document.getElementById('shipGoods').value;
-  renderShip(); saveData();
-});
-
-function renderShip() {
-  const tb = document.getElementById('shipTableBody');
-  const s = state.ship;
-  const cls = hpClass(s.hp, s.maxHp);
-  tb.innerHTML = `<tr>
-    <td><input type="text" class="table-input" value="${esc(s.name)}" onchange="state.ship.name=this.value; renderShip(); saveData();"></td>
-    <td class="hp-display ${cls}">
-      <input type="number" class="table-input hp-in" value="${s.hp}" onchange="state.ship.hp=+this.value; renderShip(); saveData();">
-    </td>
-    <td><input type="number" class="table-input" value="${s.maxHp}" onchange="state.ship.maxHp=+this.value; renderShip(); saveData();"></td>
-    <td><input type="number" class="table-input" value="${s.hardness}" onchange="state.ship.hardness=+this.value; renderShip(); saveData();"></td>
-    <td><input type="number" class="table-input" value="${s.speed}" onchange="state.ship.speed=+this.value; renderShip(); saveData();"></td>
-    <td><input type="text" class="table-input" value="${esc(s.goods||'')}" onchange="state.ship.goods=this.value; renderShip(); saveData();"></td>
-    <td><div class="action-cell">
-      <input type="number" min="0" max="9999" value="0" id="shipDmgVal">
-      <button class="btn btn-dmg" onclick="shipDamage()">Dano</button>
-      <input type="number" min="0" max="9999" value="0" id="shipRepVal">
-      <button class="btn btn-repair" onclick="shipRepair()">Reparar</button>
-    </div></td></tr>`;
-}
-
-function shipDamage() {
-  const v = +document.getElementById('shipDmgVal').value;
-  state.ship.hp = Math.max(0, state.ship.hp - v);
-  renderShip(); loadShipForm(); saveData();
-}
-function shipRepair() {
-  const v = +document.getElementById('shipRepVal').value;
-  state.ship.hp = Math.min(state.ship.maxHp, state.ship.hp + v);
-  renderShip(); loadShipForm(); saveData();
-}
-
-// ==================== CREW (TRIPULAÇÃO) ====================
-document.getElementById('crewForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const name = document.getElementById('crewName').value.trim();
-  if (!name) return;
-  state.ship.crew = state.ship.crew || [];
-  state.ship.crew.push({
-    id: Date.now(), name,
-    role: document.getElementById('crewRole').value,
-    maxHp: +document.getElementById('crewMaxHp').value,
-    hp: +document.getElementById('crewMaxHp').value,
-    info: document.getElementById('crewInfo').value,
-    actions: document.getElementById('crewActions').value
-  });
-  document.getElementById('crewForm').reset();
-  renderCrew(); saveData();
-});
-
-function renderCrew() {
-  const tb = document.getElementById('crewTableBody');
-  tb.innerHTML = '';
-  (state.ship.crew||[]).forEach((c, i) => {
-    const cls = hpClass(c.hp, c.maxHp);
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><input type="text" class="table-input" value="${esc(c.name)}" onchange="updateCrew(${i}, 'name', this.value)"></td>
-      <td><input type="text" class="table-input" value="${esc(c.role||'')}" onchange="updateCrew(${i}, 'role', this.value)"></td>
-      <td class="hp-display ${cls}">
-        <input type="number" class="table-input hp-in" value="${c.hp}" onchange="updateCrew(${i}, 'hp', +this.value)"> / 
-        <input type="number" class="table-input hp-in" value="${c.maxHp}" onchange="updateCrew(${i}, 'maxHp', +this.value)">
-      </td>
-      <td><input type="text" class="table-input" value="${esc(c.info||'')}" onchange="updateCrew(${i}, 'info', this.value)"></td>
-      <td><input type="text" class="table-input" value="${esc(c.actions||'')}" onchange="updateCrew(${i}, 'actions', this.value)"></td>
-      <td><div class="action-cell">
-        <input type="number" min="0" max="9999" value="0" id="crDmg${i}">
-        <button class="btn btn-dmg" onclick="crewDamage(${i})">Dano</button>
-        <input type="number" min="0" max="9999" value="0" id="crHeal${i}">
-        <button class="btn btn-heal" onclick="crewHeal(${i})">Curar</button>
-        <button class="btn btn-danger" onclick="crewRemove(${i})">Remover</button>
-      </div></td>`;
-    tb.appendChild(tr);
-  });
-}
-
-function updateCrew(i, key, val) {
-  state.ship.crew[i][key] = val;
-  renderCrew(); saveData();
-}
-
-function crewDamage(i) {
-  const v = +document.getElementById('crDmg'+i).value;
-  state.ship.crew[i].hp = Math.max(0, state.ship.crew[i].hp - v);
-  renderCrew(); saveData();
-}
-function crewHeal(i) {
-  const v = +document.getElementById('crHeal'+i).value;
-  const c = state.ship.crew[i];
-  c.hp = Math.min(c.maxHp, c.hp + v);
-  renderCrew(); saveData();
-}
-function crewRemove(i) {
-  if (!confirm(`Remover "${state.ship.crew[i].name}"?`)) return;
-  state.ship.crew.splice(i, 1);
-  renderCrew(); saveData();
-}
-
-// ==================== COMBAT SHIPS (COMBATE NAVAL) ====================
-document.getElementById('combatForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const name = document.getElementById('combatShipName').value.trim();
-  if (!name) return;
-  state.combatShips.push({
-    name,
-    initiative: +document.getElementById('combatShipInitiative').value,
-    hp: +document.getElementById('combatShipHp').value,
-    maxHp: +document.getElementById('combatShipMaxHp').value,
-    hardness: +document.getElementById('combatShipHardness').value,
-    speed: +document.getElementById('combatShipSpeed').value,
-    abilities: document.getElementById('combatShipAbilities').value.split(',').map(s=>s.trim()).filter(Boolean)
-  });
-  renderCombat(); saveData();
-});
-
-function renderCombat() {
-  const tb = document.getElementById('combatTableBody');
-  tb.innerHTML = '';
-  state.combatShips.forEach((s, i) => {
-    const cls = hpClass(s.hp, s.maxHp);
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><input type="text" class="table-input" value="${esc(s.name)}" onchange="updateCombat(${i}, 'name', this.value)"></td>
-      <td><input type="number" class="table-input" value="${s.initiative}" onchange="updateCombat(${i}, 'initiative', +this.value)"></td>
-      <td class="hp-display ${cls}">
-        <input type="number" class="table-input hp-in" value="${s.hp}" onchange="updateCombat(${i}, 'hp', +this.value)"> / 
-        <input type="number" class="table-input hp-in" value="${s.maxHp}" onchange="updateCombat(${i}, 'maxHp', +this.value)">
-      </td>
-      <td><input type="number" class="table-input" value="${s.hardness}" onchange="updateCombat(${i}, 'hardness', +this.value)"></td>
-      <td><input type="number" class="table-input" value="${s.speed}" onchange="updateCombat(${i}, 'speed', +this.value)"></td>
-      <td><input type="text" class="table-input" value="${esc((s.abilities||[]).join(', '))}" onchange="updateCombat(${i}, 'abilities', this.value)"></td>
-      <td><div class="action-cell">
-        <input type="number" min="0" max="9999" value="0" id="cbDmg${i}">
-        <button class="btn btn-dmg" onclick="combatDamage(${i})">Dano</button>
-        <input type="number" min="0" max="9999" value="0" id="cbRep${i}">
-        <button class="btn btn-repair" onclick="combatRepair(${i})">Reparar</button>
-        <button class="btn btn-danger" onclick="combatRemove(${i})">Remover</button>
-      </div></td>`;
-    tb.appendChild(tr);
-  });
-}
-
-function updateCombat(i, key, val) {
-  if (key === 'abilities') {
-    state.combatShips[i][key] = val.split(',').map(s=>s.trim()).filter(Boolean);
-  } else {
-    state.combatShips[i][key] = val;
-  }
-  renderCombat(); saveData();
-}
-
-function combatDamage(i) {
-  const v = +document.getElementById('cbDmg'+i).value;
-  state.combatShips[i].hp = Math.max(0, state.combatShips[i].hp - v);
-  renderCombat(); saveData();
-}
-function combatRepair(i) {
-  const v = +document.getElementById('cbRep'+i).value;
-  const s = state.combatShips[i];
-  s.hp = Math.min(s.maxHp, s.hp + v);
-  renderCombat(); saveData();
-}
-function combatRemove(i) {
-  if (!confirm(`Remover "${state.combatShips[i].name}"?`)) return;
-  state.combatShips.splice(i, 1);
-  renderCombat(); saveData();
 }
 
 // ==================== FICHAS D&D 5.5 ====================
@@ -617,9 +422,11 @@ notesArea.addEventListener('input', () => { state.notes = notesArea.value; saveD
 // ==================== EXPORT / IMPORT ====================
 document.getElementById('exportBtn').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify({
-    entities: state.entities, ship: state.ship,
-    combatShips: state.combatShips, notes: state.notes,
-    currentTurn: state.currentTurn, fichas: state.fichas
+    entities: state.entities, notes: state.notes,
+    currentTurn: state.currentTurn, fichas: state.fichas,
+    // Bestiário e encontros ficam em bestiario.js / encontros.js
+    bestiario: typeof bst !== 'undefined' ? bst.meus : [],
+    encontros: typeof enc !== 'undefined' ? enc.salvos : []
   }, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -635,14 +442,11 @@ document.getElementById('importBtn').addEventListener('change', e => {
     try {
       const data = JSON.parse(ev.target.result);
       state.entities = data.entities || [];
-      state.ship = data.ship || state.ship;
-      state.combatShips = data.combatShips || data.enemyShips?.map(s => ({
-        name: s.name, initiative: 0, hp: s.hp||s.maxHp, maxHp: s.maxHp||100,
-        hardness: s.hardness||0, speed: s.speed||30, abilities: []
-      })) || [];
       state.notes = data.notes || '';
       state.currentTurn = data.currentTurn || 0;
       if (Array.isArray(data.fichas)) { state.fichas = data.fichas; salvarFichas(); }
+      if (Array.isArray(data.bestiario) && typeof bst !== 'undefined') { bst.meus = data.bestiario; salvarBestiario(); renderBestiario(); }
+      if (Array.isArray(data.encontros) && typeof enc !== 'undefined') { enc.salvos = data.encontros; salvarEncontros(); renderTabela(); }
       renderAll(); saveData();
       alert('Dados importados com sucesso!');
     } catch(err) { alert('Erro ao importar: ' + err.message); }
@@ -660,10 +464,6 @@ function esc(str) {
 // ==================== INIT ====================
 function renderAll() {
   renderEntities();
-  loadShipForm();
-  renderShip();
-  renderCrew();
-  renderCombat();
   renderFichas();
   notesArea.value = state.notes;
 }
