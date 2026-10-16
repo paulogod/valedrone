@@ -101,7 +101,8 @@ function renderEncontroAtual() {
   document.getElementById('encOrcamento').innerHTML =
     `Orçamento: <strong>${formatarXp(orc)} XP</strong> (${formatarXp(orc / enc.n)} × ${enc.n})`;
 
-  box.innerHTML = enc.atual.length ? enc.atual.map((c, i) => {
+  const tema = enc.atual.length && enc.tema ? `<p class="enc-tema">🏷 ${esc(enc.tema)}</p>` : '';
+  box.innerHTML = tema + (enc.atual.length ? enc.atual.map((c, i) => {
     const m = acharMonstro(c.id);
     if (!m) return '';
     return `<div class="enc-item">
@@ -120,7 +121,7 @@ function renderEncontroAtual() {
           ${c.qtd > 1 ? `<span>sem eles ${enc.atual.length === 1 ? '<span class="enc-pill">vazio</span>' : pilulaDif(-xpDe(m) * c.qtd)}</span>` : ''}
         </span>
       </div>`;
-  }).join('') : '<p class="fichas-ajuda">Adicione criaturas da lista ou use 🎲 Sortear.</p>';
+  }).join('') : '<p class="fichas-ajuda">Adicione criaturas da lista ou use 🎲 Sortear.</p>');
 
   // Medidor: a barra vai até a Alta; passar dela pinta de vermelho
   const dif = dificuldadeDoTotal(total, lim);
@@ -235,38 +236,37 @@ function renderSugestoes() {
     return;
   }
 
-  const contagem = {};
-  enc.atual.forEach(c => { const m = acharMonstro(c.id); if (m && m.tipo) contagem[m.tipo] = (contagem[m.tipo] || 0) + c.qtd; });
-  let tipos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]).slice(0, 2);
+  // O líder do encontro (a criatura de mais XP) decide quem combina; sem
+  // ninguém no encontro, vale o tipo escolhido no filtro
+  const lider = enc.atual.map(c => acharMonstro(c.id)).filter(Boolean).sort((a, b) => xpDe(b) - xpDe(a))[0];
   const filtro = document.getElementById('encTipo').value;
-  if (filtro && !tipos.includes(filtro)) tipos = [filtro, ...tipos].slice(0, 2);
-  if (!tipos.length) {
-    box.innerHTML = titulo + '<p class="fichas-ajuda">Adicione uma criatura ou escolha um tipo no filtro para receber sugestões do mesmo tipo.</p>';
+  if (!lider && !filtro) {
+    box.innerHTML = titulo + '<p class="fichas-ajuda">Adicione uma criatura ou escolha um tipo no filtro para receber sugestões de quem combina com ela.</p>';
     return;
   }
 
   const resta = orc - total;
   const noEncontro = new Set(enc.atual.map(c => c.id));
-  const grupos = tipos.map(tipo => {
-    const opcoes = todosOsMonstros()
-      .filter(m => m.tipo === tipo && xpDe(m) > 0 && xpDe(m) <= resta && monstroNoLocal(m, local))
-      .map(m => {
-        const k = Math.min(6, Math.floor(resta / xpDe(m)));
-        // Quanto do orçamento a sugestão preenche; já estar no encontro desempata (forma bando)
-        return { m, k, nota: (k * xpDe(m)) / resta + (noEncontro.has(m.id) ? 0.05 : 0) - k * 0.01 };
-      })
-      .sort((a, b) => b.nota - a.nota)
-      .slice(0, 4);
-    return { tipo, opcoes };
-  });
+  const combina = m => lider ? afinidade(lider, m) : (m.tipo === filtro ? 1 : 0);
+  const candidatas = todosOsMonstros().filter(m => xpDe(m) > 0 && xpDe(m) <= resta && monstroNoLocal(m, local) && combina(m) > 0);
+  const opcoes = candidatas
+    .map(m => {
+      const k = Math.min(6, Math.floor(resta / xpDe(m)));
+      // Mais afim primeiro; depois, quanto do orçamento preenche (já estar no encontro desempata)
+      return { m, k, nota: combina(m) + (k * xpDe(m)) / resta + (noEncontro.has(m.id) ? 0.05 : 0) - k * 0.01 };
+    })
+    .sort((a, b) => b.nota - a.nota)
+    .slice(0, 5);
+  const familia = lider && familiaDe(lider);
+  const grupos = [{ rotulo: familia ? familia.nome : (BST_TIPOS[lider ? lider.tipo : filtro] || filtro), opcoes }];
 
-  const corpo = grupos.map(g => `<div class="enc-sug-grupo">${esc(BST_TIPOS[g.tipo] || g.tipo)}</div>` +
+  const corpo = grupos.map(g => `<div class="enc-sug-grupo">${esc(g.rotulo)}${lider ? ` · combinam com ${esc(lider.n)}` : ''}</div>` +
     (g.opcoes.length ? g.opcoes.map(o => `<div class="enc-sug">
         <span>+${o.k}× <span class="col-clickable" data-enc-ver="${esc(o.m.id)}">${esc(o.m.n)}</span>
           <span class="ficha-sub bst-inline">ND ${ndTexto(o.m.nd)} · ${formatarXp(xpDe(o.m) * o.k)} XP</span></span>
         ${pilulaDif(xpDe(o.m) * o.k)}
         <button class="btn btn-heal btn-sm" data-enc-sug="${esc(o.m.id)}:${o.k}">Adicionar</button>
-      </div>`).join('') : `<p class="fichas-ajuda">Nada desse tipo cabe nos ${formatarXp(resta)} XP que faltam.</p>`)
+      </div>`).join('') : `<p class="fichas-ajuda">Nada que combine cabe nos ${formatarXp(resta)} XP que faltam.</p>`)
   ).join('');
   box.innerHTML = titulo + `<p class="fichas-ajuda">Faltam ${formatarXp(resta)} XP para o teto de ${alvo}.</p>` + corpo;
 }
@@ -284,6 +284,7 @@ function difAtual() {
 
 /** O encontro mudou de criaturas: o tesouro sugerido acompanha */
 function encontroMudou(acao) {
+  if (!enc.atual.length) enc.tema = '';
   enc.tesouro = enc.atual.length ? sortearTesouro(enc.atual, enc.nivel, difAtual()) : null;
   salvarEncontros(); renderMontagem();
   avisarDificuldade(acao);
@@ -305,23 +306,121 @@ function tirarDoEncontro(i, qtd) {
   encontroMudou(`−${r} ${nome}`);
 }
 
+// ---------- afinidades: quem anda com quem ----------
+/*
+ * O SRD diz o tipo e o habitat de cada criatura, mas não o "bando". Esta
+ * tabela agrupa quem costuma lutar junto (goblinoides com worgs, o vampiro
+ * com seus servos, o culto com diabos ou demônios, o dragão com a própria
+ * prole e kobolds) para o sorteio não juntar um urso, um diabo e um fantasma.
+ * Cada família tem quem a compõe (`re` no nome em inglês, ou `tipo`) e os
+ * aliados que a acompanham.
+ */
+const ENC_FAMILIAS = [
+  { id: 'goblinoides', nome: 'Bando goblinoide', re: /goblin|hobgoblin|bugbear/i, aliados: /^worg$|^wolf$|dire wolf|giant spider|giant wolf spider/i },
+  { id: 'gnolls', nome: 'Matilha de gnolls', re: /gnoll/i, aliados: /hyena/i, familias: ['demonios'] },
+  { id: 'vampiro', nome: 'Corte do vampiro', re: /vampire/i, aliados: /swarm of bats|swarm of rats|^wolf$|giant bat|giant rat|^bat$|^rat$/i },
+  { id: 'licantropos', nome: 'Licantropos', re: /^were/i, aliados: /^wolf$|dire wolf|^rat$|giant rat|swarm of rats|^boar$|giant boar|^tiger$|panther|bear$/i },
+  { id: 'diabos', nome: 'Legião infernal', re: /devil|^imp$|lemure|hell hound|erinyes|nightmare|pit fiend/i, familias: ['culto'] },
+  { id: 'demonios', nome: 'Horda demoníaca', re: /balor|dretch|glabrezu|hezrou|marilith|nalfeshnee|quasit|vrock|succubus|incubus/i, familias: ['culto', 'gnolls'] },
+  { id: 'mortos', nome: 'Mortos-vivos', tipo: /undead/i, aliados: /swarm of crawling claws|swarm of rats|swarm of bats/i, familias: ['culto'] },
+  { id: 'culto', nome: 'Culto', re: /cultist|priest|fanatic/i },
+  { id: 'bruxas', nome: 'Círculo de bruxas', re: /hag$/i, aliados: /^ogre$|troll|harpy|giant toad|will-o/i },
+  { id: 'gigantes', nome: 'Gigantes e ogros', tipo: /giant/i, aliados: /dire wolf|winter wolf|mammoth|giant goat|giant elk|hell hound|^ogre zombie$/i },
+  { id: 'aranhas', nome: 'Ninho de aranhas', re: /spider|ettercap|drider/i },
+  { id: 'bandidos', nome: 'Bandidos', re: /bandit|^tough|^scout$|^spy$|assassin|pirate/i, aliados: /mastiff/i },
+  { id: 'guarda', nome: 'Guarda e cavaleiros', re: /^guard\b|knight|^noble$|warrior infantry|warrior veteran|gladiator|priest acolyte/i, aliados: /mastiff|^warhorse$|riding horse/i },
+  { id: 'conjuradores', nome: 'Conjurador e criações', re: /^mage$|archmage/i, aliados: /golem|shield guardian|homunculus|animated|gargoyle|.*mephit/i },
+  { id: 'dragoes', nome: 'Covil de dragão', tipo: /dragon/i },
+  { id: 'aquaticos', nome: 'Ameaça das profundezas', re: /sahuagin|merrow|shark|piranha|kraken|sea hag|giant octopus/i },
+  { id: 'subterraneo', nome: 'Horrores do Subterrâneo', re: /aboleth|chuul|cloaker|grimlock|darkmantle|gibbering|grick|roper|otyugh/i },
+  { id: 'elementais', nome: 'Fúria elemental', tipo: /elemental/i }
+];
+// Dragões andam com a própria cor (e com kobolds); elementais, com o próprio elemento
+const ENC_CORES = /\b(black|blue|brass|bronze|copper|gold|green|red|silver|white)\b/i;
+// Partes e formas que não entram sozinhas no sorteio
+const ENC_FORA_DO_SORTEIO = /troll limb|^vampire, (bat|mist) form/i;
+// Licantropo anda com o próprio animal: Werewolf com lobos, Wererat com ratos...
+const ENC_LICANTROPO_ANIMAL = { wolf: /^wolf$|dire wolf/i, rat: /^rat$|giant rat|swarm of rats/i, boar: /^boar$|giant boar/i,
+  tiger: /^tiger$|panther|saber-toothed/i, bear: /black bear|brown bear/i };
+const ENC_ELEMENTOS = { fogo: /fire|magma|magmin|salamander|azer|efreeti|steam/i, agua: /water|merfolk|steam|ice/i,
+  ar: /air|djinni|invisible stalker|dust/i, terra: /earth|xorn|gargoyle|dust|magma/i };
+
+function familiaDe(m) {
+  if (!m) return null;
+  return ENC_FAMILIAS.find(f => f.re && (f.re.test(m.n) || f.re.test(m.ingles || ''))) ||
+    ENC_FAMILIAS.find(f => f.tipo && f.tipo.test(m.tipo || '')) || null;
+}
+/** Habitats que contam como "o mesmo lugar" (Qualquer e Outros Planos não dizem nada) */
+const habitatsReais = m => (m.hab || []).filter(h => h !== 'Any' && h !== 'Planar');
+
+/**
+ * Quão bem `m` combina com a âncora: 3 = mesma família (ou a mesma criatura),
+ * 2 = aliado dela, 1 = mesmo tipo e mesmo habitat, 0 = não combina.
+ */
+function afinidade(ancora, m) {
+  if (m.id === ancora.id) return 3;
+  const fa = familiaDe(ancora), fm = familiaDe(m);
+  if (fa && fa.id === 'dragoes') {
+    const cor = (ancora.n.match(ENC_CORES) || [])[1];
+    if (/kobold|half-dragon/i.test(m.n)) return 2;
+    return cor && fm && fm.id === 'dragoes' && new RegExp(`\\b${cor}\\b`, 'i').test(m.n) ? 3 : 0;
+  }
+  if (fa && fa.id === 'licantropos') {
+    const base = (ancora.n.match(/^were(\w+)/i) || [])[1];
+    if (!base) return 0;
+    if (new RegExp(`^were${base}\\b`, 'i').test(m.n)) return 3;
+    return ENC_LICANTROPO_ANIMAL[base.toLowerCase()] && ENC_LICANTROPO_ANIMAL[base.toLowerCase()].test(m.n) ? 2 : 0;
+  }
+  if (fa && fa.id === 'elementais') {
+    const comuns = Object.values(ENC_ELEMENTOS).some(re => re.test(ancora.n) && re.test(m.n));
+    return comuns ? 3 : 0;
+  }
+  if (ancora.tipo === 'beast' || (ancora.tipo || '').startsWith('swarm')) {
+    // Fera anda com a própria espécie: Wolf, Dire Wolf, Swarm of Rats e Giant Rat...
+    const especie = n => n.toLowerCase().replace(/^(giant|dire|swarm of)\s+/, '').replace(/s$/, '').split(' ').pop();
+    if (especie(ancora.n) === especie(m.n)) return 3;
+  }
+  if (fa && fm && fa.id === fm.id) return 3;
+  if (fa && ((fa.aliados && fa.aliados.test(m.n)) || (fm && (fa.familias || []).includes(fm.id)))) return 2;
+  if (fm && ((fm.aliados && fm.aliados.test(ancora.n)) || (fm.familias || []).includes(fa && fa.id))) return 2;
+  // Família definida, fera ou monstruosidade (bichos solitários): estranhos não entram
+  if (fa || ancora.tipo === 'beast' || ancora.tipo === 'monstrosity') return 0;
+  const ha = habitatsReais(ancora), hm = habitatsReais(m);
+  const mesmoLugar = !ha.length || !hm.length || ha.some(h => hm.includes(h));
+  return m.tipo === ancora.tipo && mesmoLugar ? 1 : 0;
+}
+
+/** Nome do tema: a família, ou o tipo com o habitat em comum */
+function temaDoEncontro(ancora, local) {
+  const f = familiaDe(ancora);
+  const lugar = local ? BST_HABITATS[local] : (habitatsReais(ancora)[0] ? BST_HABITATS[habitatsReais(ancora)[0]] : '');
+  const nome = f ? f.nome : (BST_TIPOS[ancora.tipo] || ancora.tipo || 'Criaturas');
+  return lugar ? `${nome} · ${lugar}` : nome;
+}
+
 /**
  * Sorteia criaturas com os filtros da lista até chegar perto do orçamento.
- * No máximo três tipos diferentes e oito criaturas, como os exemplos do SRD:
- * um chefe com capangas ou um bando do mesmo bicho, e não dez avulsos.
+ * Começa por uma âncora (o líder, que ocupa boa parte do orçamento) e só
+ * completa com quem combina com ela pela tabela de afinidades: a mesma
+ * família, os aliados dela ou, sem família, o mesmo tipo no mesmo habitat.
+ * No máximo três criaturas diferentes e oito no total, como os exemplos do
+ * SRD: um chefe com capangas ou um bando, e não dez avulsos.
  */
 function sortearEncontro() {
   const orc = orcamentoAtual();
   const cabe = document.getElementById('encCabe');
   const antes = cabe.checked;
   cabe.checked = false;                          // o sorteio olha o orçamento inteiro
-  const pool = candidatosFiltrados().filter(m => xpDe(m) <= orc);
+  const pool = candidatosFiltrados().filter(m => xpDe(m) <= orc && !ENC_FORA_DO_SORTEIO.test(m.n));
   cabe.checked = antes;
   if (!pool.length) { alert('Nenhuma criatura cabe nesse orçamento com esses filtros.'); return; }
 
   const sorteia = lista => lista[Math.floor(Math.random() * lista.length)];
-  // Começa por uma criatura que ocupe boa parte do orçamento, se houver
+  // A âncora é quem lidera: ocupa boa parte do orçamento e tem com quem andar
   const fortes = pool.filter(m => xpDe(m) >= orc * 0.25);
+  const comBando = fortes.filter(m => pool.some(o => o.id !== m.id && afinidade(m, o) >= 2 && xpDe(o) <= orc - xpDe(m)));
+  const ancora = sorteia(comBando.length && Math.random() < 0.7 ? comBando : (fortes.length ? fortes : pool));
+
   const escolhidos = [];
   let resta = orc, total = 0;
   const pegar = m => {
@@ -329,21 +428,28 @@ function sortearEncontro() {
     if (c) c.qtd++; else escolhidos.push({ id: m.id, qtd: 1 });
     resta -= xpDe(m); total++;
   };
-  pegar(sorteia(fortes.length ? fortes : pool));
+  pegar(ancora);
+
+  // Companheiros: só quem combina com a âncora, do mais afim para o menos
+  const notas = new Map(pool.map(m => [m.id, afinidade(ancora, m)]));
+  const melhorNivel = Math.max(...pool.filter(m => m.id !== ancora.id).map(m => notas.get(m.id)), 0);
+  const companheiros = pool.filter(m => m.id === ancora.id || (notas.get(m.id) >= Math.min(2, melhorNivel) && notas.get(m.id) > 0));
 
   for (let tentativas = 0; tentativas < 40 && total < 8; tentativas++) {
-    const tipos = escolhidos.map(c => c.id);
-    const opcoes = (escolhidos.length >= 3 ? pool.filter(m => tipos.includes(m.id)) : pool)
+    const ids = escolhidos.map(c => c.id);
+    const opcoes = (escolhidos.length >= 3 ? companheiros.filter(m => ids.includes(m.id)) : companheiros)
       .filter(m => xpDe(m) <= resta && xpDe(m) >= orc / 16);
     if (!opcoes.length) break;
-    // Repetir o que já está no encontro é mais provável: forma bandos
-    const repetidos = opcoes.filter(m => tipos.includes(m.id));
-    pegar(repetidos.length && Math.random() < 0.5 ? sorteia(repetidos) : sorteia(opcoes));
+    // Repetir quem já está forma bandos; o líder raramente vem repetido
+    const repetidos = opcoes.filter(m => ids.includes(m.id) && m.id !== ancora.id);
+    pegar(repetidos.length && Math.random() < 0.5 ? sorteia(repetidos)
+      : sorteia(opcoes.filter(m => m.id !== ancora.id).length ? opcoes.filter(m => m.id !== ancora.id) : opcoes));
     if (resta < orc * 0.1) break;
   }
   enc.atual = escolhidos;
+  enc.tema = temaDoEncontro(ancora, document.getElementById('encLocal').value);
   _difAnterior = null;                  // encontro novo: não é "mudança"
-  encontroMudou('🎲 Encontro sorteado');
+  encontroMudou(`🎲 ${enc.tema}`);
 }
 
 function encontroParaIniciativa(lista) {
@@ -361,7 +467,7 @@ function encontroParaIniciativa(lista) {
 // ---------- tabela de encontros ----------
 function salvarNaTabela() {
   if (!enc.atual.length) { alert('Monte o encontro antes de salvar.'); return; }
-  const nome = document.getElementById('encNome').value.trim() ||
+  const nome = document.getElementById('encNome').value.trim() || enc.tema ||
     enc.atual.map(c => `${c.qtd}× ${(acharMonstro(c.id) || {}).n || c.id}`).join(', ');
   const lim = limitesDoGrupo(enc.n, enc.nivel);
   const xp = totalDoEncontro(enc.atual);
@@ -373,6 +479,7 @@ function salvarNaTabela() {
     xp,
     n: enc.n, nivel: enc.nivel,
     dif: dificuldadeDoTotal(xp, lim),
+    tema: enc.tema || '',
     tesouro: enc.tesouro
   });
   document.getElementById('encNome').value = '';
@@ -490,7 +597,7 @@ function sincronizarGrupo() {
 
   document.getElementById('encSortear').addEventListener('click', sortearEncontro);
   document.getElementById('encIniciativa').addEventListener('click', () => encontroParaIniciativa(enc.atual));
-  document.getElementById('encLimpar').addEventListener('click', () => { enc.atual = []; _difAnterior = null; encontroMudou(); });
+  document.getElementById('encLimpar').addEventListener('click', () => { enc.atual = []; enc.tema = ''; _difAnterior = null; encontroMudou(); });
   document.getElementById('encTesouroRolar').addEventListener('click', () => {
     if (!enc.atual.length) return;
     enc.tesouro = sortearTesouro(enc.atual, enc.nivel, difAtual());
@@ -536,6 +643,7 @@ function sincronizarGrupo() {
       enc.atual = s.criaturas.map(c => ({ ...c }));
       enc.n = s.n; enc.nivel = s.nivel;
       enc.tesouro = s.tesouro || sortearTesouro(enc.atual, s.nivel, s.dif);
+      enc.tema = s.tema || '';
       document.getElementById('encNome').value = s.nome;
       document.getElementById('encSalvarLocal').value = s.local || '';
       sincronizarGrupo(); salvarEncontros(); renderMontagem();

@@ -601,3 +601,4 @@ th[aria-sort="ascending"] .th-ordem, th[aria-sort="descending"] .th-ordem { colo
   padding: .25rem .45rem; border-radius: 6px; text-decoration: none; color: #c4b5fd;
   background: rgba(139,92,246,.15); border: 1px solid rgba(139,92,246,.3); }
 .cb-aidedd:hover { background: rgba(139,92,246,.35); color: #ede9fe; }
+.enc-tema { font-size: .82rem; font-weight: 700; color: #fbbf24; margin-bottom: .4rem; }
