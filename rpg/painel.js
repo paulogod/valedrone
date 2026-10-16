@@ -1,37 +1,21 @@
 // ==================== PAINEL DO COMBATE ====================
-// Vida dos dois lados, dano esperado por rodada, heróis em perigo e o risco
-// de TPK. O risco sai de uma simulação: o app joga o resto do combate mil
-// vezes a partir dos PV atuais, com dados de verdade, e conta em quantas o
-// grupo inteiro fica com 0 PV ao mesmo tempo.
+// Vida dos dois lados, DPR de cada um e o veredito de TPK pelo TTK (Time to
+// Kill): quantas rodadas cada lado leva para zerar o outro.
 //
-// O que a simulação sabe: CA e PV de todos, os ataques das fichas (tabela de
-// ataques do Criador) e as ações dos monstros do SRD (Multiattack, ataques e
-// sopros com Recarga). O que ela não sabe: magias de área e de cura dos
-// heróis, táticas, terreno e sorte do mestre. Por isso é uma estimativa.
-// Depende de combate.js (lerAcao, rolarExpressao) e de bestiario.js.
-
-const PN_SIMULACOES = 1000;
-const PN_RODADAS_MAX = 30;
-
-/*
- * Recursos que a ficha não mostra como ataque: magias com espaço, cura,
- * Surto de Ação, Destruição Divina, resistências, itens. Sem eles o grupo
- * fica fraco demais e o risco de TPK sai exagerado, cada vez mais com o
- * nível. Entram como dois fatores por nível do herói:
- *   dano = danoBase + danoNivel × (nível − 1)   multiplica o dano dos ataques
- *   pv   = pvBase   + pvNivel   × (nível − 1)   reserva de PV extra (cura e mitigação),
- *                                               como fração dos PV máximos
- * Os valores saem de tools/calibrar-tpk.js, que ajusta o simulador à régua de
- * dificuldade do SRD (Baixa, Moderada, Alta). Mudou o simulador? Rode de novo.
- */
-const PN_RECURSOS = { danoBase: 1.2, danoNivel: 0.07, pvBase: 1.25, pvNivel: 0.03 };
-function fatoresDeRecursos(nivel) {
-  const L = Math.max(1, Math.min(20, +nivel || 1));
-  return { dano: PN_RECURSOS.danoBase + PN_RECURSOS.danoNivel * (L - 1), pv: PN_RECURSOS.pvBase + PN_RECURSOS.pvNivel * (L - 1) };
-}
-
-// ---------- dados ----------
-const pnD = lados => 1 + Math.floor(Math.random() * lados);
+//   P_acerto = (21 − (CA − bônus)) / 20, entre 0,05 e 0,95
+//     Vantagem: 1 − (1 − P)²   ·   Desvantagem: P²
+//   DPR = P × dano médio + 0,05 × dano extra do crítico (os dados de novo),
+//         ataque por ataque do Multiattack, somados
+//   TTK do Grupo    = Σ PV dos monstros / Σ DPR dos heróis
+//   TTK dos Monstros = Σ PV dos heróis  / Σ DPR dos monstros
+//
+//   TTK dos Monstros < TTK do Grupo → alerta de TPK iminente
+//   TTK do Grupo ≤ 3                → fácil/moderado (padrão de 2024)
+//   TTK dos Monstros ≤ 2            → perigo extremo de morte súbita
+//
+// Vantagem e Desvantagem saem das condições marcadas no Combate. Heróis usam
+// a tabela de ataques da ficha; monstros, as ações do SRD (combate.js e
+// bestiario.js).
 
 /** "2d6+5" → { n: 2, d: 6, mod: 5 } */
 function lerExpr(txt) {
@@ -39,15 +23,47 @@ function lerExpr(txt) {
   return m ? { n: +m[1], d: +m[2], mod: m[3] ? +m[3] : 0 } : null;
 }
 const mediaExpr = e => e ? e.n * (e.d + 1) / 2 + e.mod : 0;
-function rolarExpr(e, critico) {
-  if (!e) return 0;
-  let t = e.mod;
-  const q = e.n * (critico ? 2 : 1);
-  for (let i = 0; i < q; i++) t += pnD(e.d);
-  return Math.max(0, t);
-}
-/** Chance de acertar (o 1 sempre erra, o 20 sempre acerta) */
+/** Média só dos dados: é o que um crítico soma */
+const mediaDosDados = e => e ? e.n * (e.d + 1) / 2 : 0;
+
+/** P_acerto = (21 − (CA − bônus)) / 20, entre 5% (o 1 natural) e 95% (o 20 natural) */
 const chanceDeAcerto = (atk, ca) => Math.min(0.95, Math.max(0.05, (21 - (ca - atk)) / 20));
+/** modo 1 = Vantagem, −1 = Desvantagem, 0 = normal */
+function chanceComModo(p, modo) {
+  if (modo > 0) return 1 - Math.pow(1 - p, 2);
+  if (modo < 0) return p * p;
+  return p;
+}
+
+// ---------- condições: Vantagem, Desvantagem e quem não age ----------
+const PN_DESV_ATACANTE = /^(amedrontado|envenenado|cego|contido|ca[ií]do)$/i;
+const PN_VANT_ATACANTE = /^invis[ií]vel$/i;
+const PN_VANT_CONTRA = /^(cego|contido|paralisado|atordoado|inconsciente|petrificado|ca[ií]do)$/i;
+const PN_DESV_CONTRA = /^invis[ií]vel$/i;
+const PN_NAO_AGE = /^(incapacitado|atordoado|paralisado|inconsciente|petrificado)$/i;
+
+/** Condições da criatura no Combate, já com o nível de Exaustão */
+function condicoesDe(e) {
+  const lista = (e.conditions || []).map(c => typeof c === 'string' ? { n: c } : c).filter(c => c && c.n);
+  const exaustao = lista.find(c => /^exaust/i.test(c.n));
+  return { nomes: lista.map(c => c.n.trim()), exaustao: exaustao ? (exaustao.nivel || 1) : 0 };
+}
+/** Vantagem e Desvantagem se anulam, como na regra */
+function modoDoAtaque(atacante, alvo) {
+  const tem = (lista, re) => lista.some(n => re.test(n));
+  const vant = tem(atacante.conds, PN_VANT_ATACANTE) || tem(alvo.conds, PN_VANT_CONTRA);
+  const desv = tem(atacante.conds, PN_DESV_ATACANTE) || tem(alvo.conds, PN_DESV_CONTRA);
+  return vant === desv ? 0 : vant ? 1 : -1;
+}
+const naoAge = c => c.conds.some(n => PN_NAO_AGE.test(n));
+
+/** DPR de um ataque: P × dano médio + 0,05 × dano extra do crítico */
+function dprDoAtaque(bonus, danos, ca, modo) {
+  const p = chanceComModo(chanceDeAcerto(bonus, ca), modo);
+  const medio = danos.reduce((s, d) => s + mediaExpr(d), 0);
+  const extraCritico = danos.reduce((s, d) => s + mediaDosDados(d), 0);
+  return { dpr: p * medio + 0.05 * extraCritico, p };
+}
 
 // ---------- lado de cada criatura ----------
 /** NPC entra como inimigo; o Painel deixa trocar para aliado */
@@ -96,12 +112,12 @@ function perfilDoHeroi(e, caInimiga) {
   const rende = a => (a.truque ? 1 : n) * chanceDeAcerto(a.atk, caInimiga) * mediaExpr(a.dados);
   const melhor = ataques.slice().sort((a, b) => rende(b) - rende(a))[0];
   const furtivo = ficha && /Ladino|Rogue/i.test(ficha.classe || '') ? { n: Math.ceil(nivel / 2), d: 6, mod: 0 } : null;
-  const fatores = fatoresDeRecursos(nivel || 1);
+  const c = condicoesDe(e);
   return {
     id: e.id, nome: e.name, pv: Math.max(0, e.hp), pvMax: e.maxHp, ca: +e.armor || 10,
+    pvEfetivo: e.hp > 0 ? e.hp + (+e.tmp || 0) : 0,             // os temporários também aguentam dano
     ataque: melhor, n: melhor.truque ? 1 : n, furtivo, estimado, nivel: nivel || 1,
-    fatorDano: fatores.dano,
-    reserva: Math.round(Math.max(0, fatores.pv - 1) * (+e.maxHp || 0)),
+    conds: c.nomes, exaustao: c.exaustao,
     ds: e.ds || { s: 0, f: 0 }
   };
 }
@@ -201,29 +217,52 @@ function perfilDoMonstro(e) {
   if (!rotina || !rotina.length) {
     if (!aoe) { rotina = rotinaEstimada(m && m.nd); estimado = true; } else rotina = [];
   }
+  const c = condicoesDe(e);
   return {
     id: e.id, nome: e.name, pv: Math.max(0, e.hp), pvMax: e.maxHp, ca: +e.armor || 10,
-    rotina, aoe, estimado
+    pvEfetivo: e.hp > 0 ? e.hp + (+e.tmp || 0) : 0,
+    rotina, aoe, estimado, conds: c.nomes, exaustao: c.exaustao
   };
 }
 
-// ---------- contas rápidas (sem dados) ----------
-function danoEsperadoHeroi(h, ca) {
-  const p = chanceDeAcerto(h.ataque.atk, ca);
-  let dano = h.n * (p * mediaExpr(h.ataque.dados) + 0.05 * h.ataque.dados.n * (h.ataque.dados.d + 1) / 2);
-  if (h.furtivo) dano += (1 - Math.pow(1 - p, h.n)) * mediaExpr(h.furtivo);
-  return dano * (h.fatorDano || 1);
+// ---------- DPR ----------
+/** DPR do herói contra um alvo: n ataques (Ataque Extra) + Ataque Furtivo uma vez por turno */
+function dprHeroiContra(h, alvo) {
+  if (h.pv <= 0 || naoAge(h)) return 0;
+  const bonus = h.ataque.atk - 2 * h.exaustao;               // Exaustão: −2 por nível no d20
+  const um = dprDoAtaque(bonus, [h.ataque.dados], alvo.ca, modoDoAtaque(h, alvo));
+  let dpr = h.n * um.dpr;
+  if (h.furtivo) dpr += (1 - Math.pow(1 - um.p, h.n)) * mediaExpr(h.furtivo) + 0.05 * mediaDosDados(h.furtivo);
+  return dpr;
 }
-function danoEsperadoMonstro(mo, ca, alvos) {
-  let rotina = mo.rotina.reduce((s, a) => s + chanceDeAcerto(a.atk, ca) * a.danos.reduce((t, x) => t + mediaExpr(x), 0), 0);
-  if (mo.aoe) {
-    // Recarga 5–6: em média um uso a cada 3 rodadas, em até 2 alvos, metade na salvaguarda
-    const freq = 1 / (1 + 6 / (7 - mo.aoe.min));
-    const sopro = mo.aoe.danos.reduce((t, x) => t + mediaExpr(x), 0) * 0.75 * Math.min(2, alvos);
-    rotina = rotina * (1 - freq) + sopro * freq;
-  }
-  return rotina;
+
+/** Frequência de uso de uma ação com Recarga X–6: usa, recarrega com chance (7−X)/6 por turno */
+const frequenciaDeRecarga = min => 1 / (1 + 6 / (7 - min));
+
+/** DPR do monstro contra um alvo: cada ataque da rotina do Multiattack, somados */
+function dprMonstroContra(mo, alvo) {
+  if (mo.pv <= 0 || naoAge(mo)) return 0;
+  const modo = modoDoAtaque(mo, alvo);
+  return mo.rotina.reduce((s, a) => s + dprDoAtaque(a.atk - 2 * mo.exaustao, a.danos, alvo.ca, modo).dpr, 0);
 }
+
+/**
+ * DPR total da criatura no turno: a média do DPR contra cada inimigo de pé
+ * (ninguém sabe em quem ela vai bater). Sopro com Recarga entra pela
+ * frequência de uso, em até 2 alvos, com metade das salvaguardas passando
+ * (0,75 do dano médio por alvo).
+ */
+function dprTotal(atacante, inimigos, ehHeroi) {
+  const vivos = inimigos.filter(x => x.pv > 0);
+  if (!vivos.length) return 0;
+  const contra = ehHeroi ? dprHeroiContra : dprMonstroContra;
+  const rotina = vivos.reduce((s, alvo) => s + contra(atacante, alvo), 0) / vivos.length;
+  if (ehHeroi || !atacante.aoe || atacante.pv <= 0 || naoAge(atacante)) return rotina;
+  const freq = frequenciaDeRecarga(atacante.aoe.min);
+  const sopro = atacante.aoe.danos.reduce((t, x) => t + mediaExpr(x), 0) * 0.75 * Math.min(2, vivos.length);
+  return rotina * (1 - freq) + sopro * freq;
+}
+
 /** Dano de um turno se tudo acertar (para "pode cair num turno") */
 function danoMaximoDeUmTurno(mo) {
   const rotina = mo.rotina.reduce((s, a) => s + a.danos.reduce((t, x) => t + mediaExpr(x), 0), 0);
@@ -231,129 +270,51 @@ function danoMaximoDeUmTurno(mo) {
   return Math.max(rotina, sopro);
 }
 
-// ---------- simulação ----------
-/**
- * Joga o combate `n` vezes. `ordem` é a fila de turnos a partir de quem joga
- * agora: [{ lado: 'h' | 'm', i }]. Heróis batem no inimigo mais ferido;
- * monstros escolhem um herói de pé ao acaso; quem cai faz testes contra a morte.
- */
-function simularCombate(herois, monstros, ordem, n = PN_SIMULACOES) {
-  const res = { tpk: 0, vitoria: 0, indefinido: 0, rodadas: [], caiu: herois.map(() => 0), morreu: herois.map(() => 0) };
-  if (!herois.length || !monstros.length) return null;
-
-  for (let s = 0; s < n; s++) {
-    // A reserva (cura e mitigação) só vale para quem ainda está de pé
-    const hp = herois.map(h => h.pv > 0 ? h.pv + (h.reserva || 0) : 0);
-    const ds = herois.map(h => ({ s: h.ds.s || 0, f: h.ds.f || 0 }));
-    const mhp = monstros.map(m => m.pv);
-    const recarga = monstros.map(() => true);
-    const caiu = herois.map(() => false);
-    let fim = null, rodada = 0;
-
-    const heroisDePe = () => hp.some(v => v > 0);
-    const monstrosDePe = () => mhp.some(v => v > 0);
-
-    for (rodada = 1; rodada <= PN_RODADAS_MAX && !fim; rodada++) {
-      for (const slot of ordem) {
-        if (slot.lado === 'h') {
-          const h = herois[slot.i];
-          if (hp[slot.i] <= 0) {
-            const t = ds[slot.i];
-            if (t.f >= 3 || t.s >= 3) continue;
-            const r = pnD(20);
-            if (r === 20) { hp[slot.i] = 1; t.s = 0; t.f = 0; }
-            else if (r === 1) t.f += 2;
-            else if (r >= 10) t.s += 1; else t.f += 1;
-            continue;
-          }
-          let furtivoUsado = false;
-          for (let k = 0; k < h.n; k++) {
-            let alvo = -1;
-            mhp.forEach((v, j) => { if (v > 0 && (alvo < 0 || v < mhp[alvo])) alvo = j; });
-            if (alvo < 0) break;
-            const d20 = pnD(20);
-            if (d20 !== 1 && (d20 === 20 || d20 + h.ataque.atk >= monstros[alvo].ca)) {
-              let dano = rolarExpr(h.ataque.dados, d20 === 20);
-              if (h.furtivo && !furtivoUsado) { dano += rolarExpr(h.furtivo, d20 === 20); furtivoUsado = true; }
-              mhp[alvo] -= Math.round(dano * (h.fatorDano || 1));
-            }
-          }
-          if (!monstrosDePe()) { fim = 'vitoria'; break; }
-        } else {
-          const mo = monstros[slot.i];
-          if (mhp[slot.i] <= 0) continue;
-          const vivos = () => hp.map((v, j) => v > 0 ? j : -1).filter(j => j >= 0);
-          if (!recarga[slot.i] && mo.aoe && pnD(6) >= mo.aoe.min) recarga[slot.i] = true;
-          const ferir = (j, dano) => {
-            hp[j] -= dano;
-            if (hp[j] <= 0) { hp[j] = 0; caiu[j] = true; ds[j] = { s: 0, f: 0 }; }
-          };
-          if (mo.aoe && recarga[slot.i] && vivos().length) {
-            recarga[slot.i] = false;
-            vivos().sort(() => Math.random() - 0.5).slice(0, 2).forEach(j => {
-              const total = mo.aoe.danos.reduce((t, x) => t + rolarExpr(x), 0);
-              ferir(j, Math.random() < 0.5 ? Math.floor(total / 2) : total);
-            });
-          } else {
-            for (const a of mo.rotina) {
-              const v = vivos();
-              if (!v.length) break;
-              const j = v[Math.floor(Math.random() * v.length)];
-              const d20 = pnD(20);
-              if (d20 !== 1 && (d20 === 20 || d20 + a.atk >= herois[j].ca)) {
-                ferir(j, a.danos.reduce((t, x) => t + rolarExpr(x, d20 === 20), 0));
-              }
-            }
-          }
-          if (!heroisDePe()) { fim = 'tpk'; break; }
-        }
-      }
-    }
-    if (fim === 'tpk') res.tpk++; else if (fim === 'vitoria') res.vitoria++; else res.indefinido++;
-    res.rodadas.push(rodada - 1);
-    caiu.forEach((c, j) => { if (c) res.caiu[j]++; });
-    ds.forEach((t, j) => { if (t.f >= 3) res.morreu[j]++; });
-  }
-  res.rodadas.sort((a, b) => a - b);
-  return {
-    tpk: res.tpk / n, vitoria: res.vitoria / n, indefinido: res.indefinido / n,
-    rodadas: res.rodadas[Math.floor(n / 2)],
-    caiu: res.caiu.map(c => c / n), morreu: res.morreu.map(c => c / n)
-  };
-}
-
-/** Faixa do risco: sempre com ícone e texto, nunca só a cor */
-function faixaDeRisco(p) {
-  if (p >= 0.5) return { id: 'critico', icone: '☠️', nome: 'Crítico' };
-  if (p >= 0.25) return { id: 'alto', icone: '🔶', nome: 'Alto' };
-  if (p >= 0.1) return { id: 'moderado', icone: '⚠️', nome: 'Moderado' };
-  return { id: 'baixo', icone: '✅', nome: 'Baixo' };
-}
-const pct = p => `${Math.round(p * 100)}%`;
+// ---------- TTK e veredito ----------
 const media = arr => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
+const pct = p => `${Math.round(p * 100)}%`;
+const rodadasTexto = t => !isFinite(t) ? 'nunca' : t < 1 ? '< 1' : t.toFixed(1).replace('.', ',');
+/** "cai em ~2,1 rodadas" / "cai em menos de 1 rodada" */
+const caiEm = t => !isFinite(t) ? 'não cai' : t < 1 ? 'cai em menos de 1 rodada' : `cai em ~${rodadasTexto(t)} rodadas`;
+
+/**
+ * Veredito pelas três regras (sempre com ícone e texto, nunca só a cor):
+ *   TTK dos Monstros < TTK do Grupo → TPK iminente
+ *   TTK dos Monstros ≤ 2            → perigo extremo de morte súbita
+ *   TTK do Grupo ≤ 3                → fácil/moderado
+ */
+function veredito(ttkG, ttkM, heroisDePe, monstrosDePe) {
+  if (!heroisDePe) return { id: 'critico', icone: '☠️', nome: 'Grupo caído', texto: 'Todos os heróis estão com 0 PV.' };
+  if (!monstrosDePe) return { id: 'baixo', icone: '🏆', nome: 'Combate vencido', texto: 'Nenhuma criatura inimiga de pé.' };
+  const tpk = ttkM < ttkG;
+  const subita = ttkM <= 2;
+  if (tpk && subita) return { id: 'critico', icone: '☠️', nome: 'TPK iminente', texto: 'Os monstros derrubam o grupo antes de cair, e rápido (TTK dos Monstros ≤ 2): perigo extremo de morte súbita.' };
+  if (tpk) return { id: 'alto', icone: '🔶', nome: 'Alerta de TPK', texto: 'TTK dos Monstros menor que o do Grupo: os monstros derrubam os heróis antes de morrer.' };
+  if (subita) return { id: 'moderado', icone: '⚠️', nome: 'Morte súbita', texto: 'O grupo vence, mas os monstros derrubam heróis rápido demais (TTK dos Monstros ≤ 2).' };
+  if (ttkG <= 3) return { id: 'baixo', icone: '✅', nome: 'Fácil/moderado', texto: 'O grupo vence em até 3 rodadas, o padrão de D&D 2024.' };
+  return { id: 'neutro', icone: '⏳', nome: 'Combate longo', texto: 'O grupo vence, mas leva mais de 3 rodadas: os recursos vão pesar.' };
+}
+
+/** TTK e DPR de dois lados já montados em perfis */
+function calcularTtk(herois, monstros) {
+  const dprH = herois.reduce((s, h) => s + dprTotal(h, monstros, true), 0);
+  const dprM = monstros.reduce((s, m) => s + dprTotal(m, herois, false), 0);
+  const pvH = herois.reduce((s, h) => s + h.pvEfetivo, 0);
+  const pvM = monstros.reduce((s, m) => s + m.pvEfetivo, 0);
+  const ttkG = dprH > 0 ? pvM / dprH : Infinity;
+  const ttkM = dprM > 0 ? pvH / dprM : Infinity;
+  return { dprH, dprM, pvH, pvM, ttkG, ttkM,
+    veredito: veredito(ttkG, ttkM, herois.some(h => h.pv > 0), monstros.some(m => m.pv > 0)) };
+}
 
 // ---------- análise do combate atual ----------
 function analisarCombate() {
   const ents = state.entities || [];
-  const lado = ents.map(e => pnHeroi(e) ? 'h' : 'm');
-  const inimigosVivos = ents.filter((e, k) => lado[k] === 'm' && e.hp > 0);
+  const inimigosVivos = ents.filter(e => !pnHeroi(e) && e.hp > 0);
   const caInimiga = media(inimigosVivos.map(e => +e.armor || 10)) || 13;
-  const herois = [], monstros = [], idx = [];
-  ents.forEach((e, k) => {
-    if (lado[k] === 'h') { idx[k] = { lado: 'h', i: herois.length }; herois.push(perfilDoHeroi(e, caInimiga)); }
-    else { idx[k] = { lado: 'm', i: monstros.length }; monstros.push(perfilDoMonstro(e)); }
-  });
-  // Fila a partir do turno atual
-  const ordem = [];
-  for (let k = 0; k < ents.length; k++) ordem.push(idx[(state.currentTurn + k) % ents.length]);
-
-  const vivosH = herois.filter(h => h.pv > 0);
-  const vivosM = monstros.filter(m => m.pv > 0);
-  const caHerois = media(vivosH.map(h => h.ca)) || 14;
-  const dprH = vivosH.reduce((s, h) => s + danoEsperadoHeroi(h, caInimiga), 0);
-  const dprM = vivosM.reduce((s, m) => s + danoEsperadoMonstro(m, caHerois, vivosH.length), 0);
-  const sim = vivosH.length && vivosM.length ? simularCombate(herois, monstros, ordem) : null;
-  return { herois, monstros, dprH, dprM, caHerois, caInimiga, sim };
+  const herois = ents.filter(pnHeroi).map(e => perfilDoHeroi(e, caInimiga));
+  const monstros = ents.filter(e => !pnHeroi(e)).map(perfilDoMonstro);
+  return { herois, monstros, caInimiga, ...calcularTtk(herois, monstros) };
 }
 
 // ---------- desenho ----------
@@ -366,6 +327,20 @@ function barraDoLado(rotulo, classe, atual, max, vivos, total) {
     </div>`;
 }
 
+/** Avisa quando uma condição muda o DPR: "com Vantagem", "Desvantagem", "não age" */
+function modos(atacante, inimigos, ehHeroi) {
+  if (atacante.pv <= 0) return '';
+  if (naoAge(atacante)) return ' · <strong class="pn-perigo-txt">não age (condição)</strong>';
+  const vivos = inimigos.filter(x => x.pv > 0);
+  const m = vivos.map(alvo => modoDoAtaque(atacante, alvo));
+  const vant = m.filter(x => x > 0).length, desv = m.filter(x => x < 0).length;
+  const partes = [];
+  if (vant) partes.push(`Vantagem contra ${vant === vivos.length ? 'todos' : vant}`);
+  if (desv) partes.push(`Desvantagem contra ${desv === vivos.length ? 'todos' : desv}`);
+  if (atacante.exaustao) partes.push(`Exaustão ${atacante.exaustao} (−${2 * atacante.exaustao})`);
+  return partes.length ? ` · ${partes.join(', ')}` : '';
+}
+
 function blocoDeHerois(a) {
   if (!a.herois.length) return '<p class="fichas-ajuda">Nenhum herói no combate.</p>';
   const ameacas = a.monstros.filter(m => m.pv > 0).map(m => ({ m, max: danoMaximoDeUmTurno(m) }));
@@ -374,11 +349,11 @@ function blocoDeHerois(a) {
     const atq = h.ataque;
     return `<div class="pn-linha">
         <div class="pn-linha-topo"><strong>${esc(h.nome)}</strong><span class="ficha-sub bst-inline">CA ${h.ca}</span>
-          ${a.sim ? `<span class="pn-chance" title="Chance de cair até o fim do combate">cai em ${pct(a.sim.caiu[j])}</span>` : ''}</div>
+          ${h.pv > 0 && a.dprM > 0 ? `<span class="pn-chance" title="Se todos os monstros focarem nele: PV ÷ DPR total dos monstros">${caiEm(h.pvEfetivo / a.dprM)} se focado</span>` : ''}</div>
         ${barraDePv({ hp: h.pv, maxHp: h.pvMax, tmp: 0, type: 'PC', ds: h.ds }, false)}
         <p class="pn-detalhe">${h.estimado ? '⚠ sem ficha com ataques: ataque estimado (+5, 1d8+3)' :
           `${esc(atq.nome)} ${atq.atk >= 0 ? '+' : ''}${atq.atk}, ${atq.dados.n}d${atq.dados.d}${atq.dados.mod ? (atq.dados.mod > 0 ? '+' : '') + atq.dados.mod : ''}${h.n > 1 ? ` ×${h.n}` : ''}${h.furtivo ? ` + Ataque Furtivo ${h.furtivo.n}d6` : ''}`}
-          · ~${Math.round(danoEsperadoHeroi(h, a.caInimiga))} de dano/rodada com recursos do nível ${h.nivel}</p>
+          · DPR ${dprTotal(h, a.monstros, true).toFixed(1).replace('.', ',')}${modos(h, a.monstros, true)}</p>
         ${perigo ? `<p class="pn-perigo">⚠️ Pode cair num turno de ${esc(perigo.m.nome)} (até ~${Math.round(perigo.max)} de dano)</p>` : ''}
       </div>`;
   }).join('');
@@ -390,14 +365,14 @@ function blocoDeCriaturas(a) {
   return a.monstros.map(m => {
     const e = ents.find(x => x.id === m.id);
     const rotina = m.rotina.map(r => r.nome).join(' + ');
-    const rodadas = a.dprH > 0 && m.pv > 0 ? Math.max(1, Math.ceil(m.pv / a.dprH)) : null;
+    const rodadas = a.dprH > 0 && m.pv > 0 ? m.pvEfetivo / a.dprH : null;
     return `<div class="pn-linha ${m.pv <= 0 ? 'pn-fora' : ''}">
         <div class="pn-linha-topo"><strong>${esc(m.nome)}</strong><span class="ficha-sub bst-inline">CA ${m.ca}</span>
           ${e && e.type === 'NPC' ? `<button type="button" class="btn btn-secondary btn-sm" data-pn-aliado="${esc(String(m.id))}" title="Contar como aliado dos heróis">↔ aliado</button>` : ''}
-          ${rodadas ? `<span class="pn-chance" title="Se o grupo focar nela">cai em ~${rodadas} rodada${rodadas > 1 ? 's' : ''}</span>` : ''}</div>
+          ${rodadas ? `<span class="pn-chance" title="Se o grupo focar nela: PV ÷ DPR total dos heróis">${caiEm(rodadas)} se focada</span>` : ''}</div>
         ${barraDePv({ hp: m.pv, maxHp: m.pvMax, tmp: 0, type: 'Monster' }, false)}
         <p class="pn-detalhe">${m.estimado ? '⚠ ações estimadas pelo ND · ' : ''}${rotina ? esc(rotina) : ''}${m.aoe ? `${rotina ? ' · ' : ''}${esc(m.aoe.nome)} (Recarga ${m.aoe.min}–6, CD ${m.aoe.cd})` : ''}
-          · ~${Math.round(danoEsperadoMonstro(m, a.caHerois, a.herois.filter(h => h.pv > 0).length))} de dano/rodada</p>
+          · DPR ${dprTotal(m, a.herois, false).toFixed(1).replace('.', ',')}${modos(m, a.herois, false)}</p>
       </div>`;
   }).join('');
 }
@@ -461,9 +436,7 @@ function renderPainel() {
   const a = analisarCombate();
   const H = a.herois, M = a.monstros;
   const soma = (l, k) => l.reduce((s, x) => s + x[k], 0);
-  const risco = a.sim ? faixaDeRisco(a.sim.tpk) : null;
-  const rodH = a.dprM > 0 ? soma(H, 'pv') / a.dprM : null;
-  const rodM = a.dprH > 0 ? soma(M, 'pv') / a.dprH : null;
+  const v = a.veredito;
 
   box.innerHTML = `
     <div class="card pn-lados">
@@ -472,25 +445,25 @@ function renderPainel() {
     </div>
 
     <div class="pn-tiles">
-      <div class="pn-tile pn-risco-${risco ? risco.id : 'nenhum'}">
-        <span class="pn-tile-rotulo">Risco de TPK</span>
-        <strong class="pn-tile-valor">${a.sim ? pct(a.sim.tpk) : '—'}</strong>
-        <span class="pn-tile-sub">${risco ? `${risco.icone} ${risco.nome}` : (H.some(h => h.pv > 0) ? 'sem inimigos de pé' : 'todos os heróis caídos')}</span>
+      <div class="pn-tile pn-risco-${v.id}">
+        <span class="pn-tile-rotulo">Veredito de TPK</span>
+        <strong class="pn-tile-valor pn-tile-veredito">${v.icone} ${v.nome}</strong>
+        <span class="pn-tile-sub">${v.texto}</span>
       </div>
       <div class="pn-tile">
-        <span class="pn-tile-rotulo">Vitória dos heróis</span>
-        <strong class="pn-tile-valor">${a.sim ? pct(a.sim.vitoria) : '—'}</strong>
-        <span class="pn-tile-sub">${a.sim && a.sim.indefinido > 0.01 ? `${pct(a.sim.indefinido)} sem fim em ${PN_RODADAS_MAX} rodadas` : `em ${PN_SIMULACOES.toLocaleString('pt-BR')} simulações`}</span>
+        <span class="pn-tile-rotulo"><i class="pn-marca pn-cor-h"></i>TTK do Grupo</span>
+        <strong class="pn-tile-valor">${rodadasTexto(a.ttkG)}</strong>
+        <span class="pn-tile-sub">rodadas para os heróis zerarem os monstros (${a.pvM} PV ÷ ${a.dprH.toFixed(1).replace('.', ',')} DPR)</span>
       </div>
       <div class="pn-tile">
-        <span class="pn-tile-rotulo">Rodadas até o fim</span>
-        <strong class="pn-tile-valor">${a.sim ? `~${a.sim.rodadas}` : '—'}</strong>
-        <span class="pn-tile-sub">mediana, a partir de agora</span>
+        <span class="pn-tile-rotulo"><i class="pn-marca pn-cor-m"></i>TTK dos Monstros</span>
+        <strong class="pn-tile-valor">${rodadasTexto(a.ttkM)}</strong>
+        <span class="pn-tile-sub">rodadas para os monstros zerarem os heróis (${a.pvH} PV ÷ ${a.dprM.toFixed(1).replace('.', ',')} DPR)</span>
       </div>
       <div class="pn-tile">
-        <span class="pn-tile-rotulo">Dano esperado por rodada</span>
+        <span class="pn-tile-rotulo">DPR total</span>
         <strong class="pn-tile-valor pn-tile-par"><span><i class="pn-marca pn-cor-h"></i>${Math.round(a.dprH)}</span><span><i class="pn-marca pn-cor-m"></i>${Math.round(a.dprM)}</span></strong>
-        <span class="pn-tile-sub">heróis · criaturas${rodH && rodM ? ` — heróis caem em ~${Math.ceil(rodH)}, criaturas em ~${Math.ceil(rodM)} rodadas` : ''}</span>
+        <span class="pn-tile-sub">heróis · criaturas, dano esperado por rodada</span>
       </div>
     </div>
 
@@ -505,32 +478,25 @@ function renderPainel() {
         <button type="button" class="btn btn-secondary btn-sm" id="pnLimparRegistro">Limpar registro</button></div>${blocoDoRegistro()}</div>
     </div>
 
-    <p class="tes-regra">Como é calculado: a simulação joga o resto do combate ${PN_SIMULACOES.toLocaleString('pt-BR')} vezes a partir dos PV atuais, na ordem de iniciativa. Heróis usam o melhor ataque da ficha (com Ataque Extra e Ataque Furtivo) no inimigo mais ferido; monstros usam o Multiattack e os sopros com Recarga do SRD (até 2 alvos, metade do dano em metade das vezes) em heróis de pé escolhidos ao acaso. Magias, cura e recursos de classe dos heróis não aparecem na ficha como ataque, então entram como um fator por nível (mais dano e uma reserva de PV), calibrado para que encontros Baixa, Moderada e Alta do SRD fiquem nas faixas do Livro do Mestre (tools/calibrar-tpk.js). Táticas, terreno e efeitos como paralisia não entram: trate como estimativa. TPK = todos os heróis com 0 PV ao mesmo tempo.</p>`;
+    <p class="tes-regra">Como é calculado: P_acerto = (21 − (CA − bônus)) ÷ 20, entre 5% e 95%; com Vantagem 1 − (1 − P)², com Desvantagem P² (vindas das condições do Combate; Exaustão tira 2 por nível). DPR = P × dano médio + 0,05 × dano extra do crítico, ataque por ataque do Multiattack, na média contra os inimigos de pé; sopro com Recarga entra pela frequência de uso, em até 2 alvos. TTK do Grupo = PV dos monstros ÷ DPR dos heróis; TTK dos Monstros = PV dos heróis ÷ DPR dos monstros. Veredito: TTK dos Monstros menor que o do Grupo = TPK iminente; TTK dos Monstros ≤ 2 = morte súbita; TTK do Grupo ≤ 3 = fácil/moderado. Heróis usam só a tabela de ataques da ficha (magias de área e cura não entram).</p>`;
 }
 
 // ---------- risco nos Encontros ----------
-/** Risco de TPK do encontro em montagem contra as fichas carregadas (PV cheios) */
+/** Veredito de TPK do encontro em montagem contra as fichas carregadas (PV cheios) */
 function riscoDoEncontroHtml(lista) {
   const fichas = (state.fichas || []).filter(f => f.pvMax);
   if (!lista.length) return '';
-  if (!fichas.length) return '<p class="pn-enc-risco">Carregue as fichas na aba Personagens para estimar o risco de TPK.</p>';
-  const monstrosEnts = [];
+  if (!fichas.length) return '<p class="pn-enc-risco">Carregue as fichas na aba Personagens para ver o TTK e o veredito de TPK.</p>';
+  const ents = [];
   lista.forEach(c => {
     const m = acharMonstro(c.id);
-    for (let k = 0; k < c.qtd; k++) monstrosEnts.push({ id: `${c.id}-${k}`, name: m ? m.n : c.id, hp: m ? m.pv : 10, maxHp: m ? m.pv : 10, armor: m ? m.ca : 12, ref: c.id, type: 'Monster' });
+    for (let k = 0; k < c.qtd; k++) ents.push({ id: `${c.id}-${k}`, name: m ? m.n : c.id, hp: m ? m.pv : 10, maxHp: m ? m.pv : 10, armor: m ? m.ca : 12, ref: c.id, type: 'Monster' });
   });
-  const caInimiga = media(monstrosEnts.map(e => e.armor)) || 13;
+  const caInimiga = media(ents.map(e => e.armor)) || 13;
   const herois = fichas.map(f => perfilDoHeroi({ id: f.id, name: f.nome, hp: f.pvMax, maxHp: f.pvMax, armor: f.ca || 12, type: 'PC' }, caInimiga));
-  const monstros = monstrosEnts.map(perfilDoMonstro);
-  // Ordem média: iniciativa de cada um + 10
-  const fila = [
-    ...fichas.map((f, i) => ({ lado: 'h', i, v: (f.iniciativa || 0) + 10 + Math.random() })),
-    ...monstrosEnts.map((e, i) => ({ lado: 'm', i, v: iniciativaDe(acharMonstro(e.ref) || {}) + 10 + Math.random() }))
-  ].sort((x, y) => y.v - x.v);
-  const sim = simularCombate(herois, monstros, fila, 400);
-  if (!sim) return '';
-  const r = faixaDeRisco(sim.tpk);
-  return `<p class="pn-enc-risco">Risco de TPK com as ${fichas.length} fichas carregadas: <strong class="pn-risco-txt-${r.id}">${r.icone} ${pct(sim.tpk)} (${r.nome})</strong> · vitória em ${pct(sim.vitoria)}</p>`;
+  const t = calcularTtk(herois, ents.map(perfilDoMonstro));
+  return `<p class="pn-enc-risco">Com as ${fichas.length} fichas: TTK do Grupo ${rodadasTexto(t.ttkG)} · TTK dos Monstros ${rodadasTexto(t.ttkM)} →
+    <strong class="pn-risco-txt-${t.veredito.id}">${t.veredito.icone} ${t.veredito.nome}</strong></p>`;
 }
 
 // ---------- eventos ----------

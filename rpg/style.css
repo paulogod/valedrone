@@ -602,3 +602,8 @@ th[aria-sort="ascending"] .th-ordem, th[aria-sort="descending"] .th-ordem { colo
   background: rgba(139,92,246,.15); border: 1px solid rgba(139,92,246,.3); }
 .cb-aidedd:hover { background: rgba(139,92,246,.35); color: #ede9fe; }
 .enc-tema { font-size: .82rem; font-weight: 700; color: #fbbf24; margin-bottom: .4rem; }
+.pn-tile-veredito { font-size: 1.6rem; }
+.pn-risco-neutro { border-color: rgba(148,163,184,.45); }
+.pn-risco-txt-neutro { color: #cbd5e1; }
+.pn-perigo-txt { color: #fca5a5; }
+.pn-tile-rotulo .pn-marca { width: 8px; height: 8px; }
