@@ -33,6 +33,14 @@ EXPANDIDOS = {
                      ("Spell Scroll (Level 9)", "Legendary")],
 }
 FORA = {"potion-of-poison"}   # parece poção de cura, mas é armadilha
+# O SRD tira os nomes próprios (Kwalish, Heward...); o AideDD ainda os usa
+AIDEDD_NOME = {
+    "apparatus-of-the-crab": "apparatus-of-kwalish", "dragon-orb": "orb-of-dragonkind",
+    "efficient-quiver": "quiver-of-ehlonna", "feather-token": "quaal-s-feather-token",
+    "handy-haversack": "heward-s-handy-haversack", "instant-fortress": "daern-s-instant-fortress",
+    "iron-bands": "iron-bands-of-bilarro", "marvelous-pigments": "nolzur-s-marvelous-pigments",
+    "mysterious-deck": "deck-of-many-things",
+}
 
 RE_ARCANA = re.compile(r"Tome|Manual|Crystal Ball|Pearl of Power|Robe|Ioun|Rod|Orb|Scroll|Cape of the Mountebank|Hat of", re.I)
 RE_RELICS = re.compile(r"Amulet|Talisman|Necklace|Periapt|Medallion|Brooch|Scarab|Crown|Circlet|Censer|Bowl|Brazier|"
@@ -82,6 +90,7 @@ def main():
             slug = pai["index"] + "-1-2-or-3"
         else:
             slug = pai["index"] if pai else idx
+        slug = AIDEDD_NOME.get(slug, re.sub(r"[()]", "", slug))
         itens.append({"id": idx, "n": x["name"], "rar": rar, "cat": cat, "slug": slug,
                       "sint": bool(x.get("attunement")), "temas": temas(x["name"], cat)})
 

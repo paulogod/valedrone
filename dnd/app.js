@@ -6440,13 +6440,20 @@ function renderCustomItemsList() {
   container.innerHTML = "";
 
   if (character.customItems.length === 0) {
-    container.innerHTML = `<p style="grid-column: 1 / -1; color: #94a3b8; font-size: 0.82rem; font-style: italic;">Nenhum item customizado criado ainda. Crie armas mágicas, relíquias ou vestes clicando em "+ Novo Item Customizado".</p>`;
+    container.innerHTML = `<p style="grid-column: 1 / -1; color: #94a3b8; font-size: 0.82rem; font-style: italic;">Nenhum item ainda. Use as sugestões acima, o catálogo do livro ou "+ Novo Item Customizado".</p>`;
     return;
   }
 
+  const sintonizados = itensSintonizados().length;
+  const ativos = new Set(itensAtivos());
+
   character.customItems.forEach(item => {
     const card = document.createElement("div");
-    card.className = `custom-item-card ${item.equipped ? 'is-equipped' : ''}`;
+    const requer = itemRequerSintonia(item);
+    const sint = itemSintonizado(item);
+    const semSintonia = item.equipped && requer && !sint;
+    const repetido = itemVale(item) && !ativos.has(item);
+    card.className = `custom-item-card ${item.equipped ? 'is-equipped' : ''}${semSintonia || repetido ? ' is-inerte' : ''}`;
     
     let typeName = "Item Mágico";
     if (item.type === "weapon") typeName = "Arma";
@@ -6456,15 +6463,14 @@ function renderCustomItemsList() {
     else if (item.type === "scroll") typeName = "Pergaminho";
     else if (item.type === "ring") typeName = "Anel / Amuleto";
     else if (item.type === "wondrous") typeName = "Item Maravilhoso";
+    const slot = ITEM_SLOTS.find(sl => sl.id === item.slot);
+    const caNaoVale = item.acBonus > 0 && item.equipped && !caDoItemVale(item);
 
     card.innerHTML = `
       <div>
         <div class="custom-item-header">
-          <span class="custom-item-title">${item.name}</span>
+          <span class="custom-item-title">${escAttr(item.name)} ${botaoInfoDoItem(item.slug, item.name)}</span>
           <div style="display: flex; gap: 4px;">
-            <button class="btn btn-sm ${item.equipped ? 'btn-gold' : 'btn-secondary'} btn-toggle-equip-item" data-id="${item.id}" title="${item.equipped ? 'Desequipar item' : 'Equipar item'}">
-              <i class="fa-solid ${item.equipped ? 'fa-shield-halved' : 'fa-hand'}"></i> ${item.equipped ? 'Equipado' : 'Equipar'}
-            </button>
             <button class="btn btn-secondary btn-sm btn-edit-custom-item" data-id="${item.id}" style="padding: 2px 6px;" title="Editar item">
               <i class="fa-solid fa-pen"></i>
             </button>
@@ -6473,27 +6479,54 @@ function renderCustomItemsList() {
             </button>
           </div>
         </div>
+        <div class="custom-item-checks">
+          <label class="custom-item-check" title="Vestido, empunhado ou ativo agora (poção: marque enquanto o efeito dura)">
+            <input type="checkbox" class="chk-item-em-uso" ${item.equipped ? "checked" : ""}> Em uso
+          </label>
+          ${requer ? `<label class="custom-item-check is-sint" title="Até ${LIMITE_DE_SINTONIA} itens sintonizados (${sintonizados} agora)">
+            <input type="checkbox" class="chk-item-sint" ${sint ? "checked" : ""}> Sintonizado
+          </label>` : ""}
+        </div>
         <div class="custom-item-meta" style="margin: 3px 0;">
           <span style="color: #fbbf24; font-weight: 600;">${typeName}</span>
-          ${item.damage ? `<span>• Dano: ${item.damage} ${item.damageType || ''}</span>` : ''}
-          ${item.acBonus > 0 ? `<span>• +${item.acBonus} CA</span>` : ''}
-          ${item.mastery ? `<span>• Maestria: ${item.mastery}</span>` : ''}
-          ${item.attunement === "true" || item.attunement === true ? '<span style="color: #a855f7;">• Sintonização</span>' : ''}
+          ${item.rar ? `<span>• ${RARIDADE_PT[item.rar] || escAttr(item.rar)}</span>` : ''}
+          ${slot ? `<span>• ${slot.nome}</span>` : ''}
+          ${item.damage ? `<span>• Dano: ${escAttr(item.damage)} ${item.damageType || ''}</span>` : ''}
+          ${item.acBonus > 0 ? `<span${caNaoVale ? ' class="is-off" title="Só sem armadura e sem escudo"' : ''}>• +${item.acBonus} CA</span>` : ''}
+          ${item.mastery ? `<span>• Maestria: ${escAttr(item.mastery)}</span>` : ''}
+          ${requer ? '<span style="color: #a855f7;">• Sintonização</span>' : ''}
           ${itemBonusesOf(item).map(b => `<span class="custom-item-bonus" title="${b.fromText ? 'Lido da descrição' : 'Escolhido no item'}">• ${escAttr(describeItemBonus(b))}</span>`).join("")}
         </div>
-        <p class="custom-item-desc">${item.desc || 'Sem descrição.'}</p>
+        ${semSintonia ? '<p class="custom-item-aviso">Sem Sintonização: os bônus não valem.</p>' : ''}
+        ${repetido ? '<p class="custom-item-aviso">Outra cópia já está em uso: efeitos de mesmo nome não somam.</p>' : ''}
+        <p class="custom-item-desc">${escAttr(item.desc || 'Sem descrição.')}</p>
       </div>
       <div style="font-size: 0.72rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.25rem; margin-top: 0.25rem; display: flex; justify-content: space-between;">
-        <span>Peso: ${item.weight || '-'}</span>
-        <span>Valor: ${item.cost || '-'}</span>
+        <span>Peso: ${escAttr(item.weight || '-')}</span>
+        <span>Valor: ${escAttr(item.cost || '-')}</span>
       </div>
     `;
 
-    card.querySelector(".btn-toggle-equip-item").addEventListener("click", () => {
-      item.equipped = !item.equipped;
+    card.querySelector(".chk-item-em-uso").addEventListener("change", (e) => {
+      item.equipped = e.target.checked;
+      // Item antigo, sem a caixa de Sintonização, guarda o estado de agora
+      if (requer && item.attuned === undefined) item.attuned = sint;
       renderCustomItemsList();
       recalculateCharacter();
-      showToast(`${item.name} ${item.equipped ? 'equipado' : 'desequipado'}!`);
+      showToast(`${item.name} ${item.equipped ? 'em uso' : 'guardado'}.`);
+    });
+
+    const chkSint = card.querySelector(".chk-item-sint");
+    if (chkSint) chkSint.addEventListener("change", (e) => {
+      if (e.target.checked && itensSintonizados().length >= LIMITE_DE_SINTONIA) {
+        e.target.checked = false;
+        showToast(`🔗 Limite de ${LIMITE_DE_SINTONIA} itens sintonizados. Desmarque outro antes.`);
+        return;
+      }
+      item.attuned = e.target.checked;
+      renderCustomItemsList();
+      recalculateCharacter();
+      showToast(`${item.name} ${item.attuned ? 'sintonizado' : 'sem sintonização'}.`);
     });
 
     card.querySelector(".btn-edit-custom-item").addEventListener("click", () => openCustomItemModal(item));
@@ -7177,20 +7210,12 @@ function recalculateCharacter() {
   // 2. Atributos Finais
   const finalScores = {};
   const finalMods = {};
+  const scoresSemItens = {};
 
   DND5E_DATA.abilities.forEach(ab => {
-    let score = character.baseScores[ab.id] || 10;
-    
-    // Bônus do Antecedente 2024
-    score += bonusDeAntecedente(ab.id);
-
-    // Bônus de Talentos Customizados (só os que estão no personagem)
-    getSelectedCustomFeats().forEach(cf => {
-      if (cf.abilityBonus === ab.id) score += 1;
-    });
-
-    // Bônus do atributo escolhido na caixa de escolhas de cada talento oficial
-    score += getFeatAbilityBonus(ab.id);
+    // Base, antecedente e talentos; os itens mágicos vêm por cima
+    scoresSemItens[ab.id] = abilityScoreSemItens(ab.id);
+    const score = efeitoDeItensNoAtributo(ab.id, scoresSemItens[ab.id]).depois;
 
     finalScores[ab.id] = score;
     finalMods[ab.id] = Math.floor((score - 10) / 2);
@@ -7279,8 +7304,8 @@ function recalculateCharacter() {
 
   ac += shieldObj.acBonus;
 
-  // Adicionar bônus de itens customizados equipados
-  character.customItems.filter(i => i.equipped && i.acBonus > 0).forEach(i => {
+  // Bônus de CA dos itens em uso (sintonizados, quando pedem; sem cópias repetidas)
+  itensAtivos().filter(i => (parseInt(i.acBonus) || 0) > 0 && caDoItemVale(i)).forEach(i => {
     ac += parseInt(i.acBonus) || 0;
   });
 
@@ -7295,6 +7320,8 @@ function recalculateCharacter() {
   }
   // Emboscador das Sombras (Vigilante das Sombras): soma SAB à Iniciativa
   getActiveSubclassEffects().forEach(e => { if (e.initiative) init += finalMods[e.initiative] || 0; });
+  // Iniciativa é teste de Destreza: Pedra da Sorte e afins somam
+  init += itemBonusDeAtributo("check", "dex");
 
   let speed = speciesObj.speed || 9;
   if (character.species === "elf" && character.lineage === "wood_elf") speed = 10.5;
@@ -7316,7 +7343,7 @@ function recalculateCharacter() {
   const allExpertSkills = Array.from(new Set([...character.expertSkills, ...featSkills.expert, ...classSkills.expert]));
   
   // Passiva = 10 + a mesma conta da perícia (especialização e Pau pra Toda Obra inclusos)
-  const passiva = (skId, ab) => 10 + finalMods[ab] + getClassSkillBonus(skId, finalMods) + (allExpertSkills.includes(skId) ? pb * 2
+  const passiva = (skId, ab) => 10 + finalMods[ab] + getClassSkillBonus(skId, finalMods) + itemBonusDeAtributo("check", ab) + (allExpertSkills.includes(skId) ? pb * 2
     : allTrainedSkills.includes(skId) ? pb : getJackOfAllTradesBonus(pb));
   const passivePerception = passiva("perception", "wis");
   const passiveInsight = passiva("insight", "wis");
@@ -7346,6 +7373,8 @@ function recalculateCharacter() {
   });
 
   renderStyleEffectsPanel({ ac, armorStyleMods });
+  renderMagicItemSummary(scoresSemItens);
+  renderMagicItemSuggestions();
   renderDeathSaves();
   renderLanguagesCheckboxes();   // idioma da classe (Druídico, Gíria) muda com as escolhas
   renderWizardPendencias();
@@ -7681,7 +7710,7 @@ function renderOfAbilities(ctx) {
       const mod = finalMods[abId];
       const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
       const isSaveProf = saveProfs.includes(abId);
-      const saveAuto = mod + (isSaveProf ? pb : 0) + getAuraOfProtectionBonus(finalMods);
+      const saveAuto = mod + (isSaveProf ? pb : 0) + getAuraOfProtectionBonus(finalMods) + itemBonusDeAtributo("save", abId);
       // Valor digitado à mão no resumo de combate vale sobre a conta
       const saveManual = (sheetOv().saveOv || {})[abId];
       const saveBonus = saveManual !== undefined && saveManual !== null && saveManual !== ""
@@ -7712,7 +7741,7 @@ function renderOfAbilities(ctx) {
         ${skills.map(sk => {
           const isExpert = allExpertSkills.includes(sk.id);
           const isProf = allTrainedSkills.includes(sk.id);
-          const bonus = mod + getClassSkillBonus(sk.id, finalMods) + (isExpert ? pb * 2 : isProf ? pb : getJackOfAllTradesBonus(pb));
+          const bonus = mod + getClassSkillBonus(sk.id, finalMods) + itemBonusDeAtributo("check", abId) + (isExpert ? pb * 2 : isProf ? pb : getJackOfAllTradesBonus(pb));
           return `
             <div class="of-prof-line-item">
               <button type="button" class="of-prof-mark ${_ofBlank ? '' : isExpert ? 'is-expert' : isProf ? 'is-prof' : ''}" data-skill-mark="${sk.id}" title="Clique: nenhum → proficiente → especialista"></button>
@@ -7802,8 +7831,96 @@ const ITEM_BONUS_TARGETS = [
   { id: "weapons_all",    label: "Todas as armas",                           curto: "Todas as armas" },
   { id: "weapons_melee",  label: "Armas corpo a corpo",                      curto: "Armas corpo a corpo" },
   { id: "weapons_ranged", label: "Armas à distância",                        curto: "Armas à distância" },
-  { id: "unarmed",        label: "Ataques desarmados",                       curto: "Desarmado" }
+  { id: "unarmed",        label: "Ataques desarmados",                       curto: "Desarmado" },
+  { id: "ability",        label: "Atributo (soma no valor: +2 Destreza)",    curto: "Atributo" },
+  { id: "ability_set",    label: "Atributo fixo (Força 19, Constituição 19)", curto: "Atributo fixo" },
+  { id: "save",           label: "Salvaguarda (uma ou todas)",               curto: "Salvaguardas" },
+  { id: "check",          label: "Testes de atributo (perícias e Iniciativa)", curto: "Testes" }
 ];
+
+/** Alvos que mexem num atributo, e não em ataque: escolhem o atributo e não têm dano */
+const ITEM_BONUS_DE_ATRIBUTO = ["ability", "ability_set", "save", "check"];
+
+/** O item pede Sintonização? */
+function itemRequerSintonia(item) {
+  return item.attunement === true || item.attunement === "true";
+}
+
+/** Sintonizado. Item salvo antes da caixa de Sintonização conta como sintonizado se estava equipado. */
+function itemSintonizado(item) {
+  if (!itemRequerSintonia(item)) return false;
+  return item.attuned === undefined ? !!item.equipped : !!item.attuned;
+}
+
+/** Quantos itens dá para ter sintonizados ao mesmo tempo (regra de 2024) */
+const LIMITE_DE_SINTONIA = 3;
+
+function itensSintonizados() {
+  return (character.customItems || []).filter(itemSintonizado);
+}
+
+/** O item mexe na ficha agora? Em uso e, se pedir, sintonizado */
+function itemVale(item) {
+  return !!item.equipped && (!itemRequerSintonia(item) || itemSintonizado(item));
+}
+
+/** Nome sem caixa e espaços, para achar cópias do mesmo item */
+function nomeBaseDoItem(item) {
+  return String(item.name || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+/**
+ * Itens que valem na ficha. Duas cópias do mesmo item (dois Anéis de
+ * Proteção) não somam: efeitos de mesmo nome não se combinam, vale um só.
+ */
+function itensAtivos() {
+  const vistos = new Set();
+  return (character.customItems || []).filter(itemVale).filter(item => {
+    const k = nomeBaseDoItem(item);
+    if (vistos.has(k)) return false;
+    vistos.add(k);
+    return true;
+  });
+}
+
+/** A CA do item vale? Braçadeiras de Defesa só sem armadura e sem escudo. */
+function caDoItemVale(item) {
+  if (item.cond !== "sem_armadura_escudo") return true;
+  const semArmadura = !character.equippedArmor || character.equippedArmor === "none";
+  const semEscudo = !character.equippedShield || character.equippedShield === "none";
+  const outroItem = itensAtivos().some(i => i !== item && (i.type === "armor" || i.type === "shield"));
+  return semArmadura && semEscudo && !outroItem;
+}
+
+/** Soma dos bônus numéricos de um alvo de atributo ("save" ou "check") para um atributo */
+function itemBonusDeAtributo(alvo, abId) {
+  const pares = activeItemBonuses().filter(({ b }) => b.target === alvo && (b.ref === abId || b.ref === "all"));
+  return somarBonus(pares.map(p => p.b), "atk").num;
+}
+
+/**
+ * Valor do atributo com os itens. "+2 até 20" sobe sem passar do máximo;
+ * "Força 19" é o valor do atributo enquanto o item estiver em uso, mas só se
+ * for maior — e dois valores fixos não somam: vale o maior.
+ */
+function efeitoDeItensNoAtributo(abId, scoreSemItens) {
+  const pares = activeItemBonuses().filter(({ b }) => b.ref === abId && (b.target === "ability" || b.target === "ability_set"));
+  let score = scoreSemItens;
+  const somas = [];
+  pares.filter(p => p.b.target === "ability").forEach(({ item, b }) => {
+    const n = parseInt(b.atk, 10) || 0;
+    const max = parseInt(b.max, 10) || 30;
+    const novo = Math.max(score, Math.min(score + n, max));
+    somas.push({ item, n, efetivo: novo - score, max });
+    score = novo;
+  });
+  const fixos = pares.filter(p => p.b.target === "ability_set")
+    .map(({ item, b }) => ({ item, v: parseInt(b.atk, 10) || 0 }))
+    .sort((a, b) => b.v - a.v);
+  const fixo = fixos[0] || null;
+  if (fixo && fixo.v > score) score = fixo.v;
+  return { antes: scoreSemItens, depois: score, somas, fixo, fixoVale: !!fixo && fixo.v === score && fixo.v > scoreSemItens, fixosIgnorados: fixos.slice(1) };
+}
 
 /**
  * Bônus que o texto do item já anuncia ("+1 no Spell Attack", "+1 na CD de
@@ -7834,15 +7951,16 @@ function bonusesFromItemText(item) {
 
 /** Bônus do item: os escolhidos no formulário e, nos alvos que eles não cobrem, os lidos do texto */
 function itemBonusesOf(item) {
-  const escolhidos = (Array.isArray(item.bonuses) ? item.bonuses : []).filter(b => b && b.target && (b.atk || b.dmg));
+  const escolhidos = (Array.isArray(item.bonuses) ? item.bonuses : []).filter(b => b && b.target && (b.atk || b.dmg)
+    && (!ITEM_BONUS_DE_ATRIBUTO.includes(b.target) || b.ref));
   const doTexto = bonusesFromItemText(item).filter(t => !escolhidos.some(b => b.target === t.target));
   return [...escolhidos, ...doTexto];
 }
 
-/** Bônus de todos os itens equipados, cada um com o item de onde veio */
+/** Bônus de todos os itens que valem na ficha, cada um com o item de onde veio */
 function activeItemBonuses() {
   const out = [];
-  (character.customItems || []).filter(i => i.equipped).forEach(item => {
+  itensAtivos().forEach(item => {
     itemBonusesOf(item).forEach(b => out.push({ item, b }));
   });
   return out;
@@ -7897,7 +8015,7 @@ function aplicarBonusNaLinha(r, pares) {
 
 /** Bônus de itens nas linhas de arma, item e ataque personalizado */
 function aplicarBonusDeItensNasArmas(linhas) {
-  const ativos = activeItemBonuses().filter(({ b }) => !b.target.startsWith("spell_"));
+  const ativos = activeItemBonuses().filter(({ b }) => !b.target.startsWith("spell_") && !ITEM_BONUS_DE_ATRIBUTO.includes(b.target));
   if (!ativos.length) return;
   linhas.forEach(r => aplicarBonusNaLinha(r, ativos.filter(({ item, b }) => itemBonusAppliesToRow(b, item, r))));
 }
@@ -7910,6 +8028,15 @@ function itemBonusesForSpells(tipo) {
 
 /** Texto curto do bônus para o card do item: "+1 acerto • +1d6 dano (Magias de ataque)" */
 function describeItemBonus(b) {
+  if (ITEM_BONUS_DE_ATRIBUTO.includes(b.target)) {
+    const ab = DND5E_DATA.abilities.find(a => a.id === b.ref);
+    const nome = ab ? ab.name : "todos";
+    if (b.target === "ability_set") return `${nome} ${b.atk}`;
+    if (b.target === "ability") return `${b.atk} ${nome}${b.max && parseInt(b.max, 10) < 30 ? ` (máx. ${b.max})` : ""}`;
+    const tipo = b.target === "save" ? "salvaguarda" : "teste";
+    return b.ref === "all" ? `${b.atk} em ${tipo}s (todas)`.replace("testes (todas)", "testes (todos)")
+                           : `${b.atk} em ${tipo} de ${nome}`;
+  }
   const alvo = ITEM_BONUS_TARGETS.find(t => t.id === b.target);
   let onde = alvo ? alvo.curto : b.target;
   if (b.target === "weapon" && b.ref) {
@@ -7943,13 +8070,20 @@ function itemBonusWeaponOptions(itemAtual) {
 let _editingItemId = null;
 /** Linhas de bônus do formulário, antes de salvar */
 let _itemBonusDraft = [];
+/** Origem no catálogo (link do AideDD, raridade) do item novo que está no formulário */
+let _itemCatalogMeta = {};
 
-/** Abre o modal de item vazio (novo) ou preenchido com um item existente */
-function openCustomItemModal(item) {
+/**
+ * Abre o modal de item vazio (novo), preenchido com um item existente
+ * (editar) ou com um item do catálogo (`doCatalogo`: cria um novo já pronto).
+ */
+function openCustomItemModal(item, doCatalogo) {
   const form = document.getElementById("customItemForm");
   form.reset();
-  _editingItemId = item ? item.id : null;
+  _editingItemId = item && !doCatalogo ? item.id : null;
   _itemBonusDraft = item && Array.isArray(item.bonuses) ? item.bonuses.map(b => ({ ...b })) : [];
+  _itemCatalogMeta = doCatalogo && item ? { catalogId: item.catalogId, slug: item.slug, rar: item.rar, cond: item.cond } : {};
+  preencherCatalogoDoModal();
 
   if (item) {
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v == null ? "" : v; };
@@ -7963,12 +8097,13 @@ function openCustomItemModal(item) {
     set("customItemWeight", item.weight);
     set("customItemCost", item.cost);
     set("customItemDesc", item.desc);
+    set("customItemSlot", item.slot || "");
     document.getElementById("customItemEquipNow").checked = !!item.equipped;
   }
   document.getElementById("customItemType").dispatchEvent(new Event("change"));
 
   const modal = document.getElementById("customItemModal");
-  modal.querySelector(".modal-title").innerHTML = item
+  modal.querySelector(".modal-title").innerHTML = _editingItemId
     ? '<i class="fa-solid fa-shield-cat"></i> Editar Item / Arma Personalizada'
     : '<i class="fa-solid fa-shield-cat"></i> Adicionar Item / Arma Personalizada';
   renderItemBonusEditor();
@@ -7982,20 +8117,34 @@ function renderItemBonusEditor() {
   const itemAtual = _editingItemId ? character.customItems.find(i => i.id === _editingItemId) : null;
   const armas = itemBonusWeaponOptions(itemAtual);
 
-  lista.innerHTML = _itemBonusDraft.map((b, i) => `
-    <div class="item-bonus-row" data-i="${i}">
+  const opcoes = (lista, atual) => lista.map(o => `<option value="${escAttr(o.value)}" ${o.value === atual ? "selected" : ""}>${escAttr(o.label)}</option>`).join("");
+  const atributos = DND5E_DATA.abilities.map(a => ({ value: a.id, label: a.name }));
+
+  lista.innerHTML = _itemBonusDraft.map((b, i) => {
+    const deAtributo = ITEM_BONUS_DE_ATRIBUTO.includes(b.target);
+    const refOps = b.target === "weapon" ? armas
+      : b.target === "save" || b.target === "check" ? [{ value: "all", label: b.target === "save" ? "Todas as salvaguardas" : "Todos os testes" }, ...atributos]
+      : atributos;
+    const dica = {
+      spell_save: ["CD +1", "Soma na CD de magia"],
+      ability: ["+2", "Soma no valor do atributo (máximo 30)"],
+      ability_set: ["19", "O atributo passa a valer este número, se for maior"],
+      save: ["+1", "Soma na salvaguarda"],
+      check: ["+1", "Soma no teste de atributo e nas perícias dele"]
+    }[b.target] || ["Acerto +1", "Soma no acerto"];
+    return `
+    <div class="item-bonus-row${deAtributo ? " is-atributo" : ""}" data-i="${i}">
       <select class="form-control" data-f="target" title="Onde o bônus vale">
         ${ITEM_BONUS_TARGETS.map(t => `<option value="${t.id}" ${t.id === b.target ? "selected" : ""}>${t.label}</option>`).join("")}
       </select>
-      <select class="form-control" data-f="ref" title="Qual arma" ${b.target === "weapon" ? "" : "hidden"}>
-        ${armas.length ? armas.map(o => `<option value="${escAttr(o.value)}" ${o.value === b.ref ? "selected" : ""}>${escAttr(o.label)}</option>`).join("")
-                       : '<option value="">Nenhuma arma equipada</option>'}
+      <select class="form-control" data-f="ref" title="${b.target === "weapon" ? "Qual arma" : "Qual atributo"}" ${b.target === "weapon" || deAtributo ? "" : "hidden"}>
+        ${refOps.length ? opcoes(refOps, b.ref) : '<option value="">Nenhuma arma equipada</option>'}
       </select>
-      <input type="text" class="form-control" data-f="atk" value="${escAttr(b.atk || "")}" placeholder="${b.target === "spell_save" ? "CD +1" : "Acerto +1"}" title="${b.target === "spell_save" ? "Soma na CD de magia" : "Soma no acerto"}">
-      <input type="text" class="form-control" data-f="dmg" value="${escAttr(b.dmg || "")}" placeholder="Dano +1 / 1d6" title="Soma no dano">
+      <input type="text" class="form-control" data-f="atk" value="${escAttr(b.atk || "")}" placeholder="${dica[0]}" title="${dica[1]}">
+      <input type="text" class="form-control" data-f="dmg" value="${escAttr(b.dmg || "")}" placeholder="Dano +1 / 1d6" title="Soma no dano" ${deAtributo ? "hidden" : ""}>
       <button type="button" class="btn btn-secondary btn-sm" data-act="del" title="Remover bônus"><i class="fa-solid fa-trash"></i></button>
-    </div>
-  `).join("");
+    </div>`;
+  }).join("");
   atualizarBonusDetectado();
 }
 
@@ -8038,11 +8187,17 @@ function setupItemBonusEditor() {
     const f = campo.getAttribute("data-f");
     b[f] = campo.value;
     if (f === "target") {
-      if (b.target === "weapon" && !b.ref) {
+      const ehAtributo = (id) => DND5E_DATA.abilities.some(a => a.id === id);
+      if (b.target === "weapon") {
         const itemAtual = _editingItemId ? character.customItems.find(i => i.id === _editingItemId) : null;
-        const primeira = itemBonusWeaponOptions(itemAtual)[0];
-        b.ref = primeira ? primeira.value : "";
+        const armas = itemBonusWeaponOptions(itemAtual);
+        if (!armas.some(o => o.value === b.ref)) b.ref = armas[0] ? armas[0].value : "";
+      } else if (b.target === "save" || b.target === "check") {
+        if (b.ref !== "all" && !ehAtributo(b.ref)) b.ref = "all";
+      } else if (ITEM_BONUS_DE_ATRIBUTO.includes(b.target)) {
+        if (!ehAtributo(b.ref)) b.ref = "str";
       }
+      if (ITEM_BONUS_DE_ATRIBUTO.includes(b.target)) b.dmg = "";
       renderItemBonusEditor();
     } else {
       atualizarBonusDetectado();
@@ -8062,6 +8217,318 @@ function setupItemBonusEditor() {
     const el = document.getElementById(id);
     if (el) el.addEventListener("input", atualizarBonusDetectado);
   });
+}
+
+/* ------------------------------------- CATÁLOGO DE ITENS MÁGICOS (SRD 5.2) */
+
+/*
+ * Os itens do livro já prontos: nome, raridade, Sintonização e o bônus que
+ * mexe na ficha (Anel de Proteção soma CA e salvaguardas, Manoplas fixam a
+ * Força em 19). O "i" abre o texto inteiro no AideDD. Vem de itens-magicos.js.
+ */
+const RARIDADE_PT = {
+  Common: "Comum", Uncommon: "Incomum", Rare: "Raro", "Very Rare": "Muito Raro",
+  Legendary: "Lendário", Artifact: "Artefato", Varies: "Varia"
+};
+
+/** Onde o item é vestido. `unico`: o livro só deixa vestir um de cada (Pedra Ioun: até três). */
+const ITEM_SLOTS = [
+  { id: "anel",     nome: "Anel" },
+  { id: "pescoco",  nome: "Pescoço (amuleto, colar)" },
+  { id: "cabeca",   nome: "Cabeça (elmo, tiara)",     unico: 1 },
+  { id: "olhos",    nome: "Olhos (óculos, lentes)",   unico: 1 },
+  { id: "manto",    nome: "Costas (manto, capa)",     unico: 1 },
+  { id: "corpo",    nome: "Corpo (túnica)",           unico: 1 },
+  { id: "armadura", nome: "Armadura",                 unico: 1 },
+  { id: "escudo",   nome: "Escudo",                   unico: 1 },
+  { id: "bracos",   nome: "Braços (braçadeiras)",     unico: 1 },
+  { id: "maos",     nome: "Mãos (luvas, manoplas)",   unico: 1 },
+  { id: "cintura",  nome: "Cintura (cinto)",          unico: 1 },
+  { id: "pes",      nome: "Pés (botas)",              unico: 1 },
+  { id: "ioun",     nome: "Pedra Ioun (orbitando)",   unico: 3 }
+];
+
+/** Itens sugeridos por classe, do mais útil para o menos; a raridade filtra pelo nível */
+const SUGESTOES_DE_ITENS = {
+  barbarian: ["gauntlets-of-ogre-power", "weapon-1", "cloak-of-protection", "belt-of-hill-giant-strength", "boots-of-striding-and-springing", "amulet-of-health", "weapon-2"],
+  bard:      ["cloak-of-protection", "stone-of-good-luck-(luckstone)", "wand-of-the-war-mage-1", "cloak-of-elvenkind", "ring-of-protection", "hat-of-disguise", "wand-of-the-war-mage-2"],
+  cleric:    ["shield-1", "armor-1", "cloak-of-protection", "periapt-of-wound-closure", "pearl-of-power", "staff-of-healing", "ring-of-protection"],
+  druid:     ["cloak-of-protection", "staff-of-the-python", "pearl-of-power", "wand-of-the-war-mage-1", "staff-of-the-woodlands", "ring-of-protection"],
+  fighter:   ["weapon-1", "armor-1", "shield-1", "gauntlets-of-ogre-power", "bracers-of-archery", "cloak-of-protection", "weapon-2", "belt-of-hill-giant-strength"],
+  monk:      ["bracers-of-defense", "cloak-of-protection", "stone-of-good-luck-(luckstone)", "boots-of-striding-and-springing", "ring-of-protection", "ioun-stone-agility"],
+  paladin:   ["armor-1", "shield-1", "weapon-1", "gauntlets-of-ogre-power", "cloak-of-protection", "amulet-of-health", "holy-avenger"],
+  ranger:    ["bracers-of-archery", "ammunition-1", "weapon-1", "cloak-of-elvenkind", "boots-of-elvenkind", "efficient-quiver", "weapon-2"],
+  rogue:     ["cloak-of-elvenkind", "boots-of-elvenkind", "weapon-1", "stone-of-good-luck-(luckstone)", "dagger-of-venom", "bag-of-holding", "cloak-of-displacement"],
+  sorcerer:  ["wand-of-the-war-mage-1", "cloak-of-protection", "ring-of-protection", "bracers-of-defense", "pearl-of-power", "stone-of-good-luck-(luckstone)", "wand-of-the-war-mage-2"],
+  warlock:   ["wand-of-the-war-mage-1", "cloak-of-protection", "ring-of-protection", "amulet-of-health", "stone-of-good-luck-(luckstone)", "wand-of-the-war-mage-2"],
+  wizard:    ["wand-of-the-war-mage-1", "headband-of-intellect", "bracers-of-defense", "pearl-of-power", "cloak-of-protection", "ring-of-protection", "wand-of-the-war-mage-2"]
+};
+const SUGESTOES_PARA_TODOS = ["potion-of-healing", "bag-of-holding"];
+
+function catalogoDeItens() {
+  return Array.isArray(window.ITENS_MAGICOS) ? window.ITENS_MAGICOS : [];
+}
+
+function linkAidedd(slug) {
+  return slug ? `https://www.aidedd.org/magic-item/${slug}` : "";
+}
+
+/** O "i" que abre o texto do item no AideDD */
+function botaoInfoDoItem(slug, nome) {
+  const url = linkAidedd(slug);
+  return url ? `<a class="item-info-link" href="${url}" target="_blank" rel="noopener" title="Texto completo de ${escAttr(nome)} no AideDD (2024)" aria-label="Abrir ${escAttr(nome)} no AideDD">i</a>` : "";
+}
+
+/** Raridades que costumam aparecer até o nível (tabelas de tesouro do Guia do Mestre) */
+function raridadesDoNivel(nivel) {
+  const r = ["Common", "Uncommon"];
+  if (nivel >= 5) r.push("Rare");
+  if (nivel >= 11) r.push("Very Rare");
+  if (nivel >= 17) r.push("Legendary");
+  return r;
+}
+
+/** Item do catálogo virando item do personagem */
+function itemDoCatalogo(c) {
+  return {
+    name: c.n, type: c.tipo, damage: c.dano || "", damageType: c.dt || "Cortante", mastery: "",
+    acBonus: c.ca || 0, attunement: String(!!c.sint), weight: "", cost: "", desc: c.d || "",
+    equipped: c.tipo !== "potion" && c.tipo !== "scroll",
+    bonuses: (c.b || []).map(b => ({ ...b })), slot: c.slot || "",
+    catalogId: c.id, slug: c.slug, rar: c.rar, cond: c.cond
+  };
+}
+
+/**
+ * "+ Adicionar" do catálogo. Arma sem dado de dano (Arma +1) abre o
+ * formulário para o jogador dizer qual é a arma; o resto entra direto.
+ */
+function adicionarDoCatalogo(id) {
+  const c = catalogoDeItens().find(x => x.id === id);
+  if (!c) return;
+  const item = itemDoCatalogo(c);
+  if (c.tipo === "weapon" && !c.dano) {
+    openCustomItemModal(item, true);
+    showToast(`Informe o dano da arma base de "${c.n}" e salve.`);
+    return;
+  }
+  item.id = "item_" + Date.now();
+  if (itemRequerSintonia(item)) item.attuned = item.equipped && itensSintonizados().length < LIMITE_DE_SINTONIA;
+  character.customItems.push(item);
+  renderCustomItemsList();
+  recalculateCharacter();
+  if (itemRequerSintonia(item) && item.equipped && !item.attuned) {
+    showToast(`⚠️ "${c.n}" adicionado, mas já há ${LIMITE_DE_SINTONIA} itens sintonizados.`);
+  } else {
+    showToast(`✨ ${c.n} adicionado${item.equipped ? " e em uso" : ""}.`);
+  }
+}
+
+/** Texto curto do que o item do catálogo faz na ficha: "+1 CA • +1 em salvaguardas (todas)" */
+function efeitoDoCatalogo(c) {
+  const partes = [];
+  if (c.ca) partes.push(`+${c.ca} CA${c.cond === "sem_armadura_escudo" ? " (sem armadura e escudo)" : ""}`);
+  (c.b || []).forEach(b => partes.push(describeItemBonus(b).replace(/ \(Este item\)$/, "")));
+  return partes.join(" • ");
+}
+
+/** Lista de nomes do catálogo no campo "Começar de um item do livro" do formulário */
+let _catalogoNoModal = false;
+function preencherCatalogoDoModal() {
+  if (_catalogoNoModal) return;
+  const dl = document.getElementById("customItemCatalogList");
+  if (!dl) return;
+  dl.innerHTML = catalogoDeItens().map(c => `<option value="${escAttr(c.n)}">${escAttr(c.en)} · ${RARIDADE_PT[c.rar] || c.rar}</option>`).join("");
+  _catalogoNoModal = true;
+}
+
+/** Escolheu um item do livro no formulário: preenche tudo, o jogador ajusta e salva */
+function aplicarCatalogoNoModal(nome) {
+  const busca = String(nome || "").trim().toLowerCase();
+  const c = catalogoDeItens().find(x => x.n.toLowerCase() === busca || x.en.toLowerCase() === busca);
+  if (!c) return;
+  const editando = _editingItemId;
+  openCustomItemModal(itemDoCatalogo(c), true);
+  // Editando um item que já existe: ele continua sendo o mesmo, só com os dados do livro
+  if (editando) {
+    _editingItemId = editando;
+    document.querySelector("#customItemModal .modal-title").innerHTML = '<i class="fa-solid fa-shield-cat"></i> Editar Item / Arma Personalizada';
+  }
+}
+
+/** Sugestões para a classe e o nível do personagem que ele ainda não tem */
+function sugestoesDeItens() {
+  const classes = [character.class1, character.class2].filter(c => c && c !== "none");
+  const nivel = (character.level1 || 1) + (character.class2 && character.class2 !== "none" ? character.level2 || 0 : 0);
+  const raridades = raridadesDoNivel(nivel);
+  const tem = new Set((character.customItems || []).flatMap(i => [i.catalogId, nomeBaseDoItem(i)]));
+  const ids = [...new Set([...classes.flatMap(c => SUGESTOES_DE_ITENS[c] || []), ...SUGESTOES_PARA_TODOS])];
+  const cat = catalogoDeItens();
+  return ids.map(id => cat.find(c => c.id === id)).filter(c => c && raridades.includes(c.rar)
+    && !tem.has(c.id) && !tem.has(c.n.toLowerCase())).slice(0, 8);
+}
+
+function renderMagicItemSuggestions() {
+  const box = document.getElementById("magicItemSuggestions");
+  if (!box) return;
+  const sug = sugestoesDeItens();
+  const classe = DND5E_DATA.classes.find(c => c.id === character.class1);
+  if (!catalogoDeItens().length || !sug.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<span class="mi-sug-titulo">💡 Sugestões${classe ? ` para ${escAttr(classe.name.split(" (")[0])}` : ""}:</span>
+    ${sug.map(c => `<span class="mi-sug-chip" title="${escAttr(c.d || "")}">
+        ${escAttr(c.n)} <small>${RARIDADE_PT[c.rar] || c.rar}</small>
+        ${botaoInfoDoItem(c.slug, c.n)}
+        <button type="button" class="mi-sug-add" data-mc-add="${escAttr(c.id)}" title="Adicionar ${escAttr(c.n)}">+</button>
+      </span>`).join("")}`;
+}
+
+/** Lista filtrada do catálogo (no máximo 60 linhas; a busca afina) */
+function renderMagicCatalog() {
+  const lista = document.getElementById("magicCatalogList");
+  if (!lista) return;
+  const cat = catalogoDeItens();
+  if (!cat.length) { lista.innerHTML = '<p class="feat-empty-msg">Catálogo não carregou.</p>'; return; }
+  const sem = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const busca = sem(document.getElementById("magicCatalogSearch").value).trim();
+  const rar = document.getElementById("magicCatalogRarity").value;
+  const tipo = document.getElementById("magicCatalogType").value;
+  const soFicha = document.getElementById("magicCatalogOnlySheet").checked;
+
+  const achados = cat.filter(c => (!busca || sem(c.n + " " + c.en + " " + (c.d || "")).includes(busca))
+    && (!rar || c.rar === rar) && (!tipo || c.tipo === tipo) && (!soFicha || c.ca || (c.b && c.b.length)));
+  const tem = new Set((character.customItems || []).map(i => i.catalogId).filter(Boolean));
+
+  lista.innerHTML = achados.slice(0, 60).map(c => {
+    const efeito = efeitoDoCatalogo(c);
+    return `<div class="mc-row">
+      <div class="mc-main">
+        <div class="mc-nome"><strong>${escAttr(c.n)}</strong> <small>${escAttr(c.en)}</small> ${botaoInfoDoItem(c.slug, c.n)}</div>
+        <div class="mc-meta"><span class="mc-rar is-${sem(c.rar).replace(/\s+/g, "-")}">${RARIDADE_PT[c.rar] || c.rar}</span>${c.sint ? '<span class="mc-sint">Sintonização</span>' : ""}${efeito ? `<span class="mc-efeito">${escAttr(efeito)}</span>` : ""}</div>
+        ${c.d ? `<div class="mc-desc">${escAttr(c.d)}</div>` : ""}
+      </div>
+      <button type="button" class="btn ${tem.has(c.id) ? "btn-secondary" : "btn-gold"} btn-xs" data-mc-add="${escAttr(c.id)}">${tem.has(c.id) ? "+ Outro" : "+ Adicionar"}</button>
+    </div>`;
+  }).join("") + (achados.length > 60 ? `<p class="mc-mais">Mostrando 60 de ${achados.length}. Refine a busca.</p>` : "")
+    + (achados.length ? "" : '<p class="feat-empty-msg">Nenhum item com esse filtro.</p>');
+}
+
+/**
+ * Resumo do que os itens fazem juntos: sintonização (até 3), bônus somados
+ * por alvo e o que não soma — cópias do mesmo item, dois valores fixos no
+ * mesmo atributo, dois itens no mesmo lugar do corpo, Braçadeiras de Defesa
+ * com armadura.
+ */
+function renderMagicItemSummary(scoresSemItens) {
+  const box = document.getElementById("magicItemSummary");
+  if (!box) return;
+  const itens = character.customItems || [];
+  if (!itens.length) { box.innerHTML = ""; return; }
+
+  const sint = itensSintonizados();
+  const ativos = itensAtivos();
+  const pares = activeItemBonuses();
+  const linhas = [];
+  const avisos = [];
+  const fmt = (n) => (n >= 0 ? "+" : "") + n;
+  const fontes = (lista) => lista.map(x => `${escAttr(x.item.name)} ${x.txt}`).join(", ");
+
+  // CA
+  const ca = ativos.filter(i => (parseInt(i.acBonus, 10) || 0) > 0).map(i => ({ item: i, n: parseInt(i.acBonus, 10), vale: caDoItemVale(i) }));
+  const caVale = ca.filter(x => x.vale);
+  if (caVale.length) linhas.push(`<strong>CA ${fmt(caVale.reduce((s, x) => s + x.n, 0))}</strong> <small>(${fontes(caVale.map(x => ({ item: x.item, txt: fmt(x.n) })))})</small>`);
+  ca.filter(x => !x.vale).forEach(x => avisos.push(`${escAttr(x.item.name)}: a CA só vale sem armadura e sem escudo — hoje não soma.`));
+
+  // Salvaguardas e testes: "todas" e as de um atributo só
+  [["save", "Salvaguardas", "Salvaguarda"], ["check", "Testes de atributo", "Teste"]].forEach(([alvo, plural, singular]) => {
+    const deste = pares.filter(p => p.b.target === alvo);
+    if (!deste.length) return;
+    const todas = deste.filter(p => p.b.ref === "all");
+    const nTodas = somarBonus(todas.map(p => p.b), "atk").num;
+    if (todas.length) linhas.push(`<strong>${plural} ${fmt(nTodas)}</strong> em todas <small>(${fontes(todas.map(p => ({ item: p.item, txt: p.b.atk })))})</small>`);
+    DND5E_DATA.abilities.forEach(ab => {
+      const so = deste.filter(p => p.b.ref === ab.id);
+      if (!so.length) return;
+      const n = nTodas + somarBonus(so.map(p => p.b), "atk").num;
+      linhas.push(`<strong>${singular} de ${ab.name} ${fmt(n)}</strong> <small>(${fontes(so.map(p => ({ item: p.item, txt: p.b.atk })))}${todas.length ? ` + ${fmt(nTodas)} de todas` : ""})</small>`);
+    });
+  });
+
+  // Atributos
+  DND5E_DATA.abilities.forEach(ab => {
+    const antes = scoresSemItens ? scoresSemItens[ab.id] : null;
+    if (antes == null) return;
+    const ef = efeitoDeItensNoAtributo(ab.id, antes);
+    if (!ef.somas.length && !ef.fixo) return;
+    const partes = ef.somas.map(x => ({ item: x.item, txt: x.efetivo === x.n ? fmt(x.n) : `${fmt(x.efetivo)} de ${fmt(x.n)}, máx. ${x.max}` }));
+    if (ef.fixo) partes.push({ item: ef.fixo.item, txt: `= ${ef.fixo.v}${ef.fixoVale ? "" : " (sem efeito)"}` });
+    linhas.push(`<strong>${ab.name} ${antes} → ${ef.depois}</strong> <small>(${fontes(partes)})</small>`);
+    if (ef.fixo && !ef.fixoVale) avisos.push(`${escAttr(ef.fixo.item.name)}: ${ab.name} já é ${ef.depois} sem ele — o valor fixo ${ef.fixo.v} não muda nada.`);
+    ef.fixosIgnorados.forEach(x => avisos.push(`${escAttr(x.item.name)} (${ab.name} ${x.v}) não soma com ${escAttr(ef.fixo.item.name)} (${ef.fixo.v}): valores fixos não se acumulam, vale o maior.`));
+    ef.somas.filter(x => x.efetivo < x.n).forEach(x => avisos.push(`${escAttr(x.item.name)}: só sobe ${ab.name} até ${x.max}, então rende ${fmt(x.efetivo)}.`));
+  });
+
+  // Magias e armas
+  const atkMag = itemBonusesForSpells("attack");
+  if (atkMag.length) linhas.push(`<strong>Ataque mágico ${fmt(somarBonus(atkMag.map(p => p.b), "atk").num)}</strong> <small>(${fontes(atkMag.map(p => ({ item: p.item, txt: p.b.atk || p.b.dmg })))})</small>`);
+  const cd = itemBonusesForSpells("save").filter(p => p.b.atk);
+  if (cd.length) linhas.push(`<strong>CD de magia ${fmt(somarBonus(cd.map(p => p.b), "atk").num)}</strong> <small>(${fontes(cd.map(p => ({ item: p.item, txt: p.b.atk })))})</small>`);
+  const armas = pares.filter(p => !p.b.target.startsWith("spell_") && !ITEM_BONUS_DE_ATRIBUTO.includes(p.b.target));
+  if (armas.length) linhas.push(`<strong>Armas</strong> <small>(${armas.map(p => `${escAttr(p.item.name)}: ${escAttr(describeItemBonus(p.b))}`).join("; ")})</small>`);
+
+  // O que não soma
+  const porNome = {};
+  itens.filter(itemVale).forEach(i => { (porNome[nomeBaseDoItem(i)] = porNome[nomeBaseDoItem(i)] || []).push(i); });
+  Object.values(porNome).filter(l => l.length > 1).forEach(l => avisos.push(`${escAttr(l[0].name)} está em uso ${l.length} vezes: efeitos de mesmo nome não se somam, só um vale.`));
+  ITEM_SLOTS.filter(sl => sl.unico).forEach(sl => {
+    const no = itens.filter(i => i.equipped && i.slot === sl.id);
+    if (no.length > sl.unico) avisos.push(`${no.length} itens em ${sl.nome} (${no.map(i => escAttr(i.name)).join(", ")}): só dá para vestir ${sl.unico === 1 ? "um" : sl.unico}.`);
+  });
+  const semSintonia = itens.filter(i => i.equipped && itemRequerSintonia(i) && !itemSintonizado(i));
+  if (semSintonia.length) avisos.push(`Em uso sem Sintonização, sem bônus na ficha: ${semSintonia.map(i => escAttr(i.name)).join(", ")}. Sintonizar leva um Descanso Curto.`);
+  if (sint.length > LIMITE_DE_SINTONIA) avisos.push(`${sint.length} itens sintonizados: o limite é ${LIMITE_DE_SINTONIA}. Desmarque um.`);
+  const caItens = ativos.filter(i => i.type === "armor" && (parseInt(i.acBonus, 10) || 0) > 0);
+  if (caItens.length && (!character.equippedArmor || character.equippedArmor === "none")) {
+    avisos.push(`${caItens.map(i => escAttr(i.name)).join(", ")}: escolha a armadura base em Armadura Equipada — o bônus soma em cima dela.`);
+  }
+  const escItens = ativos.filter(i => i.type === "shield" && (parseInt(i.acBonus, 10) || 0) > 0);
+  if (escItens.length && (!character.equippedShield || character.equippedShield === "none")) {
+    avisos.push(`${escItens.map(i => escAttr(i.name)).join(", ")}: marque o escudo em Escudo Equipado — o bônus soma em cima dos +2 dele.`);
+  }
+
+  const cheio = sint.length >= LIMITE_DE_SINTONIA;
+  box.innerHTML = `
+    <div class="mi-sum-top">
+      <span class="mi-sint${sint.length > LIMITE_DE_SINTONIA ? " is-over" : cheio ? " is-full" : ""}" title="Até ${LIMITE_DE_SINTONIA} itens sintonizados ao mesmo tempo">
+        🔗 Sintonização ${sint.length}/${LIMITE_DE_SINTONIA}${sint.length ? `: ${sint.map(i => escAttr(i.name)).join(", ")}` : ""}
+      </span>
+      <span class="mi-em-uso">✋ Em uso: ${itens.filter(i => i.equipped).length} de ${itens.length}</span>
+    </div>
+    ${linhas.length ? `<ul class="mi-sum-lista">${linhas.map(l => `<li>${l}</li>`).join("")}</ul>` : '<p class="mi-sum-vazio">Nenhum bônus de item valendo na ficha agora.</p>'}
+    ${avisos.length ? `<ul class="mi-sum-avisos">${avisos.map(a => `<li>⚠️ ${a}</li>`).join("")}</ul>` : ""}
+    <p class="mi-sum-regra">Itens diferentes somam (Anel + Manto de Proteção = +2 CA e +2 nas salvaguardas). Cópias do mesmo item e atributos fixos (Força 19, 21...) não somam: vale um, o maior.</p>`;
+}
+
+/** Liga a busca e os botões do catálogo (uma vez, na carga) */
+function setupMagicCatalog() {
+  const sel = document.getElementById("magicCatalogRarity");
+  if (sel) sel.innerHTML = '<option value="">Toda raridade</option>' + Object.entries(RARIDADE_PT).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
+  const slotSel = document.getElementById("customItemSlot");
+  if (slotSel) slotSel.innerHTML = '<option value="">— Não ocupa lugar —</option>' + ITEM_SLOTS.map(s => `<option value="${s.id}">${s.nome}</option>`).join("");
+  const det = document.getElementById("magicCatalog");
+  if (det) det.addEventListener("toggle", () => { if (det.open) renderMagicCatalog(); });
+  ["magicCatalogSearch", "magicCatalogRarity", "magicCatalogType", "magicCatalogOnlySheet"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(el.tagName === "INPUT" && el.type !== "checkbox" ? "input" : "change", renderMagicCatalog);
+  });
+  const passo = document.getElementById("step5");
+  if (passo) passo.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-mc-add]");
+    if (btn) adicionarDoCatalogo(btn.getAttribute("data-mc-add"));
+  });
+  const pick = document.getElementById("customItemCatalogPick");
+  if (pick) pick.addEventListener("change", () => aplicarCatalogoNoModal(pick.value));
+  const total = document.getElementById("magicCatalogCount");
+  if (total) total.textContent = catalogoDeItens().length;
 }
 
 /* ------------------------------------ AJUSTES TEMPORÁRIOS DE ATAQUE */
@@ -8758,7 +9225,7 @@ function renderOfSideColumn(ctx) {
   ].filter(Boolean).join("\n");
   syncOfField("sheetEquipment", equipment, "equipment");
 
-  const attune = character.customItems.filter(i => i.attunement === true || i.attunement === "true");
+  const attune = itensSintonizados();
   const ov = sheetOv();
   if (!Array.isArray(ov.attunement)) ov.attunement = ["", "", ""];
   if (!Array.isArray(ov.attunementChecks)) ov.attunementChecks = [false, false, false];
@@ -9064,12 +9531,21 @@ function bindOfficialSheetEvents() {
   });
 }
 
-/** Valor de atributo atualmente exibido na ficha (base + bônus aplicados) */
-function getDisplayedAbilityScore(abId) {
+/** Atributo com base, antecedente e talentos — tudo menos os itens mágicos */
+function abilityScoreSemItens(abId) {
   let score = character.baseScores[abId] || 10;
+  // Bônus do Antecedente 2024
   score += bonusDeAntecedente(abId);
+  // Bônus de Talentos Customizados (só os que estão no personagem)
   getSelectedCustomFeats().forEach(cf => { if (cf.abilityBonus === abId) score += 1; });
+  // Bônus do atributo escolhido na caixa de escolhas de cada talento oficial
+  score += getFeatAbilityBonus(abId);
   return score;
+}
+
+/** Valor de atributo atualmente exibido na ficha (base + bônus aplicados, itens inclusos) */
+function getDisplayedAbilityScore(abId) {
+  return efeitoDeItensNoAtributo(abId, abilityScoreSemItens(abId)).depois;
 }
 
 function findSheetRow(rows, tr) {
@@ -9986,6 +10462,7 @@ function bindEvents() {
     btnAddCustomItem.addEventListener("click", () => openCustomItemModal(null));
   }
   setupItemBonusEditor();
+  setupMagicCatalog();
   document.getElementById("closeCustomItemModal").addEventListener("click", () => {
     customItemModal.classList.remove("active");
   });
@@ -10021,12 +10498,24 @@ function bindEvents() {
     if (name) {
       const bonuses = _itemBonusDraft
         .filter(b => b.target && (String(b.atk || "").trim() || String(b.dmg || "").trim()))
-        .map(b => ({ target: b.target, ref: b.target === "weapon" ? b.ref : undefined,
+        .map(b => ({ target: b.target,
+                     ref: b.target === "weapon" || ITEM_BONUS_DE_ATRIBUTO.includes(b.target) ? b.ref : undefined,
+                     max: b.target === "ability" && b.max ? b.max : undefined,
                      atk: String(b.atk || "").trim(), dmg: String(b.dmg || "").trim() }));
-      const dados = { name, type, damage, damageType, mastery, acBonus, attunement, weight, cost, desc, equipped, bonuses };
+      const slot = document.getElementById("customItemSlot").value;
+      const dados = { name, type, damage, damageType, mastery, acBonus, attunement, weight, cost, desc, equipped, bonuses, slot };
       const editando = _editingItemId && character.customItems.find(i => i.id === _editingItemId);
-      if (editando) Object.assign(editando, dados);
-      else character.customItems.push({ id: "item_" + Date.now(), ...dados });
+      if (editando) Object.assign(editando, dados, _itemCatalogMeta);
+      else {
+        const novo = { id: "item_" + Date.now(), ...dados, ..._itemCatalogMeta };
+        // Item novo que pede Sintonização já entra sintonizado, se couber
+        if (itemRequerSintonia(novo)) novo.attuned = equipped && itensSintonizados().length < LIMITE_DE_SINTONIA;
+        character.customItems.push(novo);
+        if (itemRequerSintonia(novo) && equipped && !novo.attuned) {
+          showToast(`⚠️ Já há ${LIMITE_DE_SINTONIA} itens sintonizados: "${name}" ficou sem sintonizar.`);
+        }
+      }
+      _itemCatalogMeta = {};
 
       customItemModal.classList.remove("active");
       document.getElementById("customItemForm").reset();

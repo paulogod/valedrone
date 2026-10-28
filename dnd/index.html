@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20260928i";
+    var APP_VERSION = "20261028a";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -869,8 +869,30 @@
               </button>
             </div>
             <p style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.6rem;">
-              Crie armas mágicas (+1/+2/+3), armaduras especiais, anéis de proteção, varinhas, relíquias com sintonização e poções com recálculo automático na ficha!
+              Escolha um item do livro ou crie o seu. Marque <strong>Em uso</strong> no que estiver vestido ou empunhado e
+              <strong>Sintonizado</strong> nos que pedem (até 3): só então os bônus entram na ficha.
             </p>
+            <div id="magicItemSuggestions" class="mi-sugestoes"></div>
+            <details class="magic-catalog" id="magicCatalog">
+              <summary><i class="fa-solid fa-book"></i> Catálogo de itens mágicos do livro (<span id="magicCatalogCount">0</span> itens do SRD 5.2) — o <span class="item-info-link is-demo">i</span> abre o texto completo no AideDD</summary>
+              <div class="mc-filtros">
+                <input type="search" class="form-control" id="magicCatalogSearch" placeholder="Buscar: Anel de Proteção, Ring of Protection, +1, Força...">
+                <select class="form-control" id="magicCatalogRarity"></select>
+                <select class="form-control" id="magicCatalogType">
+                  <option value="">Todo tipo</option>
+                  <option value="weapon">Armas</option>
+                  <option value="armor">Armaduras</option>
+                  <option value="shield">Escudos</option>
+                  <option value="ring">Anéis e amuletos</option>
+                  <option value="wondrous">Maravilhosos, varinhas e cajados</option>
+                  <option value="potion">Poções e óleos</option>
+                  <option value="scroll">Pergaminhos</option>
+                </select>
+                <label class="mc-so-ficha"><input type="checkbox" id="magicCatalogOnlySheet"> Só os que mudam a ficha</label>
+              </div>
+              <div id="magicCatalogList" class="mc-lista"></div>
+            </details>
+            <div id="magicItemSummary" class="mi-resumo"></div>
             <div id="customItemsContainer" class="custom-items-list-grid"></div>
           </div>
 
@@ -1677,6 +1699,11 @@
         <button class="modal-close-btn" id="closeCustomItemModal"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form id="customItemForm">
+        <div class="form-group">
+          <label class="form-label" for="customItemCatalogPick">Começar de um item do livro (opcional)</label>
+          <input type="text" class="form-control" id="customItemCatalogPick" list="customItemCatalogList" placeholder="Digite e escolha: Manto de Proteção, Belt of Giant Strength...">
+          <datalist id="customItemCatalogList"></datalist>
+        </div>
         <div class="form-grid-2">
           <div class="form-group">
             <label class="form-label" for="customItemName">Nome do Item</label>
@@ -1732,12 +1759,19 @@
             <label class="form-label" for="customItemAcBonus">Bônus de Classe de Armadura (+CA)</label>
             <input type="number" class="form-control" id="customItemAcBonus" value="0" min="0" max="10">
           </div>
+        </div>
+
+        <div class="form-grid-2">
           <div class="form-group">
             <label class="form-label" for="customItemAttunement">Requer Sintonização?</label>
             <select class="form-control" id="customItemAttunement">
               <option value="false">Não</option>
               <option value="true">Sim (Sintonização Requerida)</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customItemSlot">Onde é usado</label>
+            <select class="form-control" id="customItemSlot" title="Avisa quando dois itens disputam o mesmo lugar (dois mantos, duas botas)"></select>
           </div>
         </div>
 
@@ -1765,7 +1799,7 @@
               <i class="fa-solid fa-plus"></i> Adicionar Bônus
             </button>
           </div>
-          <p class="section-desc item-bonus-help">Escolha onde o bônus vale. "Acerto / CD" aceita número (+1) ou dado (1d4); em magias de área ele soma na CD. "Dano" aceita +2 ou 1d6 Fogo. Valem enquanto o item estiver equipado.</p>
+          <p class="section-desc item-bonus-help">Escolha onde o bônus vale. "Acerto / CD" aceita número (+1) ou dado (1d4); em magias de área ele soma na CD. "Dano" aceita +2 ou 1d6 Fogo. Em <strong>Atributo</strong> o valor soma (+2); em <strong>Atributo fixo</strong> ele vira o valor (19), se for maior; <strong>Salvaguarda</strong> e <strong>Testes</strong> valem para um atributo ou todos. Valem enquanto o item estiver em uso (e sintonizado, se pedir).</p>
           <div id="customItemBonusList" class="item-bonus-list"></div>
         </div>
 
@@ -1903,7 +1937,7 @@
 
   <!-- SCRIPTS -->
   <script>
-    ["data.js", "app.js", "bio-random.js", "pdf-export.js"].forEach(function (js) {
+    ["data.js", "itens-magicos.js", "app.js", "bio-random.js", "pdf-export.js"].forEach(function (js) {
       document.write('<script src="' + comVersao(js) + '"><\/script>');
     });
   </script>
