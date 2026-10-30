@@ -4200,3 +4200,99 @@ a.item-info-link:hover {
 @media (max-width: 599.98px) {
   .spells-table .btn-prep-spell { min-width: 38px; padding: 0.4rem 0.5rem; }
 }
+
+/* ---------------------------------------------------------------------------
+   EFEITOS DE MAGIA (Passo 5)
+   Cada efeito tem uma segunda linha: onde vale, círculo, CA e salvaguarda.
+--------------------------------------------------------------------------- */
+.temp-atk-botoes {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.temp-atk-botoes select {
+  width: auto;
+  max-width: 15rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.82rem;
+}
+
+.temp-atk-extra {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.6rem;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.temp-atk-extra label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.temp-atk-row .temp-atk-extra .form-control {
+  width: auto;
+  max-width: 12rem;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.78rem;
+}
+
+.temp-atk-row .temp-atk-extra .temp-atk-curto {
+  width: 3.6rem;
+}
+
+.temp-atk-tag {
+  background: rgba(96, 165, 250, 0.15);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  color: #bfdbfe;
+}
+
+.temp-atk-info {
+  color: #60a5fa;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.temp-atk-nota,
+.temp-atk-desc {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.74rem;
+  color: #cbd5e1;
+  line-height: 1.35;
+}
+
+.temp-atk-desc {
+  border-top: 1px dashed rgba(148, 163, 184, 0.3);
+  padding-top: 0.3rem;
+  color: #94a3b8;
+}
+
+.temp-atk-resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  background: rgba(96, 165, 250, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.55rem;
+}
+
+.temp-atk-resumo small {
+  color: #94a3b8;
+}
+
+@media (max-width: 640px) {
+  .temp-atk-botoes select {
+    max-width: none;
+    flex: 1;
+  }
+}

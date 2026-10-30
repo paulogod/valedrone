@@ -3754,43 +3754,74 @@ function highestSpellSlotLevel() {
  */
 const SPELL_WEAPON_BUFFS = {
   shillelagh: {
-    // O dado cresce com o nível do personagem, não com o círculo do espaço.
-    armas: ["quarterstaff", "clava"],
-    linha(ctx) {
+    // Uma linha por Cajado ou Clava em uso — o comum e o mágico (Cajado +1,
+    // Cajado do Mago) —, cada um com os próprios bônus de item.
+    linhas(ctx) {
       const nivel = ctx.nivelTotal;
       const dado = nivel >= 17 ? "2d6" : nivel >= 11 ? "1d12" : nivel >= 5 ? "1d10" : "1d8";
-      const arma = ctx.armaEquipada
-        ? ctx.armaEquipada.name
-        : "sem Cajado ou Clava equipado";
-
-      // A CD da maestria é 8 + proficiência + o modificador DO ATAQUE, e sob
-      // Bordão Místico o ataque passa a usar o atributo de conjuração. A linha
-      // da arma normal continua com a CD pela Força, que é a certa quando se
-      // ataca sem a magia: são dois ataques diferentes, cada um com a sua.
-      const cdMaestria = ctx.armaEquipada && isMasteryActive(ctx.armaEquipada.id)
-        ? masterySaveDC(ctx.armaEquipada, ctx.mod, ctx.pb)
-        : null;
-
-      return {
-        atk: `${ctx.atkMagico >= 0 ? "+" : ""}${ctx.atkMagico}` +
-             (cdMaestria ? ` / CD ${cdMaestria.cd} ${cdMaestria.atributo}` : ""),
-        damage: `${dado}${ctx.mod ? (ctx.mod > 0 ? " +" + ctx.mod : " " + ctx.mod) : ""} Energético`,
-        notes: `${arma} • usa o atributo de conjuração no ataque e no dano` +
-               (cdMaestria ? " (e na CD da maestria)" : "") +
-               ` • dano Energético ou o normal da arma`
+      const armas = ctx.armas.filter(a => a.base && ["quarterstaff", "clava"].includes(a.base.id));
+      const linha = (a) => {
+        // A CD da maestria é 8 + proficiência + o modificador DO ATAQUE, e sob
+        // Bordão Místico o ataque passa a usar o atributo de conjuração. A linha
+        // da arma normal continua com a CD pela Força, que é a certa quando se
+        // ataca sem a magia: são dois ataques diferentes, cada um com a sua.
+        const cdMaestria = a && isMasteryActive(a.base.id) ? masterySaveDC(a.base, ctx.mod, ctx.pb) : null;
+        const r = {
+          srcId: "spell:shillelagh" + (a && a.item ? ":" + a.srcId : ""),
+          name: a && a.item ? `Bordão Místico (${a.nome})` : "Bordão Místico",
+          atk: `${ctx.atkMagico >= 0 ? "+" : ""}${ctx.atkMagico}` +
+               (cdMaestria ? ` / CD ${cdMaestria.cd} ${cdMaestria.atributo}` : ""),
+          damage: `${dado}${ctx.mod ? (ctx.mod > 0 ? " +" + ctx.mod : " " + ctx.mod) : ""} Energético`,
+          notes: `${a ? a.nome : "sem Cajado ou Clava equipado"} • usa o atributo de conjuração no ataque e no dano` +
+                 (cdMaestria ? " (e na CD da maestria)" : "") +
+                 ` • dano Energético ou o normal da arma`,
+          arma: true,
+          armaSrc: a ? a.srcId : null
+        };
+        if (a) aplicarBonusNaLinha(r, bonusDeItensDaArma(a.srcId));
+        return r;
       };
+      return armas.length ? armas.map(linha) : [linha(null)];
+    }
+  },
+  true_strike: {
+    // Ataque com a arma usando o atributo de conjuração; o dano Radiante extra
+    // cresce com o nível do personagem. Uma linha por arma empunhada.
+    linhas(ctx) {
+      const nivel = ctx.nivelTotal;
+      const extra = nivel >= 17 ? "3d6" : nivel >= 11 ? "2d6" : nivel >= 5 ? "1d6" : "";
+      const armas = ctx.armas.filter(a => a.base || a.item);
+      return armas.map(a => {
+        const dado = (a.item && a.item.damage ? String(a.item.damage).match(/^\d*d\d+/i) : null);
+        const dadoBase = dado ? dado[0] : (a.base ? a.base.damage : "1d6");
+        const tipo = (a.item && a.item.damageType) || (a.base ? a.base.damageType : "");
+        const r = {
+          srcId: "spell:true_strike:" + a.srcId,
+          name: `Golpe Certeiro (${a.nome})`,
+          atk: `${ctx.atkMagico >= 0 ? "+" : ""}${ctx.atkMagico}`,
+          damage: `${dadoBase}${ctx.mod ? (ctx.mod > 0 ? " +" + ctx.mod : " " + ctx.mod) : ""} ${tipo}` + (extra ? ` + ${extra} Radiante` : ""),
+          notes: "Ação • usa o atributo de conjuração no ataque e no dano • dano Radiante ou o normal da arma",
+          arma: true,
+          armaSrc: a.srcId,
+          distancia: !!(a.base && isRangedWeapon(a.base))
+        };
+        aplicarBonusNaLinha(r, bonusDeItensDaArma(a.srcId));
+        return r;
+      });
     }
   },
   magic_weapon: {
-    linha(ctx) {
+    linhas(ctx) {
       // +1 no 2º círculo, +2 do 3º ao 5º, +3 do 6º em diante
       const maior = ctx.maiorCirculo;
       const bonus = maior >= 6 ? 3 : maior >= 3 ? 2 : 1;
-      return {
+      return [{
+        srcId: "spell:magic_weapon",
+        name: "Arma Mágica",
         atk: `+${bonus}`,
         damage: `+${bonus} no dano`,
-        notes: `Some no ataque e no dano da arma tocada • +${bonus} com espaço de ${maior}º círculo (+1 no 2º, +2 do 3º ao 5º, +3 do 6º em diante)`
-      };
+        notes: `Some no ataque e no dano da arma tocada • +${bonus} com espaço de ${maior}º círculo (+1 no 2º, +2 do 3º ao 5º, +3 do 6º em diante) • ligue em Efeitos de Magia (Passo 5) para somar na arma`
+      }];
     }
   }
 };
@@ -3812,23 +3843,27 @@ function spellAttackRows(finalMods, pb) {
 
   const ids = [...new Set([
     ...magiasEscolhidasPreparadas(),
-    ...getGrantedSpellEntries().map(g => g.id)
+    ...getGrantedSpellEntries().map(g => g.id),
+    // Bordão Místico ou Golpe Certeiro ligado em Efeitos de Magia (vindo de
+    // talento ou item, fora da lista de magias) também ganha a linha
+    ...ajustesTemporariosAtivos().map(a => a.spell).filter(id => id && SPELL_WEAPON_BUFFS[id])
   ])];
 
   const nivelTotal = (character.level1 || 0) + (character.class2 !== "none" ? (character.level2 || 0) : 0);
   const maiorCirculo = highestSpellSlotLevel();
+  const armas = armasEmpunhadas();
 
-  return ids.map(id => {
+  return ids.flatMap(id => {
     const sp = DND5E_DATA.spells.find(x => x.id === id);
     if (!sp) return null;
 
     const buff = SPELL_WEAPON_BUFFS[id];
     if (buff) {
-      const armaEquipada = (buff.armas || [])
-        .map(wid => DND5E_DATA.weapons.find(w => w.id === wid))
-        .find(w => w && character.weapons.includes(w.id));
-      const r = buff.linha({ mod, atkMagico, cd, pb, nivelTotal, maiorCirculo, armaEquipada });
-      return { srcId: "spell:" + sp.id, name: sp.name.split(" (")[0], ...r };
+      const linhas = buff.linhas({ mod, atkMagico, cd, pb, nivelTotal, maiorCirculo, armas });
+      // Bordão Místico e Golpe Certeiro são ataques COM A ARMA: os efeitos de
+      // magia que valem para armas (Marca do Predador, Favor Divino) somam aqui.
+      aplicarAjustesTemporarios(linhas.filter(l => l.arma));
+      return linhas;
     }
 
     // Esta tabela é de ATAQUE: entra o que precisa acertar. Magia de
@@ -3878,7 +3913,9 @@ function spellAttackRows(finalMods, pb) {
     };
     // Item que soma em magia de ataque (Varinha do Mago de Guerra +1)
     aplicarBonusNaLinha(linha, itemBonusesForSpells("attack"));
-    return linha;
+    // Efeitos de magia que valem para magias de ataque (Marca do Predador, Bênção)
+    aplicarAjustesTemporarios([linha]);
+    return [linha];
   }).filter(Boolean);
 }
 
@@ -6555,15 +6592,56 @@ function renderTempAtkModsList() {
   const container = document.getElementById("tempAtkModsContainer");
   if (!container) return;
   if (!Array.isArray(character.tempAttackMods)) character.tempAttackMods = [];
+  preencherSeletorDeEfeitos();
 
   container.innerHTML = "";
 
   if (!character.tempAttackMods.length) {
-    container.innerHTML = `<p class="temp-atk-empty">Nenhum ajuste temporário. Clique em "+ Novo Ajuste" para somar um bônus no acerto e no dano de todos os ataques.</p>`;
+    container.innerHTML = `<p class="temp-atk-empty">Nenhum efeito ligado. Escolha uma magia em "+ Magia..." (Marca do Predador, Bênção, Escudo da Fé...) ou clique em "+ Novo Ajuste" para digitar o seu.</p>`;
     return;
   }
 
-  container.innerHTML = `
+  const opcoesArma = itemBonusWeaponOptions().filter(o => o.value !== "weapon:unarmed");
+  const linhaExtra = (a) => {
+    const ef = EFEITOS_DE_MAGIA.find(e => chaveDoEfeito(e) === a.efeito);
+    const alvo = a.alvo || "armas";
+    const circulos = ef && efeitoCresce(ef)
+      ? `<label>Círculo <select class="form-control" data-f="circulo">${[...Array(10 - ef.base).keys()].map(i => ef.base + i)
+          .map(c => `<option value="${c}"${c === (parseInt(a.circulo, 10) || ef.base) ? " selected" : ""}>${c}º</option>`).join("")}</select></label>`
+      : "";
+    const umaArma = alvo === "uma"
+      ? `<select class="form-control" data-f="ref">${opcoesArma.length ? "" : '<option value="">— nenhuma arma —</option>'}${opcoesArma.map(o =>
+          `<option value="${escAttr(o.value)}"${o.value === a.ref ? " selected" : ""}>${escAttr(o.label)}</option>`).join("")}</select>`
+      : "";
+    const defesa = a.caMin ? `<span class="temp-atk-tag">CA mínima ${a.caMin}</span>`
+      : a.caSemArmadura ? `<span class="temp-atk-tag">CA ${a.caSemArmadura} + DES sem armadura</span>` : "";
+    return `
+      <div class="temp-atk-extra">
+        <label>Vale para <select class="form-control" data-f="alvo">${ALVOS_DE_AJUSTE.map(o =>
+          `<option value="${o.id}"${o.id === alvo ? " selected" : ""}>${o.nome}</option>`).join("")}</select></label>
+        ${umaArma}
+        ${circulos}
+        <label>CA <input type="text" class="form-control temp-atk-curto" data-f="ca" value="${escAttr(a.ca || "")}" placeholder="+2"></label>
+        <label>Salvag. <input type="text" class="form-control temp-atk-curto" data-f="salva" value="${escAttr(a.salva || "")}" placeholder="1d4"></label>
+        ${defesa}
+        ${a.spell ? `<a class="temp-atk-info" href="#" data-act="info" title="Ver a descrição da magia">ⓘ</a>` : ""}
+      </div>
+      ${ef ? `<p class="temp-atk-nota">${escAttr(ef.nota)}</p>` : ""}
+      ${a.spell ? `<p class="temp-atk-desc" hidden>${escAttr((DND5E_DATA.spells.find(x => x.id === a.spell) || {}).desc || "")}</p>` : ""}`;
+  };
+
+  const ca = efeitosNaCA();
+  const sv = efeitosNaSalvaguarda();
+  const resumo = [];
+  if (ca.nomes.length) resumo.push(`<strong>CA</strong> ${ca.soma ? comSinal(ca.soma) : ""}${ca.minimo ? ` (mín. ${ca.minimo})` : ""}${ca.semArmadura ? ` (base ${ca.semArmadura} + DES)` : ""} <small>${escAttr(ca.nomes.join(", "))}</small>`);
+  if (sv.nomes.length) resumo.push(`<strong>Salvaguardas</strong> ${[sv.num ? comSinal(sv.num) : "", ...sv.textos].filter(Boolean).join(" ")} <small>${escAttr(sv.nomes.join(", "))}${sv.textos.length ? " — o dado se rola na hora, a ficha soma só o número" : ""}</small>`);
+  const concentracao = ajustesTemporariosAtivos().filter(a => {
+    const sp = a.spell && DND5E_DATA.spells.find(x => x.id === a.spell);
+    return sp && spellNeedsConcentration(sp) && idsDeMagiasDoPersonagem().has(sp.id);
+  });
+  if (concentracao.length > 1) resumo.push(`⚠️ <strong>Concentração</strong>: ${escAttr(concentracao.map(a => a.name).join(", "))} — você só mantém uma magia de Concentração por vez.`);
+
+  container.innerHTML = (resumo.length ? `<div class="temp-atk-resumo">${resumo.map(r => `<span>${r}</span>`).join("")}</div>` : "") + `
     <div class="temp-atk-head">
       <span>Nome</span><span>Acerto</span><span>Dano</span><span></span>
     </div>
@@ -6580,8 +6658,47 @@ function renderTempAtkModsList() {
           <i class="fa-solid fa-trash"></i>
         </button>
       </div>
+      ${linhaExtra(a)}
     </div>
   `).join("");
+}
+
+/** Lista "+ Magia...": primeiro as magias do personagem, depois as que um aliado ou inimigo lança nele */
+function preencherSeletorDeEfeitos() {
+  const sel = document.getElementById("selAddSpellEffect");
+  if (!sel) return;
+  const minhas = idsDeMagiasDoPersonagem();
+  const op = e => `<option value="${chaveDoEfeito(e)}">${escAttr(nomeDoEfeito(e))}${e.base ? ` (${e.base}º)` : " (truque)"}</option>`;
+  const doPersonagem = EFEITOS_DE_MAGIA.filter(e => minhas.has(e.id));
+  const outras = EFEITOS_DE_MAGIA.filter(e => !minhas.has(e.id));
+  sel.innerHTML = '<option value="">+ Magia...</option>' +
+    (doPersonagem.length ? `<optgroup label="Suas magias">${doPersonagem.map(op).join("")}</optgroup>` : "") +
+    `<optgroup label="${doPersonagem.length ? "Outras (aliados, inimigos, itens)" : "Magias"}">${outras.map(op).join("")}</optgroup>`;
+}
+
+/** Liga um efeito de magia da lista */
+function adicionarEfeitoDeMagia(chave) {
+  const ef = EFEITOS_DE_MAGIA.find(e => chaveDoEfeito(e) === chave);
+  if (!ef) return;
+  if (!Array.isArray(character.tempAttackMods)) character.tempAttackMods = [];
+  const ja = character.tempAttackMods.find(a => a.efeito === chave);
+  if (ja) {
+    ja.active = true;
+    showToast(`${ja.name} já estava na lista — ligado.`);
+  } else {
+    const aj = { id: "tmod_" + Date.now(), name: nomeDoEfeito(ef), active: true, efeito: chave, spell: ef.id, alvo: ef.alvo || "armas" };
+    if (aj.alvo === "uma") {
+      // A arma mais provável: o primeiro item-arma em uso, senão a primeira arma da lista
+      const armas = armasEmpunhadas();
+      aj.ref = (armas.find(x => x.item) || armas[0] || {}).srcId || "";
+    }
+    aplicarEfeitoNoAjuste(aj, ef);
+    character.tempAttackMods.push(aj);
+    showToast(`✨ ${aj.name} ligado.`);
+  }
+  renderTempAtkModsList();
+  recalculateCharacter();
+  saveToLocalStorage();
 }
 
 /** O ajuste da linha clicada/editada */
@@ -6606,14 +6723,38 @@ function setupTempAtkMods() {
     saveToLocalStorage();
   });
 
-  container.addEventListener("input", (e) => {
+  const selMagia = document.getElementById("selAddSpellEffect");
+  if (selMagia) selMagia.addEventListener("change", () => {
+    const v = selMagia.value;
+    selMagia.value = "";
+    if (v) adicionarEfeitoDeMagia(v);
+  });
+
+  // Texto digitado vale na hora; os seletores (Vale para, Círculo, arma)
+  // redesenham a linha porque mudam o que ela mostra.
+  const mudou = (e, redesenhar) => {
     const input = e.target.closest("[data-f]");
     if (!input) return;
     const ajuste = acharAjusteTemporario(input);
     if (!ajuste) return;
-    ajuste[input.getAttribute("data-f")] = input.value;
+    const campo = input.getAttribute("data-f");
+    ajuste[campo] = input.value;
+    if (campo === "circulo") {
+      const ef = EFEITOS_DE_MAGIA.find(x => chaveDoEfeito(x) === ajuste.efeito);
+      if (ef) aplicarEfeitoNoAjuste(ajuste, ef);
+    }
+    if (campo === "alvo" && input.value === "uma" && !ajuste.ref) {
+      const armas = armasEmpunhadas();
+      ajuste.ref = (armas.find(x => x.item) || armas[0] || {}).srcId || "";
+    }
+    if (redesenhar) renderTempAtkModsList();
     recalculateCharacter();
     saveToLocalStorage();
+  };
+  container.addEventListener("input", (e) => { if (e.target.tagName !== "SELECT") mudou(e, false); });
+  container.addEventListener("change", (e) => {
+    if (e.target.tagName === "SELECT") mudou(e, true);
+    else if (["ca", "salva"].includes(e.target.getAttribute("data-f"))) renderTempAtkModsList();
   });
 
   container.addEventListener("click", (e) => {
@@ -6621,7 +6762,13 @@ function setupTempAtkMods() {
     if (!btn) return;
     const ajuste = acharAjusteTemporario(btn);
     if (!ajuste) return;
+    e.preventDefault();
 
+    if (btn.getAttribute("data-act") === "info") {
+      const desc = btn.closest(".temp-atk-row").querySelector(".temp-atk-desc");
+      if (desc) desc.hidden = !desc.hidden;
+      return;
+    }
     if (btn.getAttribute("data-act") === "toggle") {
       ajuste.active = ajuste.active === false;
       showToast(`${ajuste.name || "Ajuste"} ${ajuste.active ? "ligado" : "desligado"}.`);
@@ -7286,7 +7433,10 @@ function recalculateCharacter() {
   const shieldObj = DND5E_DATA.shields.find(s => s.id === character.equippedShield) || DND5E_DATA.shields[0];
   let ac = 10 + dexMod;
 
+  const efeitosCA = efeitosNaCA();
   if (armorObj.id === "none") {
+    // Armadura Arcana: base 13 + Destreza
+    if (efeitosCA.semArmadura) ac = Math.max(ac, efeitosCA.semArmadura + dexMod);
     // Defesa sem Armadura: o Bárbaro pode usar Escudo, o Monge não. Com as
     // duas classes vale a que der mais (o livro manda escolher uma só).
     const semEscudo = !shieldObj || shieldObj.id === "none" || !shieldObj.acBonus;
@@ -7312,6 +7462,11 @@ function recalculateCharacter() {
   // Estilos de Luta que alteram a armadura (ex.: Defesa +1 CA)
   const armorStyleMods = getArmorStyleMods(armorObj);
   ac += armorStyleMods.ac;
+
+  // Efeitos de magia ligados no Passo 5: Escudo da Fé +2, Celeridade +2...
+  // Pele-Casca garante 17 no fim de tudo — "se a CA for menor que isso".
+  ac += efeitosCA.soma;
+  if (efeitosCA.minimo) ac = Math.max(ac, efeitosCA.minimo);
 
   // 6. Iniciativa & Deslocamento
   let init = dexMod;
@@ -7375,6 +7530,7 @@ function recalculateCharacter() {
   renderStyleEffectsPanel({ ac, armorStyleMods });
   renderMagicItemSummary(scoresSemItens);
   renderMagicItemSuggestions();
+  preencherSeletorDeEfeitos();   // "Suas magias" acompanha as magias escolhidas
   renderDeathSaves();
   renderLanguagesCheckboxes();   // idioma da classe (Druídico, Gíria) muda com as escolhas
   renderWizardPendencias();
@@ -7710,7 +7866,7 @@ function renderOfAbilities(ctx) {
       const mod = finalMods[abId];
       const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
       const isSaveProf = saveProfs.includes(abId);
-      const saveAuto = mod + (isSaveProf ? pb : 0) + getAuraOfProtectionBonus(finalMods) + itemBonusDeAtributo("save", abId);
+      const saveAuto = mod + (isSaveProf ? pb : 0) + getAuraOfProtectionBonus(finalMods) + itemBonusDeAtributo("save", abId) + efeitosNaSalvaguarda().num;
       // Valor digitado à mão no resumo de combate vale sobre a conta
       const saveManual = (sheetOv().saveOv || {})[abId];
       const saveBonus = saveManual !== undefined && saveManual !== null && saveManual !== ""
@@ -7974,14 +8130,15 @@ function itemBonusAppliesToRow(b, item, row) {
   if (src.startsWith("atk:")) return false;   // ataque digitado à mão: só quando escolhido de propósito
 
   const wId = src.startsWith("weapon:") ? src.slice(7) : null;
-  const w = wId ? DND5E_DATA.weapons.find(x => x.id === wId) : null;
+  const itemDaLinha = src.startsWith("item:") ? (character.customItems || []).find(i => "item:" + i.id === src) : null;
+  const w = wId ? DND5E_DATA.weapons.find(x => x.id === wId) : armaBaseDoItem(itemDaLinha);
   const desarmado = wId === "unarmed";
   const arma = src.startsWith("weapon:") || src.startsWith("item:") || src.startsWith("feature:psychic_blade");
   if (!arma) return false;
 
   if (b.target === "unarmed") return desarmado;
   if (b.target === "weapons_all") return !desarmado && wId !== "improvised";
-  // Item customizado e Lâmina Psíquica contam como corpo a corpo
+  // Item sem arma base conhecida e Lâmina Psíquica contam como corpo a corpo
   const distancia = w ? isRangedWeapon(w) : false;
   if (b.target === "weapons_melee") return !desarmado && wId !== "improvised" && !distancia;
   if (b.target === "weapons_ranged") return distancia;
@@ -8011,6 +8168,57 @@ function aplicarBonusNaLinha(r, pares) {
   if (dmg.num || dmg.textos.length) r.damage = aplicarAjusteNoDano(r.damage, dmg.num, dmg.textos);
   const nomes = [...new Set(pares.map(p => p.item.name))];
   r.notes = [r.notes, `Item: ${nomes.join(", ")}`].filter(Boolean).join(" • ");
+}
+
+/**
+ * A arma comum por trás de um item-arma: "Cajado +1" é um Cajado, o Cajado do
+ * Mago é um Cajado. Vale o campo "Arma base" do formulário; item antigo, sem
+ * ele, é reconhecido pelo nome. Sem isso o Bordão Místico não enxergava um
+ * Cajado mágico, e a conta do item ignorava Acuidade, estilo e maestria.
+ */
+const NOMES_DE_ARMA_EXTRA = [
+  [/\bbord[aã]o\b|\bquarterstaff\b|\bstaff\b/i, "quarterstaff"],
+  [/\bclub\b/i, "clava"]
+];
+
+function armaBaseDoItem(item) {
+  if (!item) return null;
+  const armas = DND5E_DATA.weapons.filter(w => w.id !== "none" && w.id !== "unarmed" && w.id !== "improvised");
+  if (item.baseWeapon) return armas.find(w => w.id === item.baseWeapon) || null;
+  if (/^staff-of-/.test(item.catalogId || "") && item.type === "weapon") return armas.find(w => w.id === "quarterstaff") || null;
+  const tirar = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const nome = tirar(item.name);
+  // O nome mais comprido primeiro: "Besta Pesada" antes de "Besta"
+  const achada = armas.slice().sort((a, b) => b.name.length - a.name.length).find(w => {
+    const n = tirar(w.name.split(" (")[0]);
+    return n && new RegExp(`(^|[^a-z])${n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z]|$)`).test(nome);
+  });
+  if (achada) return achada;
+  const extra = NOMES_DE_ARMA_EXTRA.find(([re]) => re.test(item.name || ""));
+  return extra ? armas.find(w => w.id === extra[1]) || null : null;
+}
+
+/**
+ * Armas que o personagem empunha: as comuns da lista e os itens-arma em uso,
+ * cada uma com o srcId da sua linha (para os bônus de item seguirem junto).
+ */
+function armasEmpunhadas() {
+  const out = [];
+  (character.weapons || []).forEach(wId => {
+    const w = DND5E_DATA.weapons.find(x => x.id === wId);
+    if (w && !["none", "unarmed", "improvised"].includes(w.id)) out.push({ srcId: "weapon:" + w.id, nome: w.name.split(" (")[0], base: w, item: null });
+  });
+  (character.customItems || []).filter(i => i.equipped && (i.type === "weapon" || i.damage)).forEach(item => {
+    out.push({ srcId: "item:" + item.id, nome: item.name, base: armaBaseDoItem(item), item });
+  });
+  return out;
+}
+
+/** Bônus dos itens que valem para a linha de uma arma (o +1 do Cajado +1, um Anel que soma em armas) */
+function bonusDeItensDaArma(srcId) {
+  const linha = { srcId };
+  return activeItemBonuses().filter(({ item, b }) => !b.target.startsWith("spell_") && !ITEM_BONUS_DE_ATRIBUTO.includes(b.target)
+    && itemBonusAppliesToRow(b, item, linha));
 }
 
 /** Bônus de itens nas linhas de arma, item e ataque personalizado */
@@ -8090,6 +8298,8 @@ function openCustomItemModal(item, doCatalogo) {
     set("customItemName", item.name);
     set("customItemType", item.type || "other");
     set("customItemDamage", item.damage);
+    const selTipo = document.getElementById("customItemDamageType");
+    if (selTipo && item.damageType && ![...selTipo.options].some(o => o.value === item.damageType)) selTipo.add(new Option(item.damageType, item.damageType));
     set("customItemDamageType", item.damageType || "Cortante");
     set("customItemMastery", item.mastery);
     set("customItemAcBonus", item.acBonus || 0);
@@ -8098,6 +8308,8 @@ function openCustomItemModal(item, doCatalogo) {
     set("customItemCost", item.cost);
     set("customItemDesc", item.desc);
     set("customItemSlot", item.slot || "");
+    const base = armaBaseDoItem(item);
+    set("customItemBaseWeapon", base ? base.id : "");
     document.getElementById("customItemEquipNow").checked = !!item.equipped;
   }
   document.getElementById("customItemType").dispatchEvent(new Event("change"));
@@ -8512,6 +8724,25 @@ function renderMagicItemSummary(scoresSemItens) {
 function setupMagicCatalog() {
   const sel = document.getElementById("magicCatalogRarity");
   if (sel) sel.innerHTML = '<option value="">Toda raridade</option>' + Object.entries(RARIDADE_PT).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
+  const baseSel = document.getElementById("customItemBaseWeapon");
+  if (baseSel) {
+    baseSel.innerHTML = '<option value="">— Nenhuma / não sei —</option>' + DND5E_DATA.weapons
+      .filter(w => !["none", "unarmed", "improvised"].includes(w.id))
+      .map(w => `<option value="${w.id}">${escAttr(w.name.split(" (")[0])} (${w.damage} ${escAttr(w.damageType)})</option>`).join("");
+    // Escolher a arma base completa o dano que estiver vazio
+    baseSel.addEventListener("change", () => {
+      const w = DND5E_DATA.weapons.find(x => x.id === baseSel.value);
+      if (!w) return;
+      const dano = document.getElementById("customItemDamage");
+      if (dano && !dano.value.trim()) dano.value = w.damage;
+      const tipo = document.getElementById("customItemDamageType");
+      if (tipo) {
+        if (![...tipo.options].some(o => o.value === w.damageType)) tipo.add(new Option(w.damageType, w.damageType));
+        tipo.value = w.damageType;
+      }
+      atualizarBonusDetectado();
+    });
+  }
   const slotSel = document.getElementById("customItemSlot");
   if (slotSel) slotSel.innerHTML = '<option value="">— Não ocupa lugar —</option>' + ITEM_SLOTS.map(s => `<option value="${s.id}">${s.nome}</option>`).join("");
   const det = document.getElementById("magicCatalog");
@@ -8541,9 +8772,146 @@ function setupMagicCatalog() {
  * Passo 5, liga e desliga, e a ficha refaz as contas sozinha.
  */
 
-/** Ajustes ligados e que de fato mexem em alguma coluna */
+/** Ajustes ligados e que de fato mexem em alguma coisa (ataque, dano, CA, salvaguarda ou linha de magia) */
 function ajustesTemporariosAtivos() {
-  return (character.tempAttackMods || []).filter(a => a && a.active !== false && (a.atk || a.dmg));
+  return (character.tempAttackMods || []).filter(a => a && a.active !== false &&
+    (a.atk || a.dmg || a.ca || a.caMin || a.caSemArmadura || a.salva || SPELL_WEAPON_BUFFS[a.spell]));
+}
+
+/**
+ * Efeitos de magia prontos para o jogador ligar no Passo 5, com os números do
+ * Livro do Jogador 2024. `calc(circulo)` devolve o que soma; `base` é o
+ * círculo da magia e, quando ela cresce com o espaço, o jogador escolhe o
+ * círculo usado e os números se refazem.
+ *
+ * Magia que muda a arma em vez de somar (Bordão Místico, Golpe Certeiro) não
+ * soma nada: ligada, ela põe a linha própria na tabela de ataques.
+ * Ficam de fora as que não mexem em número da ficha (Vantagem, condição,
+ * resistência) — o jogador as lê na descrição.
+ */
+const nd = (n, d) => `${n}d${d}`;
+const EFEITOS_DE_MAGIA = [
+  // Ataque e dano
+  { id: "shillelagh", base: 0, alvo: "corpo", transforma: true,
+    nota: "Cajado ou Clava: ataque e dano pelo atributo de conjuração, dado d8 (cresce no 5º, 11º e 17º nível). Aparece como linha própria na tabela de ataques.",
+    calc: () => ({}) },
+  { id: "true_strike", base: 0, alvo: "armas", transforma: true,
+    nota: "Ataque com a arma pelo atributo de conjuração; +1d6 Radiante no 5º nível, 2d6 no 11º, 3d6 no 17º. Aparece como linha própria.",
+    calc: () => ({}) },
+  { id: "hunters_mark", base: 1, alvo: "ataques",
+    nota: "+1d6 Energético em todo acerto com jogada de ataque contra o alvo marcado. Concentração. Círculo maior só aumenta a duração.",
+    calc: () => ({ dmg: "1d6 Energético" }) },
+  { id: "hex", base: 1, alvo: "ataques",
+    nota: "+1d6 Necrótico em todo acerto com jogada de ataque contra o alvo amaldiçoado. Concentração.",
+    calc: () => ({ dmg: "1d6 Necrótico" }) },
+  { id: "bless", base: 1, alvo: "ataques",
+    nota: "+1d4 nas jogadas de ataque e nas salvaguardas. Concentração.",
+    calc: () => ({ atk: "1d4", salva: "1d4" }) },
+  { id: "bane", base: 1, alvo: "ataques",
+    nota: "Lançada por um inimigo e você falhou na salvaguarda: −1d4 nas jogadas de ataque e salvaguardas.",
+    calc: () => ({ atk: "-1d4", salva: "-1d4" }) },
+  { id: "divine_favor", base: 1, alvo: "armas",
+    nota: "+1d4 Radiante nos acertos com arma. 1 minuto, sem Concentração.",
+    calc: () => ({ dmg: "1d4 Radiante" }) },
+  { id: "magic_weapon", base: 2, alvo: "uma",
+    nota: "+1 no ataque e no dano da arma tocada; +2 com espaço de 3º a 5º círculo, +3 do 6º em diante.",
+    calc: (c) => { const b = c >= 6 ? 3 : c >= 3 ? 2 : 1; return { atk: comSinal(b), dmg: comSinal(b) }; } },
+  { id: "arma_elemental", base: 3, alvo: "uma",
+    nota: "+1 no ataque e +1d4 do tipo escolhido (Ácido, Elétrico, Gélido, Ígneo ou Trovejante); +2 e 2d4 no 5º-6º círculo, +3 e 3d4 do 7º em diante. Troque o tipo no campo Dano.",
+    calc: (c) => { const b = c >= 7 ? 3 : c >= 5 ? 2 : 1; return { atk: comSinal(b), dmg: `${nd(b, 4)} Ígneo` }; } },
+  { id: "crusaders_mantle", base: 3, alvo: "armas",
+    nota: "+1d4 Radiante nos acertos com arma ou Ataque Desarmado, para você e aliados na aura de 9 m. Concentração.",
+    calc: () => ({ dmg: "1d4 Radiante" }) },
+  { id: "aumentar_reduzir", base: 2, alvo: "armas", nome: "Aumentar (Enlarge)",
+    nota: "Aumentado: +1d4 de dano nos ataques com arma e Vantagem em testes e salvaguardas de Força. Concentração.",
+    calc: () => ({ dmg: "1d4" }) },
+  { id: "aumentar_reduzir", chave: "reduzir", base: 2, alvo: "armas", nome: "Reduzir (Reduce)",
+    nota: "Reduzido: −1d4 de dano nos ataques com arma (mínimo 1) e Desvantagem em testes e salvaguardas de Força.",
+    calc: () => ({ dmg: "-1d4" }) },
+  // Destruições: um golpe só, depois de acertar
+  { id: "divine_smite", base: 1, alvo: "corpo",
+    nota: "Depois de acertar com arma corpo a corpo ou Ataque Desarmado: 2d8 Radiante, +1d8 por círculo acima do 1º e +1d8 contra Ínfero ou Morto-vivo. Desligue depois do golpe.",
+    calc: (c) => ({ dmg: `${nd(1 + c, 8)} Radiante` }) },
+  { id: "destruicao_cauterizante", base: 1, alvo: "corpo",
+    nota: "No acerto: +1d6 Ígneo por círculo, e o alvo queima 1d6 por círculo no início de cada turno até passar na salvaguarda de Constituição.",
+    calc: (c) => ({ dmg: `${nd(c, 6)} Ígneo` }) },
+  { id: "wrathful_smite", base: 1, alvo: "corpo",
+    nota: "No acerto: +1d6 Necrótico por círculo e salvaguarda de Sabedoria contra Amedrontado.",
+    calc: (c) => ({ dmg: `${nd(c, 6)} Necrótico` }) },
+  { id: "thunderous_smite", base: 1, alvo: "corpo",
+    nota: "No acerto: 2d6 Trovejante, +1d6 por círculo acima do 1º; salvaguarda de Força ou é empurrado 3 m e fica Caído.",
+    calc: (c) => ({ dmg: `${nd(1 + c, 6)} Trovejante` }) },
+  { id: "destruicao_radiante", base: 2, alvo: "corpo",
+    nota: "No acerto: 2d6 Radiante, +1d6 por círculo acima do 2º; ataques contra o alvo têm Vantagem. Concentração.",
+    calc: (c) => ({ dmg: `${nd(c, 6)} Radiante` }) },
+  { id: "destruicao_cegante", base: 3, alvo: "corpo",
+    nota: "No acerto: 3d8 Radiante, +1d8 por círculo acima do 3º, e o alvo fica Cego até passar na salvaguarda de Constituição.",
+    calc: (c) => ({ dmg: `${nd(c, 8)} Radiante` }) },
+  { id: "destruicao_atordoante", base: 4, alvo: "corpo",
+    nota: "No acerto: 4d6 Psíquico, +1d6 por círculo acima do 4º; salvaguarda de Sabedoria ou Atordoado.",
+    calc: (c) => ({ dmg: `${nd(c, 6)} Psíquico` }) },
+  { id: "banishing_smite", base: 5, alvo: "corpo",
+    nota: "No acerto: 5d10 Energético; com 50 PV ou menos, salvaguarda de Carisma ou é banido. Concentração.",
+    calc: () => ({ dmg: "5d10 Energético" }) },
+  // Defesa
+  { id: "shield_of_faith", base: 1, nota: "+2 na CA. Concentração, até 10 minutos.", calc: () => ({ ca: 2 }) },
+  { id: "haste", base: 3, nota: "+2 na CA, deslocamento dobrado, Vantagem em salvaguardas de Destreza e uma ação extra. Concentração.", calc: () => ({ ca: 2 }) },
+  { id: "shield", base: 1, nota: "Reação: +5 na CA até o início do seu próximo turno (inclusive contra o ataque que a ativou).", calc: () => ({ ca: 5 }) },
+  { id: "vinculo_de_protecao", base: 2, nota: "Quem recebe: +1 na CA e nas salvaguardas e Resistência a todo dano (quem conjura sofre o mesmo dano).", calc: () => ({ ca: 1, salva: "+1" }) },
+  { id: "mage_armor", base: 1, nota: "Sem armadura: CA base 13 + Destreza (o escudo ainda soma). 8 horas.", calc: () => ({ caSemArmadura: 13 }) },
+  { id: "barkskin", base: 2, nota: "A CA não fica abaixo de 17. 1 hora, sem Concentração.", calc: () => ({ caMin: 17 }) },
+  { id: "slow", base: 3, nota: "Lançada por um inimigo e você falhou: −2 na CA e nas salvaguardas de Destreza, metade do deslocamento, sem Reações.", calc: () => ({ ca: -2 }) }
+];
+
+/** Chave única do efeito (Aumentar e Reduzir vêm da mesma magia) */
+function chaveDoEfeito(e) { return e.chave || e.id; }
+
+/** Nome do efeito: o da magia em português, sem o original entre parênteses */
+function nomeDoEfeito(e) {
+  if (e.nome) return e.nome.split(" (")[0];
+  const sp = DND5E_DATA.spells.find(x => x.id === e.id);
+  return sp ? sp.name.split(" (")[0] : e.id;
+}
+
+/** O efeito cresce com o círculo do espaço? (os números mudam entre o círculo base e o 9º) */
+function efeitoCresce(e) {
+  if (e.base === 0) return false;
+  return JSON.stringify(e.calc(e.base)) !== JSON.stringify(e.calc(9));
+}
+
+/** Preenche o ajuste com os números do efeito no círculo escolhido */
+function aplicarEfeitoNoAjuste(aj, e) {
+  const circ = Math.max(e.base, parseInt(aj.circulo, 10) || e.base);
+  const v = e.calc(circ);
+  Object.assign(aj, {
+    atk: v.atk || "", dmg: v.dmg || "",
+    ca: v.ca || 0, caMin: v.caMin || 0, caSemArmadura: v.caSemArmadura || 0, salva: v.salva || "",
+    circulo: e.base ? circ : 0
+  });
+}
+
+/** Magias que o personagem tem (preparadas, concedidas e truques) */
+function idsDeMagiasDoPersonagem() {
+  return new Set([...(character.spellsKnown || []), ...getGrantedSpellEntries().map(g => g.id)]);
+}
+
+/** Soma de CA dos efeitos ligados: { soma, minimo, semArmadura, nomes } */
+function efeitosNaCA() {
+  const out = { soma: 0, minimo: 0, semArmadura: 0, nomes: [] };
+  ajustesTemporariosAtivos().forEach(a => {
+    const ca = parseInt(a.ca, 10) || 0;
+    if (ca) out.soma += ca;
+    if (a.caMin) out.minimo = Math.max(out.minimo, parseInt(a.caMin, 10) || 0);
+    if (a.caSemArmadura) out.semArmadura = Math.max(out.semArmadura, parseInt(a.caSemArmadura, 10) || 0);
+    if (ca || a.caMin || a.caSemArmadura) out.nomes.push(a.name || "Efeito");
+  });
+  return out;
+}
+
+/** Bônus de salvaguarda dos efeitos ligados: número soma na ficha, dado fica como lembrete */
+function efeitosNaSalvaguarda() {
+  const valem = ajustesTemporariosAtivos().filter(a => String(a.salva || "").trim());
+  return { ...somarBonus(valem.map(a => ({ atk: a.salva })), "atk"), nomes: valem.map(a => a.name || "Efeito") };
 }
 
 /** "+2" / "-1" / "2" → número; "1d4" e afins → null (entram como texto) */
@@ -8573,8 +8941,15 @@ function aplicarAjusteNoAcerto(atk, num, textos) {
       out = out ? `${comSinal(num)} ${out}` : comSinal(num);
     }
   }
-  textos.forEach(t => { out = out ? `${out} + ${t}` : `+ ${t}`; });
+  textos.forEach(t => { out = juntarTexto(out, t); });
   return out;
+}
+
+/** "+5" e "1d4" → "+5 + 1d4"; "-1d4" → "+5 - 1d4" */
+function juntarTexto(out, t) {
+  const neg = /^-\s*/.test(t);
+  const limpo = t.replace(/^[+-]\s*/, "");
+  return out ? `${out} ${neg ? "-" : "+"} ${limpo}` : `${neg ? "-" : "+"} ${limpo}`;
 }
 
 /**
@@ -8595,34 +8970,81 @@ function aplicarAjusteNoDano(dmg, num, textos) {
       out = out ? `${comSinal(num)} ${out}` : comSinal(num);
     }
   }
-  textos.forEach(t => { out = out ? `${out} + ${t}` : `+ ${t}`; });
+  textos.forEach(t => { out = juntarTexto(out, t); });
   return out;
 }
 
 /**
- * Aplica os ajustes ligados nas linhas de arma e de ataque personalizado.
+ * Onde vale um ajuste temporário. "armas" é o que todo ajuste antigo fazia;
+ * as magias pedem mais: a Marca do Predador soma em qualquer jogada de ataque
+ * (arma ou magia), as Destruições só no golpe corpo a corpo, a Arma Mágica
+ * numa arma só.
+ */
+const ALVOS_DE_AJUSTE = [
+  { id: "armas", nome: "Todas as armas" },
+  { id: "corpo", nome: "Armas corpo a corpo" },
+  { id: "distancia", nome: "Armas à distância" },
+  { id: "uma", nome: "Uma arma" },
+  { id: "ataques", nome: "Armas e magias de ataque" },
+  { id: "magias", nome: "Só magias de ataque" }
+];
+
+/** Que tipo de ataque é a linha: corpo, distancia, magia ou livre (digitado à mão) */
+function tipoDaLinhaDeAtaque(r) {
+  const src = String(r.srcId || "");
+  if (src.startsWith("spell:")) return r.arma ? (r.distancia ? "distancia" : "corpo") : "magia";
+  if (src.startsWith("atk:")) return "livre";
+  if (src.startsWith("weapon:")) {
+    const w = DND5E_DATA.weapons.find(x => x.id === src.slice(7));
+    return w && isRangedWeapon(w) ? "distancia" : "corpo";
+  }
+  if (src.startsWith("item:")) {
+    const base = armaBaseDoItem((character.customItems || []).find(i => "item:" + i.id === src));
+    return base && isRangedWeapon(base) ? "distancia" : "corpo";
+  }
+  return "corpo";   // Lâmina Psíquica
+}
+
+/** O ajuste vale para esta linha da tabela de ataques? */
+function ajusteValeNaLinha(a, r) {
+  const tipo = tipoDaLinhaDeAtaque(r);
+  switch (a.alvo || "armas") {
+    case "armas": return tipo !== "magia";
+    case "corpo": return tipo === "corpo";
+    case "distancia": return tipo === "distancia";
+    case "uma": return !!a.ref && (r.srcId === a.ref || r.armaSrc === a.ref);
+    case "ataques": return true;
+    case "magias": return tipo === "magia";
+    default: return false;
+  }
+}
+
+/**
+ * Aplica os ajustes ligados nas linhas da tabela de ataques, cada um só onde
+ * vale (veja ALVOS_DE_AJUSTE).
  *
  * Roda sobre as linhas recém-montadas a cada recálculo, então ligar e desligar
  * um ajuste nunca acumula: o número de partida é sempre o da arma.
  */
 function aplicarAjustesTemporarios(linhas) {
-  const ajustes = ajustesTemporariosAtivos();
+  const ajustes = ajustesTemporariosAtivos().filter(a => a.atk || a.dmg);
   if (!ajustes.length || !linhas.length) return;
 
-  let somaAtk = 0, somaDmg = 0;
-  const txtAtk = [], txtDmg = [], nomes = [];
-  ajustes.forEach(a => {
-    const nAtk = ajusteNumerico(a.atk);
-    const nDmg = ajusteNumerico(a.dmg);
-    if (a.atk) { if (nAtk === null) txtAtk.push(String(a.atk).trim()); else somaAtk += nAtk; }
-    if (a.dmg) { if (nDmg === null) txtDmg.push(String(a.dmg).trim()); else somaDmg += nDmg; }
-    nomes.push(String(a.name || "").trim() || "Ajuste");
-  });
-
   linhas.forEach(r => {
+    const valem = ajustes.filter(a => ajusteValeNaLinha(a, r));
+    if (!valem.length) return;
+    let somaAtk = 0, somaDmg = 0;
+    const txtAtk = [], txtDmg = [], nomes = [];
+    valem.forEach(a => {
+      const nAtk = ajusteNumerico(a.atk);
+      const nDmg = ajusteNumerico(a.dmg);
+      if (a.atk) { if (nAtk === null) txtAtk.push(String(a.atk).trim()); else somaAtk += nAtk; }
+      if (a.dmg) { if (nDmg === null) txtDmg.push(String(a.dmg).trim()); else somaDmg += nDmg; }
+      nomes.push(String(a.name || "").trim() || "Ajuste");
+    });
     r.atk = aplicarAjusteNoAcerto(r.atk, somaAtk, txtAtk);
     r.damage = aplicarAjusteNoDano(r.damage, somaDmg, txtDmg);
-    r.notes = [r.notes, `Ajuste: ${nomes.join(", ")}`].filter(Boolean).join(" • ");
+    r.notes = [r.notes, `Efeito: ${nomes.join(", ")}`].filter(Boolean).join(" • ");
   });
 }
 
@@ -8692,14 +9114,25 @@ function syncSheetWeaponRows(ctx) {
   }
 
   character.customItems.filter(i => i.equipped && (i.type === "weapon" || i.damage)).forEach(item => {
-    const atkAbility = dexMod > finalMods["str"] ? "dex" : "str";
-    const atkMod = finalMods[atkAbility] + pb;
+    // Com a arma base conhecida (Cajado +1 → Cajado), a conta é a da arma:
+    // Força ou Destreza pela Acuidade/distância, estilo de luta e maestria.
+    const base = armaBaseDoItem(item);
+    const atkAbility = base
+      ? (isRangedWeapon(base) || (weaponHasProp(base, "Acuidade") && dexMod > finalMods["str"]) ? "dex" : "str")
+      : (dexMod > finalMods["str"] ? "dex" : "str");
+    const style = base ? getWeaponStyleMods(base) : { atk: 0, dmg: 0, notes: [] };
+    const atkMod = finalMods[atkAbility] + pb + style.atk;
+    const dado = item.damage || (base ? base.damage : "1d6");
+    // O dado digitado no item pode já trazer o modificador ("1d8+1"): aí o
+    // atributo não entra de novo, como antes; só a arma base completa a conta.
+    const dmgMod = base && !/\d*d\d+\s*[+-]\s*\d+/i.test(dado) ? finalMods[atkAbility] + style.dmg : 0;
+    const maestria = base && isMasteryActive(base.id) ? `Maestria: ${base.masteryName}` : (item.mastery ? `Maestria: ${item.mastery}` : null);
     auto.push({
       srcId: "item:" + item.id,
       name: item.name,
       atk: `${atkMod >= 0 ? '+' : ''}${atkMod}`,
-      damage: `${item.damage || "1d6"} ${item.damageType || "Cortante"}`,
-      notes: item.mastery ? `Maestria: ${item.mastery}` : "Item mágico"
+      damage: `${dado}${dmgMod ? (dmgMod > 0 ? " +" + dmgMod : " " + dmgMod) : ""} ${item.damageType || (base ? base.damageType : "Cortante")}`,
+      notes: [base ? `${base.name} mágico` : "Item mágico", maestria, ...style.notes].filter(Boolean).join(" • ")
     });
   });
 
@@ -10503,7 +10936,8 @@ function bindEvents() {
                      max: b.target === "ability" && b.max ? b.max : undefined,
                      atk: String(b.atk || "").trim(), dmg: String(b.dmg || "").trim() }));
       const slot = document.getElementById("customItemSlot").value;
-      const dados = { name, type, damage, damageType, mastery, acBonus, attunement, weight, cost, desc, equipped, bonuses, slot };
+      const baseWeapon = type === "weapon" ? document.getElementById("customItemBaseWeapon").value : "";
+      const dados = { name, type, damage, damageType, mastery, acBonus, attunement, weight, cost, desc, equipped, bonuses, slot, baseWeapon };
       const editando = _editingItemId && character.customItems.find(i => i.id === _editingItemId);
       if (editando) Object.assign(editando, dados, _itemCatalogMeta);
       else {

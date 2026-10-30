@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20261028a";
+    var APP_VERSION = "20261030a";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -899,14 +899,18 @@
           <!-- AJUSTES TEMPORÁRIOS DE ATAQUE E DANO -->
           <div class="info-selection-card" style="border-color: rgba(96, 165, 250, 0.4); margin-bottom: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
-              <h4 style="color: #60a5fa; margin: 0;"><i class="fa-solid fa-wand-sparkles"></i> Ajustes Temporários (Ataque & Dano)</h4>
-              <button type="button" class="btn btn-secondary btn-sm" id="btnAddTempAtkMod">
-                <i class="fa-solid fa-plus"></i> + Novo Ajuste
-              </button>
+              <h4 style="color: #60a5fa; margin: 0;"><i class="fa-solid fa-wand-sparkles"></i> Efeitos de Magia & Ajustes Temporários</h4>
+              <div class="temp-atk-botoes">
+                <select class="form-control" id="selAddSpellEffect" title="Liga uma magia com os números do livro"><option value="">+ Magia...</option></select>
+                <button type="button" class="btn btn-secondary btn-sm" id="btnAddTempAtkMod">
+                  <i class="fa-solid fa-plus"></i> + Novo Ajuste
+                </button>
+              </div>
             </div>
             <p style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.6rem;">
-              Bônus de uma cena só &mdash; Bênção, Arma Mágica, veneno na lâmina. Enquanto ligado, soma no acerto e no dano de
-              <strong>todas as armas e ataques personalizados</strong> da ficha. Aceita número (<code>+2</code>) ou dado (<code>1d4</code>, <code>1d6 Ácido</code>).
+              Efeitos de uma cena só &mdash; Marca do Predador, Bênção, Escudo da Fé, uma Destruição, veneno na lâmina. Enquanto ligado,
+              soma onde vale (<strong>Vale para</strong>: todas as armas, só corpo a corpo, uma arma, magias de ataque) e também na <strong>CA</strong> e nas <strong>salvaguardas</strong>.
+              Aceita número (<code>+2</code>) ou dado (<code>1d4</code>, <code>1d6 Ácido</code>). Bordão Místico e Golpe Certeiro viram uma linha própria na tabela de ataques.
             </p>
             <div id="tempAtkModsContainer" class="temp-atk-mods"></div>
           </div>
@@ -1726,6 +1730,10 @@
 
         <!-- Campos para Armas -->
         <div class="form-grid-3" id="customItemWeaponFields">
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label class="form-label" for="customItemBaseWeapon">Arma base</label>
+            <select class="form-control" id="customItemBaseWeapon" title="Cajado +1 é um Cajado: a ficha usa Acuidade, estilo de luta, maestria e magias como Bordão Místico"></select>
+          </div>
           <div class="form-group">
             <label class="form-label" for="customItemDamage">Dano (Ex: 1d8+1)</label>
             <input type="text" class="form-control" id="customItemDamage" placeholder="1d8+1">
