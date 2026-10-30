@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20261030a";
+    var APP_VERSION = "20261030b";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -97,6 +97,9 @@
       <div class="app-mode-tabs" id="appModeTabs">
         <button class="app-mode-btn active" id="btnModeWizard" data-mode="wizard">
           <i class="fa-solid fa-hat-wizard"></i> Assistente<span class="tab-long-label"> Passo a Passo (Wizard)</span>
+        </button>
+        <button class="app-mode-btn" id="btnModeOnline" data-mode="online">
+          <i class="fa-solid fa-dragon"></i> Ficha Online
         </button>
         <button class="app-mode-btn" id="btnModeSheet" data-mode="sheet">
           <i class="fa-solid fa-file-signature"></i> Ficha Editável<span class="tab-long-label"> Direta</span>
@@ -1044,91 +1047,6 @@
           </div>
         </div>
 
-        <!-- Controle de jogo: dano, cura, temporários e Dados de Vida.
-             Os campos da ficha continuam editáveis à mão; isto é o atalho para
-             o que mais se mexe durante a sessão. -->
-        <details class="hp-tracker" id="hpTracker" open>
-          <summary>
-            <i class="fa-solid fa-heart-pulse"></i>
-            <span class="hp-tracker-resumo" id="hpTrackerResumo">Pontos de Vida</span>
-            <!-- Corrigir a vida na mão é comum no meio da sessão (o Mestre
-                 anuncia um efeito que o app não calcula). A caneta abre os três
-                 números ali mesmo, sem precisar caçar o campo na ficha A4. -->
-            <button type="button" class="hp-editar" id="btnHpEditar"
-                    title="Editar Pontos de Vida atuais, máximos e temporários"
-                    aria-label="Editar Pontos de Vida">
-              <i class="fa-solid fa-pen-to-square"></i>
-            </button>
-          </summary>
-          <div class="hp-tracker-corpo">
-            <div class="hp-tracker-acoes">
-              <input type="number" class="form-control" id="hpTrackerValor" min="0" placeholder="Valor" inputmode="numeric">
-              <button type="button" class="btn btn-secondary btn-sm is-dano" id="btnHpDano" title="Tirar dos temporários primeiro, depois dos Pontos de Vida">
-                <i class="fa-solid fa-burst"></i> Dano
-              </button>
-              <button type="button" class="btn btn-secondary btn-sm is-cura" id="btnHpCura" title="Recuperar Pontos de Vida, sem passar do máximo">
-                <i class="fa-solid fa-kit-medical"></i> Cura
-              </button>
-              <button type="button" class="btn btn-secondary btn-sm is-temp" id="btnHpTemp" title="Pontos de Vida Temporários não se somam: fica o maior">
-                <i class="fa-solid fa-shield-halved"></i> Temp
-              </button>
-            </div>
-            <!-- Resumo de combate: CA, salvaguardas e ataques da ficha. A caneta
-                 edita como a dos PV (vira edição manual da ficha). -->
-            <div class="combate-bloco" id="combatSummary"></div>
-
-            <!-- Condições: escolher e adicionar, com as ativas logo abaixo.
-                 Ficam aqui em cima porque mudam rolagem e movimento. -->
-            <div class="cond-bloco">
-              <div class="cond-cabeca">
-                <span>Condições</span>
-                <span class="cond-resumo" id="conditionsResumo">nenhuma ativa</span>
-              </div>
-              <!-- Um clique na etiqueta liga ou desliga; o "i" abre o texto do livro. -->
-              <div class="cond-lista" id="conditionsList"></div>
-              <div class="cond-detalhe" id="conditionsDetalhe" hidden></div>
-            </div>
-
-            <div class="hp-tracker-dados" id="hpTrackerDados"></div>
-            <div class="hp-tracker-rodape">
-              <button type="button" class="btn btn-secondary btn-sm" id="btnDescansoCurto" title="Anota o descanso; quem cura é gastar Dado de Vida">
-                <i class="fa-solid fa-mug-hot"></i> Descanso Curto
-              </button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btnDescansoLongo" title="Pontos de Vida cheios, temporários zerados e metade dos Dados de Vida de volta">
-                <i class="fa-solid fa-moon"></i> Descanso Longo
-              </button>
-            </div>
-
-            <!-- Usos de característica: quantos restam e quando voltam. -->
-            <div class="uso-bloco">
-              <div class="cond-cabeca"><span>Usos de característica</span></div>
-              <div class="uso-lista" id="featureUsesList"></div>
-            </div>
-
-            <!-- Espaços de magia por círculo, e as magias que vêm de fora da
-                 lista da classe, separadas pela origem. -->
-            <!-- O bloco inteiro some quando o personagem não conjura nada:
-                 ver "Esta classe não tem espaços de magia" e "0 / 0 truques"
-                 num Bárbaro é ruído, não informação. Quem liga e desliga é o
-                 renderSpellSlots. -->
-            <div class="uso-bloco" id="blocoMagias">
-              <div class="cond-cabeca"><span>Espaços de magia</span></div>
-              <div class="uso-lista" id="spellSlotsPanel"></div>
-            </div>
-
-            <!-- Histórico: o que aconteceu na sessão — vida, descansos,
-                 condições e rolagens. Guarda os últimos 30 acontecimentos. -->
-            <div class="hp-log">
-              <div class="hp-log-cabeca">
-                <span>Histórico da sessão</span>
-                <button type="button" class="hp-log-limpar" id="btnHpLogLimpar" title="Apagar o histórico">
-                  <i class="fa-solid fa-eraser"></i> Limpar
-                </button>
-              </div>
-              <div class="hp-log-lista" id="hpLogLista"></div>
-            </div>
-          </div>
-        </details>
 
         <!-- CONTAINER DA FICHA OFICIAL D&D 2024 (2 PÁGINAS, IDÊNTICA À FICHA EDITÁVEL) -->
         <div class="sheet-render-viewport">
@@ -1488,6 +1406,241 @@
 
       </section>
 
+      <!-- MODO FICHA ONLINE: a ficha para jogar na tela. Cada campo daqui é o
+           mesmo campo da Ficha Editável (escreve nele e dispara o mesmo evento),
+           então o que muda aqui muda lá, no PDF e no salvamento. -->
+      <section class="online-panel" id="onlinePanel">
+        <nav class="on-nav" id="onlineNav" aria-label="Seções da ficha online">
+          <a href="#onIdentidade">Identidade</a>
+          <a href="#onCombate">Combate</a>
+          <a href="#onAtributos">Atributos</a>
+          <a href="#onAtaques">Ataques</a>
+          <a href="#onHabilidades">Habilidades</a>
+          <a href="#onMagias" id="onNavMagias">Magias</a>
+          <a href="#onProficiencias">Proficiências</a>
+          <a href="#onEquipamento">Equipamento</a>
+          <a href="#onPersonagem">Personagem</a>
+        </nav>
+
+        <div class="on-grid">
+          <!-- COLUNA DE JOGO: o que mais se mexe na sessão -->
+          <div class="on-col on-col-jogo">
+            <div class="on-card on-concentracao" id="onConcentracao"></div>
+        <!-- Controle de jogo: dano, cura, temporários e Dados de Vida.
+                 Os campos da ficha continuam editáveis à mão; isto é o atalho para
+                 o que mais se mexe durante a sessão. -->
+            <details class="hp-tracker" id="hpTracker" open>
+              <summary>
+                <i class="fa-solid fa-heart-pulse"></i>
+                <span class="hp-tracker-resumo" id="hpTrackerResumo">Pontos de Vida</span>
+                <!-- Corrigir a vida na mão é comum no meio da sessão (o Mestre
+                     anuncia um efeito que o app não calcula). A caneta abre os três
+                     números ali mesmo, sem precisar caçar o campo na ficha A4. -->
+                <button type="button" class="hp-editar" id="btnHpEditar"
+                        title="Editar Pontos de Vida atuais, máximos e temporários"
+                        aria-label="Editar Pontos de Vida">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+              </summary>
+              <div class="hp-tracker-corpo">
+                <div class="hp-tracker-acoes">
+                  <input type="number" class="form-control" id="hpTrackerValor" min="0" placeholder="Valor" inputmode="numeric">
+                  <button type="button" class="btn btn-secondary btn-sm is-dano" id="btnHpDano" title="Tirar dos temporários primeiro, depois dos Pontos de Vida">
+                    <i class="fa-solid fa-burst"></i> Dano
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm is-cura" id="btnHpCura" title="Recuperar Pontos de Vida, sem passar do máximo">
+                    <i class="fa-solid fa-kit-medical"></i> Cura
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm is-temp" id="btnHpTemp" title="Pontos de Vida Temporários não se somam: fica o maior">
+                    <i class="fa-solid fa-shield-halved"></i> Temp
+                  </button>
+                </div>
+                <!-- Resumo de combate: CA, salvaguardas e ataques da ficha. A caneta
+                     edita como a dos PV (vira edição manual da ficha). -->
+                <div class="combate-bloco" id="combatSummary"></div>
+
+                <!-- Condições: escolher e adicionar, com as ativas logo abaixo.
+                     Ficam aqui em cima porque mudam rolagem e movimento. -->
+                <div class="cond-bloco">
+                  <div class="cond-cabeca">
+                    <span>Condições</span>
+                    <span class="cond-resumo" id="conditionsResumo">nenhuma ativa</span>
+                  </div>
+                  <!-- Um clique na etiqueta liga ou desliga; o "i" abre o texto do livro. -->
+                  <div class="cond-lista" id="conditionsList"></div>
+                  <div class="cond-detalhe" id="conditionsDetalhe" hidden></div>
+                </div>
+
+                <div class="hp-tracker-dados" id="hpTrackerDados"></div>
+                <div class="hp-tracker-rodape">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnDescansoCurto" title="Anota o descanso; quem cura é gastar Dado de Vida">
+                    <i class="fa-solid fa-mug-hot"></i> Descanso Curto
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnDescansoLongo" title="Pontos de Vida cheios, temporários zerados e metade dos Dados de Vida de volta">
+                    <i class="fa-solid fa-moon"></i> Descanso Longo
+                  </button>
+                </div>
+
+                <!-- Usos de característica: quantos restam e quando voltam. -->
+                <div class="uso-bloco">
+                  <div class="cond-cabeca"><span>Usos de característica</span></div>
+                  <div class="uso-lista" id="featureUsesList"></div>
+                </div>
+
+                <!-- Espaços de magia por círculo, e as magias que vêm de fora da
+                     lista da classe, separadas pela origem. -->
+                <!-- O bloco inteiro some quando o personagem não conjura nada:
+                     ver "Esta classe não tem espaços de magia" e "0 / 0 truques"
+                     num Bárbaro é ruído, não informação. Quem liga e desliga é o
+                     renderSpellSlots. -->
+                <div class="uso-bloco" id="blocoMagias">
+                  <div class="cond-cabeca"><span>Espaços de magia</span></div>
+                  <div class="uso-lista" id="spellSlotsPanel"></div>
+                </div>
+
+                <!-- Histórico: o que aconteceu na sessão — vida, descansos,
+                     condições e rolagens. Guarda os últimos 30 acontecimentos. -->
+                <div class="hp-log">
+                  <div class="hp-log-cabeca">
+                    <span>Histórico da sessão</span>
+                    <button type="button" class="hp-log-limpar" id="btnHpLogLimpar" title="Apagar o histórico">
+                      <i class="fa-solid fa-eraser"></i> Limpar
+                    </button>
+                  </div>
+                  <div class="hp-log-lista" id="hpLogLista"></div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- COLUNA DA FICHA -->
+          <div class="on-col on-col-ficha">
+            <div class="on-card" id="onIdentidade">
+              <h3 class="on-titulo"><i class="fa-solid fa-id-card"></i> Identidade</h3>
+              <div class="on-campos">
+                <label class="on-campo on-largo"><span>Nome do Personagem</span><input type="text" class="form-control" data-proxy="sheetCharName"></label>
+                <label class="on-campo"><span>Jogador</span><input type="text" class="form-control" data-proxy="sheetPlayerNameDisplay"></label>
+                <label class="on-campo"><span>Classe</span><input type="text" class="form-control" data-proxy="sheetClassName"></label>
+                <label class="on-campo on-curto"><span>Nível</span><input type="text" class="form-control" data-proxy="sheetLevel"></label>
+                <label class="on-campo"><span>Subclasse</span><input type="text" class="form-control" data-proxy="sheetSubclass"></label>
+                <label class="on-campo"><span>Espécie</span><input type="text" class="form-control" data-proxy="sheetSpecies"></label>
+                <label class="on-campo"><span>Origem</span><input type="text" class="form-control" data-proxy="sheetOrigin"></label>
+                <label class="on-campo on-curto"><span>EXP</span><input type="text" class="form-control" data-proxy="sheetXP" inputmode="numeric"></label>
+                <label class="on-campo"><span>Alinhamento</span><input type="text" class="form-control" data-proxy="sheetAlignment"></label>
+              </div>
+              <p class="on-dica">Classe, espécie e origem de verdade mudam no Assistente; aqui você troca só o texto que sai na ficha.</p>
+            </div>
+
+            <div class="on-card" id="onCombate">
+              <h3 class="on-titulo"><i class="fa-solid fa-shield-halved"></i> Combate</h3>
+              <div class="on-stats">
+                <label class="on-stat"><input type="text" data-proxy="sheetAC"><span>CA</span>
+                  <small class="on-check"><input type="checkbox" data-proxy="sheetShieldCheck"> Escudo</small></label>
+                <label class="on-stat"><input type="text" data-proxy="sheetInitiative"><span>Iniciativa</span>
+                  <button type="button" class="on-mini" data-on-roll-campo="sheetInitiative" data-on-roll-nome="Iniciativa" title="Rolar Iniciativa"><i class="fa-solid fa-dice-d20"></i></button></label>
+                <label class="on-stat"><input type="text" data-proxy="sheetSpeed"><span>Deslocamento</span></label>
+                <label class="on-stat"><input type="text" data-proxy="sheetSize"><span>Tamanho</span></label>
+                <label class="on-stat"><input type="text" data-proxy="sheetPassivePerception"><span>Percepção Passiva</span></label>
+                <label class="on-stat"><input type="text" data-proxy="sheetPB"><span>Bônus de Prof.</span></label>
+                <label class="on-stat"><input type="number" data-proxy="sheetHpMax" min="0"><span>PV Máximo</span></label>
+                <div class="on-stat on-stat-dv">
+                  <div><input type="text" data-proxy="sheetHitDiceSpent" title="Dados de Vida gastos"><b>/</b><input type="text" data-proxy="sheetHitDiceMax" title="Dados de Vida máximos"></div>
+                  <span>Dados de Vida (gasto / máx)</span></div>
+              </div>
+              <div class="on-linha">
+                <button type="button" class="on-inspiracao" id="onInspiracao" title="Ganhar ou gastar Inspiração Heroica"><i class="fa-solid fa-star"></i> Inspiração Heroica</button>
+                <div class="on-morte" title="Testes de Resistência contra a Morte">
+                  <span>Morte</span>
+                  <span class="on-morte-grupo is-succ">✔ <input type="checkbox" data-proxy="ds_succ_1"><input type="checkbox" data-proxy="ds_succ_2"><input type="checkbox" data-proxy="ds_succ_3"></span>
+                  <span class="on-morte-grupo is-fail">✖ <input type="checkbox" data-proxy="ds_fail_1"><input type="checkbox" data-proxy="ds_fail_2"><input type="checkbox" data-proxy="ds_fail_3"></span>
+                  <button type="button" class="on-mini" id="onRolarMorte" title="Rolar Teste contra a Morte (d20: 10+ sucesso, 20 recupera 1 PV, 1 conta duas falhas)"><i class="fa-solid fa-dice-d20"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="on-card" id="onAtributos">
+              <h3 class="on-titulo"><i class="fa-solid fa-dumbbell"></i> Atributos, Salvaguardas & Perícias</h3>
+              <p class="on-dica">Clique no nome para rolar. A bolinha marca proficiência (perícia: nenhuma → proficiente → especialista).</p>
+              <div class="on-atributos" id="onAtributosCorpo"></div>
+            </div>
+
+            <div class="on-card" id="onAtaques">
+              <h3 class="on-titulo"><i class="fa-solid fa-khanda"></i> Armas & Magias de Ataque
+                <button type="button" class="on-mini" id="onAddAtaque" title="Adicionar linha de ataque"><i class="fa-solid fa-plus"></i></button></h3>
+              <div id="onAtaquesCorpo"></div>
+            </div>
+
+            <div class="on-card" id="onHabilidades">
+              <h3 class="on-titulo"><i class="fa-solid fa-scroll"></i> Habilidades</h3>
+              <div class="on-filtros">
+                <input type="search" class="form-control" id="onHabBusca" placeholder="Buscar habilidade (ex.: Fúria, Visão no Escuro)">
+                <div class="on-chips" id="onHabGrupos"></div>
+              </div>
+              <div id="onHabilidadesCorpo"></div>
+              <details class="on-texto-ficha">
+                <summary>Texto que sai na ficha impressa (editável)</summary>
+                <label class="on-campo on-largo"><span>Características de Classe (coluna 1)</span><textarea class="form-control" rows="5" data-proxy="sheetClassFeatures"></textarea></label>
+                <label class="on-campo on-largo"><span>Características de Classe (coluna 2)</span><textarea class="form-control" rows="5" data-proxy="sheetClassFeatures2"></textarea></label>
+                <label class="on-campo on-largo"><span>Características Raciais</span><textarea class="form-control" rows="4" data-proxy="sheetSpeciesTraits"></textarea></label>
+                <label class="on-campo on-largo"><span>Talentos</span><textarea class="form-control" rows="4" data-proxy="sheetFeatsText"></textarea></label>
+              </details>
+            </div>
+
+            <div class="on-card" id="onMagias">
+              <h3 class="on-titulo"><i class="fa-solid fa-hat-wizard"></i> Magias
+                <button type="button" class="on-mini" id="onAddMagia" title="Adicionar magia avulsa"><i class="fa-solid fa-plus"></i></button></h3>
+              <div class="on-stats on-stats-4">
+                <label class="on-stat"><input type="text" data-proxy="sheetSpellAbility"><span>Atributo</span></label>
+                <label class="on-stat"><input type="text" data-proxy="sheetSpellMod"><span>Modificador</span></label>
+                <label class="on-stat"><input type="text" data-proxy="sheetSpellDC"><span>CD</span></label>
+                <label class="on-stat"><input type="text" data-proxy="sheetSpellAttack"><span>Ataque</span></label>
+              </div>
+              <div id="onMagiasCorpo"></div>
+            </div>
+
+            <div class="on-card" id="onProficiencias">
+              <h3 class="on-titulo"><i class="fa-solid fa-graduation-cap"></i> Proficiências & Idiomas</h3>
+              <div class="on-linha on-checks">
+                <span>Armaduras:</span>
+                <label><input type="checkbox" data-proxy="sheetArmorLight"> Leve</label>
+                <label><input type="checkbox" data-proxy="sheetArmorMedium"> Média</label>
+                <label><input type="checkbox" data-proxy="sheetArmorHeavy"> Pesada</label>
+                <label><input type="checkbox" data-proxy="sheetArmorShields"> Escudos</label>
+              </div>
+              <div class="on-campos">
+                <label class="on-campo on-largo"><span>Armas</span><textarea class="form-control" rows="2" data-proxy="sheetWeaponProfs"></textarea></label>
+                <label class="on-campo on-largo"><span>Ferramentas</span><textarea class="form-control" rows="2" data-proxy="sheetToolProfs"></textarea></label>
+                <label class="on-campo on-largo"><span>Idiomas</span><textarea class="form-control" rows="2" data-proxy="sheetLanguages"></textarea></label>
+              </div>
+            </div>
+
+            <div class="on-card" id="onEquipamento">
+              <h3 class="on-titulo"><i class="fa-solid fa-sack-dollar"></i> Equipamento, Sintonização & Moedas</h3>
+              <label class="on-campo on-largo"><span>Equipamento</span><textarea class="form-control" rows="5" data-proxy="sheetEquipment"></textarea></label>
+              <div class="on-sintonia">
+                <span>Sintonização (até 3)</span>
+                <label><input type="checkbox" data-proxy="sheetAttuneChk_1"><input type="text" class="form-control" data-proxy="sheetAttune_1"></label>
+                <label><input type="checkbox" data-proxy="sheetAttuneChk_2"><input type="text" class="form-control" data-proxy="sheetAttune_2"></label>
+                <label><input type="checkbox" data-proxy="sheetAttuneChk_3"><input type="text" class="form-control" data-proxy="sheetAttune_3"></label>
+              </div>
+              <div class="on-moedas">
+                <label class="on-stat"><input type="number" min="0" data-proxy="sheetCoinPC"><span>PC</span></label>
+                <label class="on-stat"><input type="number" min="0" data-proxy="sheetCoinPP"><span>PP</span></label>
+                <label class="on-stat"><input type="number" min="0" data-proxy="sheetCoinPE"><span>PE</span></label>
+                <label class="on-stat"><input type="number" min="0" data-proxy="sheetCoinPO"><span>PO</span></label>
+                <label class="on-stat"><input type="number" min="0" data-proxy="sheetCoinPL"><span>PL</span></label>
+              </div>
+              <p class="on-dica">Itens mágicos com bônus (Anel de Proteção, armas +1) e os Efeitos de Magia ficam no Passo 5 do Assistente.</p>
+            </div>
+
+            <div class="on-card" id="onPersonagem">
+              <h3 class="on-titulo"><i class="fa-solid fa-feather"></i> Personagem</h3>
+              <label class="on-campo on-largo"><span>Aparência</span><textarea class="form-control" rows="4" data-proxy="sheetAppearance"></textarea></label>
+              <label class="on-campo on-largo"><span>História & Personalidade</span><textarea class="form-control" rows="8" data-proxy="sheetBackstoryDisplay"></textarea></label>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
   </div>

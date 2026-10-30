@@ -266,13 +266,27 @@ body {
   display: none;
 }
 
+/* A Ficha Online só aparece na aba dela; nela, o assistente e a ficha A4 saem */
+.main-workspace:not(.mode-online) .online-panel {
+  display: none;
+}
+
+.main-workspace.mode-online {
+  grid-template-columns: 1fr !important;
+}
+
+.main-workspace.mode-online .creator-panel,
+.main-workspace.mode-online .sheet-viewer-panel {
+  display: none !important;
+}
+
 @media (min-width: 1300px) {
   .main-workspace {
     grid-template-columns: 1.15fr 1fr;
     gap: 1.5rem;
   }
 
-  .main-workspace:not(.mode-sheet) .sheet-viewer-panel {
+  .main-workspace:not(.mode-sheet):not(.mode-online) .sheet-viewer-panel {
     display: flex;
   }
 }
@@ -4296,3 +4310,504 @@ a.item-info-link:hover {
     flex: 1;
   }
 }
+
+
+/* ==========================================================================
+   FICHA ONLINE
+   Blocos em uma coluna no celular; a partir de 1000px, a coluna de jogo (PV,
+   condições, cargas) fica à esquerda e presa ao rolar, a ficha à direita.
+   ========================================================================== */
+.online-panel {
+  min-width: 0;
+}
+
+.on-nav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.45rem 0.2rem;
+  margin-bottom: 0.6rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  scrollbar-width: thin;
+}
+
+.on-nav a {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  text-decoration: none;
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.on-nav a:hover { background: rgba(192, 132, 252, 0.25); color: #fff; }
+.on-nav a[hidden] { display: none; }
+
+.on-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+@media (min-width: 1000px) {
+  .on-grid { grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.4fr); }
+  .on-col-jogo {
+    position: sticky;
+    top: 3.6rem;
+    max-height: calc(100vh - 4.5rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+
+.on-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.on-col-jogo .hp-tracker { margin: 0; }
+
+.on-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 0.8rem;
+  scroll-margin-top: 4rem;
+  min-width: 0;
+}
+
+.on-card[hidden], .on-card:empty { display: none; }
+
+.on-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  color: #e9d5ff;
+}
+
+.on-titulo i { color: #c084fc; }
+.on-titulo .on-mini { margin-left: auto; }
+
+.on-dica {
+  margin: 0.4rem 0 0;
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.on-vazio {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.on-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr));
+  gap: 0.5rem;
+}
+
+.on-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.on-campo > span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+
+.on-campo.on-largo { grid-column: 1 / -1; margin-top: 0.4rem; }
+.on-campo .form-control { padding: 0.35rem 0.5rem; font-size: 0.88rem; }
+.on-campo textarea.form-control { resize: vertical; line-height: 1.4; }
+
+.on-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid rgba(192, 132, 252, 0.4);
+  border-radius: var(--radius-sm);
+  background: rgba(192, 132, 252, 0.12);
+  color: #e9d5ff;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.on-mini:hover { background: rgba(192, 132, 252, 0.3); }
+
+/* Números de combate: caixa com o valor grande e o nome embaixo */
+.on-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(110px, 100%), 1fr));
+  gap: 0.5rem;
+}
+
+.on-stats-4 { grid-template-columns: repeat(auto-fill, minmax(min(120px, 100%), 1fr)); margin-bottom: 0.6rem; }
+
+.on-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0.45rem 0.3rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.on-stat input[type="text"], .on-stat input[type="number"] {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0;
+}
+
+.on-stat input:focus { outline: 1px dashed #c084fc; border-radius: 4px; }
+
+.on-stat > span {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+
+.on-stat .on-check { font-size: 0.72rem; color: #cbd5e1; display: inline-flex; gap: 0.25rem; align-items: center; }
+.on-stat .on-mini { padding: 0.1rem 0.4rem; }
+
+.on-stat-dv > div { display: flex; align-items: center; gap: 0.2rem; width: 100%; }
+.on-stat-dv b { color: #64748b; }
+
+.on-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.on-checks { font-size: 0.84rem; color: #cbd5e1; margin: 0 0 0.4rem; }
+.on-checks label { display: inline-flex; gap: 0.3rem; align-items: center; margin: 0; }
+
+.on-inspiracao {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.on-inspiracao.is-on { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border-color: #fbbf24; }
+
+.on-morte {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+.on-morte-grupo { display: inline-flex; gap: 0.2rem; align-items: center; }
+.on-morte-grupo.is-succ { color: #4ade80; }
+.on-morte-grupo.is-fail { color: #f87171; }
+
+/* Atributos: um cartão por atributo, com salvaguarda e perícias */
+.on-atributos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr));
+  gap: 0.55rem;
+}
+
+.on-attr {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+}
+
+.on-attr-topo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.on-attr-nome {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #e9d5ff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.on-attr-mod {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.on-attr-valor {
+  width: 3.2rem;
+  padding: 0.15rem 0.2rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 6px;
+  background: rgba(2, 6, 23, 0.6);
+  color: #cbd5e1;
+  text-align: center;
+  font-family: var(--font-mono);
+}
+
+.on-pericia {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.12rem 0;
+  font-size: 0.82rem;
+}
+
+.on-pericia.is-save { font-weight: 600; border-bottom: 1px dashed rgba(148, 163, 184, 0.2); padding-bottom: 0.25rem; margin-bottom: 0.15rem; }
+
+.on-marca {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1.5px solid #94a3b8;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.on-marca.is-prof { background: #c084fc; border-color: #c084fc; }
+.on-marca.is-expert { background: #fbbf24; border-color: #fbbf24; box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.3); }
+
+.on-pericia-nome {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.on-pericia-nome:hover, .on-attr-nome:hover { color: #fff; text-decoration: underline; }
+.on-pericia-bonus { font-family: var(--font-mono); color: #fff; }
+
+/* Ataques */
+.on-ataques { display: flex; flex-direction: column; gap: 0.45rem; }
+
+.on-ataque {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.6fr) minmax(0, 1.6fr) auto;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.45rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: var(--radius-sm);
+  position: relative;
+}
+
+.on-ataque.is-magia { border-color: rgba(192, 132, 252, 0.35); }
+.on-ataque .form-control { padding: 0.3rem 0.45rem; font-size: 0.84rem; }
+.on-atk-nome { font-weight: 600; }
+.on-atk-bonus { text-align: center; font-family: var(--font-mono); }
+.on-atk-notas { grid-column: 1 / -1; font-size: 0.76rem !important; color: #94a3b8; }
+.on-atk-acoes { display: flex; gap: 0.25rem; }
+.on-editado { position: absolute; top: -0.55rem; right: 0.5rem; font-size: 0.62rem; background: #78350f; color: #fde68a; padding: 0 0.35rem; border-radius: 999px; }
+
+@media (max-width: 560px) {
+  .on-ataque { grid-template-columns: minmax(0, 1fr) 4.2rem auto; }
+  .on-atk-dano { grid-column: 1 / -1; grid-row: 2; }
+  .on-atk-notas { grid-row: 3; }
+}
+
+/* Habilidades e magias: linha com nome, origem, cargas e o "i" que abre a regra */
+.on-filtros { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 0.6rem; }
+.on-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+.on-chip {
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.on-chip small { color: #94a3b8; }
+.on-chip.is-on { background: rgba(192, 132, 252, 0.25); border-color: #c084fc; color: #fff; }
+
+.on-habs { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.on-hab, .on-magia {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-left: 3px solid #c084fc;
+  border-radius: var(--radius-sm);
+}
+
+.on-hab.is-especie { border-left-color: #34d399; }
+.on-hab.is-talento { border-left-color: #fbbf24; }
+.on-hab.is-recurso { border-left-color: #60a5fa; }
+
+.on-hab > summary, .on-magia > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.45rem 0.6rem;
+}
+
+.on-hab > summary::-webkit-details-marker, .on-magia > summary::-webkit-details-marker { display: none; }
+
+.on-hab-cabeca, .on-magia > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+}
+
+.on-hab-nome { font-weight: 700; color: #f1f5f9; font-size: 0.9rem; }
+.on-hab-origem { font-size: 0.72rem; color: #94a3b8; }
+
+.on-hab-resumo {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.35;
+}
+
+.on-i {
+  margin-left: auto;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid #60a5fa;
+  color: #60a5fa;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-style: italic;
+  font-family: Georgia, serif;
+}
+
+details[open] > summary .on-i { background: #60a5fa; color: #0f172a; }
+
+.on-hab-texto {
+  padding: 0 0.7rem 0.6rem;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+  border-top: 1px dashed rgba(148, 163, 184, 0.2);
+}
+
+.on-hab-texto p { margin: 0.45rem 0 0; }
+
+.on-cargas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.on-cargas .uso-pontos { display: inline-flex; flex-wrap: wrap; gap: 3px; max-width: 9rem; }
+
+.on-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0 0.3rem;
+  border-radius: 4px;
+  background: rgba(96, 165, 250, 0.2);
+  color: #bfdbfe;
+}
+
+.on-magia-grupo { margin-bottom: 0.65rem; display: flex; flex-direction: column; gap: 0.3rem; }
+
+.on-magia-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #e9d5ff;
+}
+
+.on-magia-meta { color: #94a3b8; font-size: 0.76rem; }
+
+.on-texto-ficha { margin-top: 0.7rem; }
+.on-texto-ficha > summary { cursor: pointer; font-size: 0.8rem; color: #94a3b8; }
+
+.on-sintonia {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0.6rem 0;
+  font-size: 0.76rem;
+  color: #94a3b8;
+}
+
+.on-sintonia label { display: flex; gap: 0.4rem; align-items: center; margin: 0; }
+.on-sintonia .form-control { padding: 0.3rem 0.45rem; font-size: 0.84rem; }
+
+.on-moedas {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.on-moedas .on-stat input { font-size: 1rem; }
+
+/* Concentração: some quando o personagem não tem magia de Concentração */
+.on-concentracao { padding: 0.55rem 0.7rem; }
+
+.on-conc {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.on-conc-rotulo { font-size: 0.84rem; color: #cbd5e1; font-weight: 600; }
+.on-conc.is-on .on-conc-rotulo { color: #fbbf24; }
+.on-conc select { flex: 1; min-width: 9rem; padding: 0.3rem 0.45rem; font-size: 0.84rem; }

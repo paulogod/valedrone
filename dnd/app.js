@@ -149,6 +149,8 @@ function createBlankCharacter() {
     // Mágica, veneno na lâmina) que somam no acerto e no dano de todas as
     // armas e ataques personalizados enquanto estiverem ligados.
     tempAttackMods: [],
+    // Magia em que o personagem está concentrado agora (id), marcada na Ficha Online
+    concentracao: "",
     inventory: "",
     coins: { po: 0, pp: 0, pe: 0, pc: 0, pl: 0 },
 
@@ -226,6 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
   populateDropdowns();
   recalculateCharacter();
   abrirFichaDoMestre();
+  if (!_fichaDoMestre) restaurarModoDoApp();
   fitSheetToViewport();
   requestAnimationFrame(fitSheetToViewport);
   ajustarAlturaDaNav();
@@ -7744,6 +7747,7 @@ function renderOfficialSheet(ctx) {
   // O painel de PV é desenhado no cabeçalho, antes das salvaguardas e ataques:
   // o resumo de combate precisa ser refeito com a ficha já pronta.
   renderCombatSummary();
+  renderFichaOnline();   // lê os campos da ficha: vem depois de tudo pintado
 }
 
 /* ---------------------------------------------------------------- CABEÇALHO */
@@ -10131,28 +10135,10 @@ function showToast(msg) {
  * Vincula todos os eventos de formulários, botões e navegação
  */
 function bindEvents() {
-  // Alternador de Modo do Aplicativo (Wizard vs Ficha Direta)
-  const btnWizard = document.getElementById("btnModeWizard");
-  const btnSheet = document.getElementById("btnModeSheet");
-  const workspace = document.getElementById("mainWorkspace");
-
-  if (btnWizard && btnSheet) {
-    btnWizard.addEventListener("click", () => {
-      btnWizard.classList.add("active");
-      btnSheet.classList.remove("active");
-      workspace.classList.remove("mode-sheet");
-      character.appMode = "wizard";
-      fitSheetToViewport();
-    });
-
-    btnSheet.addEventListener("click", () => {
-      btnSheet.classList.add("active");
-      btnWizard.classList.remove("active");
-      workspace.classList.add("mode-sheet");
-      character.appMode = "sheet";
-      fitSheetToViewport();
-    });
-  }
+  // Alternador de Modo do Aplicativo: Assistente, Ficha Online e Ficha Editável
+  document.querySelectorAll("#appModeTabs .app-mode-btn").forEach(btn => {
+    btn.addEventListener("click", () => trocarModoDoApp(btn.getAttribute("data-mode")));
+  });
 
   // Zoom da ficha (barra de ferramentas da ficha)
   const zoomIn = document.getElementById("btnSheetZoomIn");
@@ -10961,6 +10947,7 @@ function bindEvents() {
   });
 
   setupTempAtkMods();
+  setupFichaOnline();
 
   // Modal: Ataque Personalizado na Ficha
   const customAttackModal = document.getElementById("customAttackModal");
@@ -11723,4 +11710,555 @@ function renderSavedCharsList() {
 
     container.appendChild(item);
   });
+}
+
+/* ==========================================================================
+   FICHA ONLINE
+   A ficha para jogar na tela, em blocos e no tamanho do celular. Ela não tem
+   estado próprio: cada campo `data-proxy` aponta para o campo da Ficha
+   Editável de mesmo papel, escreve nele e dispara o evento que a ficha já
+   escuta. Assim a edição vale nos dois lugares, no PDF e no salvamento, sem
+   uma segunda cópia dos dados para sair de sincronia.
+   ========================================================================== */
+
+/** Detalhes ("i") abertos na Ficha Online, para sobreviverem ao redesenho */
+const _onAbertos = new Set();
+/** Busca e grupo escolhidos em Habilidades */
+const _onFiltro = { busca: "", grupo: "todas" };
+
+/** Troca entre Assistente, Ficha Online e Ficha Editável */
+function trocarModoDoApp(modo) {
+  const workspace = document.getElementById("mainWorkspace");
+  if (!workspace) return;
+  modo = ["wizard", "online", "sheet"].includes(modo) ? modo : "wizard";
+  document.querySelectorAll("#appModeTabs .app-mode-btn").forEach(b =>
+    b.classList.toggle("active", b.getAttribute("data-mode") === modo));
+  workspace.classList.toggle("mode-sheet", modo === "sheet");
+  workspace.classList.toggle("mode-online", modo === "online");
+  character.appMode = modo;
+  try { localStorage.setItem("dnd55_modo_app", modo); } catch (err) { /* sem armazenamento */ }
+  if (modo === "online") renderFichaOnline();
+  fitSheetToViewport();
+}
+
+/** Volta para a aba em que o jogador estava (só o modo, por navegador) */
+function restaurarModoDoApp() {
+  let modo = null;
+  try { modo = localStorage.getItem("dnd55_modo_app"); } catch (err) { /* sem armazenamento */ }
+  if (modo && modo !== "wizard" && !isBlankSheet()) trocarModoDoApp(modo);
+}
+
+function fichaOnlineVisivel() {
+  const w = document.getElementById("mainWorkspace");
+  return !!w && w.classList.contains("mode-online");
+}
+
+/** Copia os valores da Ficha Editável para os campos espelho (menos o que está sendo digitado) */
+function sincronizarCamposOnline(painel) {
+  painel.querySelectorAll("[data-proxy]").forEach(el => {
+    if (el === document.activeElement) return;
+    const alvo = document.getElementById(el.getAttribute("data-proxy"));
+    if (!alvo) return;
+    if (el.type === "checkbox") el.checked = !!alvo.checked;
+    else el.value = alvo.value;
+  });
+}
+
+/** Redesenha um bloco, a não ser que o jogador esteja digitando nele */
+function pintarBlocoOnline(id, html) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const ativo = document.activeElement;
+  if (ativo && el.contains(ativo) && ativo.matches("input, textarea, select")) return;
+  el.innerHTML = html;
+}
+
+/** Chamado no fim de cada repintura da ficha e ao abrir a aba */
+function renderFichaOnline() {
+  const painel = document.getElementById("onlinePanel");
+  if (!painel || !fichaOnlineVisivel()) return;
+  sincronizarCamposOnline(painel);
+  const insp = document.getElementById("onInspiracao");
+  if (insp) insp.classList.toggle("is-on", !!character.heroicInspiration);
+  pintarBlocoOnline("onConcentracao", htmlConcentracaoOnline());
+  pintarBlocoOnline("onAtributosCorpo", htmlAtributosOnline());
+  pintarBlocoOnline("onAtaquesCorpo", htmlAtaquesOnline());
+  pintarBlocoOnline("onHabGrupos", htmlGruposDeHabilidades());
+  pintarBlocoOnline("onHabilidadesCorpo", htmlHabilidadesOnline());
+  pintarBlocoOnline("onMagiasCorpo", htmlMagiasOnline());
+  const temMagia = !!spellcastingAbilityOf() || (sheetOv().spellRows || []).some(r => r.name);
+  const card = document.getElementById("onMagias");
+  if (card) card.hidden = !temMagia;
+  const nav = document.getElementById("onNavMagias");
+  if (nav) nav.hidden = !temMagia;
+}
+
+/* ---------------------------------------------------------- atributos */
+
+/** Lê atributos, salvaguardas e perícias da própria Ficha Editável (com as edições à mão) */
+function htmlAtributosOnline() {
+  const blocos = [...document.querySelectorAll("#sheetAbilitiesColA .of-ability, #sheetAbilitiesColB .of-ability")];
+  if (!blocos.length) return '<p class="on-vazio">Escolha a classe no Assistente para ver os atributos.</p>';
+  return blocos.map(b => {
+    const scoreEl = b.querySelector("[data-ability-score]");
+    const ab = scoreEl.getAttribute("data-ability-score");
+    const nome = (b.querySelector(".of-ability-name") || {}).textContent || ab;
+    const mod = (b.querySelector("[data-ability-mod]") || {}).value || "";
+    const modNum = parseInt(mod, 10) || 0;
+    const linha = (item, ehSalva) => {
+      const marca = item.querySelector(".of-prof-mark");
+      const nomeEl = item.querySelector(".of-prof-name");
+      const bonus = (item.querySelector(".of-prof-bonus") || {}).textContent || "";
+      const rotulo = nomeEl.getAttribute("data-roll");
+      const estado = marca.classList.contains("is-expert") ? "is-expert" : marca.classList.contains("is-prof") ? "is-prof" : "";
+      const sel = ehSalva ? `[data-save-mark="${ab}"]` : `[data-skill-mark="${marca.getAttribute("data-skill-mark")}"]`;
+      return `<div class="on-pericia${ehSalva ? " is-save" : ""}">
+        <button type="button" class="on-marca ${estado}" data-on-click='${sel}'
+                title="${ehSalva ? "Proficiência em salvaguarda" : "Nenhuma → proficiente → especialista"}"></button>
+        <button type="button" class="on-pericia-nome" data-on-roll="${escAttr(rotulo)}" data-on-mod="${parseInt(bonus, 10) || 0}">${escHtml(ehSalva ? "Salvaguarda" : nomeEl.textContent)}</button>
+        <span class="on-pericia-bonus">${escHtml(bonus)}</span>
+      </div>`;
+    };
+    const itens = [...b.querySelectorAll(".of-prof-line-item")];
+    return `<div class="on-attr">
+      <div class="on-attr-topo">
+        <button type="button" class="on-attr-nome" data-on-roll="Teste de ${escAttr(nome)}" data-on-mod="${modNum}" title="Rolar teste de ${escAttr(nome)}">${escHtml(nome)}</button>
+        <span class="on-attr-mod">${escHtml(mod)}</span>
+        <input type="number" class="on-attr-valor" data-on-score="${ab}" value="${escAttr(scoreEl.value)}" title="Valor de ${escAttr(nome)}">
+      </div>
+      ${itens.map(it => linha(it, it.classList.contains("is-save"))).join("")}
+    </div>`;
+  }).join("");
+}
+
+/* ------------------------------------------------------------ ataques */
+
+function htmlAtaquesOnline() {
+  const linhas = (sheetOv().weaponRows || []).filter(r => r.srcId || (r.name || r.atk || r.damage || r.notes));
+  if (!linhas.length) return '<p class="on-vazio">Nenhuma arma ou magia de ataque. Equipe armas no Passo 5 ou clique em +.</p>';
+  return `<div class="on-ataques">${linhas.map(r => `
+    <div class="on-ataque${r.srcId && String(r.srcId).startsWith("spell:") ? " is-magia" : ""}" data-uid="${escAttr(r.uid)}">
+      <input type="text" class="form-control on-atk-nome" data-on-atk="name" value="${escAttr(r.name)}" placeholder="Nome">
+      <input type="text" class="form-control on-atk-bonus" data-on-atk="atk" value="${escAttr(r.atk)}" placeholder="+5" title="Bônus de ataque ou CD">
+      <input type="text" class="form-control on-atk-dano" data-on-atk="damage" value="${escAttr(r.damage)}" placeholder="1d8 +3 Cortante" title="Dano e tipo">
+      <span class="on-atk-acoes">
+        <button type="button" class="on-mini" data-on-atk-rolar title="Rolar ataque e dano"><i class="fa-solid fa-dice-d20"></i></button>
+        <button type="button" class="on-mini" data-on-atk-limpar title="${r.srcId ? "Vem do Assistente: remova no Passo 5" : "Limpar linha"}"><i class="fa-solid fa-xmark"></i></button>
+      </span>
+      <input type="text" class="form-control on-atk-notas" data-on-atk="notes" value="${escAttr(r.notes)}" placeholder="Anotações (alcance, propriedades, maestria)">
+      ${r.edited ? '<small class="on-editado" title="Editado à mão: o Assistente não muda mais esta linha. Recalcular Campos (Ficha Editável) volta à conta.">editado</small>' : ""}
+    </div>`).join("")}</div>`;
+}
+
+/* -------------------------------------------------------- habilidades */
+
+/** Compara nomes sem acento, caixa e o original em inglês entre parênteses */
+function chaveDeNome(n) {
+  return String(n || "").split(" (")[0].normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+}
+
+/**
+ * Tudo o que o personagem sabe fazer, já separado por origem e com o texto
+ * completo: é a mesma lista das caixas de Características da ficha, mas em
+ * itens — cada um com nome, nível, resumo e o "i" com a regra inteira.
+ */
+function listaDeHabilidades() {
+  const out = [];
+  const add = (grupo, origem, nome, resumo, texto, nivel) => {
+    if (!nome) return;
+    // A escolha de classe repete o nome da característica (Idioma Druídico,
+    // Ordem Primal): junta numa linha só, com o que foi escolhido no resumo.
+    const igual = out.find(h => h.grupo === grupo && chaveDeNome(h.nomeCompleto) === chaveDeNome(nome));
+    if (igual) {
+      if (resumo && !igual.resumo.includes(resumo)) igual.resumo = [igual.resumo, resumo].filter(Boolean).join(" — ");
+      if (!igual.texto && texto) igual.texto = texto;
+      return;
+    }
+    out.push({ grupo, origem, nome: String(nome).split(" (")[0], nomeCompleto: nome, resumo: resumo || "", texto: texto || "", nivel: nivel || 0 });
+  };
+  const classes = [[resolveClassObj(character.class1, 1), character.level1 || 0, 1],
+    character.class2 && character.class2 !== "none" ? [resolveClassObj(character.class2, 2), character.level2 || 0, 2] : null]
+    .filter(x => x && x[0] && x[0].id && x[0].id !== "none");
+  classes.forEach(([c, nivel, slot]) => {
+    const nomeClasse = c.name.split(" (")[0];
+    for (let l = 1; l <= nivel; l++) {
+      (c.featuresByLevel?.[l] || []).forEach(f => {
+        if (/^Característica de Subclasse/.test(f) && subclasseEscolhida(slot)) return;
+        if (/^Aumento no Valor de Atributo/.test(f)) return;   // já está nos atributos
+        add("classe", nomeClasse, f, (DND5E_DATA.featureSummaries || {})[f], (DND5E_DATA.featureTexts || {})[`${c.id}|${f}`], l);
+      });
+    }
+    subclassFeaturesUpTo(slot).forEach(f => add("classe", `${nomeClasse} • ${f.sub.name.split(" (")[0]}`, f.name, f.resumo, f.desc, f.level));
+    const sub = subclasseEscolhida(slot);
+    if (sub && !(sub.features || []).length) add("classe", nomeClasse, sub.name, "", sub.desc, 3);
+    if (c.isCustom && c.about) add("classe", nomeClasse, c.name, "", c.about, 1);
+  });
+  getActiveClassChoices().forEach(ch => {
+    const texto = describeClassChoice(ch);
+    if (texto) add(ch.speciesId ? "especie" : "classe", "Escolha", ch.label.split(" — ").pop(), texto, "", 0);
+  });
+  getActiveInvocations().forEach(({ inv, entrada }) =>
+    add("classe", "Invocação Mística", inv.name + describeInvocationChoice(inv, entrada), inv.resumo, inv.desc || inv.full || "", 0));
+  (character.customFeatures || []).forEach(cf => add("classe", "Personalizada", cf.title, "", cf.desc, 0));
+
+  const especie = DND5E_DATA.species.find(s => s.id === character.species);
+  if (especie) {
+    const nomeEsp = especie.name.split(" (")[0];
+    const nivelTotal = (character.level1 || 0) + (character.class2 && character.class2 !== "none" ? (character.level2 || 0) : 0);
+    if (!especie.isCustom) {
+      const visao = character.species === "elf" && character.lineage === "drow" ? 36 : especie.darkvision || 0;
+      if (visao) add("especie", nomeEsp, "Visão no Escuro", `Enxerga na penumbra a até ${visao} m como se fosse Luz Plena, e no escuro como penumbra (só em tons de cinza).`, "", 0);
+    }
+    traitsDaEspecieNoNivel(especie, nivelTotal).forEach(t => add("especie", nomeEsp, t.name, t.desc, t.full, t.level));
+    const lin = (especie.lineages || []).find(l => l.id === character.lineage);
+    if (lin) add("especie", nomeEsp, `${especie.lineageLabel || "Linhagem"}: ${lin.name}`, "", lin.desc, 0);
+    if (especie.isCustom && especie.about) add("especie", nomeEsp, especie.name, "", especie.about, 0);
+  }
+
+  const talento = (f, origem) => f && add("talento", origem, f.name, f.desc + describeFeatChoices(f), f.full, 0);
+  talento(getOriginFeatObj(), "Talento de Origem");
+  talento(getHumanOriginFeatObj(), "Origem • Humano");
+  getExtraOriginFeatObjs().forEach(f => talento(f, "Origem • Extra"));
+  getInvocationFeatIds().forEach(fid => talento(DND5E_DATA.feats.find(x => x.id === fid), "Origem • Invocação"));
+  (character.selectedFeats || []).forEach(fid => talento(DND5E_DATA.feats.find(x => x.id === fid), "Talento"));
+  getSelectedCustomFeats().forEach(cf => add("talento", "Personalizado", cf.name, "", cf.desc, 0));
+
+  // Cargas: cada contador vai para a habilidade de mesmo nome; o que não achar
+  // dono (Dados de Superioridade, Pontos de Foco) vira item próprio no topo.
+  const usos = getLimitedUses();
+  usos.forEach(u => {
+    const dono = out.find(h => chaveDeNome(h.nomeCompleto) === chaveDeNome(u.name) && !h.uso);
+    if (dono) dono.uso = u;
+    else out.unshift({ grupo: "recurso", origem: u.classe, nome: u.name.split(" (")[0], resumo: `Volta no Descanso ${u.recovery === "curto" ? "Curto" : "Longo"}.`, texto: "", nivel: 0, uso: u });
+  });
+  return out;
+}
+
+const GRUPOS_DE_HABILIDADE = [
+  { id: "todas", nome: "Todas" },
+  { id: "cargas", nome: "Com cargas" },
+  { id: "classe", nome: "Classe" },
+  { id: "especie", nome: "Espécie" },
+  { id: "talento", nome: "Talentos" }
+];
+
+function htmlGruposDeHabilidades() {
+  const lista = listaDeHabilidades();
+  const conta = g => g === "todas" ? lista.length : g === "cargas" ? lista.filter(h => h.uso).length : lista.filter(h => h.grupo === g).length;
+  return GRUPOS_DE_HABILIDADE.filter(g => g.id === "todas" || conta(g.id)).map(g =>
+    `<button type="button" class="on-chip${_onFiltro.grupo === g.id ? " is-on" : ""}" data-on-grupo="${g.id}">${g.nome} <small>${conta(g.id)}</small></button>`).join("");
+}
+
+/** Bolinhas de carga com − e +, iguais às do painel de jogo */
+function htmlCargas(u) {
+  const restam = u.max - u.gastos;
+  return `<span class="on-cargas" title="${restam} de ${u.max} • volta no Descanso ${u.recovery === "curto" ? "Curto" : "Longo"}">
+    <button type="button" class="uso-btn" data-on-uso="${u.id}" data-delta="1" ${restam <= 0 ? "disabled" : ""} title="Gastar um uso">−</button>
+    <span class="uso-pontos">${Array.from({ length: u.max }, (_, i) => `<span class="uso-ponto${i < restam ? " is-cheio" : ""}"></span>`).join("")}</span>
+    <button type="button" class="uso-btn" data-on-uso="${u.id}" data-delta="-1" ${u.gastos <= 0 ? "disabled" : ""} title="Devolver um uso">+</button>
+  </span>`;
+}
+
+function htmlHabilidadesOnline() {
+  const busca = chaveDeNome(_onFiltro.busca);
+  const lista = listaDeHabilidades().filter(h => {
+    if (_onFiltro.grupo === "cargas" && !h.uso) return false;
+    if (!["todas", "cargas"].includes(_onFiltro.grupo) && h.grupo !== _onFiltro.grupo && !(h.grupo === "recurso" && _onFiltro.grupo === "classe")) return false;
+    if (busca && !chaveDeNome(`${h.nome} ${h.resumo} ${h.origem}`).includes(busca)) return false;
+    return true;
+  });
+  if (!lista.length) return `<p class="on-vazio">${_onFiltro.busca ? "Nada encontrado com essa busca." : "Escolha classe, espécie e origem no Assistente para ver as habilidades."}</p>`;
+  return `<div class="on-habs">${lista.map(h => {
+    const chave = `hab:${h.grupo}:${h.origem}:${h.nome}`;
+    const corpo = h.texto ? formatarTextoDeRegras(h.texto) : `<p>${escHtml(h.resumo || "Sem descrição cadastrada.")}</p>`;
+    return `<details class="on-hab is-${h.grupo}" data-on-chave="${escAttr(chave)}"${_onAbertos.has(chave) ? " open" : ""}>
+      <summary>
+        <span class="on-hab-cabeca">
+          <span class="on-hab-nome">${escHtml(h.nome)}</span>
+          <span class="on-hab-origem">${escHtml(h.origem)}${h.nivel > 1 ? ` • Nv ${h.nivel}` : ""}</span>
+          ${h.uso ? htmlCargas(h.uso) : ""}
+          <span class="on-i" title="O que faz">i</span>
+        </span>
+        ${h.resumo ? `<span class="on-hab-resumo">${escHtml(h.resumo)}</span>` : ""}
+      </summary>
+      <div class="on-hab-texto">${corpo}</div>
+    </details>`;
+  }).join("")}</div>`;
+}
+
+/* ------------------------------------------------------------- magias */
+
+function htmlMagiasOnline() {
+  const rows = (sheetOv().spellRows || []).filter(r => r.spellId || r.name || r.notes);
+  if (!rows.length) return '<p class="on-vazio">Nenhuma magia preparada. Escolha no Passo 4 do Assistente ou clique em +.</p>';
+  const nivelDe = r => r.level === "T" || r.level === "0" ? 0 : (parseInt(r.level, 10) || 99);
+  const grupos = {};
+  rows.forEach(r => { (grupos[nivelDe(r)] = grupos[nivelDe(r)] || []).push(r); });
+  const espacos = getSpellSlotRow();
+  return Object.keys(grupos).map(Number).sort((a, b) => a - b).map(n => {
+    const total = n >= 1 && n <= 9 ? espacos[n - 1] || 0 : 0;
+    const gastos = total ? (character.spellSlotsExpended[n] || 0) : 0;
+    const cab = n === 0 ? "Truques" : n === 99 ? "Sem círculo" : `${n}º círculo`;
+    const slots = total ? `<span class="on-cargas" title="${total - gastos} de ${total} espaços">
+        <button type="button" class="uso-btn" data-on-slot="${n}" data-delta="1" ${gastos >= total ? "disabled" : ""} title="Gastar um espaço">−</button>
+        <span class="uso-pontos">${Array.from({ length: total }, (_, i) => `<span class="uso-ponto${i < total - gastos ? " is-cheio" : ""}"></span>`).join("")}</span>
+        <button type="button" class="uso-btn" data-on-slot="${n}" data-delta="-1" ${gastos <= 0 ? "disabled" : ""} title="Recuperar um espaço">+</button>
+      </span>` : "";
+    return `<div class="on-magia-grupo">
+      <div class="on-magia-cab"><strong>${cab}</strong>${slots}</div>
+      ${grupos[n].map(r => {
+        const sp = r.spellId ? DND5E_DATA.spells.find(x => x.id === r.spellId) : null;
+        const chave = `mag:${r.uid}`;
+        const tags = [r.c ? '<span class="on-tag" title="Concentração">C</span>' : "", r.r ? '<span class="on-tag" title="Ritual">R</span>' : "",
+                      r.m ? '<span class="on-tag" title="Componente material">M</span>' : ""].join("");
+        const corpo = sp
+          ? `<p class="on-magia-meta">${escHtml([sp.school, sp.time, sp.range, sp.components, sp.duration].filter(Boolean).join(" • "))}</p>${formatarTextoDeRegras(sp.desc)}${sp.higherLevels ? `<p><strong>Círculos superiores.</strong> ${escHtml(sp.higherLevels)}</p>` : ""}`
+          : `<div class="on-campos">
+              <label class="on-campo on-curto"><span>Círculo</span><input type="text" class="form-control" data-on-mag="level" value="${escAttr(r.level)}" placeholder="T, 1..9"></label>
+              <label class="on-campo"><span>Nome</span><input type="text" class="form-control" data-on-mag="name" value="${escAttr(r.name)}"></label>
+              <label class="on-campo"><span>Tempo</span><input type="text" class="form-control" data-on-mag="time" value="${escAttr(r.time)}"></label>
+              <label class="on-campo"><span>Alcance</span><input type="text" class="form-control" data-on-mag="range" value="${escAttr(r.range)}"></label>
+            </div>`;
+        return `<details class="on-magia" data-uid="${escAttr(r.uid)}" data-on-chave="${escAttr(chave)}"${_onAbertos.has(chave) ? " open" : ""}>
+          <summary>
+            <span class="on-hab-nome">${escHtml(String(r.name || "Magia sem nome").split(" (")[0])}</span>
+            ${tags}
+            <span class="on-hab-origem">${escHtml([r.time, r.range].filter(Boolean).join(" • "))}</span>
+            <span class="on-i" title="O que faz">i</span>
+          </summary>
+          <div class="on-hab-texto">
+            ${corpo}
+            <label class="on-campo on-largo"><span>Anotações</span><input type="text" class="form-control" data-on-mag="notes" value="${escAttr(r.notes)}"></label>
+            ${r.grantSrc ? `<p class="on-dica">Concedida por ${escHtml(r.grantSrc)}.</p>` : ""}
+          </div>
+        </details>`;
+      }).join("")}
+    </div>`;
+  }).join("");
+}
+
+/* -------------------------------------------------------- concentração */
+
+/**
+ * Em qual magia o personagem está concentrado. O app não tinha onde marcar, e
+ * é a pergunta que o Mestre faz a cada dano: "você está concentrado?". Ligar
+ * uma segunda magia de Concentração troca a primeira, como manda a regra.
+ */
+function htmlConcentracaoOnline() {
+  const ids = [...new Set([...(character.spellsKnown || []), ...getGrantedSpellEntries().map(g => g.id)])];
+  const opcoes = ids.map(id => DND5E_DATA.spells.find(x => x.id === id)).filter(sp => sp && spellNeedsConcentration(sp))
+    .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+  if (!opcoes.length && !character.concentracao) return "";
+  const atual = character.concentracao ? DND5E_DATA.spells.find(x => x.id === character.concentracao) : null;
+  return `<div class="on-conc${atual ? " is-on" : ""}">
+    <span class="on-conc-rotulo"><i class="fa-solid fa-brain"></i> Concentração</span>
+    <select class="form-control" id="onConcSel">
+      <option value="">— nenhuma —</option>
+      ${opcoes.map(sp => `<option value="${sp.id}"${sp.id === character.concentracao ? " selected" : ""}>${escHtml(sp.name.split(" (")[0])}</option>`).join("")}
+    </select>
+    ${atual ? `<button type="button" class="on-mini" id="onConcTeste" title="Salvaguarda de Constituição para manter (CD 10 ou metade do dano, o maior)"><i class="fa-solid fa-dice-d20"></i> CON</button>` : ""}
+  </div>
+  ${atual ? '<p class="on-dica">Ao sofrer dano: salvaguarda de Constituição, CD 10 ou metade do dano (o maior, até 30). Incapacitado ou 0 PV encerra.</p>' : ""}`;
+}
+
+/* -------------------------------------------------------------- eventos */
+
+/** Escreve no campo da Ficha Editável e dispara o evento que ela escuta */
+function escreverNaFicha(alvo, el, tipoDoEvento) {
+  if (el.type === "checkbox") alvo.checked = el.checked;
+  else alvo.value = el.value;
+  alvo.dispatchEvent(new Event(tipoDoEvento, { bubbles: true }));
+}
+
+function setupFichaOnline() {
+  const painel = document.getElementById("onlinePanel");
+  if (!painel) return;
+  const depois = () => { recalculateCharacter(); saveToLocalStorage(); };
+
+  painel.addEventListener("input", (e) => {
+    const el = e.target;
+    const proxy = el.closest("[data-proxy]");
+    if (proxy && proxy.type !== "checkbox") {
+      const alvo = document.getElementById(proxy.getAttribute("data-proxy"));
+      if (alvo) escreverNaFicha(alvo, proxy, "input");
+      return;
+    }
+    if (el.id === "onHabBusca") {
+      _onFiltro.busca = el.value;
+      pintarBlocoOnline("onHabilidadesCorpo", htmlHabilidadesOnline());
+      return;
+    }
+    const atk = el.closest("[data-on-atk]");
+    if (atk) {
+      const row = (sheetOv().weaponRows || []).find(r => r.uid === atk.closest("[data-uid]").getAttribute("data-uid"));
+      if (!row) return;
+      row[atk.getAttribute("data-on-atk")] = atk.value;
+      row.edited = true;
+      renderOfWeaponsTable();
+      saveToLocalStorage();
+      return;
+    }
+    const mag = el.closest("[data-on-mag]");
+    if (mag) {
+      const row = (sheetOv().spellRows || []).find(r => r.uid === mag.closest("[data-uid]").getAttribute("data-uid"));
+      if (!row) return;
+      row[mag.getAttribute("data-on-mag")] = mag.value;
+      row.edited = true;
+      _ofSpellsSig = null;
+      renderOfSpellsTable();
+      saveToLocalStorage();
+    }
+  });
+
+  painel.addEventListener("change", (e) => {
+    const el = e.target;
+    const proxy = el.closest("[data-proxy]");
+    if (proxy) {
+      const alvo = document.getElementById(proxy.getAttribute("data-proxy"));
+      if (alvo) escreverNaFicha(alvo, proxy, "change");
+      depois();
+      return;
+    }
+    const score = el.closest("[data-on-score]");
+    if (score) {
+      const alvo = document.querySelector(`#sheetContainer [data-ability-score="${score.getAttribute("data-on-score")}"]`);
+      if (alvo) { score.blur(); escreverNaFicha(alvo, score, "change"); }
+      return;
+    }
+    if (el.id === "onConcSel") {
+      const antes = character.concentracao;
+      character.concentracao = el.value || "";
+      const sp = DND5E_DATA.spells.find(x => x.id === el.value);
+      const velha = DND5E_DATA.spells.find(x => x.id === antes);
+      if (sp) logHpEvent("magia", `Concentração: ${sp.name.split(" (")[0]}${velha ? ` (encerrou ${velha.name.split(" (")[0]})` : ""}`, character.currentHp || 0);
+      else if (velha) logHpEvent("magia", `Concentração encerrada: ${velha.name.split(" (")[0]}`, character.currentHp || 0);
+      el.blur();
+      renderHpLog();
+      depois();
+      return;
+    }
+    if (el.closest("[data-on-atk], [data-on-mag]")) { el.blur(); depois(); }
+  });
+
+  // Abrir e fechar um "i" fica guardado: o redesenho não fecha o que o jogador está lendo
+  painel.addEventListener("toggle", (e) => {
+    const d = e.target;
+    if (!d.matches || !d.matches("details[data-on-chave]")) return;
+    const k = d.getAttribute("data-on-chave");
+    if (d.open) _onAbertos.add(k); else _onAbertos.delete(k);
+  }, true);
+
+  painel.addEventListener("click", (e) => {
+    const t = e.target;
+    // Botões dentro do <summary> não abrem nem fecham o detalhe
+    const noResumo = t.closest("summary") && t.closest("button");
+    if (noResumo) e.preventDefault();
+
+    const clicar = t.closest("[data-on-click]");
+    if (clicar) {
+      const alvo = document.querySelector("#sheetContainer " + clicar.getAttribute("data-on-click"));
+      if (alvo) alvo.click();
+      return;
+    }
+    const rolar = t.closest("[data-on-roll]");
+    if (rolar) { rollDiceCheck(rolar.getAttribute("data-on-roll"), parseInt(rolar.getAttribute("data-on-mod"), 10) || 0); return; }
+    const rolarCampo = t.closest("[data-on-roll-campo]");
+    if (rolarCampo) {
+      e.preventDefault();
+      const campo = document.getElementById(rolarCampo.getAttribute("data-on-roll-campo"));
+      rollDiceCheck(rolarCampo.getAttribute("data-on-roll-nome"), parseInt(campo && campo.value, 10) || 0);
+      return;
+    }
+    const grupo = t.closest("[data-on-grupo]");
+    if (grupo) {
+      _onFiltro.grupo = grupo.getAttribute("data-on-grupo");
+      pintarBlocoOnline("onHabGrupos", htmlGruposDeHabilidades());
+      pintarBlocoOnline("onHabilidadesCorpo", htmlHabilidadesOnline());
+      return;
+    }
+    const uso = t.closest("[data-on-uso]");
+    if (uso) {
+      changeFeatureUse(uso.getAttribute("data-on-uso"), Number(uso.getAttribute("data-delta")));
+      renderFeatureUses(); renderHpLog(); depois();
+      return;
+    }
+    const slot = t.closest("[data-on-slot]");
+    if (slot) {
+      changeSpellSlot(Number(slot.getAttribute("data-on-slot")), Number(slot.getAttribute("data-delta")));
+      renderHpLog(); depois();
+      return;
+    }
+    const atkRow = t.closest("[data-on-atk-rolar], [data-on-atk-limpar]");
+    if (atkRow) {
+      const uid = atkRow.closest("[data-uid]").getAttribute("data-uid");
+      const tr = document.querySelector(`#sheetWeaponsTableBody tr[data-uid="${uid}"]`);
+      if (!tr) return;
+      const botoes = tr.querySelectorAll(".of-row-del");
+      // Na ficha, o primeiro botão rola e o último limpa
+      (atkRow.hasAttribute("data-on-atk-rolar") ? botoes[0] : botoes[botoes.length - 1]).click();
+      if (atkRow.hasAttribute("data-on-atk-limpar")) pintarBlocoOnline("onAtaquesCorpo", htmlAtaquesOnline());
+      return;
+    }
+    if (t.closest("#onAddAtaque")) {
+      document.getElementById("btnAddSheetWeaponRow").click();
+      // Linha nova em branco: aparece aqui com um nome provisório para editar
+      const rows = sheetOv().weaponRows;
+      const vazia = rows.slice().reverse().find(r => !r.srcId && !r.name);
+      if (vazia) vazia.name = "Novo ataque";
+      renderOfWeaponsTable();
+      pintarBlocoOnline("onAtaquesCorpo", htmlAtaquesOnline());
+      const campo = document.querySelector(`#onAtaquesCorpo [data-uid="${vazia ? vazia.uid : ""}"] .on-atk-nome`);
+      if (campo) { campo.focus(); campo.select(); }
+      saveToLocalStorage();
+      return;
+    }
+    if (t.closest("#onAddMagia")) {
+      document.getElementById("btnAddSheetSpellRow").click();
+      const rows = sheetOv().spellRows;
+      const nova = rows[rows.length - 1];
+      if (nova) { nova.name = "Nova magia"; nova.level = "1"; _onAbertos.add(`mag:${nova.uid}`); }
+      _ofSpellsSig = null;
+      renderOfSpellsTable();
+      pintarBlocoOnline("onMagiasCorpo", htmlMagiasOnline());
+      saveToLocalStorage();
+      return;
+    }
+    if (t.closest("#onInspiracao")) { document.getElementById("sheetInspirationBox").click(); return; }
+    if (t.closest("#onConcTeste")) {
+      const conSalva = salvaguardasDaFicha().find(s => s.id === "con");
+      rollDiceCheck("Concentração (CON)", conSalva ? conSalva.mod : 0);
+      return;
+    }
+    if (t.closest("#onRolarMorte")) { rolarTesteContraAMorte(); return; }
+  });
+}
+
+/**
+ * Teste de Resistência contra a Morte: d20 sem modificador. 10 ou mais é
+ * sucesso, 1 conta duas falhas, 20 volta com 1 PV. Marca as bolinhas sozinho.
+ */
+function rolarTesteContraAMorte() {
+  const d = Math.floor(Math.random() * 20) + 1;
+  const ds = character.deathSaves = character.deathSaves || {};
+  const marcar = (tipo, n) => {
+    for (let i = 1; i <= 3 && n > 0; i++) if (!ds[`${tipo}${i}`]) { ds[`${tipo}${i}`] = true; n--; }
+  };
+  let texto;
+  if (d === 20) {
+    ["succ", "fail"].forEach(t => [1, 2, 3].forEach(i => { ds[`${t}${i}`] = false; }));
+    character.currentHp = 1;
+    texto = "20 natural: recupera 1 PV e acorda!";
+  } else if (d === 1) { marcar("fail", 2); texto = "1 natural: duas falhas."; }
+  else if (d >= 10) { marcar("succ", 1); texto = `${d}: sucesso.`; }
+  else { marcar("fail", 1); texto = `${d}: falha.`; }
+  const succ = [1, 2, 3].filter(i => ds[`succ${i}`]).length;
+  const fail = [1, 2, 3].filter(i => ds[`fail${i}`]).length;
+  if (succ >= 3) texto += " Três sucessos: estável.";
+  if (fail >= 3) texto += " Três falhas: o personagem morreu.";
+  showToast(`💀 Teste contra a Morte — ${texto}`);
+  logHpEvent("morte", `Teste contra a Morte: ${texto}`, character.currentHp || 0);
+  renderDeathSaves();
+  renderHpTracker();
+  recalculateCharacter();
+  saveToLocalStorage();
 }
