@@ -3853,15 +3853,18 @@ const SPELL_WEAPON_BUFFS = {
         // da arma normal continua com a CD pela Força, que é a certa quando se
         // ataca sem a magia: são dois ataques diferentes, cada um com a sua.
         const cdMaestria = a && isMasteryActive(a.base.id) ? masterySaveDC(a.base, ctx.mod, ctx.pb) : null;
+        // O golpe continua sendo um ataque com a arma: Duelismo e afins valem
+        const st = a ? getWeaponStyleMods(a.base) : { atk: 0, dmg: 0, notes: [] };
+        const atk = ctx.atkMagico + st.atk, dmg = ctx.mod + st.dmg;
         const r = {
           srcId: "spell:shillelagh" + (a && a.item ? ":" + a.srcId : ""),
           name: a && a.item ? `Bordão Místico (${a.nome})` : "Bordão Místico",
-          atk: `${ctx.atkMagico >= 0 ? "+" : ""}${ctx.atkMagico}` +
+          atk: `${atk >= 0 ? "+" : ""}${atk}` +
                (cdMaestria ? ` / CD ${cdMaestria.cd} ${cdMaestria.atributo}` : ""),
-          damage: `${dado}${ctx.mod ? (ctx.mod > 0 ? " +" + ctx.mod : " " + ctx.mod) : ""} Energético`,
+          damage: `${dado}${dmg ? (dmg > 0 ? " +" + dmg : " " + dmg) : ""} Energético`,
           notes: `${a ? a.nome : "sem Cajado ou Clava equipado"} • usa o atributo de conjuração no ataque e no dano` +
                  (cdMaestria ? " (e na CD da maestria)" : "") +
-                 ` • dano Energético ou o normal da arma`,
+                 ` • dano Energético ou o normal da arma` + st.notes.map(n => ` • ${n}`).join(""),
           arma: true,
           armaSrc: a ? a.srcId : null
         };
@@ -3882,12 +3885,14 @@ const SPELL_WEAPON_BUFFS = {
         const dado = (a.item && a.item.damage ? String(a.item.damage).match(/^\d*d\d+/i) : null);
         const dadoBase = dado ? dado[0] : (a.base ? a.base.damage : "1d6");
         const tipo = (a.item && a.item.damageType) || (a.base ? a.base.damageType : "");
+        const st = getWeaponStyleMods(a.base || ARMA_CORPO_A_CORPO_GENERICA);
+        const atk = ctx.atkMagico + st.atk, dmg = ctx.mod + st.dmg;
         const r = {
           srcId: "spell:true_strike:" + a.srcId,
           name: `Golpe Certeiro (${a.nome})`,
-          atk: `${ctx.atkMagico >= 0 ? "+" : ""}${ctx.atkMagico}`,
-          damage: `${dadoBase}${ctx.mod ? (ctx.mod > 0 ? " +" + ctx.mod : " " + ctx.mod) : ""} ${tipo}` + (extra ? ` + ${extra} Radiante` : ""),
-          notes: "Ação • usa o atributo de conjuração no ataque e no dano • dano Radiante ou o normal da arma",
+          atk: `${atk >= 0 ? "+" : ""}${atk}`,
+          damage: `${dadoBase}${dmg ? (dmg > 0 ? " +" + dmg : " " + dmg) : ""} ${tipo}` + (extra ? ` + ${extra} Radiante` : ""),
+          notes: "Ação • usa o atributo de conjuração no ataque e no dano • dano Radiante ou o normal da arma" + st.notes.map(n => ` • ${n}`).join(""),
           arma: true,
           armaSrc: a.srcId,
           distancia: !!(a.base && isRangedWeapon(a.base))
@@ -6351,6 +6356,13 @@ function styleAppliesToWeapon(effect, w) {
     default: return false;
   }
 }
+
+/**
+ * Arma de faz de conta para um item-arma sem arma base conhecida: corpo a
+ * corpo de uma mão, o caso mais comum (espada mágica com nome próprio). Assim
+ * o Duelismo também vale para ela; quem usa arco escolhe a Arma base no item.
+ */
+const ARMA_CORPO_A_CORPO_GENERICA = { id: "", name: "", type: "Corpo a Corpo", properties: [] };
 
 /** Bônus e comentários que os estilos de luta somam a uma arma */
 function getWeaponStyleMods(w) {
@@ -9216,12 +9228,16 @@ function syncSheetWeaponRows(ctx) {
     const atkAbility = base
       ? (isRangedWeapon(base) || (weaponHasProp(base, "Acuidade") && dexMod > finalMods["str"]) ? "dex" : "str")
       : (dexMod > finalMods["str"] ? "dex" : "str");
-    const style = base ? getWeaponStyleMods(base) : { atk: 0, dmg: 0, notes: [] };
+    // Estilo de luta (Duelismo, Arqueirismo...) vale também no item mágico;
+    // sem arma base, ele conta como arma corpo a corpo de uma mão
+    const style = getWeaponStyleMods(base || ARMA_CORPO_A_CORPO_GENERICA);
     const atkMod = finalMods[atkAbility] + pb + style.atk;
     const dado = item.damage || (base ? base.damage : "1d6");
     // O dado digitado no item pode já trazer o modificador ("1d8+1"): aí o
-    // atributo não entra de novo, como antes; só a arma base completa a conta.
-    const dmgMod = base && !/\d*d\d+\s*[+-]\s*\d+/i.test(dado) ? finalMods[atkAbility] + style.dmg : 0;
+    // atributo não entra de novo. Só o dado ("1d8"): o atributo soma, como em
+    // qualquer arma — antes isso só acontecia com a arma base escolhida.
+    // O estilo soma sempre: ninguém o escreve no dado do item.
+    const dmgMod = (!/\d*d\d+\s*[+-]\s*\d+/i.test(dado) ? finalMods[atkAbility] : 0) + style.dmg;
     const maestria = base && isMasteryActive(base.id) ? `Maestria: ${base.masteryName}` : (item.mastery ? `Maestria: ${item.mastery}` : null);
     auto.push({
       srcId: "item:" + item.id,
