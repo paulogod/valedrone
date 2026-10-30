@@ -156,6 +156,8 @@ function createBlankCharacter() {
 
     // Vitals de Combate
     currentHp: 0,
+    // Os PV atuais já foram preenchidos uma vez? Até lá, a ficha nasce cheia.
+    pvIniciado: false,
     tempHp: 0,
     // Dados de Vida já gastos, por tipo de dado ("d10": 2). Guardado assim
     // porque o multiclasse mistura dados diferentes e cada um se gasta e se
@@ -1591,12 +1593,18 @@ function ajustarPvAtuaisAoMaximo(maxHp) {
 
   const atual = character.currentHp;
 
-  // Ficha ainda sem vida nenhuma registrada (personagem recém-criado): nasce
-  // com a vida cheia, não com 0.
-  if (atual === null || atual === undefined || (!atual && !(character.hpLog || []).length)) {
+  // Personagem recém-criado nasce com a vida cheia, não com 0. Antes a
+  // conferência era "histórico vazio", mas o Assistente anota no histórico
+  // (arma equipada, magia preparada, talento) antes de haver classe e PV: a
+  // ficha chegava ao fim da criação com 0 PV. Agora vale a marca própria — e,
+  // em ficha salva antes dela, o 0 só é real se houve dano ou morte.
+  const caiuDeVerdade = (character.hpLog || []).some(e => e.tipo === "dano" || e.tipo === "morte");
+  if (atual === null || atual === undefined || (!atual && !character.pvIniciado && !caiuDeVerdade)) {
     character.currentHp = teto;
+    character.pvIniciado = true;
     return;
   }
+  character.pvIniciado = true;
 
   // Quem está caído a 0 PV continua caído: subir de nível não levanta ninguém.
   if (atual === 0) return;
@@ -3435,6 +3443,7 @@ function salvarEdicaoDePv() {
   }
 
   character.currentHp = novoAtual;
+  character.pvIniciado = true;
   character.tempHp = novoTemp;
 
   _editandoPv = false;
@@ -9828,7 +9837,7 @@ function bindOfficialSheetEvents() {
     setVal("selectAlignment", v);
   });
   bindSheetMirror("sheetXP", "input", v => { character.xp = v; });
-  bindSheetMirror("sheetHpCurrent", "change", v => { character.currentHp = parseInt(v) || 0; });
+  bindSheetMirror("sheetHpCurrent", "change", v => { character.currentHp = parseInt(v) || 0; character.pvIniciado = true; });
   bindSheetMirror("sheetHpTemp", "change", v => { character.tempHp = parseInt(v) || 0; });
   ["PC", "PP", "PE", "PO", "PL"].forEach(c => {
     bindSheetMirror(`sheetCoin${c}`, "change", v => { character.coins[c.toLowerCase()] = parseInt(v) || 0; });
