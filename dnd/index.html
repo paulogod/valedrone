@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20261030c";
+    var APP_VERSION = "20261030d";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -76,6 +76,9 @@
         <button class="btn btn-secondary btn-sm" id="btnRandomChar" title="Gerar Personagem Aleatório">
           <i class="fa-solid fa-wand-magic-sparkles"></i> Aleatório
         </button>
+        <button class="btn btn-secondary btn-sm" id="btnQuickSave" title="Salvar a ficha neste navegador (aparece em Salvos)">
+          <i class="fa-solid fa-floppy-disk"></i> Salvar
+        </button>
         <button class="btn btn-secondary btn-sm" id="btnManageChars" title="Gerenciar Fichas Salvas">
           <i class="fa-solid fa-folder-open"></i> Salvos
         </button>
@@ -116,9 +119,6 @@
             <i class="fa-solid fa-dice-d20"></i> Rolar
           </button>
         </div>
-        <button class="btn btn-secondary btn-sm" id="btnQuickSave" title="Salvar Ficha Localmente">
-          <i class="fa-solid fa-floppy-disk"></i> Salvar
-        </button>
       </div>
     </div>
 

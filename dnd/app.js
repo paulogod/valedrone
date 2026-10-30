@@ -548,7 +548,13 @@ function syncWizardControls() {
   set("selectLevel2", character.level2);
   set("selectSpecies", character.species);
   set("selectBackground", character.background);
-  set("selectAlignment", character.alignment);
+  // Tendência escrita à mão na ficha ("Neutro com tendência ao Bem") também
+  // aparece no seletor, em vez de deixá-lo em branco
+  const selTend = document.getElementById("selectAlignment");
+  if (selTend && character.alignment && ![...selTend.options].some(o => o.value === character.alignment)) {
+    selTend.add(new Option(character.alignment, character.alignment));
+  }
+  set("selectAlignment", character.alignment || "");
   set("selectEquippedArmor", character.equippedArmor);
   set("selectEquippedShield", character.equippedShield);
   set("textInventory", character.inventory || "");
@@ -9813,7 +9819,12 @@ function bindOfficialSheetEvents() {
   // ---- Campos espelhados no criador ----
   bindSheetMirror("sheetCharName", "input", v => { character.name = v; setVal("inputCharName", v); });
   bindSheetMirror("sheetPlayerNameDisplay", "input", v => { character.playerName = v; setVal("inputPlayerName", v); });
-  bindSheetMirror("sheetAlignment", "input", v => { character.alignment = v; setVal("selectAlignment", v); });
+  bindSheetMirror("sheetAlignment", "input", v => {
+    character.alignment = v;
+    const sel = document.getElementById("selectAlignment");
+    if (sel && v && ![...sel.options].some(o => o.value === v)) sel.add(new Option(v, v));
+    setVal("selectAlignment", v);
+  });
   bindSheetMirror("sheetXP", "input", v => { character.xp = v; });
   bindSheetMirror("sheetHpCurrent", "change", v => { character.currentHp = parseInt(v) || 0; });
   bindSheetMirror("sheetHpTemp", "change", v => { character.tempHp = parseInt(v) || 0; });
@@ -10300,6 +10311,14 @@ function bindEvents() {
   document.getElementById("inputPlayerName").addEventListener("input", (e) => {
     character.playerName = e.target.value;
     recalculateCharacter();
+  });
+
+  // Tendência: sem este ouvinte a escolha ficava só na tela — não ia para a
+  // ficha, para o salvamento, para o JSON exportado nem para o PDF.
+  document.getElementById("selectAlignment").addEventListener("change", (e) => {
+    character.alignment = e.target.value;
+    recalculateCharacter();
+    saveToLocalStorage();
   });
 
   document.getElementById("selectClass1").addEventListener("change", (e) => {
