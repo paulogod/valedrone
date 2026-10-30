@@ -4819,23 +4819,9 @@ details[open] > summary .on-i { background: #60a5fa; color: #0f172a; }
    Ligado, a coluna da ficha mostra só Combate e a tela "Em combate"; a coluna
    de jogo (PV, condições, cargas) continua ao lado.
 --------------------------------------------------------------------------- */
-.on-nav-combate {
-  flex: 0 0 auto;
-  padding: 0.3rem 0.8rem;
-  border-radius: 999px;
-  border: 1px solid #f87171;
-  background: rgba(248, 113, 113, 0.12);
-  color: #fecaca;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.on-nav-combate.is-on { background: rgba(192, 132, 252, 0.2); border-color: #c084fc; color: #e9d5ff; }
-
 .online-panel:not(.is-combate) .on-modo-combate { display: none; }
 .online-panel.is-combate .on-col-ficha > .on-card:not(#onCombate):not(.on-modo-combate) { display: none; }
-.online-panel.is-combate .on-nav a { display: none; }
+.online-panel.is-combate .on-nav { display: none; }
 .online-panel.is-combate .on-col-ficha { order: 0; }
 .online-panel.is-combate #onCombate { order: 2; }
 .online-panel.is-combate .on-modo-combate { order: 1; border-color: rgba(248, 113, 113, 0.45); }
@@ -4954,3 +4940,17 @@ details[open] > summary .on-i { background: #60a5fa; color: #0f172a; }
 @media (max-width: 999px) {
   .online-panel.is-combate .on-col-ficha { order: -1; }
 }
+
+.on-cmb-secao h4 small {
+  margin-left: 0.4rem;
+  font-size: 0.7rem;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+/* Ação já gasta no turno: a seção fica apagada, mas continua à mão */
+.on-cmb-secao.is-usada > :not(h4) { opacity: 0.45; }
+
+.on-cmb-ajuda { margin: -0.3rem 0 0.6rem; }

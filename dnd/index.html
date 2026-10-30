@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20261030d";
+    var APP_VERSION = "20261030e";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -103,6 +103,9 @@
         </button>
         <button class="app-mode-btn" id="btnModeOnline" data-mode="online">
           <i class="fa-solid fa-dragon"></i> Ficha Online
+        </button>
+        <button class="app-mode-btn" id="btnModeCombate" data-mode="combate" title="Só o que se usa no turno: ataques, magias e habilidades por Ação, Ação Bônus e Reação">
+          <i class="fa-solid fa-khanda"></i> Combate
         </button>
         <button class="app-mode-btn" id="btnModeSheet" data-mode="sheet">
           <i class="fa-solid fa-file-signature"></i> Ficha Editável<span class="tab-long-label"> Direta</span>
@@ -1411,8 +1414,6 @@
            então o que muda aqui muda lá, no PDF e no salvamento. -->
       <section class="online-panel" id="onlinePanel">
         <nav class="on-nav" id="onlineNav" aria-label="Seções da ficha online">
-          <button type="button" class="on-nav-combate" id="onBtnCombate" aria-pressed="false"
-                  title="Mostra só o que se usa no turno: ataques, magias e habilidades por Ação, Ação Bônus e Reação"><i class="fa-solid fa-khanda"></i> Modo Combate</button>
           <a href="#onIdentidade">Identidade</a>
           <a href="#onCombate">Combate</a>
           <a href="#onAtributos">Atributos</a>
@@ -1519,7 +1520,9 @@
           <div class="on-col on-col-ficha">
             <!-- Modo Combate: só aparece com o botão do topo ligado -->
             <div class="on-card on-modo-combate" id="onModoCombate">
-              <h3 class="on-titulo"><i class="fa-solid fa-khanda"></i> Em combate</h3>
+              <h3 class="on-titulo"><i class="fa-solid fa-khanda"></i> Seu turno</h3>
+              <p class="on-dica on-cmb-ajuda">No seu turno você tem <strong>1 Ação</strong>, <strong>1 Ação Bônus</strong> (só se algo te der uma) e o <strong>Movimento</strong>.
+                A <strong>Reação</strong> é 1 por rodada e pode ser usada no turno de qualquer um. Marque o que já usou; "Próximo turno" libera tudo.</p>
               <div id="onModoCombateCorpo"></div>
             </div>
 

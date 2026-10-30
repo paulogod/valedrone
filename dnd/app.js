@@ -7846,8 +7846,10 @@ function renderOfSheetHeader(ctx) {
     hpEl.value = character.currentHp !== null && character.currentHp !== undefined ? character.currentHp : maxHp;
   }
   syncOfField("sheetHpTemp", character.tempHp || 0);
-  renderHpTracker();
+  // O painel de PV lê o máximo da ficha: precisa vir depois dele, senão a
+  // primeira pintura depois de escolher a classe mostrava "33 / 0 PV"
   syncOfField("sheetHpMax", maxHp, "hpMax");
+  renderHpTracker();
 
   syncOfField("sheetHitDiceSpent", 0, "hitDiceSpent");
   const hitDiceAuto = class2Obj
@@ -11819,21 +11821,9 @@ function renderSavedCharsList() {
    uma segunda cópia dos dados para sair de sincronia.
    ========================================================================== */
 
-/** Modo Combate ligado? Fica guardado por navegador, como a aba */
-let _modoCombate = null;
+/** A aba Combate está aberta? */
 function modoCombateLigado() {
-  if (_modoCombate === null) {
-    try { _modoCombate = localStorage.getItem("dnd55_modo_combate") === "1"; } catch (err) { _modoCombate = false; }
-  }
-  return _modoCombate;
-}
-
-function alternarModoCombate() {
-  _modoCombate = !modoCombateLigado();
-  try { localStorage.setItem("dnd55_modo_combate", _modoCombate ? "1" : "0"); } catch (err) { /* sem armazenamento */ }
-  renderFichaOnline();
-  const painel = document.getElementById("onlinePanel");
-  if (painel) painel.scrollIntoView({ block: "start" });
+  return character.appMode === "combate";
 }
 
 /** Detalhes ("i") abertos na Ficha Online, para sobreviverem ao redesenho */
@@ -11845,14 +11835,18 @@ const _onFiltro = { busca: "", grupo: "todas" };
 function trocarModoDoApp(modo) {
   const workspace = document.getElementById("mainWorkspace");
   if (!workspace) return;
-  modo = ["wizard", "online", "sheet"].includes(modo) ? modo : "wizard";
+  modo = ["wizard", "online", "combate", "sheet"].includes(modo) ? modo : "wizard";
   document.querySelectorAll("#appModeTabs .app-mode-btn").forEach(b =>
     b.classList.toggle("active", b.getAttribute("data-mode") === modo));
   workspace.classList.toggle("mode-sheet", modo === "sheet");
-  workspace.classList.toggle("mode-online", modo === "online");
+  // Combate é a Ficha Online recortada: o mesmo painel, só com o turno
+  workspace.classList.toggle("mode-online", modo === "online" || modo === "combate");
   character.appMode = modo;
   try { localStorage.setItem("dnd55_modo_app", modo); } catch (err) { /* sem armazenamento */ }
-  if (modo === "online") renderFichaOnline();
+  if (modo === "online" || modo === "combate") {
+    renderFichaOnline();
+    window.scrollTo({ top: workspace.offsetTop - 8 });
+  }
   fitSheetToViewport();
 }
 
@@ -11903,12 +11897,6 @@ function renderFichaOnline() {
   pintarBlocoOnline("onMagiasCorpo", htmlMagiasOnline());
   const combate = modoCombateLigado();
   painel.classList.toggle("is-combate", combate);
-  const btnCombate = document.getElementById("onBtnCombate");
-  if (btnCombate) {
-    btnCombate.classList.toggle("is-on", combate);
-    btnCombate.setAttribute("aria-pressed", String(combate));
-    btnCombate.innerHTML = combate ? '<i class="fa-solid fa-book-open"></i> Ficha completa' : '<i class="fa-solid fa-khanda"></i> Modo Combate';
-  }
   if (combate) pintarBlocoOnline("onModoCombateCorpo", htmlModoCombate());
   const temMagia = !!spellcastingAbilityOf() || (sheetOv().spellRows || []).some(r => r.name);
   const card = document.getElementById("onMagias");
@@ -12322,8 +12310,14 @@ function htmlModoCombate() {
 
   const marca = (k, rotulo, icone) => `<button type="button" class="on-turno-marca${t[k] ? " is-usada" : ""}" data-on-turno="${k}" title="${t[k] ? "Já usada neste turno" : "Disponível"}">
     <i class="fa-solid ${icone}"></i> ${rotulo}</button>`;
-  const secao = (k, titulo, icone, vazio) => `<section class="on-cmb-secao is-${k}">
-    <h4><i class="fa-solid ${icone}"></i> ${titulo}</h4>
+  const AJUDA = {
+    acao: "1 por turno: atacar, conjurar uma magia de 1 ação ou outra ação",
+    bonus: "1 por turno, só com algo que use Ação Bônus",
+    reacao: "1 por rodada, quando o gatilho acontece (até no turno dos outros)",
+    recursos: "Usos que se gastam e voltam no descanso"
+  };
+  const secao = (k, titulo, icone, vazio) => `<section class="on-cmb-secao is-${k}${t[k] ? " is-usada" : ""}">
+    <h4><i class="fa-solid ${icone}"></i> ${titulo} <small>${AJUDA[k]}${t[k] ? " — já usada neste turno" : ""}</small></h4>
     ${secoes[k].length ? secoes[k].join("") : `<p class="on-vazio">${vazio}</p>`}
   </section>`;
 
@@ -12534,18 +12528,11 @@ function setupFichaOnline() {
       pintarBlocoOnline("onMagiasCorpo", htmlMagiasOnline());
   const combate = modoCombateLigado();
   painel.classList.toggle("is-combate", combate);
-  const btnCombate = document.getElementById("onBtnCombate");
-  if (btnCombate) {
-    btnCombate.classList.toggle("is-on", combate);
-    btnCombate.setAttribute("aria-pressed", String(combate));
-    btnCombate.innerHTML = combate ? '<i class="fa-solid fa-book-open"></i> Ficha completa' : '<i class="fa-solid fa-khanda"></i> Modo Combate';
-  }
   if (combate) pintarBlocoOnline("onModoCombateCorpo", htmlModoCombate());
       saveToLocalStorage();
       return;
     }
     if (t.closest("#onInspiracao")) { document.getElementById("sheetInspirationBox").click(); return; }
-    if (t.closest("#onBtnCombate")) { alternarModoCombate(); return; }
     const conj = t.closest("[data-on-conjurar]");
     if (conj) {
       const id = conj.getAttribute("data-on-conjurar");
