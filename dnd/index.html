@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20261030b";
+    var APP_VERSION = "20261030c";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -1411,6 +1411,8 @@
            então o que muda aqui muda lá, no PDF e no salvamento. -->
       <section class="online-panel" id="onlinePanel">
         <nav class="on-nav" id="onlineNav" aria-label="Seções da ficha online">
+          <button type="button" class="on-nav-combate" id="onBtnCombate" aria-pressed="false"
+                  title="Mostra só o que se usa no turno: ataques, magias e habilidades por Ação, Ação Bônus e Reação"><i class="fa-solid fa-khanda"></i> Modo Combate</button>
           <a href="#onIdentidade">Identidade</a>
           <a href="#onCombate">Combate</a>
           <a href="#onAtributos">Atributos</a>
@@ -1515,6 +1517,12 @@
 
           <!-- COLUNA DA FICHA -->
           <div class="on-col on-col-ficha">
+            <!-- Modo Combate: só aparece com o botão do topo ligado -->
+            <div class="on-card on-modo-combate" id="onModoCombate">
+              <h3 class="on-titulo"><i class="fa-solid fa-khanda"></i> Em combate</h3>
+              <div id="onModoCombateCorpo"></div>
+            </div>
+
             <div class="on-card" id="onIdentidade">
               <h3 class="on-titulo"><i class="fa-solid fa-id-card"></i> Identidade</h3>
               <div class="on-campos">
@@ -1911,6 +1919,27 @@
           <div class="form-group">
             <label class="form-label" for="customItemMastery">Propriedade / Maestria</label>
             <input type="text" class="form-control" id="customItemMastery" placeholder="Ex: Vex, Empurrar, Acuidade">
+          </div>
+        </div>
+
+        <!-- Cargas: varinhas, cajados, anéis. Entram no contador de usos da Ficha Online -->
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label" for="customItemCharges">Cargas (máximo)</label>
+            <input type="number" class="form-control" id="customItemCharges" min="0" max="99" placeholder="Ex: 7">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customItemChargeRecovery">Recupera</label>
+            <select class="form-control" id="customItemChargeRecovery">
+              <option value="amanhecer">Ao amanhecer (Descanso Longo)</option>
+              <option value="longo">Todas no Descanso Longo</option>
+              <option value="curto">Todas no Descanso Curto</option>
+              <option value="nao">Não recupera</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customItemChargeRegain">Quanto volta</label>
+            <input type="text" class="form-control" id="customItemChargeRegain" placeholder="1d6+1 (vazio = todas)">
           </div>
         </div>
 

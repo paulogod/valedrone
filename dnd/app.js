@@ -2461,7 +2461,72 @@ function getLimitedUses() {
       });
     });
   });
+
+  // Talentos com usos contados (Sortudo: Pontos de Sorte = Bônus de Proficiência)
+  const nivelDoPersonagem = (character.level1 || 0) + (character.class2 && character.class2 !== "none" ? (character.level2 || 0) : 0);
+  const pbDoPersonagem = 2 + Math.floor((Math.max(1, nivelDoPersonagem) - 1) / 4);
+  getActiveFeatIds().forEach(fid => {
+    const u = USOS_DE_TALENTO[fid];
+    const f = DND5E_DATA.feats.find(x => x.id === fid);
+    if (!u || !f) return;
+    const id = "feat:" + fid;
+    lista.push({
+      id, name: u.nome || f.name, classe: "Talento", tipo: "talento", recovery: u.recovery, dono: f.name,
+      max: u.max === "pb" ? pbDoPersonagem : u.max,
+      gastos: (character.featureUses && character.featureUses[id]) || 0
+    });
+  });
+
+  // Itens com cargas (varinhas, cajados): contam mesmo guardados na mochila
+  (character.customItems || []).forEach(item => {
+    const max = parseInt(item.charges, 10) || 0;
+    if (max <= 0) return;
+    const id = "item:" + item.id;
+    lista.push({
+      id, name: item.name, classe: "Item", tipo: "item", max,
+      recovery: item.chargeRecovery || "amanhecer", recarga: item.chargeRegain || "",
+      gastos: Math.min(max, (character.featureUses && character.featureUses[id]) || 0)
+    });
+  });
   return lista;
+}
+
+/**
+ * Talentos de 2024 com usos que se gastam e voltam no descanso. Os que
+ * conjuram uma magia de graça (Tocado pelo Reino Feérico, Iniciado em Magia)
+ * já são contados nas conjurações grátis e não entram aqui.
+ */
+const USOS_DE_TALENTO = {
+  lucky: { nome: "Pontos de Sorte (Sortudo)", max: "pb", recovery: "longo" },
+  mage_slayer: { nome: "Mente Protegida (Matador de Magos)", max: 1, recovery: "curto" },
+  boon_fate: { nome: "Dádiva do Destino", max: 1, recovery: "curto" },
+  boon_recovery: { nome: "Última Resistência (Recuperação Heroica)", max: 1, recovery: "longo" }
+};
+
+/**
+ * Cargas dos itens do catálogo (SRD 5.2): quantas tem e quanto volta ao
+ * amanhecer. Entram sozinhas quando o item vem do catálogo; no formulário o
+ * jogador ajusta ou preenche as de um item próprio.
+ */
+const CARGAS_DO_CATALOGO = {
+  "wand-of-magic-missiles": [7, "1d6+1"], "wand-of-web": [7, "1d6+1"], "wand-of-fireballs": [7, "1d6+1"],
+  "wand-of-lightning-bolts": [7, "1d6+1"], "wand-of-binding": [7, "1d6+1"], "wand-of-paralysis": [7, "1d6+1"],
+  "wand-of-fear": [7, "1d6+1"], "wand-of-polymorph": [7, "1d6+1"], "wand-of-wonder": [7, "1d6+1"],
+  "wand-of-enemy-detection": [7, "1d6+1"], "wand-of-magic-detection": [3, "1d3"], "wand-of-secrets": [3, "1d3"],
+  "staff-of-healing": [10, "1d6+4"], "staff-of-fire": [10, "1d6+4"], "staff-of-frost": [10, "1d6+4"],
+  "staff-of-charming": [10, "1d8+2"], "staff-of-swarming-insects": [10, "1d6+4"], "staff-of-the-woodlands": [10, "1d6+4"],
+  "staff-of-withering": [3, "1d3"], "staff-of-striking": [10, "1d6+4"], "staff-of-power": [20, "2d8+4"],
+  "staff-of-the-magi": [50, "4d6+2"], "ring-of-the-ram": [3, "1d3"], "ring-of-shooting-stars": [6, "1d6"],
+  "cape-of-the-mountebank": [1, ""], "rod-of-rulership": [1, ""], "luck-blade": [1, ""],
+  "necklace-of-fireballs": [7, "", "nao"]
+};
+
+/** Quando o uso volta, em texto: "volta no Descanso Curto", "1d6+1 ao amanhecer" */
+function rotuloDeRecuperacao(u) {
+  if (u.recovery === "curto") return "volta no Descanso Curto";
+  if (u.recovery === "nao") return "não recupera";
+  if (u.recovery === "amanhecer") return `${u.recarga ? u.recarga : "todas"} ao amanhecer`;
+  return "volta no Descanso Longo";
 }
 
 /** Gasta ou devolve um uso, sem passar dos limites. */
@@ -2483,11 +2548,15 @@ function changeFeatureUse(id, delta) {
 function recoverFeatureUses(tipo) {
   const devolvidos = [];
   getLimitedUses().forEach(u => {
-    // o que volta no Descanso Curto também volta no Longo
+    if (u.recovery === "nao") return;
+    // o que volta no Descanso Curto também volta no Longo; o que volta "ao
+    // amanhecer" (cargas de item) conta no Longo, que é a noite de sono
     const volta = u.recovery === "curto" || tipo === "longo";
     if (!volta || !u.gastos) return;
-    character.featureUses[u.id] = 0;
-    devolvidos.push(u.name.split(" (")[0]);
+    const rolagem = u.recarga ? rollDiceExpression(u.recarga) : null;
+    const novo = rolagem ? Math.max(0, u.gastos - Math.max(0, rolagem.total)) : 0;
+    character.featureUses[u.id] = novo;
+    devolvidos.push(rolagem ? `${u.name.split(" (")[0]} (+${u.gastos - novo}, ${u.recarga})` : u.name.split(" (")[0]);
   });
   return devolvidos;
 }
@@ -2502,8 +2571,8 @@ function renderFeatureUses() {
         const bolinhas = Array.from({ length: u.max }, (_, i) =>
           `<span class="uso-ponto${i < restam ? " is-cheio" : ""}"></span>`).join("");
         return `<div class="uso-linha">
-          <span class="uso-nome">${u.name.split(" (")[0]}
-            <small>${u.classe} • volta no Descanso ${u.recovery === "curto" ? "Curto" : "Longo"}</small>
+          <span class="uso-nome">${escHtml(u.name.split(" (")[0])}
+            <small>${escHtml(u.classe)} • ${rotuloDeRecuperacao(u)}</small>
           </span>
           <span class="uso-pontos" title="${restam} de ${u.max}">${bolinhas}</span>
           <span class="uso-botoes">
@@ -3109,7 +3178,7 @@ const HP_LOG_ICONE = {
   dado: "fa-dice-d6", descanso: "fa-moon", condicao: "fa-triangle-exclamation",
   rolagem: "fa-dice-d20", uso: "fa-bolt-lightning",
   magia: "fa-wand-sparkles", arma: "fa-gavel", talento: "fa-star",
-  edicao: "fa-pen-to-square"
+  edicao: "fa-pen-to-square", morte: "fa-skull", combate: "fa-flag-checkered"
 };
 
 /** Últimos acontecimentos de vida, do mais recente para o mais antigo. */
@@ -8314,6 +8383,9 @@ function openCustomItemModal(item, doCatalogo) {
     set("customItemSlot", item.slot || "");
     const base = armaBaseDoItem(item);
     set("customItemBaseWeapon", base ? base.id : "");
+    set("customItemCharges", item.charges || "");
+    set("customItemChargeRecovery", item.chargeRecovery || "amanhecer");
+    set("customItemChargeRegain", item.chargeRegain || "");
     document.getElementById("customItemEquipNow").checked = !!item.equipped;
   }
   document.getElementById("customItemType").dispatchEvent(new Event("change"));
@@ -8511,7 +8583,10 @@ function itemDoCatalogo(c) {
     acBonus: c.ca || 0, attunement: String(!!c.sint), weight: "", cost: "", desc: c.d || "",
     equipped: c.tipo !== "potion" && c.tipo !== "scroll",
     bonuses: (c.b || []).map(b => ({ ...b })), slot: c.slot || "",
-    catalogId: c.id, slug: c.slug, rar: c.rar, cond: c.cond
+    catalogId: c.id, slug: c.slug, rar: c.rar, cond: c.cond,
+    charges: (CARGAS_DO_CATALOGO[c.id] || [])[0] || "",
+    chargeRegain: (CARGAS_DO_CATALOGO[c.id] || [])[1] || "",
+    chargeRecovery: (CARGAS_DO_CATALOGO[c.id] || [])[2] || "amanhecer"
   };
 }
 
@@ -10923,7 +10998,11 @@ function bindEvents() {
                      atk: String(b.atk || "").trim(), dmg: String(b.dmg || "").trim() }));
       const slot = document.getElementById("customItemSlot").value;
       const baseWeapon = type === "weapon" ? document.getElementById("customItemBaseWeapon").value : "";
-      const dados = { name, type, damage, damageType, mastery, acBonus, attunement, weight, cost, desc, equipped, bonuses, slot, baseWeapon };
+      const charges = Math.max(0, parseInt(document.getElementById("customItemCharges").value, 10) || 0) || "";
+      const chargeRecovery = document.getElementById("customItemChargeRecovery").value;
+      const chargeRegain = document.getElementById("customItemChargeRegain").value.trim();
+      const dados = { name, type, damage, damageType, mastery, acBonus, attunement, weight, cost, desc, equipped, bonuses, slot, baseWeapon,
+                      charges, chargeRecovery, chargeRegain };
       const editando = _editingItemId && character.customItems.find(i => i.id === _editingItemId);
       if (editando) Object.assign(editando, dados, _itemCatalogMeta);
       else {
@@ -11721,6 +11800,23 @@ function renderSavedCharsList() {
    uma segunda cópia dos dados para sair de sincronia.
    ========================================================================== */
 
+/** Modo Combate ligado? Fica guardado por navegador, como a aba */
+let _modoCombate = null;
+function modoCombateLigado() {
+  if (_modoCombate === null) {
+    try { _modoCombate = localStorage.getItem("dnd55_modo_combate") === "1"; } catch (err) { _modoCombate = false; }
+  }
+  return _modoCombate;
+}
+
+function alternarModoCombate() {
+  _modoCombate = !modoCombateLigado();
+  try { localStorage.setItem("dnd55_modo_combate", _modoCombate ? "1" : "0"); } catch (err) { /* sem armazenamento */ }
+  renderFichaOnline();
+  const painel = document.getElementById("onlinePanel");
+  if (painel) painel.scrollIntoView({ block: "start" });
+}
+
 /** Detalhes ("i") abertos na Ficha Online, para sobreviverem ao redesenho */
 const _onAbertos = new Set();
 /** Busca e grupo escolhidos em Habilidades */
@@ -11786,6 +11882,15 @@ function renderFichaOnline() {
   pintarBlocoOnline("onHabGrupos", htmlGruposDeHabilidades());
   pintarBlocoOnline("onHabilidadesCorpo", htmlHabilidadesOnline());
   pintarBlocoOnline("onMagiasCorpo", htmlMagiasOnline());
+  const combate = modoCombateLigado();
+  painel.classList.toggle("is-combate", combate);
+  const btnCombate = document.getElementById("onBtnCombate");
+  if (btnCombate) {
+    btnCombate.classList.toggle("is-on", combate);
+    btnCombate.setAttribute("aria-pressed", String(combate));
+    btnCombate.innerHTML = combate ? '<i class="fa-solid fa-book-open"></i> Ficha completa' : '<i class="fa-solid fa-khanda"></i> Modo Combate';
+  }
+  if (combate) pintarBlocoOnline("onModoCombateCorpo", htmlModoCombate());
   const temMagia = !!spellcastingAbilityOf() || (sheetOv().spellRows || []).some(r => r.name);
   const card = document.getElementById("onMagias");
   if (card) card.hidden = !temMagia;
@@ -11927,9 +12032,12 @@ function listaDeHabilidades() {
   // dono (Dados de Superioridade, Pontos de Foco) vira item próprio no topo.
   const usos = getLimitedUses();
   usos.forEach(u => {
-    const dono = out.find(h => chaveDeNome(h.nomeCompleto) === chaveDeNome(u.name) && !h.uso);
-    if (dono) dono.uso = u;
-    else out.unshift({ grupo: "recurso", origem: u.classe, nome: u.name.split(" (")[0], resumo: `Volta no Descanso ${u.recovery === "curto" ? "Curto" : "Longo"}.`, texto: "", nivel: 0, uso: u });
+    const dono = out.find(h => chaveDeNome(h.nomeCompleto) === chaveDeNome(u.dono || u.name) && !h.uso);
+    if (dono) { dono.uso = u; return; }
+    const item = u.tipo === "item" ? (character.customItems || []).find(i => "item:" + i.id === u.id) : null;
+    const resumo = rotuloDeRecuperacao(u);
+    out.unshift({ grupo: item ? "item" : "recurso", origem: u.classe, nome: u.name.split(" (")[0],
+      resumo: resumo.charAt(0).toUpperCase() + resumo.slice(1) + ".", texto: item ? item.desc || "" : "", nivel: 0, uso: u });
   });
   return out;
 }
@@ -11939,7 +12047,8 @@ const GRUPOS_DE_HABILIDADE = [
   { id: "cargas", nome: "Com cargas" },
   { id: "classe", nome: "Classe" },
   { id: "especie", nome: "Espécie" },
-  { id: "talento", nome: "Talentos" }
+  { id: "talento", nome: "Talentos" },
+  { id: "item", nome: "Itens" }
 ];
 
 function htmlGruposDeHabilidades() {
@@ -11952,7 +12061,7 @@ function htmlGruposDeHabilidades() {
 /** Bolinhas de carga com − e +, iguais às do painel de jogo */
 function htmlCargas(u) {
   const restam = u.max - u.gastos;
-  return `<span class="on-cargas" title="${restam} de ${u.max} • volta no Descanso ${u.recovery === "curto" ? "Curto" : "Longo"}">
+  return `<span class="on-cargas" title="${restam} de ${u.max} • ${rotuloDeRecuperacao(u)}">
     <button type="button" class="uso-btn" data-on-uso="${u.id}" data-delta="1" ${restam <= 0 ? "disabled" : ""} title="Gastar um uso">−</button>
     <span class="uso-pontos">${Array.from({ length: u.max }, (_, i) => `<span class="uso-ponto${i < restam ? " is-cheio" : ""}"></span>`).join("")}</span>
     <button type="button" class="uso-btn" data-on-uso="${u.id}" data-delta="-1" ${u.gastos <= 0 ? "disabled" : ""} title="Devolver um uso">+</button>
@@ -11968,22 +12077,7 @@ function htmlHabilidadesOnline() {
     return true;
   });
   if (!lista.length) return `<p class="on-vazio">${_onFiltro.busca ? "Nada encontrado com essa busca." : "Escolha classe, espécie e origem no Assistente para ver as habilidades."}</p>`;
-  return `<div class="on-habs">${lista.map(h => {
-    const chave = `hab:${h.grupo}:${h.origem}:${h.nome}`;
-    const corpo = h.texto ? formatarTextoDeRegras(h.texto) : `<p>${escHtml(h.resumo || "Sem descrição cadastrada.")}</p>`;
-    return `<details class="on-hab is-${h.grupo}" data-on-chave="${escAttr(chave)}"${_onAbertos.has(chave) ? " open" : ""}>
-      <summary>
-        <span class="on-hab-cabeca">
-          <span class="on-hab-nome">${escHtml(h.nome)}</span>
-          <span class="on-hab-origem">${escHtml(h.origem)}${h.nivel > 1 ? ` • Nv ${h.nivel}` : ""}</span>
-          ${h.uso ? htmlCargas(h.uso) : ""}
-          <span class="on-i" title="O que faz">i</span>
-        </span>
-        ${h.resumo ? `<span class="on-hab-resumo">${escHtml(h.resumo)}</span>` : ""}
-      </summary>
-      <div class="on-hab-texto">${corpo}</div>
-    </details>`;
-  }).join("")}</div>`;
+  return `<div class="on-habs">${lista.map(h => htmlItemDeHabilidade(h, "hab")).join("")}</div>`;
 }
 
 /* ------------------------------------------------------------- magias */
@@ -12006,35 +12100,234 @@ function htmlMagiasOnline() {
       </span>` : "";
     return `<div class="on-magia-grupo">
       <div class="on-magia-cab"><strong>${cab}</strong>${slots}</div>
-      ${grupos[n].map(r => {
-        const sp = r.spellId ? DND5E_DATA.spells.find(x => x.id === r.spellId) : null;
-        const chave = `mag:${r.uid}`;
-        const tags = [r.c ? '<span class="on-tag" title="Concentração">C</span>' : "", r.r ? '<span class="on-tag" title="Ritual">R</span>' : "",
-                      r.m ? '<span class="on-tag" title="Componente material">M</span>' : ""].join("");
-        const corpo = sp
-          ? `<p class="on-magia-meta">${escHtml([sp.school, sp.time, sp.range, sp.components, sp.duration].filter(Boolean).join(" • "))}</p>${formatarTextoDeRegras(sp.desc)}${sp.higherLevels ? `<p><strong>Círculos superiores.</strong> ${escHtml(sp.higherLevels)}</p>` : ""}`
-          : `<div class="on-campos">
-              <label class="on-campo on-curto"><span>Círculo</span><input type="text" class="form-control" data-on-mag="level" value="${escAttr(r.level)}" placeholder="T, 1..9"></label>
-              <label class="on-campo"><span>Nome</span><input type="text" class="form-control" data-on-mag="name" value="${escAttr(r.name)}"></label>
-              <label class="on-campo"><span>Tempo</span><input type="text" class="form-control" data-on-mag="time" value="${escAttr(r.time)}"></label>
-              <label class="on-campo"><span>Alcance</span><input type="text" class="form-control" data-on-mag="range" value="${escAttr(r.range)}"></label>
-            </div>`;
-        return `<details class="on-magia" data-uid="${escAttr(r.uid)}" data-on-chave="${escAttr(chave)}"${_onAbertos.has(chave) ? " open" : ""}>
-          <summary>
-            <span class="on-hab-nome">${escHtml(String(r.name || "Magia sem nome").split(" (")[0])}</span>
-            ${tags}
-            <span class="on-hab-origem">${escHtml([r.time, r.range].filter(Boolean).join(" • "))}</span>
-            <span class="on-i" title="O que faz">i</span>
-          </summary>
-          <div class="on-hab-texto">
-            ${corpo}
-            <label class="on-campo on-largo"><span>Anotações</span><input type="text" class="form-control" data-on-mag="notes" value="${escAttr(r.notes)}"></label>
-            ${r.grantSrc ? `<p class="on-dica">Concedida por ${escHtml(r.grantSrc)}.</p>` : ""}
-          </div>
-        </details>`;
-      }).join("")}
+      ${grupos[n].map(r => htmlLinhaDeMagia(r, "mag")).join("")}
     </div>`;
   }).join("");
+}
+
+
+/**
+ * Uma magia da ficha: nome, marcas, o "i" com a regra e, ao lado, o botão de
+ * conjurar (que gasta o espaço e marca a Concentração). `prefixo` separa o
+ * aberto/fechado da lista de Magias do da tela de combate.
+ */
+function htmlLinhaDeMagia(r, prefixo) {
+  const sp = r.spellId ? DND5E_DATA.spells.find(x => x.id === r.spellId) : null;
+  const chave = `${prefixo}:${r.uid}`;
+  const tags = [r.c ? '<span class="on-tag" title="Concentração">C</span>' : "", r.r ? '<span class="on-tag" title="Ritual">R</span>' : "",
+                r.m ? '<span class="on-tag" title="Componente material">M</span>' : ""].join("");
+  const corpo = sp
+    ? `<p class="on-magia-meta">${escHtml([sp.school, sp.time, sp.range, sp.components, sp.duration].filter(Boolean).join(" • "))}</p>${formatarTextoDeRegras(sp.desc)}${sp.higherLevels ? `<p><strong>Círculos superiores.</strong> ${escHtml(sp.higherLevels)}</p>` : ""}`
+    : `<div class="on-campos">
+        <label class="on-campo on-curto"><span>Círculo</span><input type="text" class="form-control" data-on-mag="level" value="${escAttr(r.level)}" placeholder="T, 1..9"></label>
+        <label class="on-campo"><span>Nome</span><input type="text" class="form-control" data-on-mag="name" value="${escAttr(r.name)}"></label>
+        <label class="on-campo"><span>Tempo</span><input type="text" class="form-control" data-on-mag="time" value="${escAttr(r.time)}"></label>
+        <label class="on-campo"><span>Alcance</span><input type="text" class="form-control" data-on-mag="range" value="${escAttr(r.range)}"></label>
+      </div>`;
+  return `<div class="on-magia-linha" data-uid="${escAttr(r.uid)}">
+    <details class="on-magia" data-on-chave="${escAttr(chave)}"${_onAbertos.has(chave) ? " open" : ""}>
+      <summary>
+        <span class="on-hab-nome">${escHtml(String(r.name || "Magia sem nome").split(" (")[0])}</span>
+        ${tags}
+        <span class="on-hab-origem">${escHtml([r.time, r.range].filter(Boolean).join(" • "))}</span>
+        <span class="on-i" title="O que faz">i</span>
+      </summary>
+      <div class="on-hab-texto">
+        ${corpo}
+        <label class="on-campo on-largo"><span>Anotações</span><input type="text" class="form-control" data-on-mag="notes" value="${escAttr(r.notes)}"></label>
+        ${r.grantSrc ? `<p class="on-dica">Concedida por ${escHtml(r.grantSrc)}.</p>` : ""}
+      </div>
+    </details>
+    ${sp ? htmlBotaoConjurar(sp, r) : ""}
+  </div>`;
+}
+
+/* ------------------------------------------------------------ conjurar */
+
+/** Círculos com espaço livre em que a magia pode ser conjurada agora */
+function circulosLivres(sp) {
+  const totais = getSpellSlotRow();
+  const out = [];
+  for (let c = Math.max(1, sp.level); c <= 9; c++) {
+    if ((totais[c - 1] || 0) - (character.spellSlotsExpended[c] || 0) > 0) out.push(c);
+  }
+  return out;
+}
+
+/** Botão "Conjurar": escolhe o círculo, oferece a conjuração grátis e o ritual */
+function htmlBotaoConjurar(sp, r) {
+  const gratis = sp.level > 0 && getFreeCastSpells().some(m => m.id === sp.id && !m.gastos);
+  const ritual = !!(r && r.r);
+  if (sp.level === 0) return `<div class="on-conj"><button type="button" class="on-mini is-conj" data-on-conjurar="${sp.id}" title="Conjurar o truque (anota no histórico)"><i class="fa-solid fa-wand-sparkles"></i> Conjurar</button></div>`;
+  const livres = circulosLivres(sp);
+  return `<div class="on-conj">
+    ${livres.length > 1 ? `<select class="on-circ" data-on-circ="${sp.id}" title="Círculo do espaço">${livres.map(c => `<option value="${c}">${c}º</option>`).join("")}</select>` : ""}
+    <button type="button" class="on-mini is-conj" data-on-conjurar="${sp.id}" ${livres.length ? "" : "disabled"}
+            title="${livres.length ? `Gasta um espaço de ${livres[0]}º círculo${spellNeedsConcentration(sp) ? " e marca a Concentração" : ""}` : "Sem espaço de magia livre deste círculo ou acima"}">
+      <i class="fa-solid fa-wand-sparkles"></i> ${livres.length ? (livres.length === 1 ? `Conjurar ${livres[0]}º` : "Conjurar") : "Sem espaço"}</button>
+    ${gratis ? `<button type="button" class="on-mini" data-on-conjurar="${sp.id}" data-gratis="1" title="Conjuração grátis do talento, espécie ou antecedente (volta no Descanso Longo)">Grátis</button>` : ""}
+    ${ritual ? `<button type="button" class="on-mini" data-on-conjurar="${sp.id}" data-ritual="1" title="Como Ritual: +10 minutos, sem gastar espaço">Ritual</button>` : ""}
+  </div>`;
+}
+
+/**
+ * Conjura uma magia: gasta o espaço do círculo escolhido (ou a conjuração
+ * grátis), troca a Concentração se a magia pedir e anota no histórico.
+ */
+function conjurarMagia(id, opcoes = {}) {
+  const sp = DND5E_DATA.spells.find(x => x.id === id);
+  if (!sp) return;
+  const nome = sp.name.split(" (")[0];
+  let como;
+  if (sp.level === 0) como = "truque";
+  else if (opcoes.ritual) como = "Ritual";
+  else if (opcoes.gratis) {
+    character.freeCasts = character.freeCasts || {};
+    character.freeCasts[id] = 1;
+    como = "grátis";
+  } else {
+    const livres = circulosLivres(sp);
+    const c = livres.includes(opcoes.circulo) ? opcoes.circulo : livres[0];
+    if (!c) { showToast(`Sem espaço de magia para ${nome}.`); return; }
+    character.spellSlotsExpended[c] = (character.spellSlotsExpended[c] || 0) + 1;
+    const total = getSpellSlotRow()[c - 1] || 0;
+    como = `${c}º círculo, restam ${total - character.spellSlotsExpended[c]}`;
+  }
+  let conc = "";
+  if (spellNeedsConcentration(sp)) {
+    const velha = character.concentracao && character.concentracao !== id ? DND5E_DATA.spells.find(x => x.id === character.concentracao) : null;
+    character.concentracao = id;
+    conc = velha ? ` • Concentração (encerrou ${velha.name.split(" (")[0]})` : " • Concentração";
+  }
+  logHpEvent("magia", `Conjurou ${nome} (${como})${conc}`, character.currentHp || 0);
+  showToast(`✨ ${nome} (${como})${conc}`);
+  renderHpLog();
+  recalculateCharacter();
+  saveToLocalStorage();
+}
+
+/* -------------------------------------------------------- modo combate */
+
+/** Ações que todo personagem tem (Livro do Jogador 2024, cap. 1) */
+const ACOES_BASICAS = [
+  ["Atacar", "Um ataque com arma ou Ataque Desarmado (mais, com Ataque Extra)."],
+  ["Correr", "Ganha deslocamento extra igual ao seu Deslocamento neste turno."],
+  ["Desengajar", "Seu movimento não provoca Ataques de Oportunidade neste turno."],
+  ["Esquivar", "Ataques contra você têm Desvantagem e você tem Vantagem em salvaguardas de DES até o seu próximo turno."],
+  ["Ajudar", "Dá Vantagem ao próximo teste ou ataque de um aliado próximo."],
+  ["Esconder", "Teste de DES (Furtividade) CD 15 para ficar Invisível."],
+  ["Influenciar", "Teste de CAR ou SAB para convencer uma criatura."],
+  ["Estudar", "Teste de INT para lembrar ou analisar algo."],
+  ["Procurar", "Teste de SAB para perceber algo."],
+  ["Usar Objeto", "Usa um objeto ou poção (beber poção também pode ser Ação Bônus, regra opcional)."],
+  ["Preparar", "Escolhe um gatilho e reage com uma ação ou magia quando ele acontece."],
+  ["Conjurar Magia", "Conjura uma magia de 1 ação ou usa um item mágico que conjura."]
+];
+
+/** Em que momento do turno a habilidade se usa, lendo o resumo (ou o começo do texto) */
+function momentosDaHabilidade(h) {
+  const ler = (t) => {
+    const m = [];
+    if (/A[çc][ãa]o B[ôo]nus/i.test(t)) m.push("bonus");
+    if (/Rea[çc][ãa]o/i.test(t)) m.push("reacao");
+    return m;
+  };
+  let m = ler(h.resumo || "");
+  if (!m.length) m = ler(String(h.texto || "").slice(0, 600));
+  return m;
+}
+
+function htmlItemDeHabilidade(h, prefixo) {
+  const chave = `${prefixo}:${h.grupo}:${h.origem}:${h.nome}`;
+  const corpo = h.texto ? formatarTextoDeRegras(h.texto) : `<p>${escHtml(h.resumo || "Sem descrição cadastrada.")}</p>`;
+  return `<details class="on-hab is-${h.grupo}" data-on-chave="${escAttr(chave)}"${_onAbertos.has(chave) ? " open" : ""}>
+    <summary>
+      <span class="on-hab-cabeca">
+        <span class="on-hab-nome">${escHtml(h.nome)}</span>
+        <span class="on-hab-origem">${escHtml(h.origem)}${h.nivel > 1 ? ` • Nv ${h.nivel}` : ""}</span>
+        ${h.uso ? htmlCargas(h.uso) : ""}
+        <span class="on-i" title="O que faz">i</span>
+      </span>
+      ${h.resumo ? `<span class="on-hab-resumo">${escHtml(h.resumo)}</span>` : ""}
+    </summary>
+    <div class="on-hab-texto">${corpo}</div>
+  </details>`;
+}
+
+/**
+ * A tela de combate: tudo o que se usa no turno, separado por Ação, Ação
+ * Bônus e Reação, com o marcador do turno em cima. Ataques rolam, magias
+ * conjuram (gastando o espaço) e habilidades gastam carga ali mesmo.
+ */
+function htmlModoCombate() {
+  const t = character.turno || { rodada: 1 };
+  const secoes = { acao: [], bonus: [], reacao: [], recursos: [] };
+
+  // Ataques: as linhas da tabela, com a rolagem
+  const linhas = (sheetOv().weaponRows || []).filter(r => r.name && (r.atk || r.damage));
+  const magiasNosAtaques = new Set();
+  linhas.forEach(r => {
+    const spellId = String(r.srcId || "").startsWith("spell:") ? String(r.srcId).split(":")[1] : null;
+    const sp = spellId ? DND5E_DATA.spells.find(x => x.id === spellId) : null;
+    // Bordão Místico se conjura com Ação Bônus, mas o golpe é um ataque da
+    // ação Atacar: a linha de ataque fica em Ação e a magia, em Ação Bônus.
+    const ehBuff = sp && SPELL_WEAPON_BUFFS[sp.id];
+    if (sp && !ehBuff) magiasNosAtaques.add(sp.id);
+    const momento = sp && !ehBuff && /^A[çc][ãa]o B[ôo]nus/i.test(sp.time || "") ? "bonus" : "acao";
+    secoes[momento].push(`<div class="on-cmb-atk" data-uid="${escAttr(r.uid)}">
+      <span class="on-hab-nome">${escHtml(r.name)}</span>
+      <span class="on-cmb-num">${escHtml(r.atk)}</span>
+      <span class="on-cmb-dano">${escHtml(r.damage)}</span>
+      <button type="button" class="on-mini" data-on-atk-rolar title="Rolar ataque e dano"><i class="fa-solid fa-dice-d20"></i> Rolar</button>
+      ${sp && sp.level > 0 && !ehBuff ? htmlBotaoConjurar(sp, null) : ""}
+    </div>`);
+  });
+
+  // Magias pelo tempo de conjuração
+  (sheetOv().spellRows || []).filter(r => r.spellId && !magiasNosAtaques.has(r.spellId)).forEach(r => {
+    const sp = DND5E_DATA.spells.find(x => x.id === r.spellId);
+    if (!sp) return;
+    const tempo = sp.time || "";
+    const momento = /^A[çc][ãa]o B[ôo]nus/i.test(tempo) ? "bonus" : /^Rea[çc][ãa]o/i.test(tempo) ? "reacao" : /^A[çc][ãa]o/i.test(tempo) ? "acao" : null;
+    if (momento) secoes[momento].push(htmlLinhaDeMagia(r, "cmbmag"));
+  });
+
+  // Habilidades: Ação Bônus e Reação pelo texto; as com carga sem momento vão para Recursos
+  listaDeHabilidades().forEach(h => {
+    const m = momentosDaHabilidade(h);
+    m.forEach(x => secoes[x].push(htmlItemDeHabilidade(h, "cmb" + x)));
+    if (!m.length && h.uso) secoes.recursos.push(htmlItemDeHabilidade(h, "cmbrec"));
+  });
+  secoes.reacao.push(htmlItemDeHabilidade({ grupo: "recurso", origem: "Todos", nome: "Ataque de Oportunidade",
+    resumo: "Quando uma criatura que você vê sai do seu alcance, um ataque corpo a corpo contra ela.", texto: "", nivel: 0 }, "cmbreacao"));
+
+  const marca = (k, rotulo, icone) => `<button type="button" class="on-turno-marca${t[k] ? " is-usada" : ""}" data-on-turno="${k}" title="${t[k] ? "Já usada neste turno" : "Disponível"}">
+    <i class="fa-solid ${icone}"></i> ${rotulo}</button>`;
+  const secao = (k, titulo, icone, vazio) => `<section class="on-cmb-secao is-${k}">
+    <h4><i class="fa-solid ${icone}"></i> ${titulo}</h4>
+    ${secoes[k].length ? secoes[k].join("") : `<p class="on-vazio">${vazio}</p>`}
+  </section>`;
+
+  return `
+    <div class="on-turno">
+      <a class="on-turno-pv" href="#hpTracker" title="Ir para Pontos de Vida (dano, cura, condições)"><i class="fa-solid fa-heart-pulse"></i>
+        ${character.currentHp || 0}/${(document.getElementById("sheetHpMax") || {}).value || "?"}${character.tempHp ? ` +${character.tempHp}` : ""} PV</a>
+      <span class="on-turno-rodada">Rodada <strong>${t.rodada || 1}</strong></span>
+      ${marca("acao", "Ação", "fa-circle")}
+      ${marca("bonus", "Ação Bônus", "fa-play")}
+      ${marca("reacao", "Reação", "fa-rotate-left")}
+      ${marca("movimento", "Movimento", "fa-person-running")}
+      <button type="button" class="on-mini" data-on-turno-prox title="Começo do seu próximo turno: ação, ação bônus, reação e movimento de volta"><i class="fa-solid fa-forward-step"></i> Próximo turno</button>
+      <button type="button" class="on-mini" data-on-turno-fim title="Fim do combate: volta para a rodada 1"><i class="fa-solid fa-flag-checkered"></i> Encerrar</button>
+    </div>
+    ${secao("acao", "Ação", "fa-circle", "Nenhum ataque ou magia de 1 ação.")}
+    <details class="on-acoes-basicas"><summary>Ações que todos têm</summary>
+      <div class="on-chips">${ACOES_BASICAS.map(([n, d]) => `<span class="on-chip" title="${escAttr(d)}">${n}</span>`).join("")}</div>
+      <ul>${ACOES_BASICAS.map(([n, d]) => `<li><strong>${n}.</strong> ${escHtml(d)}</li>`).join("")}</ul>
+    </details>
+    ${secao("bonus", "Ação Bônus", "fa-play", "Nada que se use como Ação Bônus.")}
+    ${secao("reacao", "Reação", "fa-rotate-left", "")}
+    ${secoes.recursos.length ? secao("recursos", "Recursos e cargas", "fa-battery-half", "") : ""}`;
 }
 
 /* -------------------------------------------------------- concentração */
@@ -12220,10 +12513,47 @@ function setupFichaOnline() {
       _ofSpellsSig = null;
       renderOfSpellsTable();
       pintarBlocoOnline("onMagiasCorpo", htmlMagiasOnline());
+  const combate = modoCombateLigado();
+  painel.classList.toggle("is-combate", combate);
+  const btnCombate = document.getElementById("onBtnCombate");
+  if (btnCombate) {
+    btnCombate.classList.toggle("is-on", combate);
+    btnCombate.setAttribute("aria-pressed", String(combate));
+    btnCombate.innerHTML = combate ? '<i class="fa-solid fa-book-open"></i> Ficha completa' : '<i class="fa-solid fa-khanda"></i> Modo Combate';
+  }
+  if (combate) pintarBlocoOnline("onModoCombateCorpo", htmlModoCombate());
       saveToLocalStorage();
       return;
     }
     if (t.closest("#onInspiracao")) { document.getElementById("sheetInspirationBox").click(); return; }
+    if (t.closest("#onBtnCombate")) { alternarModoCombate(); return; }
+    const conj = t.closest("[data-on-conjurar]");
+    if (conj) {
+      const id = conj.getAttribute("data-on-conjurar");
+      const sel = conj.closest(".on-conj") && conj.closest(".on-conj").querySelector("[data-on-circ]");
+      conjurarMagia(id, { circulo: sel ? Number(sel.value) : null, gratis: conj.hasAttribute("data-gratis"), ritual: conj.hasAttribute("data-ritual") });
+      return;
+    }
+    const marcaTurno = t.closest("[data-on-turno]");
+    if (marcaTurno) {
+      const turno = character.turno = character.turno || { rodada: 1 };
+      const k = marcaTurno.getAttribute("data-on-turno");
+      turno[k] = !turno[k];
+      pintarBlocoOnline("onModoCombateCorpo", htmlModoCombate());
+      saveToLocalStorage();
+      return;
+    }
+    if (t.closest("[data-on-turno-prox]") || t.closest("[data-on-turno-fim]")) {
+      const fim = !!t.closest("[data-on-turno-fim]");
+      const rodada = fim ? 1 : ((character.turno && character.turno.rodada) || 1) + 1;
+      character.turno = { rodada };
+      if (fim) logHpEvent("combate", "Fim do combate", character.currentHp || 0);
+      else showToast(`⚔️ Rodada ${rodada}: ação, ação bônus, reação e movimento de volta.`);
+      renderHpLog();
+      pintarBlocoOnline("onModoCombateCorpo", htmlModoCombate());
+      saveToLocalStorage();
+      return;
+    }
     if (t.closest("#onConcTeste")) {
       const conSalva = salvaguardasDaFicha().find(s => s.id === "con");
       rollDiceCheck("Concentração (CON)", conSalva ? conSalva.mod : 0);
