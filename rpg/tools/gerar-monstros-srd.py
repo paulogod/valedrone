@@ -25,6 +25,8 @@ EXTRAS = os.path.join(os.path.dirname(__file__), "srd52-extras.json")
 
 # Formas do Vampiro e dos licantropos: no AideDD é uma página só, a da criatura
 FORMAS = ("vampire", "werebear", "wereboar", "wererat", "weretiger", "werewolf")
+# Criaturas próprias que só começam com o nome de uma das formas acima
+NAO_SAO_FORMAS = ("vampire-familiar", "vampire-spawn")
 # Endereços do AideDD que não seguem o índice do SRD
 SLUG_AIDEDD = {"will-o-wisp": "will-o--wisp"}
 
@@ -137,7 +139,7 @@ def converter(x, extras):
     if tes:
         m["tes"] = tes
     base = x["index"].split("-")[0]
-    if base in FORMAS and x["index"] != base:
+    if base in FORMAS and x["index"] != base and x["index"] not in NAO_SAO_FORMAS:
         m["slug"] = base
     if x["index"] in SLUG_AIDEDD:
         m["slug"] = SLUG_AIDEDD[x["index"]]
