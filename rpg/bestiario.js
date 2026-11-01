@@ -1,6 +1,7 @@
 // ==================== BESTIÁRIO (MONSTROS E NPCs) ====================
 // Os monstros do SRD 5.2 vêm de srd-monstros.js (gerado por
-// tools/gerar-monstros-srd.py). Os que o mestre importa colando o bloco de
+// tools/gerar-monstros-srd.py), e os outros do Manual dos Monstros 2024, em
+// resumo (só os números do bloco), de mm24-monstros.js (tools/gerar-monstros-mm24.py). Os que o mestre importa colando o bloco de
 // estatísticas ficam no localStorage, como as fichas: valem entre sessões.
 // Cada monstro tem o link da página dele no AideDD, que mostra o bloco
 // completo de 2024 sem login; o app não lê o AideDD (o site não permite).
@@ -8,14 +9,16 @@ const BESTIARIO_KEY = 'rpg_bestiario';
 
 const BST_TAMANHOS = {
   Tiny: 'Miúdo', Small: 'Pequeno', Medium: 'Médio', Large: 'Grande', Huge: 'Enorme',
-  Gargantuan: 'Imenso', 'Medium or small': 'Médio ou Pequeno'
+  Gargantuan: 'Imenso', 'Medium or small': 'Médio ou Pequeno', 'Huge or gargantuan': 'Enorme ou Imenso'
 };
 const BST_TIPOS = {
   aberration: 'Aberração', beast: 'Fera', celestial: 'Celestial', construct: 'Constructo',
   dragon: 'Dragão', elemental: 'Elemental', fey: 'Feérico', fiend: 'Ínfero', giant: 'Gigante',
   humanoid: 'Humanoide', monstrosity: 'Monstruosidade', ooze: 'Limo', plant: 'Planta',
   undead: 'Morto-vivo', 'swarm of tiny beasts': 'Enxame de Feras Miúdas',
-  'swarm of tiny undead': 'Enxame de Mortos-vivos Miúdos'
+  'swarm of tiny undead': 'Enxame de Mortos-vivos Miúdos',
+  'swarm of small fiends': 'Enxame de Ínferos Pequenos', 'swarm of medium fiends': 'Enxame de Ínferos Médios',
+  'swarm of tiny monstrosities': 'Enxame de Monstruosidades Miúdas', 'celestial or fiend': 'Celestial ou Ínfero'
 };
 const BST_ALINHAMENTOS = {
   'lawful good': 'Leal e Bom', 'neutral good': 'Neutro e Bom', 'chaotic good': 'Caótico e Bom',
@@ -55,10 +58,11 @@ function salvarBestiario() {
   catch (e) { alert('Sem espaço no navegador para salvar o bestiário.'); }
 }
 
-/** SRD + importados, cada um marcado com a origem */
+/** SRD + Manual dos Monstros (resumo) + importados, cada um marcado com a origem */
 function todosOsMonstros() {
   return [
     ...(window.SRD_MONSTROS || []).map(m => ({ ...m, origem: 'srd' })),
+    ...(window.MM24_MONSTROS || []).map(m => ({ ...m, origem: 'mm' })),
     ...bst.meus.map(m => ({ ...m, origem: 'meus' }))
   ];
 }
@@ -101,7 +105,7 @@ function slugAidedd(nome) {
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 function linkAidedd(m) {
-  const slug = m.origem === 'srd' ? (m.slug || m.id) : slugAidedd(m.ingles || m.n);
+  const slug = m.origem !== 'meus' ? (m.slug || m.id) : slugAidedd(m.ingles || m.n);
   return slug ? `https://www.aidedd.org/monster/${slug}` : '';
 }
 
@@ -159,7 +163,7 @@ document.addEventListener('click', e => {
 // ---------- lista e filtros ----------
 /** Opções de tipo e de local, usadas no Bestiário e nos Encontros */
 function opcoesDeTipo() {
-  return [...new Set((window.SRD_MONSTROS || []).map(m => m.tipo))]
+  return [...new Set([...(window.SRD_MONSTROS || []), ...(window.MM24_MONSTROS || [])].map(m => m.tipo))]
     .sort((a, b) => (BST_TIPOS[a] || a).localeCompare(BST_TIPOS[b] || b))
     .map(t => `<option value="${esc(t)}">${esc(BST_TIPOS[t] || t)}</option>`).join('');
 }
@@ -214,7 +218,7 @@ function renderBestiario() {
   tb.innerHTML = lista.map(m => {
     const link = linkAidedd(m);
     return `<tr class="${bst.aberto === m.id ? 'bst-aberto' : ''}">
-      <td><span class="col-clickable" data-bst-ver="${esc(m.id)}">${esc(m.n)}</span>${m.origem === 'meus' ? ' <span class="bst-selo">importado</span>' : ''}</td>
+      <td><span class="col-clickable" data-bst-ver="${esc(m.id)}">${esc(m.n)}</span>${m.origem === 'meus' ? ' <span class="bst-selo">importado</span>' : m.origem === 'mm' ? ' <span class="bst-selo" title="Manual dos Monstros 2024: resumo com os números; texto completo no AideDD">MM 2024</span>' : ''}</td>
       <td>${esc(tipoTexto(m))}</td>
       <td>${ndTexto(m.nd)}</td>
       <td>${m.ca ?? '—'}</td>
@@ -231,7 +235,7 @@ function renderBestiario() {
 function secaoDoBloco(titulo, itens) {
   if (!itens || !itens.length) return '';
   return `<h4 class="sb-secao">${titulo}</h4>` +
-    itens.map(([nome, desc]) => `<p><strong><em>${esc(nome)}.</em></strong> ${esc(desc)}</p>`).join('');
+    itens.map(([nome, desc]) => `<p><strong><em>${esc(nome)}.</em></strong> ${esc(desc || '')}</p>`).join('');
 }
 
 function renderDetalhe() {
@@ -245,11 +249,12 @@ function renderDetalhe() {
   const atributos = m.at ? `<div class="sb-atributos">${m.at.map((v, i) =>
     `<div><span>${BST_ATRIBUTOS[i]}</span><strong>${v}</strong><em>${comSinalBst(modDe(v))}</em></div>`).join('')}</div>` : '';
 
-  const cabecalho = m.origem === 'srd'
+  const cabecalho = m.origem !== 'meus'
     ? `${esc(BST_TIPOS[m.tipo] || m.tipo)} ${esc(BST_TAMANHOS[m.tam] || m.tam)}, ${esc(BST_ALINHAMENTOS[m.al] || m.al)}`
     : esc(m.tipoTexto || '');
 
-  const corpo = m.origem === 'srd' ? `
+  const corpo = m.origem !== 'meus' ? `
+      ${m.origem === 'mm' ? `<p class="fichas-ajuda sb-resumo">Resumo do Manual dos Monstros 2024: os números do bloco e das ações. O que cada traço e ação faz está no ${link ? `<a href="${link}" target="_blank" rel="noopener">🔗 AideDD</a>` : 'AideDD'}.</p>` : ''}
       ${atributos}
       ${linha('Salvaguardas', m.salv)}
       ${linha('Perícias', m.per)}
@@ -266,7 +271,7 @@ function renderDetalhe() {
       ${secaoDoBloco('Ações', m.ac)}
       ${secaoDoBloco('Ações Bônus', m.ab)}
       ${secaoDoBloco('Reações', m.re)}
-      ${secaoDoBloco('Ações Lendárias', m.le)}`
+      ${m.leu && (m.le || []).length ? `<h4 class="sb-secao">Ações Lendárias</h4><p>${esc(m.leu)}</p>${secaoDoBloco('', m.le).replace('<h4 class="sb-secao"></h4>', '')}` : secaoDoBloco('Ações Lendárias', m.le)}`
     : `${atributos}
       ${linha('Habitat', habitatTexto(m.hab))}
       ${linha('Tesouro', (m.tes || []).map(t => TES_TEMAS[t] || t).join(', '))}

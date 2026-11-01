@@ -324,7 +324,7 @@ function acoesDoMonstro(m) {
           <strong>${esc(a[0])}</strong>${chips}
           ${rolavel ? `<button type="button" class="btn btn-repair btn-sm" data-cb-rolar="${esc(m.id)}:${secao}:${k}">🎲 Rolar</button>` : ''}
         </div>
-        <details><summary>texto</summary><p>${esc(a[1])}</p></details>
+        ${a[1] ? `<details><summary>texto</summary><p>${esc(a[1])}</p></details>` : ''}
       </div>`;
   };
   const bloco = (titulo, secao, aberto) => (m[secao] || []).length

@@ -100,15 +100,16 @@
     <section class="tab-content" id="content-bestiario">
       <div class="card">
         <h2 class="card-title">Bestiário — Monstros e NPCs (D&amp;D 2024)</h2>
-        <p class="fichas-ajuda">Os 341 monstros do SRD 5.2 já vêm prontos (textos em inglês, como no SRD). Clique no nome para ver o bloco de estatísticas, em 🔗 para a página completa no <a href="https://www.aidedd.org/" target="_blank" rel="noopener">AideDD</a> e em ⚔️ para escolher a iniciativa e pôr no Combate. Monstros de outros livros entram colando o bloco em "Importar".</p>
+        <p class="fichas-ajuda">Os 341 monstros do SRD 5.2 já vêm prontos (textos em inglês, como no SRD), e os outros 169 do Manual dos Monstros 2024 vêm em resumo <span class="bst-selo">MM 2024</span>: os números do bloco e das ações (ataque, dano, CD), com o texto completo no AideDD. Clique no nome para ver o bloco de estatísticas, em 🔗 para a página completa no <a href="https://www.aidedd.org/" target="_blank" rel="noopener">AideDD</a> e em ⚔️ para escolher a iniciativa e pôr no Combate. Monstros de outros livros entram colando o bloco em "Importar".</p>
         <div class="bst-filtros">
           <input type="search" id="bstBusca" placeholder="Buscar por nome ou tipo…" aria-label="Buscar monstro">
           <select id="bstTipo" aria-label="Tipo de criatura"><option value="">Todos os tipos</option></select>
           <select id="bstLocal" aria-label="Local"><option value="">Todos os locais</option></select>
           <label class="bst-nd">ND <input type="text" id="bstNdMin" placeholder="0" inputmode="decimal" aria-label="ND mínimo"> a <input type="text" id="bstNdMax" placeholder="30" inputmode="decimal" aria-label="ND máximo"></label>
           <select id="bstFonte" aria-label="Origem">
-            <option value="">SRD e importados</option>
+            <option value="">Todas as origens</option>
             <option value="srd">Só SRD 5.2</option>
+            <option value="mm">Só Manual dos Monstros 2024 (resumo)</option>
             <option value="meus">Só importados</option>
           </select>
           <span class="bst-total" id="bstTotal"></span>
@@ -296,6 +297,7 @@
   <!-- Condições e regras: mesma base do Criador de Ficha -->
   <script src="../dnd/data.js"></script>
   <script src="srd-monstros.js"></script>
+  <script src="mm24-monstros.js"></script>
   <script src="srd-itens.js"></script>
   <script src="combate.js"></script>
   <script src="app.js"></script>
