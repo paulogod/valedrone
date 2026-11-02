@@ -12787,9 +12787,74 @@ function cpAtualizarNomes() {
   if (dl) dl.innerHTML = nomes.map(n => `<option value="${escHtml(n)}">`).join("");
 }
 
+/** A campanha inteira em texto, com *negrito* do WhatsApp; campos vazios ficam de fora */
+function campanhaEmTexto() {
+  const c = campanhaDaFicha();
+  const linhas = [];
+  const titulo = c.nome || "Campanha";
+  linhas.push(`📖 *${titulo}*`);
+  const cab = [character.name && `Personagem: ${character.name}`, c.mestre && `Mestre: ${c.mestre}`, c.sessao && `Sessão: ${c.sessao}`].filter(Boolean);
+  if (cab.length) linhas.push(cab.join(" · "));
+  if (c.notas.trim()) linhas.push("", c.notas.trim());
+
+  const bloco = (icone, nome, itens, linha) => {
+    if (!itens.length) return;
+    linhas.push("", `${icone} *${nome}* (${itens.length})`);
+    itens.forEach(it => {
+      const [cabeca, ...resto] = linha(it).filter(Boolean);
+      linhas.push(`• ${cabeca}`);
+      resto.forEach(r => linhas.push(`   ${r}`));
+      if ((it.notas || "").trim()) it.notas.trim().split("\n").forEach(r => linhas.push(`   ${r}`));
+    });
+  };
+  const nome = it => `*${it.nome || "(sem nome)"}*`;
+  bloco("🤝", "Aliados", c.aliados, it => [[nome(it), it.quem].filter(Boolean).join(" — "), it.onde && `Onde: ${it.onde}`]);
+  bloco("👥", "NPCs", c.npcs, it => [[nome(it), it.papel].filter(Boolean).join(" — ")
+    + (it.atitude && it.atitude !== "Desconhecida" ? ` (${it.atitude})` : "")]);
+  bloco("🗺️", "Locais", c.locais, it => [[nome(it), it.quando].filter(Boolean).join(" — ")]);
+  ["Ativa", "Concluída", "Falhou"].forEach(st => {
+    const rot = { "Ativa": "Missões ativas", "Concluída": "Missões concluídas", "Falhou": "Missões que falharam" }[st];
+    bloco(st === "Ativa" ? "📜" : st === "Concluída" ? "✅" : "❌", rot, c.missoes.filter(m => (m.status || "Ativa") === st),
+      it => [nome(it), it.quem && `Quem pediu: ${it.quem}`, it.recompensa && `Recompensa: ${it.recompensa}`]);
+  });
+  if (linhas.length <= 2 && !c.notas.trim()) return "";
+  return linhas.join("\n");
+}
+
+async function copiarCampanha(texto) {
+  try {
+    await navigator.clipboard.writeText(texto);
+    showToast("📋 Campanha copiada: é só colar no WhatsApp ou onde quiser.");
+  } catch (err) {
+    // Sem permissão de área de transferência (file://, navegador antigo): seleciona para Ctrl+C
+    const t = document.createElement("textarea");
+    t.value = texto; t.style.position = "fixed"; t.style.opacity = "0";
+    document.body.appendChild(t); t.select();
+    const ok = document.execCommand && document.execCommand("copy");
+    t.remove();
+    showToast(ok ? "📋 Campanha copiada." : "Não deu para copiar neste navegador.");
+  }
+}
+
 function bindCampanha() {
   const painel = document.getElementById("campanhaPanel");
   if (!painel) return;
+
+  document.getElementById("cpCopiar").addEventListener("click", () => {
+    const texto = campanhaEmTexto();
+    if (!texto) { showToast("A campanha ainda está vazia."); return; }
+    copiarCampanha(texto);
+  });
+  document.getElementById("cpCompartilhar").addEventListener("click", async () => {
+    const texto = campanhaEmTexto();
+    if (!texto) { showToast("A campanha ainda está vazia."); return; }
+    // Celular: abre o menu de compartilhar do aparelho. Computador sem ele: copia.
+    if (navigator.share) {
+      try { await navigator.share({ title: campanhaDaFicha().nome || "Campanha", text: texto }); return; }
+      catch (err) { if (err && err.name === "AbortError") return; }
+    }
+    copiarCampanha(texto);
+  });
 
   painel.addEventListener("input", ev => {
     const el = ev.target;
