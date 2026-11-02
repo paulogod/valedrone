@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20261030g";
+    var APP_VERSION = "20261102a";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -109,6 +109,9 @@
         </button>
         <button class="app-mode-btn" id="btnModeSheet" data-mode="sheet">
           <i class="fa-solid fa-file-signature"></i> Ficha Editável<span class="tab-long-label"> Direta</span>
+        </button>
+        <button class="app-mode-btn" id="btnModeCampanha" data-mode="campanha" title="Anotações da campanha: aliados, NPCs, locais e missões">
+          <i class="fa-solid fa-book-atlas"></i> Campanha
         </button>
       </div>
 
@@ -1651,6 +1654,29 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- MODO CAMPANHA: o caderno do jogador. Fica em character.campanha, então
+           vai junto no salvamento e no JSON exportado da ficha. -->
+      <section class="campanha-panel" id="campanhaPanel">
+        <div class="on-card cp-topo">
+          <h3 class="on-titulo"><i class="fa-solid fa-book-atlas"></i> Campanha</h3>
+          <div class="on-campos">
+            <label class="on-campo"><span>Nome da campanha</span><input type="text" class="form-control" data-cp-campo="nome" autocomplete="off"></label>
+            <label class="on-campo"><span>Mestre</span><input type="text" class="form-control" data-cp-campo="mestre" autocomplete="off"></label>
+            <label class="on-campo"><span>Sessão atual</span><input type="text" class="form-control" data-cp-campo="sessao" placeholder="ex.: 12 — 02/11" autocomplete="off"></label>
+          </div>
+          <label class="on-campo on-largo"><span>Anotações gerais</span><textarea class="form-control" rows="3" data-cp-campo="notas" placeholder="Objetivo do grupo, segredos, dívidas, rumores…"></textarea></label>
+          <div class="cp-busca">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="search" class="form-control" id="cpBusca" placeholder="Procurar em aliados, NPCs, locais e missões" autocomplete="off">
+          </div>
+          <nav class="cp-nav" aria-label="Seções da campanha">
+            <a href="#cpAliados">Aliados</a><a href="#cpNpcs">NPCs</a><a href="#cpLocais">Locais</a><a href="#cpMissoes">Missões</a>
+          </nav>
+        </div>
+        <div class="cp-grid" id="cpListas"></div>
+        <datalist id="cpNomes"></datalist>
       </section>
     </main>
 

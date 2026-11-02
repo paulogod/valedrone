@@ -58,6 +58,10 @@ function createBlankCharacter() {
     },
     alignment: "",
     xp: "",
+
+    // Caderno da campanha (aba Campanha): o que o jogador anota na mesa.
+    // As listas guardam objetos com `id` para os "abertos" sobreviverem ao redesenho.
+    campanha: { nome: "", mestre: "", sessao: "", notas: "", aliados: [], npcs: [], locais: [], missoes: [] },
     heroicInspiration: false,
 
     // Idiomas
@@ -586,7 +590,7 @@ function syncWizardControls() {
 /* Objetos aninhados do personagem: precisam de merge chave a chave para uma
    ficha antiga (sem `customBg.name`, sem `featChoices`...) não chegar capenga */
 const CHARACTER_NESTED_KEYS = ["customBg", "customClass1", "customClass2", "customSpecies", "freeCasts", "baseScores", "backgroundBonuses", "coins",
-  "bio", "deathSaves", "spellSlotsExpended", "sheet", "featChoices", "hpRolls", "classChoices"];
+  "bio", "deathSaves", "spellSlotsExpended", "sheet", "featChoices", "hpRolls", "classChoices", "campanha"];
 
 /** Ficha carregada de fora (JSON, localStorage, lista de salvos) sobre a base vazia */
 function mergeIntoBlankCharacter(data) {
@@ -7844,6 +7848,7 @@ function renderOfficialSheet(ctx) {
   // o resumo de combate precisa ser refeito com a ficha já pronta.
   renderCombatSummary();
   renderFichaOnline();   // lê os campos da ficha: vem depois de tudo pintado
+  renderCampanha();
 }
 
 /* ---------------------------------------------------------------- CABEÇALHO */
@@ -10253,6 +10258,8 @@ function bindEvents() {
     btn.addEventListener("click", () => trocarModoDoApp(btn.getAttribute("data-mode")));
   });
 
+  bindCampanha();
+
   // Zoom da ficha (barra de ferramentas da ficha)
   const zoomIn = document.getElementById("btnSheetZoomIn");
   const zoomOut = document.getElementById("btnSheetZoomOut");
@@ -11860,16 +11867,21 @@ const _onFiltro = { busca: "", grupo: "todas" };
 function trocarModoDoApp(modo) {
   const workspace = document.getElementById("mainWorkspace");
   if (!workspace) return;
-  modo = ["wizard", "online", "combate", "sheet"].includes(modo) ? modo : "wizard";
+  modo = ["wizard", "online", "combate", "sheet", "campanha"].includes(modo) ? modo : "wizard";
   document.querySelectorAll("#appModeTabs .app-mode-btn").forEach(b =>
     b.classList.toggle("active", b.getAttribute("data-mode") === modo));
   workspace.classList.toggle("mode-sheet", modo === "sheet");
+  workspace.classList.toggle("mode-campanha", modo === "campanha");
   // Combate é a Ficha Online recortada: o mesmo painel, só com o turno
   workspace.classList.toggle("mode-online", modo === "online" || modo === "combate");
   character.appMode = modo;
   try { localStorage.setItem("dnd55_modo_app", modo); } catch (err) { /* sem armazenamento */ }
   if (modo === "online" || modo === "combate") {
     renderFichaOnline();
+    window.scrollTo({ top: workspace.offsetTop - 8 });
+  }
+  if (modo === "campanha") {
+    renderCampanha();
     window.scrollTo({ top: workspace.offsetTop - 8 });
   }
   fitSheetToViewport();
@@ -12622,4 +12634,235 @@ function rolarTesteContraAMorte() {
   renderHpTracker();
   recalculateCharacter();
   saveToLocalStorage();
+}
+
+
+/* ==========================================================================
+   CAMPANHA
+   O caderno do jogador: aliados, NPCs, o histórico dos locais por onde o grupo
+   passou e as missões. Fica em character.campanha, então salva e exporta com a
+   ficha. Cada entrada é um <details>: fechada mostra o resumo, aberta edita.
+   ========================================================================== */
+const CP_SECOES = [
+  { k: "aliados", id: "cpAliados", titulo: "Aliados", icone: "fa-handshake", novo: "Novo aliado",
+    vazio: "Companheiros, patronos e quem deve um favor ao grupo.",
+    campos: [
+      { k: "nome", rot: "Nome" },
+      { k: "quem", rot: "Quem é", dica: "anão ferreiro, patrono, mercenário…" },
+      { k: "onde", rot: "Onde encontrar", dica: "taverna do Javali, Waterdeep" },
+      { k: "notas", rot: "Anotações", area: true, dica: "o que fez pelo grupo, o que pediu em troca…" }
+    ] },
+  { k: "npcs", id: "cpNpcs", titulo: "NPCs", icone: "fa-users", novo: "Novo NPC",
+    vazio: "Gente que o grupo conheceu: amigos, suspeitos e inimigos.",
+    atitudes: ["Amigável", "Neutro", "Hostil", "Desconhecida"],
+    campos: [
+      { k: "nome", rot: "Nome" },
+      { k: "papel", rot: "Papel / onde", dica: "guarda do portão, Neverwinter" },
+      { k: "atitude", rot: "Atitude", opcoes: ["Desconhecida", "Amigável", "Neutro", "Hostil"] },
+      { k: "notas", rot: "Anotações", area: true, dica: "o que sabe, o que quer, segredos…" }
+    ] },
+  { k: "locais", id: "cpLocais", titulo: "Histórico de locais", icone: "fa-map-location-dot", novo: "Novo local",
+    vazio: "Por onde o grupo passou e o que aconteceu lá. O mais novo fica em cima.",
+    campos: [
+      { k: "nome", rot: "Local" },
+      { k: "quando", rot: "Quando", dica: "sessão 4, 15/10" },
+      { k: "notas", rot: "O que aconteceu", area: true, dica: "quem estava lá, o que achamos, o que ficou pendente…" }
+    ] },
+  { k: "missoes", id: "cpMissoes", titulo: "Missões", icone: "fa-scroll", novo: "Nova missão",
+    vazio: "Pedidos, contratos e objetivos do grupo.",
+    status: ["Ativa", "Concluída", "Falhou"],
+    campos: [
+      { k: "nome", rot: "Missão" },
+      { k: "quem", rot: "Quem pediu", lista: true },
+      { k: "recompensa", rot: "Recompensa", dica: "200 PO, um favor do duque…" },
+      { k: "status", rot: "Situação", opcoes: ["Ativa", "Concluída", "Falhou"] },
+      { k: "notas", rot: "Anotações", area: true, dica: "pistas, prazo, próximos passos…" }
+    ] }
+];
+/** Classe de cor da entrada (atitude do NPC, situação da missão) */
+const CP_COR = { "Amigável": "cp-amigavel", "Neutro": "cp-neutro", "Hostil": "cp-hostil",
+  "Ativa": "cp-ativa", "Concluída": "cp-concluida", "Falhou": "cp-falhou" };
+/** Entradas abertas e o filtro de missões, para sobreviverem ao redesenho */
+const _cpAbertos = new Set();
+const _cpEstado = { busca: "", missoes: "Ativa" };
+
+function campanhaDaFicha() {
+  const base = { nome: "", mestre: "", sessao: "", notas: "", aliados: [], npcs: [], locais: [], missoes: [] };
+  const c = character.campanha = { ...base, ...(character.campanha || {}) };
+  CP_SECOES.forEach(s => { if (!Array.isArray(c[s.k])) c[s.k] = []; });
+  return c;
+}
+
+function campanhaVisivel() {
+  const w = document.getElementById("mainWorkspace");
+  return !!w && w.classList.contains("mode-campanha");
+}
+
+/** Resumo da entrada fechada: nome, um detalhe e a etiqueta de atitude/situação */
+function cpResumo(secao, it) {
+  const sub = { aliados: it.quem, npcs: it.papel, locais: it.quando, missoes: it.quem ? `de ${it.quem}` : "" }[secao.k];
+  const chip = secao.k === "npcs" ? (it.atitude && it.atitude !== "Desconhecida" ? it.atitude : "")
+    : secao.k === "missoes" ? (it.status || "Ativa") : "";
+  return `<span class="cp-item-nome">${escHtml(it.nome || "(sem nome)")}</span>
+    ${sub ? `<span class="cp-item-sub">${escHtml(sub)}</span>` : ""}
+    ${chip ? `<span class="cp-chip">${escHtml(chip)}</span>` : ""}`;
+}
+
+function cpClasse(secao, it) {
+  if (secao.k === "aliados") return "cp-aliado";
+  if (secao.k === "locais") return "cp-local";
+  return CP_COR[secao.k === "npcs" ? it.atitude : (it.status || "Ativa")] || "";
+}
+
+function cpCampo(secao, it, f) {
+  const ref = `data-cp-item="${secao.k}:${it.id}:${f.k}"`;
+  const val = it[f.k] ?? "";
+  let ctl;
+  if (f.opcoes) {
+    ctl = `<select class="form-control" ${ref}>${f.opcoes.map(o => `<option ${o === (val || f.opcoes[0]) ? "selected" : ""}>${o}</option>`).join("")}</select>`;
+  } else if (f.area) {
+    ctl = `<textarea class="form-control" rows="3" ${ref} placeholder="${escHtml(f.dica || "")}">${escHtml(val)}</textarea>`;
+  } else {
+    ctl = `<input type="text" class="form-control" ${ref} value="${escHtml(val)}" placeholder="${escHtml(f.dica || "")}" autocomplete="off"${f.lista ? ' list="cpNomes"' : ""}>`;
+  }
+  return `<label class="on-campo${f.area ? " on-largo" : ""}"><span>${f.rot}</span>${ctl}</label>`;
+}
+
+function cpPassaNaBusca(it) {
+  const q = _cpEstado.busca;
+  if (!q) return true;
+  const norm = t => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  return Object.values(it).some(v => typeof v === "string" && norm(v).includes(norm(q)));
+}
+
+function renderCampanha() {
+  const painel = document.getElementById("campanhaPanel");
+  const box = document.getElementById("cpListas");
+  if (!painel || !box || !campanhaVisivel()) return;
+  if (painel.contains(document.activeElement) && document.activeElement.id !== "cpBusca") return;  // não tira o foco de quem digita
+  const c = campanhaDaFicha();
+
+  painel.querySelectorAll("[data-cp-campo]").forEach(el => { el.value = c[el.getAttribute("data-cp-campo")] || ""; });
+
+  box.innerHTML = CP_SECOES.map(secao => {
+    let itens = c[secao.k].filter(cpPassaNaBusca);
+    const total = c[secao.k].length;
+    let filtros = "";
+    if (secao.k === "missoes") {
+      const conta = st => c.missoes.filter(m => (m.status || "Ativa") === st).length;
+      filtros = `<div class="cp-filtros" role="group" aria-label="Filtrar missões">
+        ${["Ativa", "Concluída", "Falhou", "Todas"].map(st => `<button type="button" class="cp-filtro ${_cpEstado.missoes === st ? "ativo" : ""}" data-cp-filtro="${st}" aria-pressed="${_cpEstado.missoes === st}">${st === "Todas" ? "Todas" : st === "Ativa" ? "Ativas" : st === "Concluída" ? "Concluídas" : "Falharam"} (${st === "Todas" ? total : conta(st)})</button>`).join("")}
+      </div>`;
+      if (_cpEstado.missoes !== "Todas" && !_cpEstado.busca) itens = itens.filter(m => (m.status || "Ativa") === _cpEstado.missoes);
+    }
+    const lista = itens.length ? itens.map(it => `
+      <details class="cp-item ${cpClasse(secao, it)}" data-cp-id="${it.id}" ${_cpAbertos.has(it.id) ? "open" : ""}>
+        <summary>${cpResumo(secao, it)}</summary>
+        <div class="cp-corpo">
+          <div class="on-campos">${secao.campos.filter(f => !f.area).map(f => cpCampo(secao, it, f)).join("")}</div>
+          ${secao.campos.filter(f => f.area).map(f => cpCampo(secao, it, f)).join("")}
+          <button type="button" class="btn btn-secondary btn-sm cp-remover" data-cp-remover="${secao.k}:${it.id}">
+            <i class="fa-solid fa-trash"></i> Apagar
+          </button>
+        </div>
+      </details>`).join("")
+      : `<p class="on-vazio">${_cpEstado.busca ? "Nada encontrado." : total ? "Nenhuma nesta situação." : secao.vazio}</p>`;
+    return `<div class="on-card cp-secao" id="${secao.id}">
+      <h3 class="on-titulo"><i class="fa-solid ${secao.icone}"></i> ${secao.titulo} <small>${total}</small>
+        <button type="button" class="btn btn-primary btn-sm on-mini" data-cp-novo="${secao.k}"><i class="fa-solid fa-plus"></i> ${secao.novo}</button>
+      </h3>
+      ${filtros}
+      <div class="cp-lista">${lista}</div>
+    </div>`;
+  }).join("");
+
+  cpAtualizarNomes();
+}
+
+/** "Quem pediu" sugere os aliados e NPCs já anotados */
+function cpAtualizarNomes() {
+  const c = campanhaDaFicha();
+  const nomes = [...new Set([...c.aliados, ...c.npcs].map(x => x.nome).filter(Boolean))];
+  const dl = document.getElementById("cpNomes");
+  if (dl) dl.innerHTML = nomes.map(n => `<option value="${escHtml(n)}">`).join("");
+}
+
+function bindCampanha() {
+  const painel = document.getElementById("campanhaPanel");
+  if (!painel) return;
+
+  painel.addEventListener("input", ev => {
+    const el = ev.target;
+    if (el.id === "cpBusca") { _cpEstado.busca = el.value.trim(); renderCampanha(); return; }
+    const c = campanhaDaFicha();
+    const campo = el.getAttribute("data-cp-campo");
+    if (campo) { c[campo] = el.value; saveToLocalStorage(); return; }
+    const ref = el.getAttribute("data-cp-item");
+    if (!ref) return;
+    const [k, id, f] = ref.split(":");
+    const it = c[k].find(x => x.id === id);
+    if (!it) return;
+    it[f] = el.value;
+    saveToLocalStorage();
+    // O resumo da entrada acompanha o que se digita, sem redesenhar a lista
+    const det = el.closest(".cp-item");
+    const secao = CP_SECOES.find(s => s.k === k);
+    if (det && secao) {
+      det.querySelector("summary").innerHTML = cpResumo(secao, it);
+      det.className = `cp-item ${cpClasse(secao, it)}`;
+    }
+  });
+
+  // Mudar a situação da missão tira ela do filtro: redesenha ao sair do campo
+  painel.addEventListener("change", ev => {
+    if (ev.target.matches("select[data-cp-item]")) { ev.target.blur(); renderCampanha(); }
+  });
+  painel.addEventListener("focusout", ev => {
+    if (ev.target.matches("[data-cp-item^='aliados:'], [data-cp-item^='npcs:']")) cpAtualizarNomes();
+  });
+
+  painel.addEventListener("toggle", ev => {
+    const det = ev.target;
+    if (!det.matches || !det.matches(".cp-item")) return;
+    const id = det.getAttribute("data-cp-id");
+    if (det.open) _cpAbertos.add(id); else _cpAbertos.delete(id);
+  }, true);
+
+  painel.addEventListener("click", ev => {
+    const novo = ev.target.closest("[data-cp-novo]");
+    if (novo) {
+      const k = novo.getAttribute("data-cp-novo");
+      const c = campanhaDaFicha();
+      const it = { id: "cp" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), nome: "" };
+      if (k === "missoes") { it.status = "Ativa"; _cpEstado.missoes = "Ativa"; }
+      if (k === "npcs") it.atitude = "Desconhecida";
+      if (k === "locais" && c.sessao) it.quando = c.sessao;
+      c[k].unshift(it);                 // o mais novo em cima
+      _cpAbertos.add(it.id);
+      _cpEstado.busca = "";
+      const busca = document.getElementById("cpBusca");
+      if (busca) busca.value = "";
+      saveToLocalStorage();
+      if (document.activeElement) document.activeElement.blur();
+      renderCampanha();
+      const campo = painel.querySelector(`[data-cp-item="${k}:${it.id}:nome"]`);
+      if (campo) campo.focus();
+      return;
+    }
+    const rem = ev.target.closest("[data-cp-remover]");
+    if (rem) {
+      const [k, id] = rem.getAttribute("data-cp-remover").split(":");
+      const c = campanhaDaFicha();
+      const it = c[k].find(x => x.id === id);
+      if (!it || !confirm(`Apagar "${it.nome || "sem nome"}"?`)) return;
+      c[k] = c[k].filter(x => x.id !== id);
+      _cpAbertos.delete(id);
+      saveToLocalStorage();
+      rem.blur();
+      renderCampanha();
+      return;
+    }
+    const filtro = ev.target.closest("[data-cp-filtro]");
+    if (filtro) { _cpEstado.missoes = filtro.getAttribute("data-cp-filtro"); renderCampanha(); }
+  });
 }
