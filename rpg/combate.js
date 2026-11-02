@@ -37,7 +37,17 @@ const CB_DANO_PT = {
 };
 const CB_ATRIB_PT = { Strength: 'FOR', Dexterity: 'DES', Constitution: 'CON', Intelligence: 'INT', Wisdom: 'SAB', Charisma: 'CAR' };
 
-const cb = { ultimaRolagem: '', condAberta: null, info: null };   // info: { i, id } da condição aberta no "i"
+const cb = { ultimaRolagem: '', condAberta: null, info: null, acoesAbertas: null };   // info: { i, id } da condição aberta no "i"
+
+// O que cada um já fez no turno: o mestre marca e anota. Volta tudo a zero no
+// começo do turno da criatura, quando a Reação também volta (LdJ 2024).
+const CB_ACOES = [
+  { k: 'mov', nome: 'Movimento', curto: 'M', dica: 'quanto andou, para onde' },
+  { k: 'acao', nome: 'Ação', curto: 'A', dica: 'Atacar, Magia, Disparada, Ajudar…' },
+  { k: 'bonus', nome: 'Ação Bônus', curto: 'B', dica: 'qual ação bônus' },
+  { k: 'reacao', nome: 'Reação', curto: 'R', dica: 'Ataque de Oportunidade, Escudo…' }
+];
+const acoesVazias = () => Object.fromEntries(CB_ACOES.map(a => [a.k, { ok: false, t: '' }]));
 
 // ---------- dados da criatura ----------
 /** Completa os campos novos em criaturas que vieram de versões anteriores */
@@ -47,6 +57,8 @@ function normEnt(e) {
   e.conc = !!e.conc;
   if (!e.ds) e.ds = { s: 0, f: 0 };
   if (!Array.isArray(e.abilities)) e.abilities = [];
+  if (!e.acoes || typeof e.acoes !== 'object') e.acoes = { r: null, ...acoesVazias() };
+  CB_ACOES.forEach(a => { if (!e.acoes[a.k]) e.acoes[a.k] = { ok: false, t: '' }; });
   return e;
 }
 /** Monstro ou NPC caído não joga mais: o turno passa direto por ele */
@@ -216,6 +228,14 @@ function fimDoTurno(e) {
   if (acabaram.length) avisoRapido(`${e.name}: acabou ${acabaram.join(', ')}`, 'dif');
 }
 
+/** Começo do turno: Movimento, Ação, Ação Bônus e Reação voltam. Voltar e
+ *  avançar dentro da mesma rodada não apaga o que já foi marcado. */
+function inicioDoTurno(e) {
+  const r = state.round || 1;
+  if (e.acoes.r === r) return;
+  e.acoes = { r, ...acoesVazias() };
+}
+
 function proximoTurno() {
   const n = state.entities.length;
   if (!n) return;
@@ -229,6 +249,7 @@ function proximoTurno() {
   }
   state.currentTurn = i;
   state.turnoId = state.entities[i].id;
+  inicioDoTurno(normEnt(state.entities[i]));
   cb.ultimaRolagem = '';
   renderEntities(); saveData();
 }
@@ -257,6 +278,45 @@ function proximosNaFila(qtd) {
     if (!foraDeCombate(e)) fila.push(e);
   }
   return fila;
+}
+
+// ---------- ações do turno ----------
+/** Lista com check e comentário de cada ação */
+function painelDeAcoes(e, i) {
+  return `<div class="cb-acoes" role="group" aria-label="Ações de ${esc(e.name)} neste turno">
+    ${CB_ACOES.map(a => {
+      const v = e.acoes[a.k];
+      return `<div class="cb-acoes-linha ${v.ok ? 'cb-feita' : ''}" data-cb-acao-linha="${i}:${a.k}">
+        <label class="cb-acoes-nome"><input type="checkbox" data-cb-acao="${i}:${a.k}" ${v.ok ? 'checked' : ''}> ${a.nome}</label>
+        <input type="text" class="cb-acoes-txt" data-cb-acao-txt="${i}:${a.k}" value="${esc(v.t)}" placeholder="${esc(a.dica)}" aria-label="Comentário: ${a.nome}" autocomplete="off">
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+/** Marcadores M A B R da ordem de iniciativa: clicar marca/desmarca */
+function chipsDeAcoes(e, i) {
+  return `<span class="cb-acoes-mini">${CB_ACOES.map(a => {
+    const v = e.acoes[a.k];
+    const dica = `${a.nome}${v.ok ? ' — feita' : ''}${v.t ? ': ' + v.t : ''}`;
+    return `<button type="button" class="cb-acao-mini ${v.ok ? 'cb-feita' : ''} ${v.t ? 'cb-com-nota' : ''}" data-cb-acao-mini="${i}:${a.k}" title="${esc(dica)}" aria-label="${esc(dica)}" aria-pressed="${v.ok}">${a.curto}</button>`;
+  }).join('')}<button type="button" class="cb-acao-mini cb-acao-nota" data-cb-acoes-abrir="${i}" title="Comentar as ações" aria-label="Comentar as ações de ${esc(e.name)}">💬</button></span>`;
+}
+/** Atualiza check e marcadores sem redesenhar (o campo de texto não perde o foco) */
+function refletirAcao(i, k) {
+  const e = state.entities[i]; const v = e.acoes[k]; const a = CB_ACOES.find(x => x.k === k);
+  const dica = `${a.nome}${v.ok ? ' — feita' : ''}${v.t ? ': ' + v.t : ''}`;
+  document.querySelectorAll(`[data-cb-acao="${i}:${k}"]`).forEach(c => { c.checked = v.ok; });
+  document.querySelectorAll(`[data-cb-acao-linha="${i}:${k}"]`).forEach(l => l.classList.toggle('cb-feita', v.ok));
+  document.querySelectorAll(`[data-cb-acao-mini="${i}:${k}"]`).forEach(b => {
+    b.classList.toggle('cb-feita', v.ok); b.classList.toggle('cb-com-nota', !!v.t);
+    b.title = dica; b.setAttribute('aria-label', dica); b.setAttribute('aria-pressed', v.ok);
+  });
+}
+function marcarAcao(i, k, ok) {
+  const e = state.entities[i];
+  if (!e) return;
+  e.acoes[k].ok = ok;
+  refletirAcao(i, k); saveData();
 }
 
 // ---------- links da criatura ----------
@@ -380,6 +440,8 @@ function renderTurnoAtual() {
     </div>
     ${detalheDeCondicao(i)}
     ${formCondicao(i)}
+    <h3 class="cb-acoes-titulo">Ações do turno <small>rodada ${state.round || 1}</small></h3>
+    ${painelDeAcoes(e, i)}
     ${cb.ultimaRolagem ? `<div class="cb-rolagem">${esc(cb.ultimaRolagem)}</div>` : ''}
     ${m ? acoesDoMonstro(m) : (e.abilities.length ? `<p class="cb-habilidades"><strong>Habilidades:</strong> ${esc(e.abilities.join(', '))}</p>` : '')}
     ${fila.length ? `<div class="cb-fila"><span>Próximos:</span> ${fila.map(f => `<span class="cb-fila-item">${esc(f.name)} <em>${f.initiative}</em></span>`).join('<span aria-hidden="true">→</span>')}</div>` : ''}`;
@@ -402,7 +464,7 @@ function renderLista() {
             ${linksDaCriatura(e, false)}
             <span class="cb-ca" title="Classe de Armadura">🛡 ${e.armor || '—'}</span>
           </div>
-          <div class="cb-conds">${chipsDeCondicao(e, i)}<button type="button" class="cb-cond-mais" data-cb-cond-abrir="${i}" title="Pôr condição">＋</button></div>
+          <div class="cb-conds">${chipsDeCondicao(e, i)}<button type="button" class="cb-cond-mais" data-cb-cond-abrir="${i}" title="Pôr condição">＋</button>${chipsDeAcoes(e, i)}</div>
           ${atual ? '' : detalheDeCondicao(i)}
           ${cb.condAberta === i ? formCondicao(i) : ''}
         </div>
@@ -415,6 +477,7 @@ function renderLista() {
           <button type="button" class="btn btn-secondary btn-sm" data-cb-editar="${i}" aria-label="Editar ${esc(e.name)}">✏️</button>
           <button type="button" class="btn btn-danger" data-cb-remover="${i}" aria-label="Remover ${esc(e.name)}">✕</button>
         </div>
+        ${cb.acoesAbertas === i && !atual ? `<div class="cb-acoes-lista">${painelDeAcoes(e, i)}</div>` : ''}
       </div>`;
   }).join('');
 }
@@ -483,6 +546,8 @@ function saveEdit(i) {
   document.getElementById('cbReiniciar').addEventListener('click', () => {
     if (!confirm('Voltar para a rodada 1, no primeiro da iniciativa?')) return;
     state.round = 1; state.currentTurn = 0; state.turnoId = state.entities[0] ? state.entities[0].id : null;
+    state.entities.forEach(e => { e.acoes = { r: null, ...acoesVazias() }; });
+    if (state.entities[0]) inicioDoTurno(normEnt(state.entities[0]));
     renderEntities(); saveData();
   });
   document.getElementById('cbLimparMortos').addEventListener('click', () => {
@@ -495,6 +560,24 @@ function saveEdit(i) {
   document.getElementById('turnMarker').addEventListener('input', e => {
     const atual = state.entities[state.currentTurn];
     if (atual) { atual.turn_info = e.target.value; saveData(); }
+  });
+
+  // Ações do turno: o check grava na hora; escrever o comentário já marca a ação
+  raiz.addEventListener('change', ev => {
+    const c = ev.target.closest('[data-cb-acao]');
+    if (!c) return;
+    const [i, k] = c.dataset.cbAcao.split(':');
+    marcarAcao(+i, k, c.checked);
+  });
+  raiz.addEventListener('input', ev => {
+    const c = ev.target.closest('[data-cb-acao-txt]');
+    if (!c) return;
+    const [i, k] = c.dataset.cbAcaoTxt.split(':');
+    const e = state.entities[+i];
+    if (!e) return;
+    e.acoes[k].t = c.value;
+    if (c.value.trim()) e.acoes[k].ok = true;
+    refletirAcao(+i, k); saveData();
   });
 
   raiz.addEventListener('submit', ev => {
@@ -561,10 +644,19 @@ function saveEdit(i) {
       e.ds[tipo] = e.ds[tipo] > +k ? +k : +k + 1;          // clicar na última marcada desmarca
       renderEntities(); saveData(); return;
     }
+    if ((v = alvo('data-cb-acao-mini')) !== null) {
+      const [i, k] = v.split(':'); const e = state.entities[+i];
+      return marcarAcao(+i, k, !(e && e.acoes[k].ok));
+    }
+    if ((v = alvo('data-cb-acoes-abrir')) !== null) {
+      if (+v === state.currentTurn) { const c = document.querySelector('#cbTurno .cb-acoes-txt'); if (c) c.focus(); return; }
+      cb.acoesAbertas = cb.acoesAbertas === +v ? null : +v; return renderLista();
+    }
     if ((v = alvo('data-cb-ds-rolar')) !== null) return rolarTesteDeMorte(+v);
     if ((v = alvo('data-cb-rolar')) !== null) { const [id, secao, k] = v.split(':'); return rolarAcao(id, secao, +k); }
     if ((v = alvo('data-cb-ir')) !== null) {
       state.currentTurn = +v; state.turnoId = state.entities[+v].id; cb.ultimaRolagem = '';
+      inicioDoTurno(normEnt(state.entities[+v]));
       renderEntities(); saveData(); return;
     }
     if ((v = alvo('data-cb-editar')) !== null) return toggleEdit(+v);
