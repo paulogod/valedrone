@@ -629,3 +629,34 @@ th[aria-sort="ascending"] .th-ordem, th[aria-sort="descending"] .th-ordem { colo
 @media (max-width: 600px) {
   .cb-acoes-linha { grid-template-columns: minmax(0, 1fr); gap: .2rem; }
 }
+
+/* Registro do combate: rodada mais recente em cima, turnos na ordem jogada */
+.cb-col-dir { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.cb-diario-topo { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.cb-diario-topo .card-title { margin-right: auto; margin-bottom: 0; }
+.cb-rolador { display: flex; gap: .35rem; flex-wrap: wrap; margin: .7rem 0 .5rem; }
+.cb-rolador input { padding: .35rem .5rem; font-size: .85rem; }
+#cbRoladorExpr { width: 7.5rem; font-family: monospace; }
+#cbRoladorMotivo { flex: 1; min-width: 8rem; }
+.cb-diario-filtros { display: flex; gap: .3rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.cb-diario-filtro { font-size: .75rem; padding: 2px 9px; border-radius: 9999px; cursor: pointer; color: #cbd5e1;
+  background: rgba(51,65,85,.5); border: 1px solid transparent; }
+.cb-diario-filtro em { font-style: normal; color: #94a3b8; font-size: .7rem; }
+.cb-diario-filtro.ativo { border-color: #a855f7; background: rgba(168,85,247,.2); color: #f3e8ff; }
+#cbDiario { max-height: 26rem; overflow-y: auto; scrollbar-width: thin; padding-right: .2rem; }
+.cb-diario-rodada { margin-bottom: .7rem; }
+.cb-diario-rodada h3 { position: sticky; top: 0; z-index: 1; font-family: 'Cinzel', serif; font-size: .85rem; color: #fbbf24;
+  background: rgba(15,22,41,.97); padding: .25rem 0; border-bottom: 1px solid rgba(245,158,11,.25); margin: 0 0 .3rem; }
+.cb-diario-vez { font-size: .7rem; text-transform: uppercase; letter-spacing: .5px; color: #64748b; margin: .45rem 0 .15rem; }
+.cb-diario-vez strong { color: #94a3b8; }
+.cb-diario-linha { display: grid; grid-template-columns: 1.3rem minmax(0, 1fr); gap: .3rem; align-items: baseline;
+  font-size: .83rem; line-height: 1.4; padding: .2rem .4rem; border-radius: 6px; border-left: 2px solid transparent; color: #cbd5e1; }
+.cb-diario-linha:nth-child(even) { background: rgba(51,65,85,.18); }
+.cb-dl-dado { border-left-color: #3b82f6; }
+.cb-dl-acao { border-left-color: #22c55e; }
+.cb-dl-pv { border-left-color: #ef4444; }
+.cb-dl-pv.cb-dl-cura { border-left-color: #10b981; }
+.cb-dl-cond { border-left-color: #a855f7; }
+.cb-dl-forte { background: rgba(245,158,11,.14) !important; color: #fde68a; }
+.cb-dl-quem.cb-dl-heroi { color: #93c5fd; }
+.cb-dl-quem.cb-dl-criatura { color: #fca5a5; }

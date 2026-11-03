@@ -55,10 +55,26 @@
 
       <div class="cb-layout">
         <div class="card cb-turno" id="cbTurno" aria-live="polite"></div>
-        <div class="card cb-ordem">
-          <h2 class="card-title">Ordem de Iniciativa</h2>
-          <div id="cbLista"></div>
-          <p class="cb-atalhos">Atalhos: <kbd>Espaço</kbd> próximo turno · <kbd>D</kbd> dano no turno atual · no campo de PV, <kbd>8</kbd> ou <kbd>-8</kbd> causa dano e <kbd>+8</kbd> cura (Enter).</p>
+        <div class="cb-col-dir">
+          <div class="card cb-ordem">
+            <h2 class="card-title">Ordem de Iniciativa</h2>
+            <div id="cbLista"></div>
+            <p class="cb-atalhos">Atalhos: <kbd>Espaço</kbd> próximo turno · <kbd>D</kbd> dano no turno atual · no campo de PV, <kbd>8</kbd> ou <kbd>-8</kbd> causa dano e <kbd>+8</kbd> cura (Enter).</p>
+          </div>
+          <div class="card cb-diario">
+            <div class="cb-diario-topo">
+              <h2 class="card-title">📜 Registro do combate</h2>
+              <button type="button" class="btn btn-secondary btn-sm" id="cbDiarioCopiar" title="Copia o registro como texto">📋 Copiar</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="cbDiarioLimpar" title="Apaga o registro (não mexe no combate)">🗑 Limpar</button>
+            </div>
+            <form class="cb-rolador" id="cbRolador">
+              <input type="text" id="cbRoladorExpr" placeholder="d20+5, 2d6+3…" aria-label="Expressão de dados" autocomplete="off" spellcheck="false">
+              <input type="text" id="cbRoladorMotivo" placeholder="motivo (salvaguarda de DES…)" aria-label="Motivo da rolagem" autocomplete="off">
+              <button type="submit" class="btn btn-accent btn-sm">🎲 Rolar</button>
+            </form>
+            <div class="cb-diario-filtros" id="cbDiarioFiltros" role="group" aria-label="Filtrar o registro"></div>
+            <div id="cbDiario" aria-live="polite"></div>
+          </div>
         </div>
       </div>
     </section>

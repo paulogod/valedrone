@@ -16,7 +16,8 @@ function saveData() {
     currentTurn: state.currentTurn,
     round: state.round,
     turnoId: state.turnoId,
-    registro: state.registro
+    registro: state.registro,
+    diario: state.diario
   }));
 }
 
@@ -28,6 +29,7 @@ const state = {
   round: saved?.round || 1,
   turnoId: saved?.turnoId ?? null,
   registro: saved?.registro || [],
+  diario: saved?.diario || [],
   editingIndex: -1 // New: tracking which character is being edited
 };
 
@@ -311,7 +313,7 @@ notesArea.addEventListener('input', () => { state.notes = notesArea.value; saveD
 document.getElementById('exportBtn').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify({
     entities: state.entities, notes: state.notes,
-    currentTurn: state.currentTurn, round: state.round, registro: state.registro, fichas: state.fichas,
+    currentTurn: state.currentTurn, round: state.round, registro: state.registro, diario: state.diario, fichas: state.fichas,
     // Bestiário e encontros ficam em bestiario.js / encontros.js
     bestiario: typeof bst !== 'undefined' ? bst.meus : [],
     encontros: typeof enc !== 'undefined' ? enc.salvos : [],
@@ -336,6 +338,7 @@ document.getElementById('importBtn').addEventListener('change', e => {
       state.currentTurn = data.currentTurn || 0;
       state.round = data.round || 1;
       state.registro = data.registro || [];
+      state.diario = data.diario || [];
       if (Array.isArray(data.fichas)) { state.fichas = data.fichas; salvarFichas(); }
       if (Array.isArray(data.bestiario) && typeof bst !== 'undefined') { bst.meus = data.bestiario; salvarBestiario(); renderBestiario(); }
       if (Array.isArray(data.encontros) && typeof enc !== 'undefined') { enc.salvos = data.encontros; salvarEncontros(); renderTabela(); }

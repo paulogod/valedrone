@@ -98,10 +98,47 @@ function registrar(e, tipo, v) {
   if (state.registro.length > 500) state.registro.splice(0, state.registro.length - 500);
 }
 
+// ---------- registro do combate (dados, ações, PV e condições) ----------
+// state.diario: cada linha guarda a rodada e de quem era o turno, para a lista
+// sair agrupada como foi jogada. As ações marcadas têm `chave`: desmarcar tira
+// a linha e mudar o comentário reescreve a mesma linha.
+const CB_DIARIO_TIPOS = [
+  { k: 'todos', nome: 'Tudo' }, { k: 'dado', nome: '🎲 Dados' }, { k: 'acao', nome: '✅ Ações' },
+  { k: 'pv', nome: '❤️ PV' }, { k: 'cond', nome: '🌀 Condições' }
+];
+const CB_DIARIO_ICONE = { dado: '🎲', acao: '✅', pv: '❤️', cond: '🌀', morte: '☠️' };
+
+function anotar(tipo, e, txt, extra) {
+  if (!Array.isArray(state.diario)) state.diario = [];
+  const vez = state.entities[state.currentTurn];
+  state.diario.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    r: state.round || 1, vez: vez ? vez.name : '', q: e ? e.name : '',
+    lado: e ? (ehHeroi(e) ? 'heroi' : 'criatura') : '', tipo, txt, ...(extra || {})
+  });
+  if (state.diario.length > 400) state.diario.splice(0, state.diario.length - 400);
+}
+
+/** Ação marcada vira linha do registro; desmarcada, sai */
+function anotarAcao(i, k) {
+  const e = state.entities[i];
+  if (!e) return;
+  const v = e.acoes[k];
+  const chave = `${state.round || 1}:${e.id}:${k}`;
+  const nome = CB_ACOES.find(a => a.k === k).nome;
+  const linha = (state.diario || []).find(d => d.chave === chave);
+  const txt = `${nome}${v.t.trim() ? ': ' + v.t.trim() : ''}`;
+  if (!v.ok) { if (linha) state.diario = state.diario.filter(d => d !== linha); }
+  else if (linha) linha.txt = txt;
+  else anotar('acao', e, txt, { chave });
+  renderDiario();
+}
+
 function aplicarDano(i, v) {
   const e = state.entities[i];
   if (!e || !v) return;
   registrar(e, 'dano', v);
+  const hpAntes = e.hp, caidoAntes = e.hp <= 0;
   const nome = e.name;
   if (ehHeroi(e) && e.hp <= 0) {
     // Dano em quem já está com 0 PV: uma falha no teste contra a morte
@@ -121,6 +158,8 @@ function aplicarDano(i, v) {
     avisos.push(`teste de Concentração CD ${Math.min(30, Math.max(10, Math.floor(v / 2)))} (CON)`);
   }
   avisoRapido(avisos.join(' · '), e.hp <= 0 || e.conc ? 'dif' : 'neutro');
+  anotar('pv', e, `sofreu ${v} de dano → ${e.hp}/${e.maxHp} PV${hpAntes > 0 && e.hp <= 0 ? (ehHeroi(e) ? ' · caiu' : ' · derrotado') : ''}${avisos.find(a => a.startsWith('teste de Conc')) ? ' · ' + avisos.find(a => a.startsWith('teste de Conc')) : ''}`,
+    { forte: e.hp <= 0 && !caidoAntes });
 }
 
 function aplicarCura(i, v) {
@@ -132,6 +171,7 @@ function aplicarCura(i, v) {
   registrar(e, 'cura', e.hp - antes);
   if (estavaCaido) e.ds = { s: 0, f: 0 };
   avisoRapido(`${e.name} +${v} PV${estavaCaido ? ' · levantou' : ''}`, 'neutro');
+  anotar('pv', e, `curou ${e.hp - antes} → ${e.hp}/${e.maxHp} PV${estavaCaido ? ' · levantou' : ''}`, { cura: true });
 }
 
 function aplicarEntradaDePv(i, txt) {
@@ -155,6 +195,7 @@ function rolarTesteDeMorte(i) {
   if (e.ds.s >= 3) msg += ' · estável';
   if (e.ds.f >= 3) msg += ' · morreu';
   cb.ultimaRolagem = `☠️ ${msg}`;
+  anotar('dado', e, `Teste contra a morte: ${msg.replace(e.name + ': ', '')}`, { forte: d20 === 20 || d20 === 1 });
   avisoRapido(msg, 'dif');
   renderEntities(); saveData();
 }
@@ -169,13 +210,15 @@ function adicionarCondicao(i, nome, rodadas) {
   const nomeFinal = dados ? nomeCurto(dados.name) : n;          // "agarrado" vira "Imobilizado", como no livro
   const ja = e.conditions.find(c => semAcento(c.n) === semAcento(nomeFinal));
   if (ja) ja.r = r; else e.conditions.push(dados && dados.id === 'exaustao' ? { n: nomeFinal, r, nivel: 1 } : { n: nomeFinal, r });
+  anotar('cond', e, `ficou ${nomeFinal}${r ? ` (${r} rodada${r > 1 ? 's' : ''})` : ''}`);
   cb.condAberta = null;
   renderEntities(); saveData();
 }
 function removerCondicao(i, k) {
   const e = state.entities[i];
   if (!e) return;
-  e.conditions.splice(k, 1);
+  const tirada = e.conditions.splice(k, 1)[0];
+  if (tirada) anotar('cond', e, `não está mais ${tirada.n}`);
   renderEntities(); saveData();
 }
 function chipsDeCondicao(e, i) {
@@ -225,7 +268,10 @@ function fimDoTurno(e) {
     if (c.r <= 0) { acabaram.push(c.n); return false; }
     return true;
   });
-  if (acabaram.length) avisoRapido(`${e.name}: acabou ${acabaram.join(', ')}`, 'dif');
+  if (acabaram.length) {
+    avisoRapido(`${e.name}: acabou ${acabaram.join(', ')}`, 'dif');
+    anotar('cond', e, `acabou: ${acabaram.join(', ')}`);
+  }
 }
 
 /** Começo do turno: Movimento, Ação, Ação Bônus e Reação voltam. Voltar e
@@ -316,7 +362,7 @@ function marcarAcao(i, k, ok) {
   const e = state.entities[i];
   if (!e) return;
   e.acoes[k].ok = ok;
-  refletirAcao(i, k); saveData();
+  refletirAcao(i, k); anotarAcao(i, k); saveData();
 }
 
 // ---------- links da criatura ----------
@@ -355,19 +401,25 @@ function rolarAcao(refId, secao, k) {
   if (!acao) return;
   const info = lerAcao(acao[1]);
   const partes = [];
-  let critico = false;
+  const detalhe = [];   // o mesmo, com os dados de cada rolagem, para o registro
+  let critico = false, d20 = null;
   if (info.atk !== null) {
-    const d20 = 1 + Math.floor(Math.random() * 20);
+    d20 = 1 + Math.floor(Math.random() * 20);
     critico = d20 === 20;
     partes.push(`${d20 + info.atk} para acertar (d20 ${d20}${d20 === 20 ? ' CRÍTICO' : d20 === 1 ? ' erro automático' : ''})`);
+    detalhe.push(partes[partes.length - 1]);
   }
-  if (info.cd) partes.push(`CD ${info.cd.v} ${info.cd.at}`);
+  if (info.cd) { partes.push(`CD ${info.cd.v} ${info.cd.at}`); detalhe.push(partes[partes.length - 1]); }
   info.danos.forEach(dn => {
     const r = rolarExpressao(dn.dados, critico);
     partes.push(`${r.total} ${CB_DANO_PT[dn.tipo] || dn.tipo}`);
+    detalhe.push(`${r.total} ${CB_DANO_PT[dn.tipo] || dn.tipo} [${dn.dados}${critico ? ' ×2 dados' : ''}: ${r.dados.join('+')}]`);
   });
   cb.ultimaRolagem = `🎲 ${acao[0]}: ${partes.join(' · ') || 'sem rolagem'}`;
-  renderTurnoAtual();
+  anotar('dado', state.entities[state.currentTurn], `${acao[0]}: ${detalhe.join(' · ') || 'sem rolagem'}`,
+    { forte: d20 === 20 || d20 === 1 });
+  saveData();
+  renderTurnoAtual(); renderDiario();
 }
 
 function acoesDoMonstro(m) {
@@ -510,6 +562,7 @@ function renderEntities() {
   if (marcador && document.activeElement !== marcador) marcador.value = atual ? (atual.turn_info || '') : '';
   renderTurnoAtual();
   renderLista();
+  renderDiario();
 }
 /** Nome antigo, ainda usado em app.js */
 function updateTurnCounter() { renderEntities(); }
@@ -528,6 +581,66 @@ function saveEdit(i) {
   state.entities.sort((a, b) => b.initiative - a.initiative);
   state.editingIndex = -1;
   renderEntities(); saveData();
+}
+
+// ---------- registro: desenho ----------
+/** Rodada mais recente em cima; dentro dela, na ordem em que aconteceu, por turno */
+function renderDiario() {
+  const box = document.getElementById('cbDiario');
+  const filtros = document.getElementById('cbDiarioFiltros');
+  if (!box) return;
+  const todas = state.diario || [];
+  const f = cb.diarioFiltro || 'todos';
+  if (filtros) filtros.innerHTML = CB_DIARIO_TIPOS.map(t => {
+    const n = t.k === 'todos' ? todas.length : todas.filter(d => d.tipo === t.k).length;
+    return `<button type="button" class="cb-diario-filtro ${f === t.k ? 'ativo' : ''}" data-cb-diario-filtro="${t.k}" aria-pressed="${f === t.k}">${t.nome} <em>${n}</em></button>`;
+  }).join('');
+  const linhas = todas.filter(d => f === 'todos' || d.tipo === f);
+  if (!linhas.length) {
+    box.innerHTML = `<p class="fichas-ajuda">${todas.length ? 'Nada deste tipo ainda.' : 'As rolagens, ações marcadas, dano, cura e condições aparecem aqui, por rodada.'}</p>`;
+    return;
+  }
+  const rodadas = [...new Set(linhas.map(d => d.r))].sort((a, b) => b - a);
+  box.innerHTML = rodadas.map(r => {
+    let vezAnterior = null;
+    const corpo = linhas.filter(d => d.r === r).map(d => {
+      const cab = d.vez !== vezAnterior ? `<div class="cb-diario-vez">Turno de <strong>${esc(d.vez || '—')}</strong></div>` : '';
+      vezAnterior = d.vez;
+      return `${cab}<div class="cb-diario-linha cb-dl-${d.tipo} ${d.forte ? 'cb-dl-forte' : ''} ${d.cura ? 'cb-dl-cura' : ''}">
+        <span class="cb-dl-icone" aria-hidden="true">${CB_DIARIO_ICONE[d.tipo] || '•'}</span>
+        <span><strong class="cb-dl-quem cb-dl-${d.lado}">${esc(d.q || 'Mestre')}</strong> ${esc(d.txt)}</span>
+      </div>`;
+    }).join('');
+    return `<section class="cb-diario-rodada"><h3>Rodada ${r}</h3>${corpo}</section>`;
+  }).join('');
+}
+
+/** O registro em texto, na ordem em que foi jogado */
+function diarioEmTexto() {
+  const linhas = [];
+  let r = null, vez = null;
+  (state.diario || []).forEach(d => {
+    if (d.r !== r) { linhas.push('', `— Rodada ${d.r} —`); r = d.r; vez = null; }
+    if (d.vez !== vez) { linhas.push(`Turno de ${d.vez || '—'}`); vez = d.vez; }
+    linhas.push(`  ${CB_DIARIO_ICONE[d.tipo] || '•'} ${d.q || 'Mestre'} ${d.txt}`);
+  });
+  return linhas.join('\n').trim();
+}
+
+/** Rolador livre do mestre: "d20+5", "2d6+3", "4d6-1"; vai para o registro no nome de quem está no turno */
+function rolarLivre(expr, motivo) {
+  const t = String(expr || '').toLowerCase().replace(/\s+/g, '').replace(/[−–]/g, '-');
+  const m = t.match(/^(\d*)d(\d+)([+-]\d+)?$/);
+  if (!m || +m[2] < 2 || +(m[1] || 1) > 100) { avisoRapido('Use algo como d20+5 ou 2d6+3.', 'neutro'); return false; }
+  const qtd = +(m[1] || 1), lados = +m[2], mod = m[3] ? +m[3] : 0;
+  const dados = Array.from({ length: qtd }, () => 1 + Math.floor(Math.random() * lados));
+  const total = dados.reduce((a, b) => a + b, 0) + mod;
+  const nat = qtd === 1 && lados === 20 ? dados[0] : null;
+  const txt = `${motivo ? motivo + ': ' : ''}${total} [${qtd}d${lados}${mod ? sinalCb(mod) : ''}: ${dados.join('+')}]${nat === 20 ? ' · 20 natural!' : nat === 1 ? ' · 1 natural' : ''}`;
+  anotar('dado', state.entities[state.currentTurn], txt, { forte: nat === 20 || nat === 1 });
+  cb.ultimaRolagem = `🎲 ${txt}`;
+  renderTurnoAtual(); renderDiario(); saveData();
+  return true;
 }
 
 // ---------- eventos ----------
@@ -557,6 +670,27 @@ function saveEdit(i) {
     state.entities = state.entities.filter(e => !foraDeCombate(e));
     renderEntities(); saveData();
   });
+  document.getElementById('cbRolador').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const expr = document.getElementById('cbRoladorExpr');
+    if (rolarLivre(expr.value, document.getElementById('cbRoladorMotivo').value.trim())) expr.select();
+  });
+  document.getElementById('cbDiarioFiltros').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-cb-diario-filtro]');
+    if (b) { cb.diarioFiltro = b.dataset.cbDiarioFiltro; renderDiario(); }
+  });
+  document.getElementById('cbDiarioLimpar').addEventListener('click', () => {
+    if (!(state.diario || []).length) return;
+    if (!confirm('Apagar o registro do combate? O combate em si não muda.')) return;
+    state.diario = []; renderDiario(); saveData();
+  });
+  document.getElementById('cbDiarioCopiar').addEventListener('click', async () => {
+    const texto = diarioEmTexto();
+    if (!texto) { avisoRapido('O registro está vazio.', 'neutro'); return; }
+    try { await navigator.clipboard.writeText(texto); avisoRapido('Registro copiado.', 'neutro'); }
+    catch (err) { avisoRapido('Não deu para copiar neste navegador.', 'neutro'); }
+  });
+
   document.getElementById('turnMarker').addEventListener('input', e => {
     const atual = state.entities[state.currentTurn];
     if (atual) { atual.turn_info = e.target.value; saveData(); }
@@ -577,7 +711,7 @@ function saveEdit(i) {
     if (!e) return;
     e.acoes[k].t = c.value;
     if (c.value.trim()) e.acoes[k].ok = true;
-    refletirAcao(+i, k); saveData();
+    refletirAcao(+i, k); anotarAcao(+i, k); saveData();
   });
 
   raiz.addEventListener('submit', ev => {
