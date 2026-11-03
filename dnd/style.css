@@ -1455,6 +1455,32 @@ select.form-control option {
   transition: all 0.2s ease;
 }
 
+/* Celular: as cinco abas numa grade de colunas iguais, ícone em cima e rótulo
+   curto embaixo (como a barra de um app). Em linha, com ícone ao lado do texto,
+   elas não cabiam abaixo de ~440px e a última ficava fora da tela. */
+@media (max-width: 767.98px) {
+  .app-mode-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2px;
+  }
+  .app-mode-btn {
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0.4rem 0.1rem;
+    font-size: 0.68rem;
+    line-height: 1.1;
+  }
+  .app-mode-btn i { font-size: 1rem; }
+  .app-mode-btn > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+@media (max-width: 359.98px) {
+  .app-mode-bar { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .app-mode-btn { font-size: 0.6rem; padding-left: 0; padding-right: 0; }
+}
+
 @media (min-width: 768px) {
   .app-mode-btn {
     flex: 0 0 auto;
