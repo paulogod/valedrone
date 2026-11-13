@@ -11155,6 +11155,9 @@ function bindEvents() {
   document.getElementById("btnManageChars").addEventListener("click", () => {
     renderSavedCharsList();
     manageModal.classList.add("active");
+    if (typeof sincronizarFichasJogadorComDrive === "function" && window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn()) {
+      sincronizarFichasJogadorComDrive(true);
+    }
   });
   document.getElementById("closeManageCharsModal").addEventListener("click", () => {
     manageModal.classList.remove("active");
@@ -11618,8 +11621,8 @@ function importCharacterJson(e) {
       const data = JSON.parse(event.target.result);
       if (data && data.class1) {
         applyLoadedCharacter(data);
-        saveToLocalStorage();
-        showToast(`✅ Ficha "${character.name || "sem nome"}" importada — assistente e ficha preenchidos!`);
+        saveToLocalStorage(true);
+        showToast(`✅ Ficha "${character.name || "sem nome"}" importada e salva!`);
       } else {
         alert("Formato de arquivo JSON inválido para ficha de D&D.");
       }
@@ -13248,12 +13251,30 @@ async function sincronizarFichasJogadorComDrive(silencioso = false) {
   _sincronizandoDriveJogador = true;
 
   try {
-    const remotos = await window.VDGoogleDrive.listMySheets();
     const savedList = JSON.parse(localStorage.getItem("dnd55_saved_characters") || "[]");
+
+    // Inclui na lista local a ficha aberta na tela (ou da sessão anterior) se ela tiver conteúdo
+    const temConteudo = (c) => c && !c._fichaDoMestre && (
+      (c.name && c.name.trim() !== "") ||
+      (c.class1 && c.class1 !== "none") ||
+      (c.species && c.species !== "none")
+    );
+    if (!_fichaDoMestre && temConteudo(character)) {
+      recalculateCharacter();
+      const idxAtivo = savedList.findIndex(c => c.id === character.id);
+      if (idxAtivo >= 0) savedList[idxAtivo] = character;
+      else savedList.push(character);
+    }
+    const sessaoAnterior = getCachedSession();
+    if (temConteudo(sessaoAnterior) && !savedList.some(c => c.id === sessaoAnterior.id)) {
+      savedList.push(sessaoAnterior);
+    }
+
+    const remotos = await window.VDGoogleDrive.listMySheets();
     let baixadas = 0;
     let enviadas = 0;
 
-    // 1. Baixa fichas do Drive que não existem localmente ou que estão mais novas no Drive
+    // 1. Baixa fichas do Drive/Nuvem que não existem localmente ou que estão mais novas
     for (const arq of remotos) {
       const charIdProp = arq.appProperties && arq.appProperties.vdCharId;
       const idx = savedList.findIndex(c => c.driveFileId === arq.id || (charIdProp && c.id === charIdProp));
@@ -13278,15 +13299,21 @@ async function sincronizarFichasJogadorComDrive(silencioso = false) {
       }
     }
 
-    // 2. Envia fichas salvas localmente que ainda não estão no Google Drive
+    // 2. Envia fichas salvas localmente que ainda não estão no Google Drive (ou que só tinham ID temporário)
+    const temTokenOAuth = window.VDGoogleDrive.hasDriveToken && window.VDGoogleDrive.hasDriveToken();
     for (let i = 0; i < savedList.length; i++) {
       const c = savedList[i];
-      if (!c.driveFileId && c.class1 && c.class1 !== "none") {
+      const precisaSubir = !c.driveFileId || (temTokenOAuth && String(c.driveFileId).startsWith("cloud_"));
+      if (precisaSubir && temConteudo(c)) {
         try {
           const res = await window.VDGoogleDrive.saveSheetToDrive(c, { updatedBy: "jogador" });
           if (res && res.id) {
             c.driveFileId = res.id;
             c.driveModifiedTime = res.modifiedTime;
+            if (character && character.id === c.id) {
+              character.driveFileId = res.id;
+              character.driveModifiedTime = res.modifiedTime;
+            }
             enviadas++;
           }
         } catch (e) {
@@ -13298,9 +13325,21 @@ async function sincronizarFichasJogadorComDrive(silencioso = false) {
     localStorage.setItem("dnd55_saved_characters", JSON.stringify(savedList));
     renderSavedCharsList();
 
-    if (!silencioso) {
+    // Se a tela atual estava em branco e baixamos fichas do Drive neste dispositivo,
+    // carrega na hora (se for 1 ficha) ou abre a janela de Salvos para o jogador escolher!
+    const telaEmBranco = (!character.name || !character.name.trim()) && (!character.class1 || character.class1 === "none");
+    if (telaEmBranco && savedList.length > 0 && !_fichaDoMestre) {
+      if (savedList.length === 1) {
+        applyLoadedCharacter(savedList[0]);
+        showToast(`☁️ Ficha "${savedList[0].name || "sem nome"}" carregada do seu Google Drive!`);
+      } else {
+        const modal = document.getElementById("manageCharsModal");
+        if (modal) modal.classList.add("active");
+        showToast(`☁️ ${savedList.length} fichas encontradas na sua conta! Escolha qual abrir.`);
+      }
+    } else if (!silencioso) {
       if (baixadas || enviadas) {
-        showToast(`☁️ Google Drive sincronizado (${baixadas} baixada(s), ${enviadas} enviada(s)).`);
+        showToast(`☁️ Sincronizado (${baixadas} baixada(s), ${enviadas} enviada(s) ao Drive).`);
       } else {
         showToast("☁️ Suas fichas já estão sincronizadas com o Google Drive!");
       }
