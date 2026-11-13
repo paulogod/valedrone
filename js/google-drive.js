@@ -370,14 +370,24 @@
   }
 
   /**
-   * Abre o modal de Login com Gmail:
-   * Permite entrar em 1 segundo digitando o Gmail (sincronização na nuvem sem bloqueio do Google Cloud)
-   * OU autenticar direto na API do Google Drive via OAuth.
+   * Faz o login oficial via Google OAuth (salvando as fichas dentro do Google Drive da conta).
+   * Caso o usuário feche ou ocorra algum bloqueio, oferece o modal de fallback.
    */
-  function login(options = {}) {
+  async function login(options = {}) {
     if (options && options.silent && isLoggedIn()) {
-      return Promise.resolve(getAuthState());
+      return getAuthState();
     }
+    try {
+      return await startGoogleOAuthPopup(options);
+    } catch (oauthErr) {
+      if (oauthErr && /fechada/i.test(oauthErr.message)) {
+        throw oauthErr;
+      }
+      return openFallbackLoginModal(options, oauthErr);
+    }
+  }
+
+  function openFallbackLoginModal(options = {}, oauthErr = null) {
     return new Promise((resolve, reject) => {
       let overlay = document.getElementById('vdLoginModal');
       if (overlay) overlay.remove();
@@ -394,43 +404,35 @@
         <div style="background:#111827;border:1px solid #4c1d95;border-radius:16px;max-width:460px;width:100%;padding:1.5rem;color:#f8fafc;box-shadow:0 20px 50px rgba(0,0,0,0.7);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
             <h3 style="margin:0;font-size:1.15rem;color:#f3e8ff;display:flex;align-items:center;gap:0.5rem;">
-              🎲 Conectar Conta Gmail (ValeDrone RPG)
+              🎲 Conectar Conta Gmail (Google Drive)
             </h3>
             <button type="button" id="vdLgClose" style="background:none;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;">✕</button>
           </div>
-          <p style="font-size:0.84rem;color:#cbd5e1;line-height:1.45;margin:0 0 1rem;">
-            Informe seu Gmail para salvar suas fichas na nuvem e vincular em tempo real entre <strong>/dnd</strong> (Jogadores) e <strong>/rpg</strong> (Mestre):
-          </p>
-          <form id="vdLgFastForm" style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:1rem;margin-bottom:0.9rem;">
+          ${oauthErr ? `<p style="font-size:0.8rem;color:#fca5a5;margin:0 0 0.75rem;">Aviso OAuth: ${oauthErr.message}</p>` : ''}
+          <button type="button" id="vdLgOAuthBtn" style="width:100%;padding:0.7rem 1rem;border-radius:8px;border:none;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-weight:700;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-bottom:0.9rem;">
+            🔑 Entrar com Google (Salvar no Google Drive)
+          </button>
+          <form id="vdLgFastForm" style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:1rem;">
             <div style="margin-bottom:0.65rem;">
-              <label style="display:block;font-size:0.76rem;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">Seu E-mail (Gmail)</label>
+              <label style="display:block;font-size:0.76rem;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">Ou entrar rápido com seu E-mail</label>
               <input type="email" id="vdLgEmail" value="${savedEmail.replace(/"/g, '&quot;')}" placeholder="exemplo@gmail.com" required
                 style="width:100%;box-sizing:border-box;padding:0.6rem 0.75rem;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#f8fafc;font-size:0.9rem;">
             </div>
             <div style="margin-bottom:0.85rem;">
-              <label style="display:block;font-size:0.76rem;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">Seu Nome (Mestre ou Jogador)</label>
+              <label style="display:block;font-size:0.76rem;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">Seu Nome</label>
               <input type="text" id="vdLgName" value="${savedName.replace(/"/g, '&quot;')}" placeholder="Ex: Paulo Godoy"
                 style="width:100%;box-sizing:border-box;padding:0.6rem 0.75rem;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#f8fafc;font-size:0.9rem;">
             </div>
-            <button type="submit" style="width:100%;padding:0.65rem 1rem;border-radius:8px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;cursor:pointer;font-size:0.9rem;box-shadow:0 4px 12px rgba(34,197,94,0.3);">
-              ⚡ Entrar Agora e Sincronizar na Nuvem
+            <button type="submit" style="width:100%;padding:0.55rem 1rem;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#cbd5e1;font-weight:600;cursor:pointer;font-size:0.84rem;">
+              ⚡ Continuar só com E-mail
             </button>
           </form>
-
-          <div style="text-align:center;position:relative;margin:0.75rem 0;">
-            <span style="font-size:0.75rem;color:#64748b;background:#111827;padding:0 0.5rem;">ou, se já liberou os testadores no Google Cloud:</span>
-          </div>
-
-          <button type="button" id="vdLgOAuthBtn" style="width:100%;padding:0.55rem 1rem;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#cbd5e1;font-weight:600;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
-            🔑 Conectar também ao Google Drive (OAuth)
-          </button>
         </div>
       `;
 
       document.body.appendChild(overlay);
       const emailIn = overlay.querySelector('#vdLgEmail');
       const nameIn = overlay.querySelector('#vdLgName');
-      setTimeout(() => emailIn && emailIn.focus(), 50);
 
       const close = (err) => {
         overlay.remove();
@@ -461,10 +463,7 @@
           overlay.remove();
           resolve(st);
         } catch (err) {
-          alert(
-            'O Google Cloud ainda bloqueou o OAuth (' + err.message + ').\n\n' +
-            'Use o botão verde "⚡ Entrar Agora e Sincronizar na Nuvem" logo acima — ele funciona na hora com o seu Gmail sem precisar do Google Cloud!'
-          );
+          alert('Erro ao autenticar no Google: ' + err.message);
         }
       };
     });
