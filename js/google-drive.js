@@ -106,6 +106,14 @@
     return gsiLoadPromise;
   }
 
+  function getRedirectUri() {
+    const origin = window.location.origin;
+    const path = window.location.pathname || '/';
+    if (path.startsWith('/dnd')) return origin + '/dnd/';
+    if (path.startsWith('/rpg')) return origin + '/rpg/';
+    return origin;
+  }
+
   async function fetchUserInfo(accessToken) {
     const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: `Bearer ${accessToken}` }
@@ -113,6 +121,65 @@
     if (!res.ok) throw new Error('Falha ao obter dados da conta Google.');
     return res.json();
   }
+
+  async function finalizeTokenLogin(accessToken, expiresInSec) {
+    const prevAuth = getAuthState();
+    const expiresIn = Number(expiresInSec || 3599);
+    const expiresAt = Date.now() + expiresIn * 1000;
+    let user = (prevAuth && prevAuth.user) || { email: '', name: 'Usuário Google', picture: '' };
+    try {
+      const info = await fetchUserInfo(accessToken);
+      user = {
+        email: (info.email || '').toLowerCase().trim(),
+        name: info.name || info.given_name || info.email || 'Jogador',
+        picture: info.picture || '',
+        sub: info.sub || ''
+      };
+    } catch (err) {
+      console.warn('Aviso ao ler perfil Google:', err);
+    }
+    const newState = { accessToken, expiresAt, user };
+    saveAuthState(newState);
+    return newState;
+  }
+
+  // Captura o token caso esta janela seja o retorno do redirecionamento OAuth (#access_token=...)
+  (function handleOAuthHashCallback() {
+    const hash = window.location.hash || '';
+    if (!hash || (!hash.includes('access_token=') && !hash.includes('error='))) return;
+    const params = new URLSearchParams(hash.replace(/^#/, ''));
+    const accessToken = params.get('access_token');
+    const error = params.get('error');
+    const expiresIn = params.get('expires_in');
+
+    // Limpa o hash da URL para não ficar exposto na barra de endereços
+    try {
+      history.replaceState(null, document.title, window.location.pathname + window.location.search);
+    } catch (e) {}
+
+    if (error) {
+      if (window.opener && window.opener !== window) {
+        try {
+          window.opener.postMessage({ type: 'vd-google-oauth-error', error }, window.location.origin);
+          window.close();
+        } catch (e) {}
+      }
+      return;
+    }
+
+    if (accessToken) {
+      finalizeTokenLogin(accessToken, expiresIn).then((newState) => {
+        if (window.opener && window.opener !== window) {
+          try {
+            window.opener.postMessage({ type: 'vd-google-oauth-success', auth: newState }, window.location.origin);
+          } catch (e) {}
+          setTimeout(() => {
+            try { window.close(); } catch (e) {}
+          }, 150);
+        }
+      });
+    }
+  })();
 
   async function login(options = {}) {
     const clientId = getClientId();
@@ -122,55 +189,96 @@
       return login(options);
     }
 
-    await loadGsiScript();
-
     const prevAuth = getAuthState();
     const hintEmail = (options.loginHint || (prevAuth && prevAuth.user && prevAuth.user.email)) || '';
+    const redirectUri = getRedirectUri();
+
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.set('client_id', clientId);
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('response_type', 'token');
+    authUrl.searchParams.set('scope', SCOPES);
+    authUrl.searchParams.set('include_granted_scopes', 'true');
+    if (options.prompt !== undefined && options.prompt !== '') {
+      authUrl.searchParams.set('prompt', options.prompt);
+    } else if (!prevAuth) {
+      authUrl.searchParams.set('prompt', 'select_account');
+    }
+    if (hintEmail) {
+      authUrl.searchParams.set('login_hint', hintEmail);
+    }
+
+    const w = 520;
+    const h = 640;
+    const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - w) / 2));
+    const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - h) / 2));
+    const popup = window.open(
+      authUrl.toString(),
+      'vd_google_oauth_popup',
+      `width=${w},height=${h},left=${left},top=${top},menubar=no,toolbar=no,location=yes,status=no,resizable=yes,scrollbars=yes`
+    );
+
+    // Se o navegador bloqueou popup (ex: celular), redireciona na mesma aba
+    if (!popup) {
+      window.location.href = authUrl.toString();
+      return new Promise(() => {});
+    }
 
     return new Promise((resolve, reject) => {
-      try {
-        tokenClient = window.google.accounts.oauth2.initTokenClient({
-          client_id: clientId,
-          scope: SCOPES,
-          callback: async (tokenResponse) => {
-            if (tokenResponse.error) {
-              reject(new Error(tokenResponse.error_description || tokenResponse.error));
-              return;
-            }
-            const accessToken = tokenResponse.access_token;
-            const expiresIn = Number(tokenResponse.expires_in || 3599);
-            const expiresAt = Date.now() + expiresIn * 1000;
-            let user = (prevAuth && prevAuth.user) || { email: '', name: 'Usuário Google', picture: '' };
-            try {
-              const info = await fetchUserInfo(accessToken);
-              user = {
-                email: (info.email || '').toLowerCase().trim(),
-                name: info.name || info.given_name || info.email || 'Jogador',
-                picture: info.picture || '',
-                sub: info.sub || ''
-              };
-            } catch (err) {
-              console.warn('Aviso ao ler perfil Google:', err);
-            }
-            const newState = { accessToken, expiresAt, user };
-            saveAuthState(newState);
-            resolve(newState);
-          },
-          error_callback: (err) => {
-            reject(new Error((err && err.message) || 'Janela de login fechada ou bloqueada.'));
+      let finished = false;
+
+      const cleanup = () => {
+        finished = true;
+        window.removeEventListener('message', onMessage);
+        window.removeEventListener('storage', onStorage);
+        clearInterval(checkClosedTimer);
+      };
+
+      const onMessage = (ev) => {
+        if (ev.origin !== window.location.origin) return;
+        const data = ev.data;
+        if (!data || typeof data !== 'object') return;
+        if (data.type === 'vd-google-oauth-success' && data.auth) {
+          cleanup();
+          saveAuthState(data.auth);
+          resolve(data.auth);
+        } else if (data.type === 'vd-google-oauth-error') {
+          cleanup();
+          reject(new Error('Erro no login Google: ' + (data.error || 'acesso negado')));
+        }
+      };
+
+      const onStorage = (ev) => {
+        if (ev.key === AUTH_STORAGE_KEY && ev.newValue) {
+          const st = getAuthState();
+          if (isTokenValid(st)) {
+            cleanup();
+            try { popup.close(); } catch (e) {}
+            resolve(st);
           }
-        });
-        activeClientId = clientId;
+        }
+      };
 
-        const reqConfig = {};
-        if (options.prompt !== undefined) reqConfig.prompt = options.prompt;
-        else if (!prevAuth) reqConfig.prompt = 'consent';
-        if (hintEmail) reqConfig.hint = hintEmail;
+      window.addEventListener('message', onMessage);
+      window.addEventListener('storage', onStorage);
 
-        tokenClient.requestAccessToken(reqConfig);
-      } catch (err) {
-        reject(err);
-      }
+      const checkClosedTimer = setInterval(() => {
+        if (finished) return;
+        const st = getAuthState();
+        if (isTokenValid(st) && (!prevAuth || st.expiresAt !== prevAuth.expiresAt)) {
+          cleanup();
+          resolve(st);
+          return;
+        }
+        try {
+          if (popup.closed) {
+            cleanup();
+            const finalSt = getAuthState();
+            if (isTokenValid(finalSt)) resolve(finalSt);
+            else reject(new Error('Janela de login fechada antes de concluir.'));
+          }
+        } catch (e) { /* COOP em página externa */ }
+      }, 500);
     });
   }
 
