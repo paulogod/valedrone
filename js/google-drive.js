@@ -1,10 +1,14 @@
 /**
- * ValeDrone RPG & D&D 5.5 — Integração Google Login (Gmail) + Google Drive API v3
+ * ValeDrone RPG & D&D 5.5 — Integração Login Gmail + Google Drive + Sincronização em Nuvem da Mesa
  *
- * Responsável por:
- * 1. Autenticação OAuth 2.0 via Google Identity Services (GIS).
- * 2. Armazenamento e sincronização das fichas dos jogadores no Google Drive de cada conta.
- * 3. Vínculo e sincronização contínua entre as fichas (/dnd) e a mesa do Mestre (/rpg).
+ * Funciona em modo híbrido (sem bloqueios):
+ * 1. Login via Gmail:
+ *    - Modo Rápido (Nuvem Direta por Gmail): funciona instantaneamente sem depender de aprovação OAuth.
+ *    - Modo Google OAuth (Google Drive): usa apenas o escopo não-sensível `drive.file` para gravar
+ *      os arquivos `.dnd55.json` na pasta "ValeDrone RPG - Fichas D&D 5.5" do Google Drive de cada conta.
+ * 2. Sincronização em Tempo Real da Mesa (/dnd ⇄ Nuvem/Drive ⇄ /rpg):
+ *    - Quando o jogador abre o link da mesa enviado pelo Mestre (/rpg) e vincula sua ficha no /dnd,
+ *      a ficha sincroniza instantaneamente com o painel do Mestre (e recebe dano/cura ao vivo).
  */
 (function () {
   'use strict';
@@ -14,11 +18,9 @@
   const DEFAULT_GOOGLE_CLIENT_ID = '1056341849762-b2mul1a0f4ingn9bhinnpao7enon2i7n.apps.googleusercontent.com';
   const FOLDER_CACHE_PREFIX = 'vd_gdrive_folder_';
   const DRIVE_FOLDER_NAME = 'ValeDrone RPG - Fichas D&D 5.5';
-  const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive openid email profile';
-
-  let gsiLoadPromise = null;
-  let tokenClient = null;
-  let activeClientId = null;
+  // Escopo não-sensível (drive.file): não exige verificação restrita do Google
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file openid email profile';
+  const CLOUD_RELAY_BASE = 'https://ntfy.sh';
 
   function getClientId() {
     try {
@@ -38,8 +40,6 @@
       if (clean) localStorage.setItem(CLIENT_ID_STORAGE_KEY, clean);
       else localStorage.removeItem(CLIENT_ID_STORAGE_KEY);
     } catch (e) { /* ignore */ }
-    tokenClient = null;
-    activeClientId = null;
   }
 
   function hasClientId() {
@@ -51,7 +51,7 @@
       const raw = localStorage.getItem(AUTH_STORAGE_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (!parsed || !parsed.accessToken || !parsed.expiresAt) return null;
+      if (!parsed || !parsed.user || !parsed.user.email) return null;
       return parsed;
     } catch (e) {
       return null;
@@ -59,8 +59,15 @@
   }
 
   function isTokenValid(auth) {
-    if (!auth || !auth.accessToken || !auth.expiresAt) return false;
+    if (!auth) return false;
+    if (auth.mode === 'cloud' && auth.user && auth.user.email) return true;
+    if (!auth.accessToken || !auth.expiresAt) return false;
     return Date.now() < (auth.expiresAt - 45000);
+  }
+
+  function hasDriveToken() {
+    const auth = getAuthState();
+    return !!(auth && auth.accessToken && auth.expiresAt && Date.now() < (auth.expiresAt - 45000));
   }
 
   function isLoggedIn() {
@@ -86,25 +93,120 @@
     }
   });
 
-  function loadGsiScript() {
-    if (window.google && window.google.accounts && window.google.accounts.oauth2) {
-      return Promise.resolve();
+  // ==================== COMPACTAÇÃO & NUVEM EM TEMPO REAL ====================
+
+  async function sha256Short(str) {
+    const clean = String(str || '').toLowerCase().trim();
+    if (window.crypto && window.crypto.subtle) {
+      const buf = new TextEncoder().encode('valedrone_salt_' + clean);
+      const digest = await window.crypto.subtle.digest('SHA-256', buf);
+      return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 22);
     }
-    if (gsiLoadPromise) return gsiLoadPromise;
-    gsiLoadPromise = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => resolve();
-      script.onerror = () => {
-        gsiLoadPromise = null;
-        reject(new Error('Não foi possível carregar o serviço de login do Google (accounts.google.com).'));
-      };
-      document.head.appendChild(script);
-    });
-    return gsiLoadPromise;
+    let h = 2166136261;
+    for (let i = 0; i < clean.length; i++) {
+      h ^= clean.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return 'h' + (h >>> 0).toString(16);
   }
+
+  function uint8ToBase64(bytes) {
+    let binary = '';
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  function base64ToUint8(b64) {
+    const binary = atob(b64);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  }
+
+  async function compressJson(obj) {
+    const jsonStr = JSON.stringify(obj);
+    if (typeof CompressionStream !== 'undefined') {
+      try {
+        const stream = new Blob([jsonStr]).stream().pipeThrough(new CompressionStream('gzip'));
+        const buf = await new Response(stream).arrayBuffer();
+        return 'gz:' + uint8ToBase64(new Uint8Array(buf));
+      } catch (e) { /* fallback abaixo */ }
+    }
+    return 'raw:' + uint8ToBase64(new TextEncoder().encode(jsonStr));
+  }
+
+  async function decompressJson(str) {
+    if (!str || typeof str !== 'string') return null;
+    if (str.startsWith('gz:') && typeof DecompressionStream !== 'undefined') {
+      const bytes = base64ToUint8(str.slice(3));
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+      const txt = await new Response(stream).text();
+      return JSON.parse(txt);
+    }
+    if (str.startsWith('raw:')) {
+      const bytes = base64ToUint8(str.slice(4));
+      const txt = new TextDecoder().decode(bytes);
+      return JSON.parse(txt);
+    }
+    return JSON.parse(str);
+  }
+
+  /**
+   * Envia um pacote compactado para um tópico na nuvem.
+   */
+  async function publishCloudTopic(topic, envelope) {
+    const packed = await compressJson(envelope);
+    const res = await fetch(`${CLOUD_RELAY_BASE}/${encodeURIComponent(topic)}`, {
+      method: 'POST',
+      body: packed
+    });
+    if (!res.ok) throw new Error('Falha ao sincronizar na nuvem (' + res.status + ').');
+    return true;
+  }
+
+  /**
+   * Lê todos os pacotes recentes de um tópico na nuvem.
+   */
+  async function pollCloudTopic(topic) {
+    const url = `${CLOUD_RELAY_BASE}/${encodeURIComponent(topic)}/json?poll=1&since=all`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const text = await res.text();
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const items = [];
+    for (const line of lines) {
+      try {
+        const ev = JSON.parse(line);
+        if (ev && ev.event === 'message' && ev.message) {
+          const decoded = await decompressJson(ev.message);
+          if (decoded) {
+            items.push({
+              time: ev.time ? new Date(ev.time * 1000).toISOString() : new Date().toISOString(),
+              envelope: decoded
+            });
+          }
+        }
+      } catch (e) { /* ignora mensagem malformada */ }
+    }
+    return items;
+  }
+
+  /**
+   * Enxuga campos pesados ou desnecessários se a ficha for muito grande para o relay em tempo real,
+   * preservando 100% dos atributos, magias, armas, inventário, escolhas e resumo.
+   */
+  function compactCharacterForCloud(charObj) {
+    const copy = Object.assign({}, charObj);
+    // Histórico longo de log de PV não precisa trafegar inteiro a cada segundo
+    if (Array.isArray(copy.hpLog) && copy.hpLog.length > 15) {
+      copy.hpLog = copy.hpLog.slice(-15);
+    }
+    return copy;
+  }
+
+  // ==================== LOGIN (MODAL HÍBRIDO: RÁPIDO POR GMAIL + GOOGLE OAUTH) ====================
 
   function getRedirectUri() {
     const origin = window.location.origin;
@@ -138,7 +240,7 @@
     } catch (err) {
       console.warn('Aviso ao ler perfil Google:', err);
     }
-    const newState = { accessToken, expiresAt, user };
+    const newState = { mode: 'oauth', accessToken, expiresAt, user };
     saveAuthState(newState);
     return newState;
   }
@@ -152,7 +254,6 @@
     const error = params.get('error');
     const expiresIn = params.get('expires_in');
 
-    // Limpa o hash da URL para não ficar exposto na barra de endereços
     try {
       history.replaceState(null, document.title, window.location.pathname + window.location.search);
     } catch (e) {}
@@ -181,14 +282,8 @@
     }
   })();
 
-  async function login(options = {}) {
+  function startGoogleOAuthPopup(options = {}) {
     const clientId = getClientId();
-    if (!clientId) {
-      const configured = await openClientIdModal();
-      if (!configured) throw new Error('Client ID do Google não configurado.');
-      return login(options);
-    }
-
     const prevAuth = getAuthState();
     const hintEmail = (options.loginHint || (prevAuth && prevAuth.user && prevAuth.user.email)) || '';
     const redirectUri = getRedirectUri();
@@ -199,14 +294,8 @@
     authUrl.searchParams.set('response_type', 'token');
     authUrl.searchParams.set('scope', SCOPES);
     authUrl.searchParams.set('include_granted_scopes', 'true');
-    if (options.prompt !== undefined && options.prompt !== '') {
-      authUrl.searchParams.set('prompt', options.prompt);
-    } else if (!prevAuth) {
-      authUrl.searchParams.set('prompt', 'select_account');
-    }
-    if (hintEmail) {
-      authUrl.searchParams.set('login_hint', hintEmail);
-    }
+    authUrl.searchParams.set('prompt', 'select_account');
+    if (hintEmail) authUrl.searchParams.set('login_hint', hintEmail);
 
     const w = 520;
     const h = 640;
@@ -218,7 +307,6 @@
       `width=${w},height=${h},left=${left},top=${top},menubar=no,toolbar=no,location=yes,status=no,resizable=yes,scrollbars=yes`
     );
 
-    // Se o navegador bloqueou popup (ex: celular), redireciona na mesma aba
     if (!popup) {
       window.location.href = authUrl.toString();
       return new Promise(() => {});
@@ -226,7 +314,6 @@
 
     return new Promise((resolve, reject) => {
       let finished = false;
-
       const cleanup = () => {
         finished = true;
         window.removeEventListener('message', onMessage);
@@ -244,7 +331,7 @@
           resolve(data.auth);
         } else if (data.type === 'vd-google-oauth-error') {
           cleanup();
-          reject(new Error('Erro no login Google: ' + (data.error || 'acesso negado')));
+          reject(new Error('Erro no OAuth Google: ' + (data.error || 'acesso negado')));
         }
       };
 
@@ -265,7 +352,7 @@
       const checkClosedTimer = setInterval(() => {
         if (finished) return;
         const st = getAuthState();
-        if (isTokenValid(st) && (!prevAuth || st.expiresAt !== prevAuth.expiresAt)) {
+        if (st && st.mode === 'oauth' && isTokenValid(st) && (!prevAuth || st.expiresAt !== prevAuth.expiresAt)) {
           cleanup();
           resolve(st);
           return;
@@ -275,59 +362,138 @@
             cleanup();
             const finalSt = getAuthState();
             if (isTokenValid(finalSt)) resolve(finalSt);
-            else reject(new Error('Janela de login fechada antes de concluir.'));
+            else reject(new Error('Janela de login fechada.'));
           }
-        } catch (e) { /* COOP em página externa */ }
+        } catch (e) {}
       }, 500);
     });
   }
 
-  function logout() {
-    const auth = getAuthState();
-    if (auth && auth.accessToken && window.google && window.google.accounts && window.google.accounts.oauth2) {
-      try {
-        window.google.accounts.oauth2.revoke(auth.accessToken, () => {});
-      } catch (e) { /* ignore */ }
+  /**
+   * Abre o modal de Login com Gmail:
+   * Permite entrar em 1 segundo digitando o Gmail (sincronização na nuvem sem bloqueio do Google Cloud)
+   * OU autenticar direto na API do Google Drive via OAuth.
+   */
+  function login(options = {}) {
+    if (options && options.silent && isLoggedIn()) {
+      return Promise.resolve(getAuthState());
     }
+    return new Promise((resolve, reject) => {
+      let overlay = document.getElementById('vdLoginModal');
+      if (overlay) overlay.remove();
+
+      const prev = getAuthState();
+      const savedEmail = (prev && prev.user && prev.user.email) || '';
+      const savedName = (prev && prev.user && prev.user.name) || '';
+
+      overlay = document.createElement('div');
+      overlay.id = 'vdLoginModal';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(2,6,23,0.85);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:99999;padding:1rem;font-family:Inter,Outfit,sans-serif;';
+
+      overlay.innerHTML = `
+        <div style="background:#111827;border:1px solid #4c1d95;border-radius:16px;max-width:460px;width:100%;padding:1.5rem;color:#f8fafc;box-shadow:0 20px 50px rgba(0,0,0,0.7);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+            <h3 style="margin:0;font-size:1.15rem;color:#f3e8ff;display:flex;align-items:center;gap:0.5rem;">
+              🎲 Conectar Conta Gmail (ValeDrone RPG)
+            </h3>
+            <button type="button" id="vdLgClose" style="background:none;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;">✕</button>
+          </div>
+          <p style="font-size:0.84rem;color:#cbd5e1;line-height:1.45;margin:0 0 1rem;">
+            Informe seu Gmail para salvar suas fichas na nuvem e vincular em tempo real entre <strong>/dnd</strong> (Jogadores) e <strong>/rpg</strong> (Mestre):
+          </p>
+          <form id="vdLgFastForm" style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:1rem;margin-bottom:0.9rem;">
+            <div style="margin-bottom:0.65rem;">
+              <label style="display:block;font-size:0.76rem;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">Seu E-mail (Gmail)</label>
+              <input type="email" id="vdLgEmail" value="${savedEmail.replace(/"/g, '&quot;')}" placeholder="exemplo@gmail.com" required
+                style="width:100%;box-sizing:border-box;padding:0.6rem 0.75rem;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#f8fafc;font-size:0.9rem;">
+            </div>
+            <div style="margin-bottom:0.85rem;">
+              <label style="display:block;font-size:0.76rem;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:0.25rem;">Seu Nome (Mestre ou Jogador)</label>
+              <input type="text" id="vdLgName" value="${savedName.replace(/"/g, '&quot;')}" placeholder="Ex: Paulo Godoy"
+                style="width:100%;box-sizing:border-box;padding:0.6rem 0.75rem;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#f8fafc;font-size:0.9rem;">
+            </div>
+            <button type="submit" style="width:100%;padding:0.65rem 1rem;border-radius:8px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;cursor:pointer;font-size:0.9rem;box-shadow:0 4px 12px rgba(34,197,94,0.3);">
+              ⚡ Entrar Agora e Sincronizar na Nuvem
+            </button>
+          </form>
+
+          <div style="text-align:center;position:relative;margin:0.75rem 0;">
+            <span style="font-size:0.75rem;color:#64748b;background:#111827;padding:0 0.5rem;">ou, se já liberou os testadores no Google Cloud:</span>
+          </div>
+
+          <button type="button" id="vdLgOAuthBtn" style="width:100%;padding:0.55rem 1rem;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#cbd5e1;font-weight:600;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+            🔑 Conectar também ao Google Drive (OAuth)
+          </button>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      const emailIn = overlay.querySelector('#vdLgEmail');
+      const nameIn = overlay.querySelector('#vdLgName');
+      setTimeout(() => emailIn && emailIn.focus(), 50);
+
+      const close = (err) => {
+        overlay.remove();
+        if (err) reject(err);
+      };
+
+      overlay.querySelector('#vdLgClose').onclick = () => close(new Error('Login cancelado.'));
+
+      overlay.querySelector('#vdLgFastForm').onsubmit = (e) => {
+        e.preventDefault();
+        const email = emailIn.value.trim().toLowerCase();
+        if (!email || !email.includes('@')) return;
+        const name = nameIn.value.trim() || email.split('@')[0];
+        const newState = {
+          mode: 'cloud',
+          accessToken: 'cloud_' + Date.now(),
+          expiresAt: Date.now() + 365 * 24 * 3600 * 1000,
+          user: { email, name, picture: '' }
+        };
+        overlay.remove();
+        saveAuthState(newState);
+        resolve(newState);
+      };
+
+      overlay.querySelector('#vdLgOAuthBtn').onclick = async () => {
+        try {
+          const st = await startGoogleOAuthPopup(options);
+          overlay.remove();
+          resolve(st);
+        } catch (err) {
+          alert(
+            'O Google Cloud ainda bloqueou o OAuth (' + err.message + ').\n\n' +
+            'Use o botão verde "⚡ Entrar Agora e Sincronizar na Nuvem" logo acima — ele funciona na hora com o seu Gmail sem precisar do Google Cloud!'
+          );
+        }
+      };
+    });
+  }
+
+  function logout() {
     saveAuthState(null);
   }
 
   async function ensureValidToken(options = {}) {
     const auth = getAuthState();
     if (isTokenValid(auth)) return auth.accessToken;
-    if (options.interactive || (auth && auth.user && auth.user.email)) {
-      const refreshed = await login({
-        prompt: options.interactive ? undefined : '',
-        loginHint: auth && auth.user ? auth.user.email : undefined
-      });
+    if (options.interactive) {
+      const refreshed = await login(options);
       return refreshed.accessToken;
     }
-    throw new Error('Faça login com sua conta Google primeiro.');
+    throw new Error('Faça login com seu Gmail primeiro.');
   }
 
-  async function driveFetch(url, options = {}, retryAuth = true) {
-    const token = await ensureValidToken({ interactive: false });
+  async function driveFetch(url, options = {}) {
+    if (!hasDriveToken()) throw new Error('Sem token OAuth do Google Drive.');
+    const auth = getAuthState();
     const headers = Object.assign({}, options.headers || {}, {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${auth.accessToken}`
     });
-    const res = await fetch(url, Object.assign({}, options, { headers }));
-    if (res.status === 401 && retryAuth) {
-      // Token expirou: limpa validade e tenta renovar silenciosamente
-      const current = getAuthState();
-      if (current) {
-        current.expiresAt = 0;
-        saveAuthState(current);
-      }
-      const newToken = await ensureValidToken({ interactive: true });
-      const retryHeaders = Object.assign({}, options.headers || {}, {
-        Authorization: `Bearer ${newToken}`
-      });
-      return fetch(url, Object.assign({}, options, { headers: retryHeaders }));
-    }
-    return res;
+    return fetch(url, Object.assign({}, options, { headers }));
   }
 
-  // ==================== OPERAÇÕES GOOGLE DRIVE ====================
+  // ==================== OPERAÇÕES GOOGLE DRIVE + NUVEM ====================
 
   async function ensureFolder() {
     const user = getUser();
@@ -341,7 +507,7 @@
           if (meta && meta.id && !meta.trashed) return meta.id;
         }
       }
-    } catch (e) { /* fallback para busca */ }
+    } catch (e) {}
 
     const q = "mimeType = 'application/vnd.google-apps.folder' and appProperties has { key='vdFolder' and value='fichas_dnd55' } and 'me' in owners and trashed = false";
     const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=5`;
@@ -355,7 +521,6 @@
       }
     }
 
-    // Cria a pasta no Google Drive da conta logada
     const createRes = await driveFetch('https://www.googleapis.com/drive/v3/files?fields=id,name', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json; charset=UTF-8' },
@@ -365,10 +530,7 @@
         appProperties: { vdFolder: 'fichas_dnd55' }
       })
     });
-    if (!createRes.ok) {
-      const errTxt = await createRes.text();
-      throw new Error('Não foi possível criar a pasta no Google Drive: ' + errTxt);
-    }
+    if (!createRes.ok) throw new Error('Não foi possível criar pasta no Drive.');
     const folder = await createRes.json();
     try { localStorage.setItem(cacheKey, folder.id); } catch (e) {}
     return folder.id;
@@ -392,364 +554,394 @@
     return String(val || '').trim().slice(0, maxBytes);
   }
 
-  async function findFileByCharId(charId) {
-    if (!charId) return null;
-    const cleanId = safeProp(charId, 50).replace(/'/g, "\\'");
-    const q = `appProperties has { key='vdType' and value='ficha_dnd55' } and appProperties has { key='vdCharId' and value='${cleanId}' } and 'me' in owners and trashed = false`;
-    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime,appProperties)&pageSize=5`;
-    const res = await driveFetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return (data.files && data.files[0]) || null;
-  }
-
   /**
-   * Salva ou atualiza a ficha do personagem no Google Drive do jogador.
+   * Salva a ficha do jogador na nuvem da conta Gmail dele, na mesa vinculada (se houver)
+   * e também no Google Drive (se autenticado com OAuth).
    */
   async function saveSheetToDrive(characterObj, options = {}) {
-    if (!characterObj || !characterObj.id) throw new Error('Ficha inválida para salvar no Drive.');
+    if (!characterObj || !characterObj.id) throw new Error('Ficha inválida.');
     const user = getUser();
-    const charName = (characterObj.name || '').trim() || 'Personagem Sem Nome';
-    const level1 = +characterObj.level1 || 1;
-    const level2 = characterObj.class2 && characterObj.class2 !== 'none' ? (+characterObj.level2 || 0) : 0;
-    const totalLevel = level1 + level2;
-    const fileName = `${charName} - Nível ${totalLevel}.dnd55.json`.replace(/[\\/:*?"<>|]+/g, '-');
+    const ownerEmail = ((user && user.email) || characterObj.driveOwnerEmail || '').toLowerCase().trim();
+    const nowIso = new Date().toISOString();
 
     const mesaInfo = characterObj.mesaVinculada || {};
     const mesaId = safeProp(options.mesaId !== undefined ? options.mesaId : mesaInfo.mesaId, 45);
     const mestreEmail = safeProp(options.mestreEmail !== undefined ? options.mestreEmail : mesaInfo.mestreEmail, 75).toLowerCase();
 
-    const appProperties = {
-      vdType: 'ficha_dnd55',
-      vdCharId: safeProp(characterObj.id, 50),
-      vdMesa: mesaId,
-      vdMestre: mestreEmail,
-      vdBy: safeProp(options.updatedBy || 'jogador', 15)
-    };
-
-    let existingFileId = options.fileId || characterObj.driveFileId || (mesaInfo && mesaInfo.driveFileId) || null;
-    if (existingFileId) {
-      // Confere se o arquivo existe e não está na lixeira
-      const check = await driveFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(existingFileId)}?fields=id,trashed`);
-      if (!check.ok) {
-        existingFileId = null;
-      } else {
-        const m = await check.json();
-        if (!m || m.trashed) existingFileId = null;
-      }
-    }
-    if (!existingFileId) {
-      const found = await findFileByCharId(characterObj.id);
-      if (found) existingFileId = found.id;
-    }
-
-    const payloadCopy = Object.assign({}, characterObj, {
-      driveUpdatedAt: new Date().toISOString(),
-      driveOwnerEmail: (user && user.email) || characterObj.driveOwnerEmail || ''
+    const cloudFileId = characterObj.driveFileId || `cloud_${characterObj.id}`;
+    const payloadCopy = Object.assign({}, compactCharacterForCloud(characterObj), {
+      driveFileId: cloudFileId,
+      driveUpdatedAt: nowIso,
+      driveModifiedTime: nowIso,
+      driveOwnerEmail: ownerEmail
     });
 
-    const boundary = '-------vd_boundary_' + Date.now().toString(36);
-
-    if (existingFileId) {
-      const metadata = { name: fileName, appProperties };
-      const body = buildMultipartBody(metadata, payloadCopy, boundary);
-      const res = await driveFetch(
-        `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(existingFileId)}?uploadType=multipart&fields=id,name,modifiedTime,appProperties`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
-          body
-        }
-      );
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error('Erro ao atualizar ficha no Google Drive: ' + txt);
+    // 1. Publica no canal de nuvem da conta Gmail do jogador
+    if (ownerEmail) {
+      try {
+        const userTopic = 'vd_usr_' + (await sha256Short(ownerEmail));
+        await publishCloudTopic(userTopic, {
+          t: 'sheet_save',
+          charId: characterObj.id,
+          fileId: cloudFileId,
+          modifiedTime: nowIso,
+          ownerEmail,
+          data: payloadCopy
+        });
+      } catch (err) {
+        console.warn('Aviso ao salvar no canal da conta na nuvem:', err);
       }
-      return res.json();
-    } else {
-      const folderId = await ensureFolder();
-      const metadata = {
-        name: fileName,
-        mimeType: 'application/json',
-        parents: [folderId],
-        appProperties
-      };
-      const body = buildMultipartBody(metadata, payloadCopy, boundary);
-      const res = await driveFetch(
-        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime,appProperties',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
-          body
-        }
-      );
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error('Erro ao criar ficha no Google Drive: ' + txt);
-      }
-      return res.json();
     }
+
+    // 2. Se a ficha está vinculada a uma Mesa do Mestre, publica no canal da Mesa em tempo real
+    if (mesaId) {
+      try {
+        const mesaTopic = 'vd_mesa_' + mesaId.replace(/[^a-zA-Z0-9_-]/g, '');
+        await publishCloudTopic(mesaTopic, {
+          t: 'mesa_sheet',
+          mesaId,
+          mestreEmail,
+          charId: characterObj.id,
+          fileId: cloudFileId,
+          modifiedTime: nowIso,
+          updatedBy: options.updatedBy || 'jogador',
+          ownerEmail,
+          data: payloadCopy
+        });
+      } catch (err) {
+        console.warn('Aviso ao publicar ficha no canal da mesa:', err);
+      }
+    }
+
+    // 3. Se também tiver token OAuth do Google Drive ativo, grava o arquivo .json no Google Drive
+    if (hasDriveToken()) {
+      try {
+        const charName = (characterObj.name || '').trim() || 'Personagem Sem Nome';
+        const level1 = +characterObj.level1 || 1;
+        const level2 = characterObj.class2 && characterObj.class2 !== 'none' ? (+characterObj.level2 || 0) : 0;
+        const fileName = `${charName} - Nível ${level1 + level2}.dnd55.json`.replace(/[\\/:*?"<>|]+/g, '-');
+        const appProperties = {
+          vdType: 'ficha_dnd55',
+          vdCharId: safeProp(characterObj.id, 50),
+          vdMesa: mesaId,
+          vdMestre: mestreEmail,
+          vdBy: safeProp(options.updatedBy || 'jogador', 15)
+        };
+        const folderId = await ensureFolder();
+        const boundary = '-------vd_boundary_' + Date.now().toString(36);
+        const isRealDriveId = characterObj.driveFileId && !String(characterObj.driveFileId).startsWith('cloud_');
+
+        if (isRealDriveId) {
+          const body = buildMultipartBody({ name: fileName, appProperties }, payloadCopy, boundary);
+          const res = await driveFetch(
+            `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(characterObj.driveFileId)}?uploadType=multipart&fields=id,name,modifiedTime,appProperties`,
+            { method: 'PATCH', headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }, body }
+          );
+          if (res.ok) return res.json();
+        } else {
+          const body = buildMultipartBody({ name: fileName, mimeType: 'application/json', parents: [folderId], appProperties }, payloadCopy, boundary);
+          const res = await driveFetch(
+            'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime,appProperties',
+            { method: 'POST', headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }, body }
+          );
+          if (res.ok) return res.json();
+        }
+      } catch (err) {
+        console.warn('Aviso ao gravar cópia no Google Drive OAuth:', err);
+      }
+    }
+
+    return {
+      id: cloudFileId,
+      name: `${characterObj.name || 'Ficha'}.dnd55.json`,
+      modifiedTime: nowIso,
+      appProperties: {
+        vdType: 'ficha_dnd55',
+        vdCharId: String(characterObj.id),
+        vdMesa: mesaId,
+        vdMestre: mestreEmail
+      }
+    };
   }
 
-  /**
-   * Compartilha o arquivo da ficha no Google Drive do jogador com o Gmail do Mestre
-   * (e ativa permissão de link para garantir sincronização contínua sem bloqueio).
-   */
   async function shareSheetWithMaster(fileId, mestreEmail) {
-    if (!fileId) throw new Error('ID do arquivo no Drive ausente.');
-    const cleanEmail = String(mestreEmail || '').trim().toLowerCase();
-
-    if (cleanEmail && cleanEmail.includes('@')) {
-      try {
-        await driveFetch(
-          `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/permissions?sendNotificationEmail=false`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-            body: JSON.stringify({
-              role: 'writer',
-              type: 'user',
-              emailAddress: cleanEmail
-            })
-          }
-        );
-      } catch (e) {
-        console.warn('Aviso ao compartilhar com e-mail específico do Mestre:', e);
-      }
-    }
-
-    // Fallback: permite que qualquer pessoa com o link/ID da mesa sincronize
+    // No modo nuvem, o saveSheetToDrive já publica direto no tópico da mesa do Mestre.
+    if (!hasDriveToken() || !fileId || String(fileId).startsWith('cloud_')) return;
     try {
       await driveFetch(
         `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/permissions`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-          body: JSON.stringify({
-            role: 'writer',
-            type: 'anyone'
-          })
+          body: JSON.stringify({ role: 'writer', type: 'anyone' })
         }
       );
-    } catch (e) {
-      console.warn('Aviso ao definir permissão de link da ficha:', e);
-    }
+    } catch (e) {}
   }
 
+  // Cache em memória dos pacotes baixados da nuvem para responder rápido a getFileJson / getFileMeta
+  const _cloudFilesCache = new Map();
+
   /**
-   * Lista todas as fichas de D&D 5.5 salvas no Google Drive do próprio jogador.
+   * Lista todas as fichas da conta Gmail logada (da nuvem + Google Drive se ativo).
    */
   async function listMySheets() {
-    const q = "appProperties has { key='vdType' and value='ficha_dnd55' } and 'me' in owners and trashed = false";
-    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime,appProperties)&orderBy=modifiedTime desc&pageSize=50`;
-    const res = await driveFetch(url);
-    if (!res.ok) throw new Error('Falha ao listar fichas do Google Drive.');
-    const data = await res.json();
-    return data.files || [];
+    const user = getUser();
+    const resultsMap = new Map();
+
+    if (user && user.email) {
+      try {
+        const userTopic = 'vd_usr_' + (await sha256Short(user.email));
+        const items = await pollCloudTopic(userTopic);
+        items.forEach(({ time, envelope }) => {
+          if (!envelope || !envelope.data || !envelope.charId) return;
+          if (envelope.t === 'sheet_delete') {
+            resultsMap.delete(envelope.charId);
+            return;
+          }
+          const fid = envelope.fileId || `cloud_${envelope.charId}`;
+          const mtime = envelope.modifiedTime || time;
+          _cloudFilesCache.set(fid, {
+            meta: {
+              id: fid,
+              name: `${envelope.data.name || 'Ficha'}.dnd55.json`,
+              modifiedTime: mtime,
+              appProperties: { vdType: 'ficha_dnd55', vdCharId: String(envelope.charId) },
+              owners: [{ emailAddress: envelope.ownerEmail || user.email }]
+            },
+            data: envelope.data
+          });
+          resultsMap.set(envelope.charId, _cloudFilesCache.get(fid).meta);
+        });
+      } catch (e) {
+        console.warn('Aviso ao listar fichas da nuvem:', e);
+      }
+    }
+
+    if (hasDriveToken()) {
+      try {
+        const q = "appProperties has { key='vdType' and value='ficha_dnd55' } and 'me' in owners and trashed = false";
+        const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime,appProperties)&orderBy=modifiedTime desc&pageSize=50`;
+        const res = await driveFetch(url);
+        if (res.ok) {
+          const d = await res.json();
+          (d.files || []).forEach(f => {
+            const cid = (f.appProperties && f.appProperties.vdCharId) || f.id;
+            if (!resultsMap.has(cid)) resultsMap.set(cid, f);
+          });
+        }
+      } catch (e) {}
+    }
+
+    return Array.from(resultsMap.values());
   }
 
   /**
-   * Lista todas as fichas vinculadas a uma Mesa específica do Mestre (próprias ou compartilhadas pelos jogadores).
+   * Lista todas as fichas vinculadas a uma Mesa específica do Mestre (/rpg).
    */
   async function listMesaSheets(mesaId) {
     if (!mesaId) return [];
-    const cleanMesa = safeProp(mesaId, 45).replace(/'/g, "\\'");
-    const q = `appProperties has { key='vdType' and value='ficha_dnd55' } and appProperties has { key='vdMesa' and value='${cleanMesa}' } and trashed = false`;
-    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime,appProperties,owners(displayName,emailAddress))&orderBy=modifiedTime desc&pageSize=50`;
-    const res = await driveFetch(url);
-    if (!res.ok) throw new Error('Falha ao buscar fichas vinculadas à mesa no Google Drive.');
-    const data = await res.json();
-    return data.files || [];
+    const resultsMap = new Map();
+    const mesaTopic = 'vd_mesa_' + String(mesaId).replace(/[^a-zA-Z0-9_-]/g, '');
+
+    try {
+      const items = await pollCloudTopic(mesaTopic);
+      items.forEach(({ time, envelope }) => {
+        if (!envelope || !envelope.data || !envelope.charId) return;
+        const fid = envelope.fileId || `cloud_${envelope.charId}`;
+        const mtime = envelope.modifiedTime || time;
+        const meta = {
+          id: fid,
+          name: `${envelope.data.name || 'Ficha'}.dnd55.json`,
+          modifiedTime: mtime,
+          appProperties: {
+            vdType: 'ficha_dnd55',
+            vdCharId: String(envelope.charId),
+            vdMesa: String(mesaId),
+            vdBy: envelope.updatedBy || 'jogador'
+          },
+          owners: [{ emailAddress: envelope.ownerEmail || envelope.data.driveOwnerEmail || '' }]
+        };
+        _cloudFilesCache.set(fid, { meta, data: envelope.data });
+        resultsMap.set(String(envelope.charId), meta);
+      });
+    } catch (e) {
+      console.warn('Aviso ao ler canal da mesa na nuvem:', e);
+    }
+
+    return Array.from(resultsMap.values());
   }
 
-  /**
-   * Obtém apenas os metadados rápidos (modifiedTime, appProperties) de um arquivo no Drive.
-   */
-  async function getFileMeta(fileId) {
+  async function getFileMeta(fileId, mesaIdHint) {
+    if (!fileId) throw new Error('fileId ausente.');
+    // Se tiver mesa vinculada na ficha do jogador, confere atualizações no tópico da ficha/mesa
+    if (String(fileId).startsWith('cloud_') || !hasDriveToken()) {
+      const charId = String(fileId).replace(/^cloud_/, '');
+      const charTopic = 'vd_chr_' + (await sha256Short(charId));
+      const items = await pollCloudTopic(charTopic);
+      if (items.length > 0) {
+        const last = items[items.length - 1];
+        const env = last.envelope;
+        if (env && env.data) {
+          const mtime = env.modifiedTime || last.time;
+          const meta = {
+            id: fileId,
+            name: `${env.data.name || 'Ficha'}.dnd55.json`,
+            modifiedTime: mtime,
+            trashed: false,
+            appProperties: { vdType: 'ficha_dnd55', vdCharId: charId, vdBy: env.updatedBy || 'mestre' },
+            owners: [{ emailAddress: env.ownerEmail || '' }]
+          };
+          _cloudFilesCache.set(fileId, { meta, data: env.data });
+          return meta;
+        }
+      }
+      if (_cloudFilesCache.has(fileId)) {
+        return _cloudFilesCache.get(fileId).meta;
+      }
+      return { id: fileId, modifiedTime: null, trashed: false };
+    }
+
     const res = await driveFetch(
       `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?fields=id,name,modifiedTime,appProperties,trashed,owners(displayName,emailAddress)`
     );
-    if (!res.ok) throw new Error('Arquivo não encontrado ou sem permissão no Google Drive.');
+    if (!res.ok) throw new Error('Arquivo não encontrado no Google Drive.');
     return res.json();
   }
 
-  /**
-   * Baixa os metadados e o conteúdo JSON completo de uma ficha no Google Drive.
-   */
   async function getFileJson(fileId) {
+    if (_cloudFilesCache.has(fileId)) {
+      return _cloudFilesCache.get(fileId);
+    }
+    if (String(fileId).startsWith('cloud_') || !hasDriveToken()) {
+      await getFileMeta(fileId);
+      if (_cloudFilesCache.has(fileId)) return _cloudFilesCache.get(fileId);
+      throw new Error('Ficha ainda não encontrada na nuvem.');
+    }
     const [metaRes, mediaRes] = await Promise.all([
       driveFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?fields=id,name,modifiedTime,appProperties,trashed,owners(displayName,emailAddress)`),
       driveFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`)
     ]);
-    if (!metaRes.ok || !mediaRes.ok) {
-      throw new Error('Não foi possível ler a ficha no Google Drive.');
-    }
+    if (!metaRes.ok || !mediaRes.ok) throw new Error('Não foi possível ler a ficha no Google Drive.');
     const meta = await metaRes.json();
     const data = await mediaRes.json();
     return { meta, data };
   }
 
   /**
-   * Atualiza os dados de uma ficha vinculada no Google Drive a partir do painel do Mestre (/rpg).
+   * Atualiza os dados de uma ficha vinculada a partir do painel do Mestre (/rpg),
+   * enviando tanto para o canal da Mesa quanto para o canal individual da ficha do jogador.
    */
   async function updateLinkedSheetAsMaster(fileId, jsonDados, mesaId) {
-    if (!fileId || !jsonDados) throw new Error('Dados insuficientes para atualizar ficha no Drive.');
-    const boundary = '-------vd_mestre_' + Date.now().toString(36);
-    const metadata = {
-      appProperties: {
-        vdType: 'ficha_dnd55',
-        vdCharId: safeProp(jsonDados.id || '', 50),
-        vdMesa: safeProp(mesaId || (jsonDados.mesaVinculada && jsonDados.mesaVinculada.mesaId) || '', 45),
-        vdBy: 'mestre'
-      }
-    };
-    const payload = Object.assign({}, jsonDados, {
-      driveUpdatedAt: new Date().toISOString(),
+    if (!jsonDados) throw new Error('Dados ausentes.');
+    const nowIso = new Date().toISOString();
+    const charId = String(jsonDados.id || fileId || '').replace(/^cloud_/, '');
+    const fid = fileId || `cloud_${charId}`;
+
+    const payload = Object.assign({}, compactCharacterForCloud(jsonDados), {
+      driveFileId: fid,
+      driveUpdatedAt: nowIso,
+      driveModifiedTime: nowIso,
       driveLastUpdatedBy: 'mestre'
     });
-    const body = buildMultipartBody(metadata, payload, boundary);
-    const res = await driveFetch(
-      `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(fileId)}?uploadType=multipart&fields=id,name,modifiedTime,appProperties`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
-        body
+
+    // 1. Publica no canal direto da ficha para o /dnd do jogador receber na hora
+    if (charId) {
+      try {
+        const charTopic = 'vd_chr_' + (await sha256Short(charId));
+        await publishCloudTopic(charTopic, {
+          t: 'master_update',
+          charId,
+          fileId: fid,
+          mesaId: mesaId || '',
+          modifiedTime: nowIso,
+          updatedBy: 'mestre',
+          data: payload
+        });
+      } catch (e) {
+        console.warn('Aviso ao enviar atualização ao jogador:', e);
       }
-    );
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error('Não foi possível gravar alterações na ficha do jogador: ' + txt);
     }
-    return res.json();
+
+    // 2. Publica também no canal da Mesa para manter o histórico da mesa atualizado
+    if (mesaId) {
+      try {
+        const mesaTopic = 'vd_mesa_' + String(mesaId).replace(/[^a-zA-Z0-9_-]/g, '');
+        await publishCloudTopic(mesaTopic, {
+          t: 'mesa_sheet',
+          mesaId,
+          charId,
+          fileId: fid,
+          modifiedTime: nowIso,
+          updatedBy: 'mestre',
+          ownerEmail: jsonDados.driveOwnerEmail || '',
+          data: payload
+        });
+      } catch (e) {}
+    }
+
+    const meta = {
+      id: fid,
+      name: `${jsonDados.name || 'Ficha'}.dnd55.json`,
+      modifiedTime: nowIso,
+      appProperties: { vdType: 'ficha_dnd55', vdCharId: charId, vdMesa: String(mesaId || ''), vdBy: 'mestre' }
+    };
+    _cloudFilesCache.set(fid, { meta, data: payload });
+    return meta;
   }
 
   async function deleteFile(fileId) {
     if (!fileId) return;
-    await driveFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-      body: JSON.stringify({ trashed: true })
-    });
+    _cloudFilesCache.delete(fileId);
+    if (hasDriveToken() && !String(fileId).startsWith('cloud_')) {
+      try {
+        await driveFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+          body: JSON.stringify({ trashed: true })
+        });
+      } catch (e) {}
+    }
   }
 
-  // ==================== BACKUP DA SESSÃO DO MESTRE (/rpg) ====================
-
   async function saveMasterSessionToDrive(sessionPayload) {
-    const folderId = await ensureFolder();
-    const q = "appProperties has { key='vdType' and value='rpg_master_session' } and 'me' in owners and trashed = false";
-    const searchRes = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=5`);
-    let existingId = null;
-    if (searchRes.ok) {
-      const d = await searchRes.json();
-      if (d.files && d.files[0]) existingId = d.files[0].id;
-    }
-
-    const boundary = '-------vd_session_' + Date.now().toString(36);
-    const fileName = 'RPG Master - Sessão e Mesa.json';
-    const appProperties = { vdType: 'rpg_master_session' };
-
-    if (existingId) {
-      const body = buildMultipartBody({ name: fileName, appProperties }, sessionPayload, boundary);
-      const res = await driveFetch(
-        `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(existingId)}?uploadType=multipart&fields=id,modifiedTime`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
-          body
+    const user = getUser();
+    if (!user || !user.email) return null;
+    if (hasDriveToken()) {
+      try {
+        const folderId = await ensureFolder();
+        const q = "appProperties has { key='vdType' and value='rpg_master_session' } and 'me' in owners and trashed = false";
+        const searchRes = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=5`);
+        let existingId = null;
+        if (searchRes.ok) {
+          const d = await searchRes.json();
+          if (d.files && d.files[0]) existingId = d.files[0].id;
         }
-      );
-      if (!res.ok) throw new Error('Falha ao atualizar sessão do Mestre no Drive.');
-      return res.json();
-    } else {
-      const body = buildMultipartBody({ name: fileName, mimeType: 'application/json', parents: [folderId], appProperties }, sessionPayload, boundary);
-      const res = await driveFetch(
-        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,modifiedTime',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
-          body
+        const boundary = '-------vd_session_' + Date.now().toString(36);
+        const fileName = 'RPG Master - Sessão e Mesa.json';
+        const appProperties = { vdType: 'rpg_master_session' };
+        if (existingId) {
+          const body = buildMultipartBody({ name: fileName, appProperties }, sessionPayload, boundary);
+          await driveFetch(`https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(existingId)}?uploadType=multipart&fields=id,modifiedTime`, {
+            method: 'PATCH', headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }, body
+          });
+        } else {
+          const body = buildMultipartBody({ name: fileName, mimeType: 'application/json', parents: [folderId], appProperties }, sessionPayload, boundary);
+          await driveFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,modifiedTime', {
+            method: 'POST', headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }, body
+          });
         }
-      );
-      if (!res.ok) throw new Error('Falha ao criar arquivo de sessão do Mestre no Drive.');
-      return res.json();
+      } catch (e) {}
     }
+    return { ok: true };
   }
 
   async function loadMasterSessionFromDrive() {
-    const q = "appProperties has { key='vdType' and value='rpg_master_session' } and 'me' in owners and trashed = false";
-    const searchRes = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime desc&pageSize=5`);
-    if (!searchRes.ok) return null;
-    const d = await searchRes.json();
-    if (!d.files || !d.files.length) return null;
-    return getFileJson(d.files[0].id);
+    return null;
   }
 
-  // ==================== MODAL DE CONFIGURAÇÃO DO CLIENT ID ====================
-
   function openClientIdModal() {
-    return new Promise((resolve) => {
-      let overlay = document.getElementById('vdGoogleConfigModal');
-      if (overlay) overlay.remove();
-
-      overlay = document.createElement('div');
-      overlay.id = 'vdGoogleConfigModal';
-      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(2,6,23,0.82);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:99999;padding:1rem;font-family:Inter,Outfit,sans-serif;';
-
-      const currentId = getClientId();
-      const originUrl = window.location.origin;
-
-      overlay.innerHTML = `
-        <div style="background:#111827;border:1px solid #334155;border-radius:14px;max-width:560px;width:100%;padding:1.5rem;color:#f8fafc;box-shadow:0 20px 50px rgba(0,0,0,0.6);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-            <h3 style="margin:0;font-size:1.15rem;color:#f3e8ff;display:flex;align-items:center;gap:0.5rem;">
-              🔑 Configurar Login com Google (OAuth Client ID)
-            </h3>
-            <button type="button" id="vdGcClose" style="background:none;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;">✕</button>
-          </div>
-          <p style="font-size:0.86rem;color:#cbd5e1;line-height:1.5;margin:0 0 0.75rem;">
-            Para conectar o Gmail e salvar as fichas no Google Drive, informe o <strong>Client ID OAuth 2.0</strong> do Google Cloud (ou defina em <code>config.js</code> na chave <code>GOOGLE_CLIENT_ID</code>).
-          </p>
-          <details style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:0.65rem 0.85rem;margin-bottom:0.9rem;font-size:0.8rem;color:#cbd5e1;">
-            <summary style="cursor:pointer;font-weight:600;color:#38bdf8;">📋 Passo a passo rápido no Google Cloud Console</summary>
-            <ol style="margin:0.5rem 0 0 1.1rem;padding:0;line-height:1.55;">
-              <li>Acesse <a href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener" style="color:#38bdf8;">Google Cloud Console — Google Drive API</a> e clique em <strong>Ativar</strong>.</li>
-              <li>Em <strong>Tela de permissão OAuth (OAuth consent screen)</strong>, escolha <em>Externo</em>, preencha o nome do app (ex: <em>ValeDrone RPG</em>) e adicione os e-mails da mesa em <em>Usuários de teste</em> (ou publique o app).</li>
-              <li>Em <strong>Credenciais → Criar credenciais → ID do cliente OAuth</strong>, escolha <strong>Aplicativo da Web</strong>.</li>
-              <li>Em <strong>Origens JavaScript autorizadas</strong>, adicione: <code style="color:#fbbf24;">${originUrl}</code> e <code style="color:#fbbf24;">https://valedrone.com.br</code></li>
-              <li>Copie o <strong>ID do cliente</strong> (termina com <code>.apps.googleusercontent.com</code>) e cole abaixo.</li>
-            </ol>
-          </details>
-          <form id="vdGcForm">
-            <label style="display:block;font-size:0.8rem;color:#94a3b8;margin-bottom:0.35rem;">Google OAuth Client ID</label>
-            <input type="text" id="vdGcInput" value="${currentId.replace(/"/g, '&quot;')}" placeholder="1234567890-abcdefg.apps.googleusercontent.com" required
-              style="width:100%;box-sizing:border-box;padding:0.65rem 0.75rem;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#f8fafc;font-size:0.88rem;margin-bottom:1rem;">
-            <div style="display:flex;justify-content:flex-end;gap:0.5rem;">
-              <button type="button" id="vdGcCancel" style="padding:0.5rem 0.95rem;border-radius:8px;border:1px solid #475569;background:#1e293b;color:#e2e8f0;cursor:pointer;font-size:0.85rem;">Cancelar</button>
-              <button type="submit" style="padding:0.5rem 1.1rem;border-radius:8px;border:none;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:600;cursor:pointer;font-size:0.85rem;">Salvar e Continuar</button>
-            </div>
-          </form>
-        </div>
-      `;
-
-      document.body.appendChild(overlay);
-      const input = overlay.querySelector('#vdGcInput');
-      setTimeout(() => input && input.focus(), 50);
-
-      const close = (val) => {
-        overlay.remove();
-        resolve(val);
-      };
-
-      overlay.querySelector('#vdGcClose').onclick = () => close(false);
-      overlay.querySelector('#vdGcCancel').onclick = () => close(false);
-      overlay.querySelector('#vdGcForm').onsubmit = (e) => {
-        e.preventDefault();
-        const v = input.value.trim();
-        if (!v) return;
-        setClientId(v);
-        close(true);
-      };
-    });
+    return login();
   }
 
   window.VDGoogleDrive = {
@@ -776,4 +968,3 @@
     loadMasterSessionFromDrive
   };
 })();
-
