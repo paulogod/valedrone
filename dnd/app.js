@@ -664,6 +664,7 @@ function applyLoadedCharacter(data) {
   renderDeathSaves();
   renderWeaponMasteryButtons();
   recalculateCharacter();    // ficha oficial + todos os derivados
+  if (typeof atualizarBannerMesaDnd === "function") atualizarBannerMesaDnd();
 }
 
 /**
@@ -11642,12 +11643,15 @@ function importCharacterJson(e) {
  * restaurado sozinho. Quem o traz de volta é o botão do cabeçalho.
  * Veja getCachedSession().
  */
-function saveToLocalStorage(forceSlot = false) {
+function saveToLocalStorage(forceSlot = false, skipDriveSync = false) {
   // Ficha aberta pelo painel do Mestre: é consulta, não pode tomar o lugar da
   // sessão nem da lista de salvos de quem usa o criador neste navegador.
   // Salvar de propósito (botão) continua valendo.
   if (_fichaDoMestre && !forceSlot) return;
   try {
+    if (!skipDriveSync && typeof registrarEdicaoLocalDnd === "function") {
+      registrarEdicaoLocalDnd();
+    }
     localStorage.setItem("dnd55_active_character", JSON.stringify(character));
     // A partir da primeira edição o cache é o trabalho em andamento, não uma
     // sessão anterior — oferecer "restaurar" aqui só confundiria.
@@ -11660,9 +11664,15 @@ function saveToLocalStorage(forceSlot = false) {
     } else if (forceSlot) {
       savedList.push(character);
     } else {
+      if (!skipDriveSync && character.driveFileId && typeof agendarSalvarFichaNoDrive === "function") {
+        agendarSalvarFichaNoDrive(character, false);
+      }
       return;                       // rascunho ainda não salvo: não vira entrada
     }
     localStorage.setItem("dnd55_saved_characters", JSON.stringify(savedList));
+    if (!skipDriveSync && typeof agendarSalvarFichaNoDrive === "function") {
+      agendarSalvarFichaNoDrive(character, forceSlot);
+    }
   } catch (err) {
     console.error("Erro ao salvar no LocalStorage:", err);
   }
@@ -11801,11 +11811,14 @@ function renderSavedCharsList() {
 
   if (!container) return;
   container.innerHTML = "";
+  if (typeof atualizarBarraDriveModal === "function") atualizarBarraDriveModal();
 
   if (savedList.length === 0) {
-    container.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem; text-align: center;">Nenhuma ficha salva no histórico local.</p>';
+    container.innerHTML = '<p style="color: #94a3b8; font-size: 0.85rem; text-align: center;">Nenhuma ficha salva ainda. Crie uma ficha e clique em Salvar ou sincronize com o Google Drive.</p>';
     return;
   }
+
+  const convite = typeof obterConviteMesaAtivo === "function" ? obterConviteMesaAtivo() : null;
 
   savedList.forEach(c => {
     const item = document.createElement("div");
@@ -11813,13 +11826,28 @@ function renderSavedCharsList() {
     item.style.display = "flex";
     item.style.justifyContent = "space-between";
     item.style.alignItems = "center";
+    item.style.gap = "0.5rem";
+    item.style.flexWrap = "wrap";
+
+    const seloDrive = c.driveFileId
+      ? `<span class="drive-badge-chip" title="Salva online no Google Drive"><i class="fa-brands fa-google-drive"></i> Drive</span>`
+      : "";
+    const seloMesa = c.mesaVinculada && c.mesaVinculada.mesaId
+      ? `<span class="mesa-badge-chip" title="Vinculada à mesa: ${escHtml(c.mesaVinculada.nomeMesa || 'Mestre')}"><i class="fa-solid fa-link"></i> Na Mesa</span>`
+      : "";
+
     item.innerHTML = `
       <div>
-        <strong style="color: #f3e8ff;">${c.name}</strong>
-        <p style="font-size: 0.78rem; color: #94a3b8;">${c.species} • ${c.class1} Nvl ${c.level1}</p>
+        <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
+          <strong style="color: #f3e8ff;">${escHtml(c.name || "(Sem nome)")}</strong>
+          ${seloDrive}
+          ${seloMesa}
+        </div>
+        <p style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.15rem;">${escHtml(c.species || "—")} • ${escHtml(c.class1 || "—")} Nvl ${c.level1 || 1}</p>
       </div>
-      <div style="display: flex; gap: 0.4rem;">
+      <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
         <button class="btn btn-primary btn-sm btn-load-char" data-id="${c.id}">Carregar</button>
+        ${convite ? `<button class="btn btn-gold btn-sm btn-link-char" data-id="${c.id}" title="Carregar e vincular esta ficha à mesa do Mestre"><i class="fa-solid fa-link"></i> Vincular à Mesa</button>` : ""}
         <button class="btn btn-secondary btn-sm btn-del-char" data-id="${c.id}" style="color: #f87171;"><i class="fa-solid fa-trash"></i></button>
       </div>
     `;
@@ -11827,11 +11855,27 @@ function renderSavedCharsList() {
     item.querySelector(".btn-load-char").addEventListener("click", () => {
       applyLoadedCharacter(c);
       document.getElementById("manageCharsModal").classList.remove("active");
-      showToast(`Ficha "${c.name}" carregada!`);
+      showToast(`Ficha "${c.name || "sem nome"}" carregada!`);
     });
 
-    item.querySelector(".btn-del-char").addEventListener("click", () => {
-      if (confirm(`Deseja excluir a ficha "${c.name}"?`)) {
+    const btnLink = item.querySelector(".btn-link-char");
+    if (btnLink) {
+      btnLink.addEventListener("click", async () => {
+        applyLoadedCharacter(c);
+        document.getElementById("manageCharsModal").classList.remove("active");
+        if (typeof vincularFichaAtualAMesa === "function") {
+          await vincularFichaAtualAMesa();
+        }
+      });
+    }
+
+    item.querySelector(".btn-del-char").addEventListener("click", async () => {
+      if (confirm(`Deseja excluir a ficha "${c.name || "sem nome"}"?`)) {
+        if (c.driveFileId && window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn()) {
+          if (confirm("Deseja remover esta ficha também do seu Google Drive?")) {
+            try { await window.VDGoogleDrive.deleteFile(c.driveFileId); } catch (e) {}
+          }
+        }
         let list = JSON.parse(localStorage.getItem("dnd55_saved_characters") || "[]");
         list = list.filter(item => item.id !== c.id);
         localStorage.setItem("dnd55_saved_characters", JSON.stringify(list));
@@ -12931,3 +12975,501 @@ function bindCampanha() {
     if (filtro) { _cpEstado.missoes = filtro.getAttribute("data-cp-filtro"); renderCampanha(); }
   });
 }
+
+/* ==========================================================================
+   GOOGLE DRIVE & VÍNCULO COM A MESA DO MESTRE (/dnd ⇄ Google Drive ⇄ /rpg)
+   ========================================================================== */
+const DND_MESA_INVITE_KEY = "dnd55_mesa_convite";
+let _ultimaEdicaoLocal = 0;
+let _driveSaveTimer = null;
+let _salvandoNoDrive = false;
+let _sincronizandoDriveJogador = false;
+
+function registrarEdicaoLocalDnd() {
+  _ultimaEdicaoLocal = Date.now();
+}
+
+function lerConviteDaMesaNaUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const mesaId = params.get("mesa");
+    if (mesaId && /^[\w-]+$/.test(mesaId)) {
+      const convite = {
+        mesaId: mesaId.trim(),
+        mestreEmail: (params.get("mestre") || "").trim().toLowerCase(),
+        nomeMesa: (params.get("nome") || "Mesa do Mestre").trim()
+      };
+      localStorage.setItem(DND_MESA_INVITE_KEY, JSON.stringify(convite));
+      return convite;
+    }
+  } catch (e) {}
+  return obterConviteMesaAtivo();
+}
+
+function obterConviteMesaAtivo() {
+  try {
+    const raw = localStorage.getItem(DND_MESA_INVITE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.mesaId) return parsed;
+    }
+  } catch (e) {}
+  if (character && character.mesaVinculada && character.mesaVinculada.mesaId) {
+    return character.mesaVinculada;
+  }
+  return null;
+}
+
+function atualizarBotoesGoogleDnd() {
+  const btnHeader = document.getElementById("btnGoogleAuthDnd");
+  const lblHeader = document.getElementById("lblGoogleAuthDnd");
+  const logado = window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn();
+  const user = window.VDGoogleDrive && window.VDGoogleDrive.getUser();
+
+  if (btnHeader && lblHeader) {
+    if (logado && user) {
+      btnHeader.classList.add("is-logged");
+      const nomeCurto = (user.name || user.email || "Drive").split(" ")[0];
+      lblHeader.textContent = `☁️ ${nomeCurto}`;
+      btnHeader.title = `Conectado ao Google Drive como ${user.email} (clique para gerenciar fichas no Drive)`;
+    } else {
+      btnHeader.classList.remove("is-logged");
+      lblHeader.textContent = "Entrar com Gmail";
+      btnHeader.title = "Conectar conta Gmail para salvar suas fichas online no Google Drive";
+    }
+  }
+  atualizarBarraDriveModal();
+  atualizarBannerMesaDnd();
+}
+
+function atualizarBarraDriveModal() {
+  const statusEl = document.getElementById("driveModalStatus");
+  const btnLogin = document.getElementById("btnModalGoogleLogin");
+  const btnSync = document.getElementById("btnModalSyncDrive");
+  const btnLogout = document.getElementById("btnModalGoogleLogout");
+
+  const logado = window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn();
+  const user = window.VDGoogleDrive && window.VDGoogleDrive.getUser();
+
+  if (btnLogin) btnLogin.hidden = !!logado;
+  if (btnSync) btnSync.hidden = !logado;
+  if (btnLogout) btnLogout.hidden = !logado;
+  if (statusEl) {
+    if (logado && user) {
+      statusEl.innerHTML = `<i class="fa-brands fa-google-drive" style="color:#22c55e;"></i> <span>Conectado como <strong>${escHtml(user.email || user.name)}</strong> — suas fichas salvas ficam online na pasta <em>ValeDrone RPG</em> do seu Google Drive.</span>`;
+    } else {
+      statusEl.innerHTML = `<i class="fa-brands fa-google-drive"></i> <span>Faça login com o Gmail para salvar suas fichas online no seu Google Drive.</span>`;
+    }
+  }
+}
+
+function atualizarBannerMesaDnd() {
+  const banner = document.getElementById("mesaInviteBanner");
+  if (!banner) return;
+  const convite = obterConviteMesaAtivo();
+  const vinculada = character && character.mesaVinculada && character.mesaVinculada.mesaId;
+
+  if (!convite && !vinculada) {
+    banner.hidden = true;
+    return;
+  }
+
+  banner.hidden = false;
+  const titleEl = document.getElementById("mesaInviteTitle");
+  const subEl = document.getElementById("mesaInviteSub");
+  const lblBtn = document.getElementById("lblVincularFichaMesa");
+  const btnCopyLink = document.getElementById("btnCopiarLinkDriveFicha");
+
+  const mesaAlvo = convite || character.mesaVinculada;
+  const jaVinculadaNestaMesa = !!(vinculada && mesaAlvo && character.mesaVinculada.mesaId === mesaAlvo.mesaId);
+
+  if (jaVinculadaNestaMesa) {
+    banner.classList.add("vinculada");
+    if (titleEl) {
+      titleEl.textContent = `🟢 Ficha "${character.name || "Sem nome"}" vinculada à ${mesaAlvo.nomeMesa || "Mesa do Mestre"}`;
+    }
+    if (subEl) {
+      subEl.textContent = `Sincronização ao vivo ativa no seu Google Drive${mesaAlvo.mestreEmail ? ` com o Mestre (${mesaAlvo.mestreEmail})` : ""}. Alterações de PV e atributos atualizam nos dois lados.`;
+    }
+    if (lblBtn) lblBtn.textContent = "Sincronizar Agora";
+    if (btnCopyLink) btnCopyLink.hidden = !character.driveFileId;
+  } else {
+    banner.classList.remove("vinculada");
+    if (titleEl) {
+      titleEl.textContent = `🎲 Convite para ${mesaAlvo.nomeMesa || "Mesa do Mestre"}${mesaAlvo.mestreEmail ? ` (${mesaAlvo.mestreEmail})` : ""}`;
+    }
+    if (subEl) {
+      subEl.textContent = `Entre com seu Gmail, preencha ou carregue sua ficha e clique em "Vincular Ficha Atual à Mesa" para o Mestre acompanhá-la no /rpg.`;
+    }
+    if (lblBtn) lblBtn.textContent = "Vincular Ficha Atual à Mesa";
+    if (btnCopyLink) btnCopyLink.hidden = true;
+  }
+}
+
+function atualizarMetadadosDriveLocal(charId, driveMeta, mesaInfo) {
+  if (character && character.id === charId) {
+    character.driveFileId = driveMeta.id;
+    character.driveModifiedTime = driveMeta.modifiedTime;
+    if (mesaInfo) character.mesaVinculada = mesaInfo;
+    try { localStorage.setItem("dnd55_active_character", JSON.stringify(character)); } catch (e) {}
+  }
+  try {
+    const savedList = JSON.parse(localStorage.getItem("dnd55_saved_characters") || "[]");
+    const idx = savedList.findIndex(c => c.id === charId);
+    if (idx >= 0) {
+      savedList[idx].driveFileId = driveMeta.id;
+      savedList[idx].driveModifiedTime = driveMeta.modifiedTime;
+      if (mesaInfo) savedList[idx].mesaVinculada = mesaInfo;
+      localStorage.setItem("dnd55_saved_characters", JSON.stringify(savedList));
+    }
+  } catch (e) {}
+}
+
+function agendarSalvarFichaNoDrive(charObj, imediato = false) {
+  if (!window.VDGoogleDrive || !window.VDGoogleDrive.isLoggedIn()) return;
+  if (_fichaDoMestre && !imediato) return;
+  clearTimeout(_driveSaveTimer);
+  const delay = imediato ? 150 : 1200;
+  _driveSaveTimer = setTimeout(async () => {
+    if (_salvandoNoDrive) return;
+    _salvandoNoDrive = true;
+    try {
+      recalculateCharacter();
+      const res = await window.VDGoogleDrive.saveSheetToDrive(charObj, { updatedBy: "jogador" });
+      if (res && res.id) {
+        atualizarMetadadosDriveLocal(charObj.id, res);
+        if (imediato) {
+          showToast(`☁️ Ficha "${charObj.name || "sem nome"}" salva no Google Drive!`);
+          renderSavedCharsList();
+          atualizarBannerMesaDnd();
+        }
+      }
+    } catch (err) {
+      console.warn("Aviso ao salvar ficha no Google Drive:", err);
+      if (imediato) showToast("⚠️ Não foi possível salvar no Google Drive: " + err.message);
+    } finally {
+      _salvandoNoDrive = false;
+    }
+  }, delay);
+}
+
+/**
+ * Vincula a ficha atualmente aberta à Mesa do Mestre e a compartilha via Google Drive.
+ */
+async function vincularFichaAtualAMesa() {
+  const convite = obterConviteMesaAtivo();
+  if (!convite || !convite.mesaId) {
+    showToast("Abra o link enviado pelo Mestre (/rpg) para vincular sua ficha à mesa.");
+    return;
+  }
+
+  // Se a ficha na tela está em branco e o jogador já tem fichas salvas, oferece abrir Salvos
+  const fichaVazia = (!character.name || !character.name.trim()) && (!character.class1 || character.class1 === "none");
+  if (fichaVazia) {
+    const salvas = JSON.parse(localStorage.getItem("dnd55_saved_characters") || "[]");
+    const sessao = getCachedSession();
+    if (salvas.length > 0) {
+      renderSavedCharsList();
+      document.getElementById("manageCharsModal").classList.add("active");
+      showToast("Escolha qual ficha salva deseja vincular à mesa do Mestre (ou preencha uma nova).");
+      return;
+    } else if (sessao) {
+      applyLoadedCharacter(sessao);
+    } else {
+      showToast("Preencha pelo menos o nome e a classe do personagem antes de vincular à mesa.");
+      return;
+    }
+  }
+
+  try {
+    if (!window.VDGoogleDrive.isLoggedIn()) {
+      await window.VDGoogleDrive.login();
+      atualizarBotoesGoogleDnd();
+    }
+    const user = window.VDGoogleDrive.getUser();
+    if (!character.playerName && user && (user.name || user.email)) {
+      character.playerName = user.name || user.email;
+      const inPlayer = document.getElementById("inputPlayerName");
+      if (inPlayer) inPlayer.value = character.playerName;
+    }
+
+    recalculateCharacter();
+
+    const mesaInfo = {
+      mesaId: convite.mesaId,
+      mestreEmail: convite.mestreEmail || "",
+      nomeMesa: convite.nomeMesa || "Mesa do Mestre"
+    };
+    character.mesaVinculada = mesaInfo;
+
+    showToast("☁️ Salvando no Google Drive e vinculando à mesa do Mestre...");
+    const res = await window.VDGoogleDrive.saveSheetToDrive(character, {
+      mesaId: mesaInfo.mesaId,
+      mestreEmail: mesaInfo.mestreEmail,
+      updatedBy: "jogador"
+    });
+
+    await window.VDGoogleDrive.shareSheetWithMaster(res.id, mesaInfo.mestreEmail);
+
+    mesaInfo.driveFileId = res.id;
+    mesaInfo.vinculadaEm = new Date().toISOString();
+    character.driveFileId = res.id;
+    character.driveModifiedTime = res.modifiedTime;
+    character.driveOwnerEmail = (user && user.email) || "";
+    character.mesaVinculada = mesaInfo;
+
+    saveToLocalStorage(true, true);
+    atualizarBannerMesaDnd();
+    renderSavedCharsList();
+    showToast(`🎲 Ficha "${character.name || "sem nome"}" vinculada à ${mesaInfo.nomeMesa}! O Mestre já pode vê-la no /rpg.`);
+  } catch (err) {
+    showToast("❌ Não foi possível vincular a ficha: " + (err.message || err));
+  }
+}
+
+/**
+ * Sincroniza todas as fichas do Google Drive do jogador com a lista local ("Salvos").
+ */
+async function sincronizarFichasJogadorComDrive(silencioso = false) {
+  if (!window.VDGoogleDrive || !window.VDGoogleDrive.isLoggedIn()) {
+    if (!silencioso) {
+      try {
+        await window.VDGoogleDrive.login();
+        atualizarBotoesGoogleDnd();
+      } catch (err) {
+        showToast(err.message || "Login cancelado.");
+        return;
+      }
+    } else {
+      return;
+    }
+  }
+  if (_sincronizandoDriveJogador) return;
+  _sincronizandoDriveJogador = true;
+
+  try {
+    const remotos = await window.VDGoogleDrive.listMySheets();
+    const savedList = JSON.parse(localStorage.getItem("dnd55_saved_characters") || "[]");
+    let baixadas = 0;
+    let enviadas = 0;
+
+    // 1. Baixa fichas do Drive que não existem localmente ou que estão mais novas no Drive
+    for (const arq of remotos) {
+      const charIdProp = arq.appProperties && arq.appProperties.vdCharId;
+      const idx = savedList.findIndex(c => c.driveFileId === arq.id || (charIdProp && c.id === charIdProp));
+      const local = idx >= 0 ? savedList[idx] : null;
+
+      if (!local || (arq.modifiedTime && local.driveModifiedTime && arq.modifiedTime > local.driveModifiedTime)) {
+        try {
+          const { data } = await window.VDGoogleDrive.getFileJson(arq.id);
+          if (data && data.class1) {
+            data.driveFileId = arq.id;
+            data.driveModifiedTime = arq.modifiedTime;
+            if (idx >= 0) savedList[idx] = data;
+            else savedList.push(data);
+            baixadas++;
+          }
+        } catch (e) {
+          console.warn("Erro ao baixar ficha do Drive:", arq.id, e);
+        }
+      } else if (local && !local.driveFileId) {
+        local.driveFileId = arq.id;
+        local.driveModifiedTime = arq.modifiedTime;
+      }
+    }
+
+    // 2. Envia fichas salvas localmente que ainda não estão no Google Drive
+    for (let i = 0; i < savedList.length; i++) {
+      const c = savedList[i];
+      if (!c.driveFileId && c.class1 && c.class1 !== "none") {
+        try {
+          const res = await window.VDGoogleDrive.saveSheetToDrive(c, { updatedBy: "jogador" });
+          if (res && res.id) {
+            c.driveFileId = res.id;
+            c.driveModifiedTime = res.modifiedTime;
+            enviadas++;
+          }
+        } catch (e) {
+          console.warn("Erro ao enviar ficha local para o Drive:", e);
+        }
+      }
+    }
+
+    localStorage.setItem("dnd55_saved_characters", JSON.stringify(savedList));
+    renderSavedCharsList();
+
+    if (!silencioso) {
+      if (baixadas || enviadas) {
+        showToast(`☁️ Google Drive sincronizado (${baixadas} baixada(s), ${enviadas} enviada(s)).`);
+      } else {
+        showToast("☁️ Suas fichas já estão sincronizadas com o Google Drive!");
+      }
+    }
+  } catch (err) {
+    if (!silencioso) showToast("Erro ao sincronizar com Google Drive: " + err.message);
+  } finally {
+    _sincronizandoDriveJogador = false;
+  }
+}
+
+/**
+ * Verifica se o Mestre atualizou os PV/dados da ficha vinculada lá no /rpg
+ * e reflete imediatamente na tela do jogador no /dnd.
+ */
+async function verificarAtualizacaoDoMestreNoDrive() {
+  if (!window.VDGoogleDrive || !window.VDGoogleDrive.isLoggedIn()) return;
+  if (!character || !character.driveFileId) return;
+  if (_salvandoNoDrive || (Date.now() - _ultimaEdicaoLocal < 2500)) return;
+
+  try {
+    const meta = await window.VDGoogleDrive.getFileMeta(character.driveFileId);
+    if (!meta || meta.trashed || !meta.modifiedTime) return;
+    if (character.driveModifiedTime && meta.modifiedTime <= character.driveModifiedTime) return;
+
+    const { data } = await window.VDGoogleDrive.getFileJson(character.driveFileId);
+    if (!data || !data.class1) return;
+
+    const pvAntes = character.currentHp;
+    const tmpAntes = character.tempHp || 0;
+
+    character.driveModifiedTime = meta.modifiedTime;
+    if (data.currentHp !== undefined && data.currentHp !== null) character.currentHp = +data.currentHp;
+    if (data.tempHp !== undefined && data.tempHp !== null) character.tempHp = +data.tempHp;
+    if (data.deathSaves && typeof data.deathSaves === "object") {
+      character.deathSaves = Object.assign({}, character.deathSaves, data.deathSaves);
+    }
+
+    renderHpTracker();
+    renderDeathSaves();
+    recalculateCharacter();
+    saveToLocalStorage(false, true);
+
+    if (pvAntes !== character.currentHp || tmpAntes !== (character.tempHp || 0)) {
+      const pvMax = (character.resumo && character.resumo.pvMax) || character.currentHp;
+      showToast(`⚔️ O Mestre atualizou seus PV na mesa: ${character.currentHp}/${pvMax} PV${character.tempHp ? ` (+${character.tempHp} temp.)` : ""}`);
+    }
+  } catch (e) {
+    /* silencioso em background */
+  }
+}
+
+(function iniciarGoogleDriveEMesaDnd() {
+  lerConviteDaMesaNaUrl();
+  atualizarBotoesGoogleDnd();
+
+  window.addEventListener("vd-google-auth-changed", () => {
+    atualizarBotoesGoogleDnd();
+    if (window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn()) {
+      sincronizarFichasJogadorComDrive(true);
+    }
+  });
+
+  const btnAuth = document.getElementById("btnGoogleAuthDnd");
+  if (btnAuth) {
+    btnAuth.addEventListener("click", async () => {
+      if (window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn()) {
+        renderSavedCharsList();
+        document.getElementById("manageCharsModal").classList.add("active");
+        sincronizarFichasJogadorComDrive(false);
+      } else {
+        try {
+          await window.VDGoogleDrive.login({ prompt: "select_account" });
+          atualizarBotoesGoogleDnd();
+          await sincronizarFichasJogadorComDrive(false);
+        } catch (err) {
+          showToast(err.message || "Não foi possível entrar com o Google.");
+        }
+      }
+    });
+  }
+
+  const btnModalLogin = document.getElementById("btnModalGoogleLogin");
+  if (btnModalLogin) {
+    btnModalLogin.addEventListener("click", async () => {
+      try {
+        await window.VDGoogleDrive.login({ prompt: "select_account" });
+        atualizarBotoesGoogleDnd();
+        await sincronizarFichasJogadorComDrive(false);
+      } catch (err) {
+        showToast(err.message || "Login cancelado.");
+      }
+    });
+  }
+
+  const btnModalSync = document.getElementById("btnModalSyncDrive");
+  if (btnModalSync) {
+    btnModalSync.addEventListener("click", () => sincronizarFichasJogadorComDrive(false));
+  }
+
+  const btnModalLogout = document.getElementById("btnModalGoogleLogout");
+  if (btnModalLogout) {
+    btnModalLogout.addEventListener("click", () => {
+      window.VDGoogleDrive.logout();
+      atualizarBotoesGoogleDnd();
+      showToast("Conta Google desconectada.");
+    });
+  }
+
+  const btnModalConfig = document.getElementById("btnModalGoogleConfig");
+  if (btnModalConfig) {
+    btnModalConfig.addEventListener("click", () => {
+      window.VDGoogleDrive.openClientIdModal();
+    });
+  }
+
+  const btnVincular = document.getElementById("btnVincularFichaMesa");
+  if (btnVincular) {
+    btnVincular.addEventListener("click", () => vincularFichaAtualAMesa());
+  }
+
+  const btnEscolher = document.getElementById("btnEscolherFichaMesa");
+  if (btnEscolher) {
+    btnEscolher.addEventListener("click", () => {
+      renderSavedCharsList();
+      document.getElementById("manageCharsModal").classList.add("active");
+      if (window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn()) {
+        sincronizarFichasJogadorComDrive(true);
+      }
+    });
+  }
+
+  const btnCopyLink = document.getElementById("btnCopiarLinkDriveFicha");
+  if (btnCopyLink) {
+    btnCopyLink.addEventListener("click", async () => {
+      if (!character.driveFileId) return;
+      const urlMestre = new URL("../rpg/", window.location.href);
+      urlMestre.searchParams.set("fichaDrive", character.driveFileId);
+      try {
+        await navigator.clipboard.writeText(urlMestre.toString());
+        showToast("📋 Link direto da ficha copiado! Você também pode enviá-lo ao Mestre.");
+      } catch (e) {
+        prompt("Copie o link abaixo para enviar ao Mestre:", urlMestre.toString());
+      }
+    });
+  }
+
+  const btnFecharBanner = document.getElementById("btnFecharBannerMesa");
+  if (btnFecharBanner) {
+    btnFecharBanner.addEventListener("click", () => {
+      const b = document.getElementById("mesaInviteBanner");
+      if (b) b.hidden = true;
+    });
+  }
+
+  // Polling periódico para receber atualizações de PV feitas pelo Mestre no /rpg
+  setInterval(() => {
+    if (document.visibilityState === "visible") {
+      verificarAtualizacaoDoMestreNoDrive();
+    }
+  }, 8000);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      verificarAtualizacaoDoMestreNoDrive();
+    }
+  });
+
+  if (window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn()) {
+    setTimeout(() => sincronizarFichasJogadorComDrive(true), 700);
+  }
+})();

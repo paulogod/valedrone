@@ -144,6 +144,7 @@ function aplicarDano(i, v) {
     // Dano em quem já está com 0 PV: uma falha no teste contra a morte
     e.ds.f = Math.min(3, e.ds.f + 1);
     avisoRapido(`${nome} sofreu dano caído: falha no teste contra a morte (${e.ds.f}/3).`, 'dif');
+    if (typeof sincronizarEntidadeComFicha === 'function') sincronizarEntidadeComFicha(e);
     return;
   }
   let resto = v;
@@ -160,6 +161,7 @@ function aplicarDano(i, v) {
   avisoRapido(avisos.join(' · '), e.hp <= 0 || e.conc ? 'dif' : 'neutro');
   anotar('pv', e, `sofreu ${v} de dano → ${e.hp}/${e.maxHp} PV${hpAntes > 0 && e.hp <= 0 ? (ehHeroi(e) ? ' · caiu' : ' · derrotado') : ''}${avisos.find(a => a.startsWith('teste de Conc')) ? ' · ' + avisos.find(a => a.startsWith('teste de Conc')) : ''}`,
     { forte: e.hp <= 0 && !caidoAntes });
+  if (typeof sincronizarEntidadeComFicha === 'function') sincronizarEntidadeComFicha(e);
 }
 
 function aplicarCura(i, v) {
@@ -172,6 +174,7 @@ function aplicarCura(i, v) {
   if (estavaCaido) e.ds = { s: 0, f: 0 };
   avisoRapido(`${e.name} +${v} PV${estavaCaido ? ' · levantou' : ''}`, 'neutro');
   anotar('pv', e, `curou ${e.hp - antes} → ${e.hp}/${e.maxHp} PV${estavaCaido ? ' · levantou' : ''}`, { cura: true });
+  if (typeof sincronizarEntidadeComFicha === 'function') sincronizarEntidadeComFicha(e);
 }
 
 function aplicarEntradaDePv(i, txt) {
@@ -197,6 +200,7 @@ function rolarTesteDeMorte(i) {
   cb.ultimaRolagem = `☠️ ${msg}`;
   anotar('dado', e, `Teste contra a morte: ${msg.replace(e.name + ': ', '')}`, { forte: d20 === 20 || d20 === 1 });
   avisoRapido(msg, 'dif');
+  if (typeof sincronizarEntidadeComFicha === 'function') sincronizarEntidadeComFicha(e);
   renderEntities(); saveData();
 }
 
@@ -580,6 +584,7 @@ function saveEdit(i) {
   e.abilities = v('editAbil').split(',').map(s => s.trim()).filter(Boolean);
   state.entities.sort((a, b) => b.initiative - a.initiative);
   state.editingIndex = -1;
+  if (typeof sincronizarEntidadeComFicha === 'function') sincronizarEntidadeComFicha(e);
   renderEntities(); saveData();
 }
 
@@ -746,7 +751,11 @@ function rolarLivre(expr, motivo) {
     if ((v = alvo('data-cb-tmp')) !== null) {
       const n = parseInt(prompt('PV temporários (substituem os atuais se forem maiores):', '5'), 10);
       const e = state.entities[+v];
-      if (e && n > 0) { e.tmp = Math.max(e.tmp, n); renderEntities(); saveData(); }
+      if (e && n > 0) {
+        e.tmp = Math.max(e.tmp, n);
+        if (typeof sincronizarEntidadeComFicha === 'function') sincronizarEntidadeComFicha(e);
+        renderEntities(); saveData();
+      }
       return;
     }
     if ((v = alvo('data-cb-conc')) !== null) {
@@ -776,6 +785,7 @@ function rolarLivre(expr, motivo) {
     if ((v = alvo('data-cb-ds')) !== null) {
       const [i, tipo, k] = v.split(':'); const e = state.entities[+i];
       e.ds[tipo] = e.ds[tipo] > +k ? +k : +k + 1;          // clicar na última marcada desmarca
+      if (typeof sincronizarEntidadeComFicha === 'function') sincronizarEntidadeComFicha(e);
       renderEntities(); saveData(); return;
     }
     if ((v = alvo('data-cb-acao-mini')) !== null) {

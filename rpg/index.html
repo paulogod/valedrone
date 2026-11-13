@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -14,6 +14,17 @@
       <div class="header-glow"></div>
       <h1 class="app-title">⚔️ RPG Master App</h1>
       <p class="app-subtitle">Gerenciador de Sessão</p>
+      <div class="rpg-auth-bar" id="rpgAuthBar">
+        <button type="button" class="btn btn-secondary btn-sm" id="rpgGoogleLoginBtn">🔑 Entrar com Gmail (Google Drive)</button>
+        <div class="rpg-user-chip" id="rpgUserChip" hidden>
+          <img id="rpgUserPic" src="" alt="" class="rpg-user-pic" hidden>
+          <span id="rpgUserName"></span>
+          <span class="rpg-cloud-badge" id="rpgCloudStatus" title="Sessão e fichas sincronizadas no Google Drive">☁️ Drive Ativo</span>
+          <button type="button" class="btn btn-secondary btn-sm" id="rpgGoogleLogoutBtn" title="Sair da conta Google">Sair</button>
+        </div>
+        <button type="button" class="btn btn-accent btn-sm" id="rpgConviteTopoBtn" title="Gerar e enviar link da mesa para os jogadores vincularem as fichas do /dnd">🔗 Link para Jogadores</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="rpgGoogleConfigBtn" title="Configurar Client ID do Google Cloud">⚙️</button>
+      </div>
     </header>
 
     <nav class="tab-nav" id="tabNav">
@@ -93,9 +104,38 @@
 
     <!-- FICHAS D&D TAB -->
     <section class="tab-content" id="content-fichas">
+      <div class="card mesa-online-card" id="mesaOnlineCard">
+        <div class="mesa-online-header">
+          <div>
+            <h2 class="card-title" style="margin-bottom:.25rem;border:none;padding:0;">🔗 Mesa Online — Link para os Jogadores (/dnd → /rpg)</h2>
+            <p class="fichas-ajuda" style="margin:0;">Envie o link abaixo para os jogadores. Quando eles abrirem no <a href="../dnd/">Criador de Ficha (/dnd)</a> com login Gmail e clicarem em <strong>Vincular à Mesa</strong>, a ficha fica salva no Google Drive de cada jogador e sincroniza ao vivo aqui no painel do Mestre (incluindo PV, dano e cura).</p>
+          </div>
+          <span class="mesa-sync-pill" id="mesaSyncStatus">⚪ Aguardando login Google</span>
+        </div>
+        <div class="mesa-online-grid">
+          <div class="form-group">
+            <label for="mesaNomeInput">Nome da Mesa / Campanha</label>
+            <input type="text" id="mesaNomeInput" placeholder="Ex: A Maldição de Strahd" value="Mesa ValeDrone RPG">
+          </div>
+          <div class="form-group mesa-link-group">
+            <label for="mesaLinkInput">Link de Convite dos Jogadores</label>
+            <div class="mesa-link-row">
+              <input type="text" id="mesaLinkInput" readonly>
+              <button type="button" class="btn btn-primary btn-sm" id="mesaCopiarLinkBtn">📋 Copiar Link</button>
+              <button type="button" class="btn btn-accent btn-sm" id="mesaWhatsappBtn">📲 Enviar Link</button>
+            </div>
+          </div>
+        </div>
+        <div class="turn-bar" style="margin-top:.75rem;margin-bottom:0;">
+          <button type="button" class="btn btn-secondary btn-sm" id="mesaSincronizarBtn">🔄 Sincronizar Fichas do Drive Agora</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="mesaVincularIdBtn" title="Adicionar uma ficha colando o link ou ID do arquivo no Google Drive">➕ Vincular por Link/ID do Drive</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="mesaNovaIdBtn" title="Gera um novo código de mesa">🔑 Novo Código de Mesa</button>
+        </div>
+      </div>
+
       <div class="card">
         <h2 class="card-title">Fichas dos Jogadores — D&amp;D 5.5</h2>
-        <p class="fichas-ajuda">Carregue os JSON exportados pelo <a href="../dnd/">Criador de Ficha</a>. Dá para escolher vários de uma vez; carregar de novo a ficha do mesmo personagem atualiza a linha dele.</p>
+        <p class="fichas-ajuda">As fichas vinculadas pelos jogadores via Google Drive aparecem e atualizam aqui sozinhas. Você também pode carregar arquivos JSON exportados pelo <a href="../dnd/">Criador de Ficha</a>.</p>
         <div class="turn-bar">
           <label class="btn btn-primary file-label">📂 Carregar Fichas (JSON)<input type="file" accept=".json,application/json" id="fichasInput" multiple hidden></label>
           <button class="btn btn-secondary" id="fichasCombateBtn">⚔️ Enviar todas para o Combate</button>
@@ -310,6 +350,9 @@
   </div>
   <div class="aviso-rapido" id="avisoRapido" role="status" aria-live="polite" hidden></div>
 
+  <!-- Configuração e Integração Google Drive -->
+  <script src="../config.js"></script>
+  <script src="../js/google-drive.js"></script>
   <!-- Condições e regras: mesma base do Criador de Ficha -->
   <script src="../dnd/data.js"></script>
   <script src="srd-monstros.js"></script>

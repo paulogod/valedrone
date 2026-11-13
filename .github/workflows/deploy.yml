@@ -44,6 +44,7 @@ jobs:
         env:
           CHAT_API_BASE_URL: ${{ vars.CHAT_API_BASE_URL }}
           WHATSAPP_PHONE: ${{ vars.WHATSAPP_PHONE }}
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -53,6 +54,8 @@ jobs:
           config = config_path.read_text()
           config = config.replace("__CHAT_API_BASE_URL__", os.environ.get("CHAT_API_BASE_URL", ""))
           config = config.replace("__WHATSAPP_PHONE__", os.environ.get("WHATSAPP_PHONE", "5512996192233"))
+          if os.environ.get("GOOGLE_CLIENT_ID"):
+              config = config.replace("__GOOGLE_CLIENT_ID__", os.environ.get("GOOGLE_CLIENT_ID", ""))
           config_path.write_text(config)
           PY
 

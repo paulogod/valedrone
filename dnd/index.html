@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20261103a";
+    var APP_VERSION = "20261113a";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -56,6 +56,10 @@
       </div>
 
       <div class="header-actions">
+        <!-- Login Google Drive e Vínculo com Mesa -->
+        <button class="btn btn-secondary btn-sm" id="btnGoogleAuthDnd" title="Conectar conta Gmail para salvar suas fichas online no Google Drive">
+          <i class="fa-brands fa-google"></i> <span id="lblGoogleAuthDnd">Entrar com Gmail</span>
+        </button>
         <!-- Exportar e Importar vêm primeiro: no celular a faixa rola na
              horizontal e o que fica no fim some da tela. -->
         <button class="btn btn-secondary btn-sm" id="btnExportJson" title="Exportar Ficha em JSON">
@@ -94,6 +98,31 @@
         </a>
       </div>
     </header>
+
+    <!-- FAIXA DE VÍNCULO COM A MESA DO MESTRE (/rpg) -->
+    <div class="mesa-invite-banner" id="mesaInviteBanner" hidden>
+      <div class="mesa-invite-info">
+        <span class="mesa-invite-icon"><i class="fa-solid fa-dice-d20"></i></span>
+        <div>
+          <strong id="mesaInviteTitle">Convite de Mesa do Mestre</strong>
+          <p id="mesaInviteSub">Vincule sua ficha para sincronizar automaticamente com o painel do Mestre (/rpg) pelo seu Google Drive.</p>
+        </div>
+      </div>
+      <div class="mesa-invite-actions">
+        <button type="button" class="btn btn-gold btn-sm" id="btnVincularFichaMesa">
+          <i class="fa-solid fa-link"></i> <span id="lblVincularFichaMesa">Vincular Ficha Atual à Mesa</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnEscolherFichaMesa" title="Escolher uma das suas fichas salvas para vincular">
+          <i class="fa-solid fa-folder-open"></i> Escolher de Salvos
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnCopiarLinkDriveFicha" hidden title="Copiar link direto desta ficha no Drive para enviar ao Mestre">
+          <i class="fa-solid fa-share-nodes"></i> Copiar Link p/ Mestre
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnFecharBannerMesa" title="Ocultar aviso da mesa">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
 
     <!-- BARRA DE SELEÇÃO DE MODO DO APP (WIZARD PASSO-A-PASSO vs FICHA EDITÁVEL DIRETA) -->
     <div class="app-mode-bar">
@@ -2143,8 +2172,27 @@
   <div class="modal-overlay" id="manageCharsModal">
     <div class="modal-window">
       <div class="modal-header">
-        <h3 class="modal-title"><i class="fa-solid fa-folder-open"></i> Fichas Salvas no Navegador</h3>
+        <h3 class="modal-title"><i class="fa-solid fa-folder-open"></i> Fichas Salvas (Navegador &amp; Google Drive)</h3>
         <button class="modal-close-btn" id="closeManageCharsModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="drive-modal-bar" id="driveModalBar">
+        <div class="drive-modal-status" id="driveModalStatus">
+          <i class="fa-brands fa-google-drive"></i> <span>Faça login com o Gmail para salvar suas fichas online no seu Google Drive.</span>
+        </div>
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnModalGoogleLogin">
+            <i class="fa-brands fa-google"></i> Conectar Gmail
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnModalSyncDrive" hidden>
+            <i class="fa-solid fa-rotate"></i> Sincronizar Drive
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnModalGoogleLogout" hidden title="Desconectar conta Google">
+            <i class="fa-solid fa-right-from-bracket"></i> Sair
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnModalGoogleConfig" title="Configurar Client ID do Google Cloud">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+        </div>
       </div>
       <div id="savedCharsList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 320px; overflow-y: auto;"></div>
       <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
@@ -2160,8 +2208,9 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS -->
+  <script src="../config.js"></script>
   <script>
-    ["data.js", "itens-magicos.js", "app.js", "bio-random.js", "pdf-export.js"].forEach(function (js) {
+    ["../js/google-drive.js", "data.js", "itens-magicos.js", "app.js", "bio-random.js", "pdf-export.js"].forEach(function (js) {
       document.write('<script src="' + comVersao(js) + '"><\/script>');
     });
   </script>
