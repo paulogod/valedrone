@@ -587,6 +587,37 @@
     return String(val || '').trim().slice(0, maxBytes);
   }
 
+  /**
+   * Extrai a lista única de todas as mesas às quais uma ficha pertence
+   * (suporta múltiplas mesas simultâneas em `mesasVinculadas` + legado `mesaVinculada`).
+   */
+  function extractMesasFromCharacter(characterObj, extraMesa = null) {
+    const map = new Map();
+    const add = (m) => {
+      if (!m || !m.mesaId) return;
+      const id = String(m.mesaId).trim();
+      if (!id) return;
+      const prev = map.get(id) || {};
+      map.set(id, {
+        mesaId: id,
+        mestreEmail: String(m.mestreEmail || prev.mestreEmail || '').toLowerCase().trim(),
+        nomeMesa: String(m.nomeMesa || prev.nomeMesa || 'Mesa do Mestre').trim(),
+        driveFileId: m.driveFileId || prev.driveFileId || characterObj?.driveFileId || null,
+        vinculadaEm: m.vinculadaEm || prev.vinculadaEm || new Date().toISOString()
+      });
+    };
+    if (characterObj && Array.isArray(characterObj.mesasVinculadas)) {
+      characterObj.mesasVinculadas.forEach(add);
+    }
+    if (characterObj && characterObj.mesaVinculada && characterObj.mesaVinculada.mesaId) {
+      add(characterObj.mesaVinculada);
+    }
+    if (extraMesa && extraMesa.mesaId) {
+      add(extraMesa);
+    }
+    return Array.from(map.values());
+  }
+
   async function findDriveFileByCharId(charId) {
     if (!charId || !hasDriveToken()) return null;
     const cleanId = safeProp(charId, 50).replace(/'/g, "\\'");
@@ -599,8 +630,8 @@
   }
 
   /**
-   * Salva a ficha do jogador no Google Drive da conta E no canal de nuvem da conta/mesa
-   * para garantir carregamento instantâneo em qualquer outro dispositivo.
+   * Salva a ficha do jogador no Google Drive da conta E no canal de nuvem da conta/mesas
+   * para garantir carregamento instantâneo em qualquer outro dispositivo e em todas as mesas vinculadas.
    */
   async function saveSheetToDrive(characterObj, options = {}) {
     if (!characterObj || !characterObj.id) throw new Error('Ficha inválida.');
@@ -608,9 +639,18 @@
     const ownerEmail = ((user && user.email) || characterObj.driveOwnerEmail || '').toLowerCase().trim();
     const nowIso = new Date().toISOString();
 
-    const mesaInfo = characterObj.mesaVinculada || {};
-    const mesaId = safeProp(options.mesaId !== undefined ? options.mesaId : mesaInfo.mesaId, 45);
-    const mestreEmail = safeProp(options.mestreEmail !== undefined ? options.mestreEmail : mesaInfo.mestreEmail, 75).toLowerCase();
+    const extraMesa = options.mesaId
+      ? { mesaId: options.mesaId, mestreEmail: options.mestreEmail || '', nomeMesa: options.nomeMesa || 'Mesa do Mestre' }
+      : null;
+    const todasMesas = extractMesasFromCharacter(characterObj, extraMesa);
+    characterObj.mesasVinculadas = todasMesas;
+    characterObj.mesaVinculada = todasMesas.length > 0 ? todasMesas[todasMesas.length - 1] : null;
+
+    const mesaIdProp = safeProp(todasMesas.map(m => m.mesaId).join(','), 75);
+    const mestreEmailProp = safeProp(
+      (options.mestreEmail || (characterObj.mesaVinculada && characterObj.mesaVinculada.mestreEmail) || ''),
+      75
+    ).toLowerCase();
 
     let finalMeta = null;
 
@@ -624,8 +664,8 @@
         const appProperties = {
           vdType: 'ficha_dnd55',
           vdCharId: safeProp(characterObj.id, 50),
-          vdMesa: mesaId,
-          vdMestre: mestreEmail,
+          vdMesa: mesaIdProp,
+          vdMestre: mestreEmailProp,
           vdBy: safeProp(options.updatedBy || 'jogador', 15)
         };
 
@@ -668,11 +708,16 @@
     const effectiveFileId = (finalMeta && finalMeta.id) || characterObj.driveFileId || `cloud_${characterObj.id}`;
     const effectiveMtime = (finalMeta && finalMeta.modifiedTime) || nowIso;
 
+    characterObj.mesasVinculadas = todasMesas.map(m => Object.assign({}, m, { driveFileId: effectiveFileId }));
+    if (characterObj.mesaVinculada) characterObj.mesaVinculada.driveFileId = effectiveFileId;
+
     const compactCopy = Object.assign({}, compactCharacterForCloud(characterObj), {
       driveFileId: effectiveFileId,
       driveUpdatedAt: effectiveMtime,
       driveModifiedTime: effectiveMtime,
-      driveOwnerEmail: ownerEmail
+      driveOwnerEmail: ownerEmail,
+      mesasVinculadas: characterObj.mesasVinculadas,
+      mesaVinculada: characterObj.mesaVinculada
     });
 
     // 2. Publica também no canal de nuvem da conta Gmail (garante sincronia entre PC e celular mesmo se um deles estiver só no modo rápido)
@@ -692,14 +737,15 @@
       }
     }
 
-    // 3. Se vinculada a uma Mesa do Mestre, publica no canal da Mesa em tempo real
-    if (mesaId) {
+    // 3. Se vinculada a uma ou mais Mesas, publica no canal de TODAS as Mesas vinculadas em tempo real
+    for (const m of todasMesas) {
+      if (!m || !m.mesaId) continue;
       try {
-        const mesaTopic = 'vd_mesa_' + mesaId.replace(/[^a-zA-Z0-9_-]/g, '');
+        const mesaTopic = 'vd_mesa_' + String(m.mesaId).replace(/[^a-zA-Z0-9_-]/g, '');
         await publishCloudTopic(mesaTopic, {
           t: 'mesa_sheet',
-          mesaId,
-          mestreEmail,
+          mesaId: m.mesaId,
+          mestreEmail: m.mestreEmail || '',
           charId: characterObj.id,
           fileId: effectiveFileId,
           modifiedTime: effectiveMtime,
@@ -708,7 +754,7 @@
           data: compactCopy
         });
       } catch (err) {
-        console.warn('Aviso ao publicar no canal da mesa:', err);
+        console.warn('Aviso ao publicar no canal da mesa:', m.mesaId, err);
       }
     }
 
@@ -719,10 +765,38 @@
       appProperties: {
         vdType: 'ficha_dnd55',
         vdCharId: String(characterObj.id),
-        vdMesa: mesaId,
-        vdMestre: mestreEmail
+        vdMesa: mesaIdProp,
+        vdMestre: mestreEmailProp
       }
     };
+  }
+
+  /**
+   * Remove o vínculo de uma ficha com uma mesa específica sem afetar outras mesas às quais ela pertença.
+   */
+  async function unlinkSheetFromMesa(characterObj, mesaId) {
+    if (!mesaId) return;
+    const cleanMesaId = String(mesaId).trim();
+    const charId = characterObj && characterObj.id ? String(characterObj.id) : '';
+    if (characterObj) {
+      const restantes = extractMesasFromCharacter(characterObj).filter(m => m.mesaId !== cleanMesaId);
+      characterObj.mesasVinculadas = restantes;
+      characterObj.mesaVinculada = restantes.length > 0 ? restantes[restantes.length - 1] : null;
+      try {
+        await saveSheetToDrive(characterObj, { updatedBy: 'jogador' });
+      } catch (e) {}
+    }
+    if (charId) {
+      try {
+        const mesaTopic = 'vd_mesa_' + cleanMesaId.replace(/[^a-zA-Z0-9_-]/g, '');
+        await publishCloudTopic(mesaTopic, {
+          t: 'mesa_unlink',
+          mesaId: cleanMesaId,
+          charId,
+          modifiedTime: new Date().toISOString()
+        });
+      } catch (e) {}
+    }
   }
 
   async function shareSheetWithMaster(fileId) {
@@ -752,7 +826,7 @@
     if (hasDriveToken()) {
       try {
         const q = "(appProperties has { key='vdType' and value='ficha_dnd55' } or name contains '.dnd55.json') and trashed = false";
-        const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime,appProperties)&pageSize=50`;
+        const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime,appProperties)&pageSize=100`;
         const res = await driveFetch(url);
         if (res.ok) {
           const d = await res.json();
@@ -772,12 +846,13 @@
         const userTopic = 'vd_usr_' + (await sha256Short(user.email));
         const items = await pollCloudTopic(userTopic);
         items.forEach(({ time, envelope }) => {
-          if (!envelope || !envelope.data || !envelope.charId) return;
+          if (!envelope || !envelope.charId) return;
           const cid = String(envelope.charId);
           if (envelope.t === 'sheet_delete') {
             resultsMap.delete(cid);
             return;
           }
+          if (!envelope.data) return;
           const fid = envelope.fileId || `cloud_${cid}`;
           const mtime = envelope.modifiedTime || time;
           const cloudMeta = {
@@ -804,32 +879,67 @@
 
   async function listMesaSheets(mesaId) {
     if (!mesaId) return [];
+    const cleanMesaId = String(mesaId).trim();
     const resultsMap = new Map();
-    const mesaTopic = 'vd_mesa_' + String(mesaId).replace(/[^a-zA-Z0-9_-]/g, '');
+    const unlinkedMap = new Map();
+    const mesaTopic = 'vd_mesa_' + cleanMesaId.replace(/[^a-zA-Z0-9_-]/g, '');
 
     try {
       const items = await pollCloudTopic(mesaTopic);
       items.forEach(({ time, envelope }) => {
-        if (!envelope || !envelope.data || !envelope.charId) return;
-        const fid = envelope.fileId || `cloud_${envelope.charId}`;
+        if (!envelope || !envelope.charId) return;
+        const cid = String(envelope.charId);
         const mtime = envelope.modifiedTime || time;
+        if (envelope.t === 'mesa_unlink') {
+          resultsMap.delete(cid);
+          unlinkedMap.set(cid, mtime);
+          return;
+        }
+        if (!envelope.data) return;
+        unlinkedMap.delete(cid);
+        const fid = envelope.fileId || `cloud_${cid}`;
         const meta = {
           id: fid,
           name: `${envelope.data.name || 'Ficha'}.dnd55.json`,
           modifiedTime: mtime,
           appProperties: {
             vdType: 'ficha_dnd55',
-            vdCharId: String(envelope.charId),
-            vdMesa: String(mesaId),
+            vdCharId: cid,
+            vdMesa: cleanMesaId,
             vdBy: envelope.updatedBy || 'jogador'
           },
           owners: [{ emailAddress: envelope.ownerEmail || envelope.data.driveOwnerEmail || '' }]
         };
         _cloudFilesCache.set(fid, { meta, data: envelope.data });
-        resultsMap.set(String(envelope.charId), meta);
+        resultsMap.set(cid, meta);
       });
     } catch (e) {
       console.warn('Aviso ao ler canal da mesa na nuvem:', e);
+    }
+
+    // Se o Mestre está autenticado no Google Drive, busca também fichas do Drive cujos metadados incluem esta mesa
+    if (hasDriveToken()) {
+      try {
+        const q = "appProperties has { key='vdType' and value='ficha_dnd55' } and trashed = false";
+        const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime,appProperties,owners(displayName,emailAddress))&pageSize=100`;
+        const res = await driveFetch(url);
+        if (res.ok) {
+          const d = await res.json();
+          (d.files || []).forEach(f => {
+            const props = f.appProperties || {};
+            const mesasStr = String(props.vdMesa || '');
+            const mesasArr = mesasStr.split(',').map(s => s.trim()).filter(Boolean);
+            if (!mesasArr.includes(cleanMesaId)) return;
+            const cid = props.vdCharId || f.id;
+            const unlinkTime = unlinkedMap.get(cid);
+            if (unlinkTime && f.modifiedTime && f.modifiedTime <= unlinkTime) return;
+            const existing = resultsMap.get(cid);
+            if (!existing || (f.modifiedTime && existing.modifiedTime && f.modifiedTime > existing.modifiedTime)) {
+              resultsMap.set(cid, f);
+            }
+          });
+        }
+      } catch (e) {}
     }
 
     return Array.from(resultsMap.values());
@@ -875,6 +985,25 @@
   }
 
   async function getFileJson(fileId) {
+    if (_cloudFilesCache.has(fileId)) {
+      const cached = _cloudFilesCache.get(fileId);
+      if (hasDriveToken() && !String(fileId).startsWith('cloud_')) {
+        try {
+          const metaRes = await driveFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?fields=id,name,modifiedTime,appProperties,trashed,owners(displayName,emailAddress)`);
+          if (metaRes.ok) {
+            const driveMeta = await metaRes.json();
+            if (driveMeta.modifiedTime && (!cached.meta.modifiedTime || driveMeta.modifiedTime > cached.meta.modifiedTime)) {
+              const mediaRes = await driveFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`);
+              if (mediaRes.ok) {
+                const data = await mediaRes.json();
+                return { meta: driveMeta, data };
+              }
+            }
+          }
+        } catch (e) {}
+      }
+      return cached;
+    }
     if (hasDriveToken() && !String(fileId).startsWith('cloud_')) {
       try {
         const [metaRes, mediaRes] = await Promise.all([
@@ -888,9 +1017,6 @@
         }
       } catch (e) {}
     }
-    if (_cloudFilesCache.has(fileId)) {
-      return _cloudFilesCache.get(fileId);
-    }
     await getFileMeta(fileId);
     if (_cloudFilesCache.has(fileId)) return _cloudFilesCache.get(fileId);
     throw new Error('Não foi possível baixar a ficha.');
@@ -901,14 +1027,48 @@
     const nowIso = new Date().toISOString();
     const charId = String(jsonDados.id || fileId || '').replace(/^cloud_/, '');
     const fid = fileId || `cloud_${charId}`;
+    const user = getUser();
+    const ownerEmail = (jsonDados.driveOwnerEmail || (user && user.email) || '').toLowerCase().trim();
+
+    const todasMesas = extractMesasFromCharacter(jsonDados, mesaId ? { mesaId } : null);
+    jsonDados.mesasVinculadas = todasMesas;
+
+    // 1. Se tiver token OAuth e o arquivo existir no Google Drive, atualiza também o arquivo no Drive
+    if (hasDriveToken() && fid && !String(fid).startsWith('cloud_')) {
+      try {
+        const boundary = '-------vd_mestre_' + Date.now().toString(36);
+        const charName = (jsonDados.name || '').trim() || 'Personagem Sem Nome';
+        const level1 = +jsonDados.level1 || 1;
+        const level2 = jsonDados.class2 && jsonDados.class2 !== 'none' ? (+jsonDados.level2 || 0) : 0;
+        const fileName = `${charName} - Nível ${level1 + level2}.dnd55.json`.replace(/[\\/:*?"<>|]+/g, '-');
+        const appProperties = {
+          vdType: 'ficha_dnd55',
+          vdCharId: safeProp(charId, 50),
+          vdMesa: safeProp(todasMesas.map(m => m.mesaId).join(','), 75),
+          vdBy: 'mestre'
+        };
+        const fullPayload = Object.assign({}, jsonDados, {
+          driveUpdatedAt: nowIso,
+          driveModifiedTime: nowIso,
+          driveLastUpdatedBy: 'mestre'
+        });
+        const body = buildMultipartBody({ name: fileName, appProperties }, fullPayload, boundary);
+        await driveFetch(
+          `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(fid)}?uploadType=multipart&fields=id,modifiedTime`,
+          { method: 'PATCH', headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }, body }
+        );
+      } catch (e) {}
+    }
 
     const payload = Object.assign({}, compactCharacterForCloud(jsonDados), {
       driveFileId: fid,
       driveUpdatedAt: nowIso,
       driveModifiedTime: nowIso,
-      driveLastUpdatedBy: 'mestre'
+      driveLastUpdatedBy: 'mestre',
+      mesasVinculadas: todasMesas
     });
 
+    // 2. Publica no canal individual da ficha (para atualizar a tela do jogador ao vivo)
     if (charId) {
       try {
         const charTopic = 'vd_chr_' + (await sha256Short(charId));
@@ -924,17 +1084,34 @@
       } catch (e) {}
     }
 
-    if (mesaId) {
+    // 3. Publica no canal da conta dona da ficha (para sincronizar todos os dispositivos do jogador/mestre)
+    if (ownerEmail) {
       try {
-        const mesaTopic = 'vd_mesa_' + String(mesaId).replace(/[^a-zA-Z0-9_-]/g, '');
+        const userTopic = 'vd_usr_' + (await sha256Short(ownerEmail));
+        await publishCloudTopic(userTopic, {
+          t: 'sheet_save',
+          charId,
+          fileId: fid,
+          modifiedTime: nowIso,
+          ownerEmail,
+          data: payload
+        });
+      } catch (e) {}
+    }
+
+    // 4. Publica no canal de TODAS as mesas às quais esta ficha pertence
+    for (const m of todasMesas) {
+      if (!m || !m.mesaId) continue;
+      try {
+        const mesaTopic = 'vd_mesa_' + String(m.mesaId).replace(/[^a-zA-Z0-9_-]/g, '');
         await publishCloudTopic(mesaTopic, {
           t: 'mesa_sheet',
-          mesaId,
+          mesaId: m.mesaId,
           charId,
           fileId: fid,
           modifiedTime: nowIso,
           updatedBy: 'mestre',
-          ownerEmail: jsonDados.driveOwnerEmail || '',
+          ownerEmail,
           data: payload
         });
       } catch (e) {}
@@ -950,9 +1127,22 @@
     return meta;
   }
 
-  async function deleteFile(fileId) {
+  async function deleteFile(fileId, charId = '') {
     if (!fileId) return;
     _cloudFilesCache.delete(fileId);
+    const user = getUser();
+    const cid = charId || String(fileId).replace(/^cloud_/, '');
+    if (user && user.email && cid) {
+      try {
+        const userTopic = 'vd_usr_' + (await sha256Short(user.email));
+        await publishCloudTopic(userTopic, {
+          t: 'sheet_delete',
+          charId: cid,
+          fileId,
+          modifiedTime: new Date().toISOString()
+        });
+      } catch (e) {}
+    }
     if (hasDriveToken() && !String(fileId).startsWith('cloud_')) {
       try {
         await driveFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`, {
@@ -1017,7 +1207,9 @@
     logout,
     ensureValidToken,
     ensureFolder,
+    extractMesasFromCharacter,
     saveSheetToDrive,
+    unlinkSheetFromMesa,
     shareSheetWithMaster,
     listMySheets,
     listMesaSheets,

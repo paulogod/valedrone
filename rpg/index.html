@@ -114,11 +114,19 @@
         </div>
         <div class="mesa-online-grid">
           <div class="form-group">
+            <label for="mesaSelectRpg">Mesa Ativa (você pode ter várias mesas)</label>
+            <div class="mesa-link-row">
+              <select id="mesaSelectRpg"></select>
+              <button type="button" class="btn btn-secondary btn-sm" id="mesaCriarNovaBtn" title="Criar uma nova mesa/campanha independente">➕ Nova Mesa</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="mesaExcluirAtualBtn" title="Excluir a mesa selecionada" hidden>🗑️</button>
+            </div>
+          </div>
+          <div class="form-group">
             <label for="mesaNomeInput">Nome da Mesa / Campanha</label>
             <input type="text" id="mesaNomeInput" placeholder="Ex: A Maldição de Strahd" value="Mesa ValeDrone RPG">
           </div>
-          <div class="form-group mesa-link-group">
-            <label for="mesaLinkInput">Link de Convite dos Jogadores</label>
+          <div class="form-group mesa-link-group" style="grid-column: 1 / -1;">
+            <label for="mesaLinkInput">Link de Convite desta Mesa para os Jogadores</label>
             <div class="mesa-link-row">
               <input type="text" id="mesaLinkInput" readonly>
               <button type="button" class="btn btn-primary btn-sm" id="mesaCopiarLinkBtn">📋 Copiar Link</button>
@@ -128,16 +136,18 @@
         </div>
         <div class="turn-bar" style="margin-top:.75rem;margin-bottom:0;">
           <button type="button" class="btn btn-secondary btn-sm" id="mesaSincronizarBtn">🔄 Sincronizar Fichas do Drive Agora</button>
+          <button type="button" class="btn btn-primary btn-sm" id="mesaMinhasFichasBtn" title="Escolher uma ou várias das suas próprias fichas criadas no /dnd ou salvas no seu Google Drive para entrar nesta mesa">🧙‍♂️ Incluir Minhas Fichas (/dnd &amp; Drive)</button>
           <button type="button" class="btn btn-secondary btn-sm" id="mesaVincularIdBtn" title="Adicionar uma ficha colando o link ou ID do arquivo no Google Drive">➕ Vincular por Link/ID do Drive</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="mesaNovaIdBtn" title="Gera um novo código de mesa">🔑 Novo Código de Mesa</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="mesaNovaIdBtn" title="Gera um novo código de convite para esta mesa">🔑 Novo Código</button>
         </div>
       </div>
 
       <div class="card">
         <h2 class="card-title">Fichas dos Jogadores — D&amp;D 5.5</h2>
-        <p class="fichas-ajuda">As fichas vinculadas pelos jogadores via Google Drive aparecem e atualizam aqui sozinhas. Você também pode carregar arquivos JSON exportados pelo <a href="../dnd/">Criador de Ficha</a>.</p>
+        <p class="fichas-ajuda">As fichas vinculadas pelos jogadores (ou pelo próprio Mestre) via Google Drive aparecem e atualizam aqui sozinhas. Um mesmo jogador ou o Mestre pode ter vários personagens na mesma mesa, e uma mesma ficha pode participar de várias mesas.</p>
         <div class="turn-bar">
           <label class="btn btn-primary file-label">📂 Carregar Fichas (JSON)<input type="file" accept=".json,application/json" id="fichasInput" multiple hidden></label>
+          <button type="button" class="btn btn-secondary" id="fichasMinhasDriveBtn">☁️ Minhas Fichas do Drive</button>
           <button class="btn btn-secondary" id="fichasCombateBtn">⚔️ Enviar todas para o Combate</button>
           <button class="btn btn-danger" id="fichasLimparBtn">Limpar</button>
         </div>
@@ -351,15 +361,15 @@
   <div class="aviso-rapido" id="avisoRapido" role="status" aria-live="polite" hidden></div>
 
   <!-- Configuração e Integração Google Drive -->
-  <script src="../config.js?v=20261113e"></script>
-  <script src="../js/google-drive.js?v=20261113e"></script>
+  <script src="../config.js?v=20261113f"></script>
+  <script src="../js/google-drive.js?v=20261113f"></script>
   <!-- Condições e regras: mesma base do Criador de Ficha -->
-  <script src="../dnd/data.js"></script>
+  <script src="../dnd/data.js?v=20261113f"></script>
   <script src="srd-monstros.js"></script>
   <script src="mm24-monstros.js"></script>
   <script src="srd-itens.js"></script>
-  <script src="combate.js"></script>
-  <script src="app.js"></script>
+  <script src="combate.js?v=20261113f"></script>
+  <script src="app.js?v=20261113f"></script>
   <script src="bestiario.js"></script>
   <script src="tesouro.js"></script>
   <script src="encontros.js"></script>

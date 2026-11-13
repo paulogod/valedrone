@@ -32,7 +32,7 @@
        AO PUBLICAR UMA MUDANÇA: troque APP_VERSION. Ela é declarada só aqui;
        pdf-export.js a lê de window.APP_VERSION. -->
   <script>
-    var APP_VERSION = "20261113e";
+    var APP_VERSION = "20261113f";
     window.comVersao = function (arquivo) {
       var porHttp = location.protocol === "http:" || location.protocol === "https:";
       return porHttp ? arquivo + "?v=" + APP_VERSION : arquivo;
@@ -103,16 +103,21 @@
     <div class="mesa-invite-banner" id="mesaInviteBanner" hidden>
       <div class="mesa-invite-info">
         <span class="mesa-invite-icon"><i class="fa-solid fa-dice-d20"></i></span>
-        <div>
+        <div style="flex:1;min-width:0;">
           <strong id="mesaInviteTitle">Convite de Mesa do Mestre</strong>
           <p id="mesaInviteSub">Vincule sua ficha para sincronizar automaticamente com o painel do Mestre (/rpg) pelo seu Google Drive.</p>
+          <div id="mesaChipsFichaAtual" class="mesa-chips-row"></div>
         </div>
       </div>
       <div class="mesa-invite-actions">
+        <select id="mesaAlvoSelectDnd" class="form-control mesa-alvo-select" title="Escolher qual mesa vincular" hidden></select>
         <button type="button" class="btn btn-gold btn-sm" id="btnVincularFichaMesa">
           <i class="fa-solid fa-link"></i> <span id="lblVincularFichaMesa">Vincular Ficha Atual à Mesa</span>
         </button>
-        <button type="button" class="btn btn-secondary btn-sm" id="btnEscolherFichaMesa" title="Escolher uma das suas fichas salvas para vincular">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnAdicionarMesaDnd" title="Vincular também a outra mesa colando o link de convite ou código da mesa">
+          <i class="fa-solid fa-plus"></i> Outra Mesa
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnEscolherFichaMesa" title="Escolher ou vincular várias das suas fichas salvas">
           <i class="fa-solid fa-folder-open"></i> Escolher de Salvos
         </button>
         <button type="button" class="btn btn-secondary btn-sm" id="btnCopiarLinkDriveFicha" hidden title="Copiar link direto desta ficha no Drive para enviar ao Mestre">
@@ -2194,11 +2199,31 @@
           </button>
         </div>
       </div>
+      <div class="drive-modal-bar" id="modalMesaBar" style="margin-bottom:0.65rem;padding:0.55rem 0.75rem;">
+        <div class="drive-modal-status" style="flex:1;min-width:180px;">
+          <i class="fa-solid fa-dice-d20" style="color:#a855f7;"></i>
+          <span>Mesa para vincular fichas:</span>
+          <select id="modalMesaSelect" class="form-control mesa-alvo-select" style="max-width:220px;display:inline-block;margin-left:0.35rem;"></select>
+        </div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnModalAddMesa" title="Adicionar outra mesa colando o link de convite ou código">
+            <i class="fa-solid fa-plus"></i> Adicionar Mesa
+          </button>
+          <button type="button" class="btn btn-gold btn-sm" id="btnModalVincularTodas" title="Vincular todas as suas fichas salvas à mesa selecionada">
+            <i class="fa-solid fa-link"></i> Vincular Todas à Mesa
+          </button>
+        </div>
+      </div>
       <div id="savedCharsList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 320px; overflow-y: auto;"></div>
-      <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
-        <button class="btn btn-secondary" id="btnSaveCurrentChar">
-          <i class="fa-solid fa-floppy-disk"></i> Salvar Ficha Atual
-        </button>
+      <div style="display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+        <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+          <button class="btn btn-secondary" id="btnSaveCurrentChar">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar Ficha Atual
+          </button>
+          <button class="btn btn-secondary" id="btnDuplicateCurrentChar" title="Cria uma nova ficha independente a partir da ficha aberta na tela (ideal para ter vários personagens)">
+            <i class="fa-solid fa-copy"></i> Salvar como Nova Ficha
+          </button>
+        </div>
         <button class="btn btn-secondary" id="btnCloseSavedChars">Fechar</button>
       </div>
     </div>

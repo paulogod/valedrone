@@ -1,6 +1,7 @@
 // ==================== DATA LAYER ====================
 const STORAGE_KEY = 'rpg_master_data';
 const MESA_KEY = 'rpg_mesa_config';
+const MESAS_LISTA_KEY = 'rpg_mesas_lista';
 
 function loadData() {
   try {
@@ -23,6 +24,7 @@ function saveData() {
   });
   try { sessionStorage.setItem(STORAGE_KEY, payload); } catch(e) {}
   try { localStorage.setItem(STORAGE_KEY, payload); } catch(e) {}
+  if (typeof salvarEstadoNaMesaAtual === 'function') salvarEstadoNaMesaAtual();
   agendarBackupSessaoMestre();
 }
 
@@ -68,7 +70,8 @@ document.getElementById('entityForm').addEventListener('submit', e => {
   state.fichaNoFormulario = null;
   document.getElementById('entityFicha').value = '';
   state.entities.push({
-    id: Date.now(),
+    id: ficha && !state.entities.some(x => x.id === ficha.id) ? ficha.id : Date.now(),
+    fichaId: ficha ? ficha.id : null,
     name,
     type: document.getElementById('entityType').value,
     maxHp,
@@ -99,6 +102,7 @@ function carregarFichas() {
 function salvarFichas() {
   try { localStorage.setItem(FICHAS_KEY, JSON.stringify(state.fichas)); }
   catch(e) { console.error('Fichas não salvas:', e); }
+  if (typeof salvarEstadoNaMesaAtual === 'function') salvarEstadoNaMesaAtual();
 }
 state.fichas = carregarFichas();
 
@@ -293,20 +297,24 @@ document.getElementById('entityFicha').addEventListener('change', e => {
 function fichaParaCombate(i) {
   const f = state.fichas[i];
   const ent = {
-    id: f.id, name: f.nome || '(sem nome)', type: 'PC',
+    id: f.id, fichaId: f.id, name: f.nome || '(sem nome)', type: 'PC',
     maxHp: f.pvMax ?? 0, hp: f.pvAtual ?? f.pvMax ?? 0,
     initiative: f.iniciativa ?? 0, armor: f.ca ?? 0,
     conditions: [], abilities: [], turn_info: ''
   };
-  const j = state.entities.findIndex(e => e.id === f.id);
-  if (j >= 0) state.entities[j] = { ...state.entities[j], name: ent.name, maxHp: ent.maxHp, hp: ent.hp, initiative: ent.initiative, armor: ent.armor };
+  const j = state.entities.findIndex(e => e.id === f.id || e.fichaId === f.id);
+  if (j >= 0) state.entities[j] = { ...state.entities[j], fichaId: f.id, name: ent.name, maxHp: ent.maxHp, hp: ent.hp, initiative: ent.initiative, armor: ent.armor };
   else state.entities.push(ent);
 }
 
 function fichaRemover(i) {
-  if (!confirm(`Remover a ficha de "${state.fichas[i].nome || '(sem nome)'}"?`)) return;
+  const f = state.fichas[i];
+  if (!f || !confirm(`Remover a ficha de "${f.nome || '(sem nome)'}" desta mesa?`)) return;
   state.fichas.splice(i, 1);
-  salvarFichas(); renderFichas();
+  salvarFichas(); renderFichas(); atualizarPainelMesaOnline();
+  if (window.VDGoogleDrive && typeof window.VDGoogleDrive.unlinkSheetFromMesa === 'function') {
+    window.VDGoogleDrive.unlinkSheetFromMesa(f.json || { id: f.id }, state.mesa.id).catch(() => {});
+  }
 }
 
 document.getElementById('fichasCombateBtn').addEventListener('click', () => {
@@ -318,9 +326,15 @@ document.getElementById('fichasCombateBtn').addEventListener('click', () => {
 });
 
 document.getElementById('fichasLimparBtn').addEventListener('click', () => {
-  if (!state.fichas.length || !confirm('Remover todas as fichas carregadas?')) return;
+  if (!state.fichas.length || !confirm('Remover todas as fichas carregadas desta mesa?')) return;
+  const antigas = state.fichas.slice();
   state.fichas = [];
-  salvarFichas(); renderFichas();
+  salvarFichas(); renderFichas(); atualizarPainelMesaOnline();
+  if (window.VDGoogleDrive && typeof window.VDGoogleDrive.unlinkSheetFromMesa === 'function') {
+    antigas.forEach(f => {
+      window.VDGoogleDrive.unlinkSheetFromMesa(f.json || { id: f.id }, state.mesa.id).catch(() => {});
+    });
+  }
 });
 
 // ==================== NOTES ====================
@@ -393,11 +407,130 @@ function carregarConfigMesa() {
   return novo;
 }
 
+function carregarListaMesasRpg(mesaInicial) {
+  try {
+    const lista = JSON.parse(localStorage.getItem(MESAS_LISTA_KEY) || '[]');
+    if (Array.isArray(lista) && lista.length > 0) {
+      if (mesaInicial && !lista.some(m => m.id === mesaInicial.id)) {
+        lista.push({
+          id: mesaInicial.id,
+          nome: mesaInicial.nome || 'Mesa ValeDrone RPG',
+          fichas: state.fichas || [],
+          entities: state.entities || [],
+          notes: state.notes || '',
+          currentTurn: state.currentTurn || 0,
+          round: state.round || 1,
+          turnoId: state.turnoId ?? null,
+          registro: state.registro || [],
+          diario: state.diario || []
+        });
+      }
+      return lista;
+    }
+  } catch (e) {}
+  return [{
+    id: mesaInicial.id,
+    nome: mesaInicial.nome || 'Mesa ValeDrone RPG',
+    fichas: state.fichas || [],
+    entities: state.entities || [],
+    notes: state.notes || '',
+    currentTurn: state.currentTurn || 0,
+    round: state.round || 1,
+    turnoId: state.turnoId ?? null,
+    registro: state.registro || [],
+    diario: state.diario || []
+  }];
+}
+
 function salvarConfigMesa() {
   try { localStorage.setItem(MESA_KEY, JSON.stringify(state.mesa)); } catch (e) {}
+  salvarEstadoNaMesaAtual();
+}
+
+function salvarEstadoNaMesaAtual() {
+  if (!state.mesa || !Array.isArray(state.mesas)) return;
+  const idx = state.mesas.findIndex(m => m.id === state.mesa.id);
+  const snapshot = {
+    id: state.mesa.id,
+    nome: state.mesa.nome || 'Mesa ValeDrone RPG',
+    fichas: state.fichas || [],
+    entities: state.entities || [],
+    notes: state.notes || '',
+    currentTurn: state.currentTurn || 0,
+    round: state.round || 1,
+    turnoId: state.turnoId ?? null,
+    registro: state.registro || [],
+    diario: state.diario || []
+  };
+  if (idx >= 0) state.mesas[idx] = snapshot;
+  else state.mesas.push(snapshot);
+  try { localStorage.setItem(MESAS_LISTA_KEY, JSON.stringify(state.mesas)); } catch (e) {}
+}
+
+function trocarMesaAtivaRpg(novoId) {
+  if (!novoId || (state.mesa && state.mesa.id === novoId)) return;
+  salvarEstadoNaMesaAtual();
+  const alvo = (state.mesas || []).find(m => m.id === novoId);
+  if (!alvo) return;
+  state.mesa = { id: alvo.id, nome: alvo.nome || 'Mesa ValeDrone RPG' };
+  state.fichas = Array.isArray(alvo.fichas) ? alvo.fichas : [];
+  state.entities = Array.isArray(alvo.entities) ? alvo.entities : [];
+  state.notes = alvo.notes || '';
+  state.currentTurn = alvo.currentTurn || 0;
+  state.round = alvo.round || 1;
+  state.turnoId = alvo.turnoId ?? null;
+  state.registro = Array.isArray(alvo.registro) ? alvo.registro : [];
+  state.diario = Array.isArray(alvo.diario) ? alvo.diario : [];
+
+  try { localStorage.setItem(MESA_KEY, JSON.stringify(state.mesa)); } catch (e) {}
+  salvarFichas();
+  saveData();
+  renderAll();
+  atualizarPainelMesaOnline();
+  if (window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn()) {
+    sincronizarMesaComDrive(true);
+  }
+  if (typeof avisoRapido === 'function') {
+    avisoRapido(`🎲 Mesa alterada para "${state.mesa.nome}"`, 'neutro');
+  }
+}
+
+function criarNovaMesaRpg() {
+  const nome = prompt('Nome da nova Mesa / Campanha:', `Mesa ${(state.mesas ? state.mesas.length : 1) + 1}`);
+  if (!nome || !nome.trim()) return;
+  salvarEstadoNaMesaAtual();
+  const nova = {
+    id: 'mesa_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    nome: nome.trim(),
+    fichas: [],
+    entities: [],
+    notes: '',
+    currentTurn: 0,
+    round: 1,
+    turnoId: null,
+    registro: [],
+    diario: []
+  };
+  state.mesas.push(nova);
+  trocarMesaAtivaRpg(nova.id);
+}
+
+function excluirMesaAtualRpg() {
+  if (!Array.isArray(state.mesas) || state.mesas.length <= 1) {
+    alert('É necessário manter pelo menos uma mesa ativa.');
+    return;
+  }
+  if (!confirm(`Deseja excluir a mesa "${state.mesa.nome}"? As fichas originais no Google Drive dos jogadores e do Mestre NÃO serão apagadas.`)) return;
+  const idRemovido = state.mesa.id;
+  state.mesas = state.mesas.filter(m => m.id !== idRemovido);
+  try { localStorage.setItem(MESAS_LISTA_KEY, JSON.stringify(state.mesas)); } catch (e) {}
+  const proxima = state.mesas[0];
+  state.mesa = { id: '', nome: '' };
+  trocarMesaAtivaRpg(proxima.id);
 }
 
 state.mesa = carregarConfigMesa();
+state.mesas = carregarListaMesasRpg(state.mesa);
 const _enviosMestrePendentes = new Map();
 let _sincronizandoMesa = false;
 
@@ -414,6 +547,8 @@ function montarLinkConviteMesa() {
 }
 
 function atualizarPainelMesaOnline() {
+  const selMesa = document.getElementById('mesaSelectRpg');
+  const btnDelMesa = document.getElementById('mesaExcluirAtualBtn');
   const nomeIn = document.getElementById('mesaNomeInput');
   const linkIn = document.getElementById('mesaLinkInput');
   const pill = document.getElementById('mesaSyncStatus');
@@ -421,6 +556,15 @@ function atualizarPainelMesaOnline() {
   const chip = document.getElementById('rpgUserChip');
   const userName = document.getElementById('rpgUserName');
   const userPic = document.getElementById('rpgUserPic');
+
+  if (selMesa && Array.isArray(state.mesas)) {
+    selMesa.innerHTML = state.mesas.map(m =>
+      `<option value="${esc(m.id)}"${m.id === state.mesa.id ? ' selected' : ''}>🎲 ${esc(m.nome || 'Mesa')} (${(m.id === state.mesa.id ? state.fichas : (m.fichas || [])).length} fichas)</option>`
+    ).join('');
+  }
+  if (btnDelMesa) {
+    btnDelMesa.hidden = !Array.isArray(state.mesas) || state.mesas.length <= 1;
+  }
 
   if (nomeIn && document.activeElement !== nomeIn) nomeIn.value = state.mesa.nome || 'Mesa ValeDrone RPG';
   if (linkIn) linkIn.value = montarLinkConviteMesa();
@@ -440,7 +584,7 @@ function atualizarPainelMesaOnline() {
   if (pill) {
     const qtdOnline = (state.fichas || []).filter(f => f.driveFileId).length;
     if (logado) {
-      pill.textContent = `🟢 Drive conectado (${user && user.email ? user.email : 'ativo'}) · ${qtdOnline} ficha(s) online`;
+      pill.textContent = `🟢 Drive conectado (${user && user.email ? user.email : 'ativo'}) · ${qtdOnline} ficha(s) online nesta mesa`;
       pill.classList.add('ativo');
     } else {
       pill.textContent = '⚪ Faça login com Gmail para sincronizar as fichas do Drive';
@@ -472,7 +616,7 @@ function refletirFichaNoJsonECombate(i) {
     f.json.resumo.percepcaoPassiva = f.percepcaoPassiva;
     f.json.resumo.percepcao = f.percepcao;
   }
-  const ent = (state.entities || []).find(e => e.id === f.id || (e.type === 'PC' && (e.name || '').trim() === (f.nome || '').trim()));
+  const ent = (state.entities || []).find(e => e.id === f.id || e.fichaId === f.id || (e.type === 'PC' && !e.fichaId && (e.name || '').trim() === (f.nome || '').trim()));
   if (ent) {
     if (f.pvMax !== null && f.pvMax !== undefined) ent.maxHp = +f.pvMax || ent.maxHp;
     if (f.pvAtual !== null && f.pvAtual !== undefined) ent.hp = +f.pvAtual;
@@ -489,7 +633,7 @@ function refletirFichaNoJsonECombate(i) {
  */
 function sincronizarEntidadeComFicha(ent) {
   if (!ent || ent.type !== 'PC') return;
-  const idx = (state.fichas || []).findIndex(f => f.id === ent.id || (f.nome || '').trim() === (ent.name || '').trim());
+  const idx = (state.fichas || []).findIndex(f => f.id === ent.id || (ent.fichaId && f.id === ent.fichaId) || (!ent.fichaId && (f.nome || '').trim() === (ent.name || '').trim()));
   if (idx < 0) return;
   const f = state.fichas[idx];
   f.pvAtual = ent.hp;
@@ -614,7 +758,7 @@ async function sincronizarMesaComDrive(silencioso = false) {
         }
 
         // Se o personagem já estiver na iniciativa do Combate, reflete os PV/CA atualizados pelo jogador
-        const ent = (state.entities || []).find(e => e.id === resumida.id || (e.type === 'PC' && (e.name || '').trim() === (resumida.nome || '').trim()));
+        const ent = (state.entities || []).find(e => e.id === resumida.id || e.fichaId === resumida.id || (e.type === 'PC' && !e.fichaId && (e.name || '').trim() === (resumida.nome || '').trim()));
         if (ent) {
           if (resumida.pvMax !== null && resumida.pvMax !== undefined) ent.maxHp = +resumida.pvMax || ent.maxHp;
           if (resumida.pvAtual !== null && resumida.pvAtual !== undefined) ent.hp = +resumida.pvAtual;
@@ -673,20 +817,205 @@ async function vincularFichaPorFileId(rawInput) {
   }
   const { meta, data } = await window.VDGoogleDrive.getFileJson(fileId);
   if (!data || !data.class1) throw new Error('O arquivo informado não é uma ficha válida do Criador D&D 5.5.');
-  const donoEmail = (meta.owners && meta.owners[0] && meta.owners[0].emailAddress) || data.driveOwnerEmail || '';
-  const ficha = resumirFicha(data, {
-    driveFileId: meta.id,
-    driveModifiedTime: meta.modifiedTime,
+  await incluirFichaDadosNaMesaAtual(data, meta);
+}
+
+async function incluirFichaDadosNaMesaAtual(dados, metaOpcoes = {}) {
+  const user = window.VDGoogleDrive && window.VDGoogleDrive.getUser();
+  const mestreEmail = (user && user.email) || '';
+  const donoEmail = (metaOpcoes.owners && metaOpcoes.owners[0] && metaOpcoes.owners[0].emailAddress) || dados.driveOwnerEmail || mestreEmail;
+
+  // Registra esta mesa na lista de mesas da ficha (sem remover outras mesas às quais a ficha já pertença)
+  let resMeta = metaOpcoes;
+  if (window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn()) {
+    try {
+      resMeta = await window.VDGoogleDrive.saveSheetToDrive(dados, {
+        mesaId: state.mesa.id,
+        mestreEmail,
+        nomeMesa: state.mesa.nome || 'Mesa ValeDrone RPG',
+        updatedBy: 'mestre'
+      });
+    } catch (e) {}
+  }
+
+  // Atualiza também no armazenamento local do /dnd se a ficha for do mesmo navegador
+  try {
+    const savedList = JSON.parse(localStorage.getItem('dnd55_saved_characters') || '[]');
+    const idxLocal = savedList.findIndex(c => c.id === dados.id);
+    if (idxLocal >= 0) {
+      savedList[idxLocal].mesasVinculadas = dados.mesasVinculadas;
+      savedList[idxLocal].mesaVinculada = dados.mesaVinculada;
+      if (resMeta && resMeta.id) savedList[idxLocal].driveFileId = resMeta.id;
+      localStorage.setItem('dnd55_saved_characters', JSON.stringify(savedList));
+    }
+  } catch (e) {}
+
+  const ficha = resumirFicha(dados, {
+    driveFileId: (resMeta && resMeta.id) || dados.driveFileId || null,
+    driveModifiedTime: (resMeta && resMeta.modifiedTime) || dados.driveModifiedTime || new Date().toISOString(),
     driveOwnerEmail: donoEmail
   });
-  const i = state.fichas.findIndex(f => f.id === ficha.id || f.driveFileId === meta.id);
-  if (i >= 0) state.fichas[i] = ficha; else state.fichas.push(ficha);
+  const i = state.fichas.findIndex(f => f.id === ficha.id || (ficha.driveFileId && f.driveFileId === ficha.driveFileId));
+  if (i >= 0) state.fichas[i] = ficha;
+  else state.fichas.push(ficha);
+
   salvarFichas();
   renderFichas();
   atualizarPainelMesaOnline();
   if (typeof avisoRapido === 'function') {
-    avisoRapido(`☁️ Ficha "${ficha.nome || 'sem nome'}" vinculada do Google Drive!`, 'neutro');
+    avisoRapido(`☁️ Ficha "${ficha.nome || 'sem nome'}" incluída na mesa "${state.mesa.nome}"!`, 'neutro');
   }
+  return ficha;
+}
+
+/**
+ * Abre um seletor com todas as fichas do próprio Mestre (salvas no Google Drive da conta
+ * ou criadas no /dnd neste navegador), permitindo incluir uma, várias ou todas na mesa atual.
+ */
+async function abrirModalMinhasFichasMestre() {
+  if (window.VDGoogleDrive && !window.VDGoogleDrive.isLoggedIn()) {
+    try {
+      await window.VDGoogleDrive.login();
+      atualizarPainelMesaOnline();
+    } catch (e) {}
+  }
+
+  let modal = document.getElementById('rpgMinhasFichasModal');
+  if (modal) modal.remove();
+
+  modal = document.createElement('div');
+  modal.id = 'rpgMinhasFichasModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(2,6,23,0.85);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:99999;padding:1rem;font-family:Inter,sans-serif;';
+  modal.innerHTML = `
+    <div style="background:#111827;border:1px solid #4c1d95;border-radius:16px;max-width:600px;width:100%;padding:1.4rem;color:#f8fafc;box-shadow:0 20px 50px rgba(0,0,0,0.75);max-height:88vh;display:flex;flex-direction:column;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+        <h3 style="margin:0;font-size:1.1rem;color:#f3e8ff;">🧙‍♂️ Minhas Fichas (/dnd &amp; Google Drive) → ${esc(state.mesa.nome || 'Mesa Atual')}</h3>
+        <button type="button" id="rpgMfClose" style="background:none;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;">✕</button>
+      </div>
+      <p style="margin:0 0 .85rem;font-size:.82rem;color:#cbd5e1;">Escolha quais personagens seus (ou fichas salvas na sua conta Google Drive / navegador) deseja colocar na mesa <strong>${esc(state.mesa.nome)}</strong>. Uma mesma ficha pode participar de várias mesas ao mesmo tempo.</p>
+      <div id="rpgMfLista" style="display:flex;flex-direction:column;gap:.5rem;overflow-y:auto;flex:1;padding-right:.2rem;">
+        <p style="color:#94a3b8;font-size:.85rem;text-align:center;padding:1.5rem 0;">🔄 Buscando suas fichas no Google Drive e no navegador...</p>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:1rem;padding-top:.75rem;border-top:1px solid #1e293b;">
+        <a href="../dnd/" target="_blank" class="btn btn-secondary btn-sm">➕ Criar Nova Ficha no /dnd</a>
+        <div style="display:flex;gap:.45rem;flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary btn-sm" id="rpgMfAddTodas" disabled>➕ Incluir Todas nesta Mesa</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="rpgMfFecharBtn">Fechar</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const fechar = () => modal.remove();
+  modal.querySelector('#rpgMfClose').onclick = fechar;
+  modal.querySelector('#rpgMfFecharBtn').onclick = fechar;
+  modal.addEventListener('click', (e) => { if (e.target === modal) fechar(); });
+
+  const mapaFichas = new Map();
+  const temConteudo = (c) => c && (
+    (c.name && c.name.trim() !== '') ||
+    (c.class1 && c.class1 !== 'none') ||
+    (c.species && c.species !== 'none')
+  );
+
+  // 1. Lê fichas salvas localmente no /dnd (mesmo navegador)
+  try {
+    const salvasLocal = JSON.parse(localStorage.getItem('dnd55_saved_characters') || '[]');
+    salvasLocal.filter(temConteudo).forEach(c => mapaFichas.set(c.id, { dados: c, meta: { id: c.driveFileId || null, modifiedTime: c.driveModifiedTime || null } }));
+    const ativaLocal = JSON.parse(localStorage.getItem('dnd55_active_character') || 'null');
+    if (temConteudo(ativaLocal) && !ativaLocal._fichaDoMestre && !mapaFichas.has(ativaLocal.id)) {
+      mapaFichas.set(ativaLocal.id, { dados: ativaLocal, meta: { id: ativaLocal.driveFileId || null, modifiedTime: ativaLocal.driveModifiedTime || null } });
+    }
+  } catch (e) {}
+
+  // 2. Lê fichas do Google Drive / Nuvem da conta logada
+  if (window.VDGoogleDrive && window.VDGoogleDrive.isLoggedIn()) {
+    try {
+      const remotos = await window.VDGoogleDrive.listMySheets();
+      for (const arq of remotos) {
+        const cid = (arq.appProperties && arq.appProperties.vdCharId) || arq.id;
+        const jaTem = mapaFichas.get(cid);
+        if (!jaTem || (arq.modifiedTime && (!jaTem.meta.modifiedTime || arq.modifiedTime > jaTem.meta.modifiedTime))) {
+          try {
+            const { data, meta } = await window.VDGoogleDrive.getFileJson(arq.id);
+            if (temConteudo(data)) {
+              data.driveFileId = arq.id;
+              data.driveModifiedTime = arq.modifiedTime;
+              mapaFichas.set(data.id || cid, { dados: data, meta: meta || arq });
+            }
+          } catch (e) {}
+        }
+      }
+    } catch (e) {}
+  }
+
+  const listaEl = modal.querySelector('#rpgMfLista');
+  const btnTodas = modal.querySelector('#rpgMfAddTodas');
+  const entradas = Array.from(mapaFichas.values());
+
+  const desenharLista = () => {
+    if (entradas.length === 0) {
+      listaEl.innerHTML = `<p style="color:#94a3b8;font-size:.86rem;text-align:center;padding:1.2rem;">Nenhuma ficha encontrada na sua conta ou navegador. Crie seus personagens no <a href="../dnd/" target="_blank" style="color:#a855f7;">Criador de Ficha (/dnd)</a> e clique em Salvar.</p>`;
+      btnTodas.disabled = true;
+      return;
+    }
+    btnTodas.disabled = false;
+    listaEl.innerHTML = '';
+    entradas.forEach(({ dados, meta }) => {
+      const jaNestaMesa = state.fichas.some(f => f.id === dados.id || (dados.driveFileId && f.driveFileId === dados.driveFileId));
+      const mesasFicha = (window.VDGoogleDrive && window.VDGoogleDrive.extractMesasFromCharacter)
+        ? window.VDGoogleDrive.extractMesasFromCharacter(dados)
+        : [];
+      const nv = (+dados.level1 || 1) + (dados.class2 && dados.class2 !== 'none' ? (+dados.level2 || 0) : 0);
+
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.65rem .85rem;border-radius:10px;background:#1e293b;border:1px solid ' + (jaNestaMesa ? 'rgba(34,197,94,0.45)' : '#334155') + ';';
+      row.innerHTML = `
+        <div style="flex:1;min-width:180px;">
+          <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">
+            <strong style="color:#f8fafc;font-size:.92rem;">${esc(dados.name || '(Sem nome)')}</strong>
+            ${dados.driveFileId ? '<span class="ficha-drive-badge">☁️ Drive</span>' : ''}
+            ${mesasFicha.map(m => `<span class="ficha-drive-badge" style="background:rgba(168,85,247,0.18);color:#e9d5ff;border-color:rgba(168,85,247,0.4);">🔗 ${esc(m.nomeMesa || m.mesaId)}</span>`).join('')}
+          </div>
+          <div style="font-size:.78rem;color:#94a3b8;margin-top:.15rem;">
+            ${esc(dados.species || '—')} • ${esc(dados.class1 || '—')} Nv ${nv} ${dados.playerName ? '• Jogador: ' + esc(dados.playerName) : ''}
+          </div>
+        </div>
+        <div>
+          <button type="button" class="btn ${jaNestaMesa ? 'btn-secondary' : 'btn-primary'} btn-sm">
+            ${jaNestaMesa ? '🔄 Atualizar na Mesa' : '➕ Incluir nesta Mesa'}
+          </button>
+        </div>
+      `;
+      row.querySelector('button').onclick = async (ev) => {
+        const btn = ev.currentTarget;
+        btn.disabled = true;
+        btn.textContent = '⏳ Vinculando...';
+        try {
+          await incluirFichaDadosNaMesaAtual(dados, meta);
+          desenharLista();
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = '➕ Incluir nesta Mesa';
+          alert('Erro ao incluir ficha: ' + err.message);
+        }
+      };
+      listaEl.appendChild(row);
+    });
+  };
+
+  desenharLista();
+
+  btnTodas.onclick = async () => {
+    btnTodas.disabled = true;
+    btnTodas.textContent = '⏳ Incluindo todas...';
+    for (const item of entradas) {
+      try { await incluirFichaDadosNaMesaAtual(item.dados, item.meta); } catch (e) {}
+    }
+    desenharLista();
+    btnTodas.textContent = '✅ Todas Incluídas!';
+  };
 }
 
 function agendarBackupSessaoMestre() {
@@ -696,6 +1025,7 @@ function agendarBackupSessaoMestre() {
     try {
       await window.VDGoogleDrive.saveMasterSessionToDrive({
         mesa: state.mesa,
+        mesas: state.mesas,
         entities: state.entities,
         notes: state.notes,
         currentTurn: state.currentTurn,
@@ -719,6 +1049,33 @@ function agendarBackupSessaoMestre() {
       sincronizarMesaComDrive(true);
     }
   });
+
+  const selMesa = document.getElementById('mesaSelectRpg');
+  if (selMesa) {
+    selMesa.addEventListener('change', () => {
+      trocarMesaAtivaRpg(selMesa.value);
+    });
+  }
+
+  const criarMesaBtn = document.getElementById('mesaCriarNovaBtn');
+  if (criarMesaBtn) {
+    criarMesaBtn.addEventListener('click', () => criarNovaMesaRpg());
+  }
+
+  const delMesaBtn = document.getElementById('mesaExcluirAtualBtn');
+  if (delMesaBtn) {
+    delMesaBtn.addEventListener('click', () => excluirMesaAtualRpg());
+  }
+
+  const minhasFichasBtn = document.getElementById('mesaMinhasFichasBtn');
+  if (minhasFichasBtn) {
+    minhasFichasBtn.addEventListener('click', () => abrirModalMinhasFichasMestre());
+  }
+
+  const minhasFichasTopoBtn = document.getElementById('fichasMinhasDriveBtn');
+  if (minhasFichasTopoBtn) {
+    minhasFichasTopoBtn.addEventListener('click', () => abrirModalMinhasFichasMestre());
+  }
 
   const loginBtn = document.getElementById('rpgGoogleLoginBtn');
   if (loginBtn) {
@@ -824,11 +1181,11 @@ function agendarBackupSessaoMestre() {
   const novaMesaBtn = document.getElementById('mesaNovaIdBtn');
   if (novaMesaBtn) {
     novaMesaBtn.addEventListener('click', () => {
-      if (!confirm('Gerar um novo código para a mesa? Os jogadores precisarão usar o novo link para vincular novas fichas.')) return;
+      if (!confirm('Gerar um novo código para esta mesa? Os jogadores precisarão usar o novo link para vincular novas fichas. (Se quiser criar uma segunda mesa mantendo esta, clique em "➕ Nova Mesa").')) return;
       state.mesa.id = 'mesa_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
       salvarConfigMesa();
       atualizarPainelMesaOnline();
-      if (typeof avisoRapido === 'function') avisoRapido('Novo link de mesa gerado.', 'neutro');
+      if (typeof avisoRapido === 'function') avisoRapido('Novo código de mesa gerado.', 'neutro');
     });
   }
 
